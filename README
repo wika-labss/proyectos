@@ -1,0 +1,143 @@
+# Cómo Funciona WIKA
+
+## ¿Qué es WIKA?
+
+WIKA es una plataforma que transforma documentación estructurada en aplicaciones funcionales mediante el uso de inteligencia artificial y revisión arquitectónica. 【1-2d3c4a】
+
+El objetivo es construir software a partir de documentos claros, estandarizados y reutilizables.
+
+---
+
+# Flujo General
+
+```text
+Idea
+↓
+Documentación
+↓
+Generación IA
+↓
+Revisión
+↓
+Refinamiento
+↓
+Versión Final
+```
+
+---
+
+# 1. Crear un Proyecto
+
+Toda iniciativa comienza creando una carpeta dentro del repositorio de aplicaciones.
+
+```text
+applications/
+└── nombre-proyecto/
+```
+
+---
+
+# 2. Completar la Documentación
+
+Dentro de la carpeta `idea` deben completarse los documentos del proyecto.
+
+```text
+idea/
+├── 01-problem.md
+├── 02-features.md
+├── 03-architecture.md
+├── 04-design.md
+└── 05-prompt-ia.md
+```
+
+Estos documentos describen:
+
+- El problema a resolver.
+- Las funcionalidades esperadas.
+- Las restricciones técnicas.
+- El diseño esperado.
+- Las instrucciones para la generación.
+
+---
+
+# 3. Ejecutar el Agente IA
+
+Una vez completada la documentación, el agente IA analizará:
+
+- La documentación del proyecto.
+- Las reglas de WIKA.
+- Los estándares definidos por la plataforma.
+
+Y generará una primera versión funcional.
+
+```text
+iterations/
+└── v1/
+```
+
+---
+
+# 4. Revisar el Resultado
+
+El arquitecto revisará la versión generada.
+
+La revisión evaluará:
+
+- Funcionalidad.
+- Calidad.
+- Diseño.
+- Cumplimiento de requerimientos.
+
+Las observaciones quedarán documentadas en:
+
+```text
+review.md
+```
+
+---
+
+# 5. Refinar la Solución
+
+El agente IA utilizará:
+
+- La documentación original.
+- Los comentarios de revisión.
+- La versión anterior.
+
+Para generar una nueva iteración.
+
+```text
+v1
+↓
+v2
+↓
+v3
+↓
+...
+```
+
+---
+
+# 6. Aprobar la Versión Final
+
+Cuando la solución cumpla los objetivos definidos, se generará una versión final.
+
+```text
+final/
+```
+
+Esta versión será utilizada para demostración o publicación.
+
+---
+
+# Principio Fundamental
+
+Dentro de WIKA:
+
+```text
+La documentación define el producto.
+La IA genera la solución.
+El arquitecto garantiza la calidad.
+```
+
+Si la documentación es clara, el proceso de generación será más rápido, consistente y efectivo. 【1-2d3c4a】
