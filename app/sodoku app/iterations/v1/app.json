@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Sodoku",
+    "slug": "sodoku-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "sodoku",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#4A6CF7"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.wikalabs.sodoku"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#4A6CF7"
+      },
+      "package": "com.wikalabs.sodoku"
+    },
+    "plugins": ["expo-router"]
+  }
+}
