@@ -34,7 +34,8 @@
             "targetSdkVersion": 34
           }
         }
-      ]
+      ],
+      "expo-asset"
     ]
   }
 }
