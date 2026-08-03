@@ -2,6 +2,7 @@ node_modules/
 .expo/
 android/
 ios/
+local.properties
 dist/
 *.jks
 *.p8
