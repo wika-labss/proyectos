@@ -47,8 +47,8 @@ export function IntensitySlider({ value, disabled = false, onChange }: Intensity
         onLayout={handleLayout}
         {...panResponder.panHandlers}
       >
-        <View style={[styles.fill, { width: fillWidth }]} />
-        <View style={[styles.thumb, { left: thumbLeft }]} />
+        <View pointerEvents="none" style={[styles.fill, { width: fillWidth }]} />
+        <View pointerEvents="none" style={[styles.thumb, { left: thumbLeft }]} />
       </View>
     </View>
   );

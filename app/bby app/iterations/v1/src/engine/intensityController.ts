@@ -1,10 +1,16 @@
+// Software PWM over the camera torch. React Native timers cannot reliably fire
+// below ~4 ms, so pulses are clamped and the usable duty cycle saturates at the
+// edges: see MIN_DUTY_PERCENT / MAX_DUTY_PERCENT.
 const PWM_PERIOD_MS = 20;
+const MIN_PULSE_MS = 4;
+
+export const MIN_DUTY_PERCENT = (MIN_PULSE_MS / PWM_PERIOD_MS) * 100;
+export const MAX_DUTY_PERCENT = 100 - MIN_DUTY_PERCENT;
 
 interface IntensityControllerDeps {
   setTorchState: (enabled: boolean) => void;
 }
 
-// v1: PWM software fallback only. Native torch strength (Android 13+) is out of scope.
 export class IntensityController {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private running = false;
@@ -26,8 +32,9 @@ export class IntensityController {
       return;
     }
 
-    const onDuration = Math.max(1, Math.round((PWM_PERIOD_MS * clamped) / 100));
-    const offDuration = Math.max(1, PWM_PERIOD_MS - onDuration);
+    const rawOn = Math.round((PWM_PERIOD_MS * clamped) / 100);
+    const onDuration = Math.min(Math.max(rawOn, MIN_PULSE_MS), PWM_PERIOD_MS - MIN_PULSE_MS);
+    const offDuration = PWM_PERIOD_MS - onDuration;
     let isOn = true;
 
     this.running = true;
@@ -40,8 +47,7 @@ export class IntensityController {
 
       isOn = !isOn;
       this.deps.setTorchState(isOn);
-      const delay = isOn ? onDuration : offDuration;
-      this.timeoutId = setTimeout(tick, delay);
+      this.timeoutId = setTimeout(tick, isOn ? onDuration : offDuration);
     };
 
     this.timeoutId = setTimeout(tick, onDuration);

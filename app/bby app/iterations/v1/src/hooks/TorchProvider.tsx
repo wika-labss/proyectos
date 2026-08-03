@@ -23,7 +23,13 @@ export function TorchProvider({ children, cameraReady, onCameraUnavailable }: To
   }, []);
 
   useEffect(() => {
-    intensityControllerRef.current = new IntensityController({ setTorchState });
+    const instance = new IntensityController({ setTorchState });
+    intensityControllerRef.current = instance;
+
+    return () => {
+      instance.stop();
+      intensityControllerRef.current = null;
+    };
   }, [setTorchState]);
 
   const controller = useMemo<TorchController>(

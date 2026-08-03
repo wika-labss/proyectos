@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { AppState, StyleSheet, Text, View } from 'react-native';
+import { AppState, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GothicBackground } from '../src/components/GothicBackground';
 import { IntensitySlider } from '../src/components/IntensitySlider';
@@ -11,6 +11,8 @@ import { useTorch } from '../src/hooks/useTorch';
 import { useTorchStore } from '../src/stores/torchStore';
 
 function UnavailableScreen() {
+  const requestRecheck = useTorchStore((state) => state.requestRecheck);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <GothicBackground />
@@ -18,8 +20,17 @@ function UnavailableScreen() {
         <Text style={styles.title}>BBY LIGHT</Text>
         <Text style={styles.unavailableTitle}>Flash no disponible</Text>
         <Text style={styles.unavailableBody}>
-          Este dispositivo no tiene flash LED o no se otorgó permiso de cámara necesario para controlar la linterna.
+          Este dispositivo no tiene flash LED, la cámara está ocupada por otra aplicación o no se otorgó el permiso
+          necesario para controlar la linterna.
         </Text>
+        <Pressable
+          style={styles.retryButton}
+          onPress={requestRecheck}
+          accessibilityRole="button"
+          accessibilityLabel="Reintentar detección de flash"
+        >
+          <Text style={styles.retryText}>REINTENTAR</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -30,16 +41,12 @@ function MainScreen() {
   const intensity = useTorchStore((state) => state.intensity);
   const { toggle, enterSos, exitSos, updateIntensity, shutdown } = useTorch();
 
-  const handleTorchPress = useCallback(async () => {
-    await toggle();
+  const handleTorchPress = useCallback(() => {
+    void toggle();
   }, [toggle]);
 
-  const handleSosPress = useCallback(async () => {
-    if (mode === 'sos') {
-      await exitSos();
-      return;
-    }
-    await enterSos();
+  const handleSosPress = useCallback(() => {
+    void (mode === 'sos' ? exitSos() : enterSos());
   }, [enterSos, exitSos, mode]);
 
   useEffect(() => {
@@ -54,8 +61,6 @@ function MainScreen() {
       void shutdown();
     };
   }, [shutdown]);
-
-  const sliderDisabled = mode === 'sos';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -73,7 +78,7 @@ function MainScreen() {
         <View style={styles.controls}>
           <IntensitySlider
             value={intensity}
-            disabled={sliderDisabled}
+            disabled={mode === 'sos'}
             onChange={(value) => void updateIntensity(value)}
           />
           <View style={styles.sosSpacing}>
@@ -139,5 +144,21 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  retryButton: {
+    marginTop: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.button,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  retryText: {
+    ...typography.button,
+    color: colors.buttonText,
+    letterSpacing: 2,
   },
 });

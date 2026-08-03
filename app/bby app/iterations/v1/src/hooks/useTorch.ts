@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useTorchStore } from '../stores/torchStore';
@@ -7,6 +7,9 @@ import { useSosPattern } from './useSosPattern';
 import { useTorchController } from './TorchProvider';
 
 const KEEP_AWAKE_TAG = 'bby-light-torch';
+// Lowest level that still produces visible light through the PWM controller.
+const MIN_ON_INTENSITY = 25;
+const INTENSITY_SAVE_DEBOUNCE_MS = 400;
 
 export function useTorch() {
   const controller = useTorchController();
@@ -15,6 +18,37 @@ export function useTorch() {
   const intensity = useTorchStore((state) => state.intensity);
   const setMode = useTorchStore((state) => state.setMode);
   const setIntensity = useTorchStore((state) => state.setIntensity);
+
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingIntensityRef = useRef<number | null>(null);
+
+  const flushIntensity = useCallback(() => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+
+    const pending = pendingIntensityRef.current;
+    if (pending !== null) {
+      pendingIntensityRef.current = null;
+      void saveIntensity(pending);
+    }
+  }, []);
+
+  const persistIntensity = useCallback(
+    (value: number) => {
+      pendingIntensityRef.current = value;
+
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+
+      saveTimerRef.current = setTimeout(flushIntensity, INTENSITY_SAVE_DEBOUNCE_MS);
+    },
+    [flushIntensity],
+  );
+
+  useEffect(() => flushIntensity, [flushIntensity]);
 
   const syncKeepAwake = useCallback(async (active: boolean) => {
     if (active) {
@@ -33,16 +67,21 @@ export function useTorch() {
   }, [controller, setMode, stopSosPattern, syncKeepAwake]);
 
   const turnOn = useCallback(async () => {
-    if (intensity <= 0) {
-      return;
+    // Pressing the torch button with the slider at zero raises it to the lowest
+    // visible level instead of silently doing nothing.
+    const target = intensity > 0 ? intensity : MIN_ON_INTENSITY;
+
+    if (target !== intensity) {
+      setIntensity(target);
+      persistIntensity(target);
     }
 
     stopSosPattern();
     setMode('on');
-    controller.applyIntensity(intensity);
+    controller.applyIntensity(target);
     await syncKeepAwake(true);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }, [controller, intensity, setMode, stopSosPattern, syncKeepAwake]);
+  }, [controller, intensity, persistIntensity, setIntensity, setMode, stopSosPattern, syncKeepAwake]);
 
   const enterSos = useCallback(async () => {
     stopSosPattern();
@@ -60,7 +99,6 @@ export function useTorch() {
 
   const toggle = useCallback(async () => {
     if (mode === 'sos') {
-      stopSosPattern();
       await turnOff();
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       return;
@@ -73,27 +111,31 @@ export function useTorch() {
     }
 
     await turnOn();
-  }, [mode, stopSosPattern, turnOff, turnOn]);
+  }, [mode, turnOff, turnOn]);
 
   const updateIntensity = useCallback(
     async (value: number) => {
       setIntensity(value);
-      await saveIntensity(value);
+      persistIntensity(value);
 
-      if (mode === 'on' && value > 0) {
+      if (mode !== 'on') {
+        return;
+      }
+
+      if (value > 0) {
         controller.applyIntensity(value);
+        return;
       }
 
-      if (mode === 'on' && value <= 0) {
-        await turnOff();
-      }
+      await turnOff();
     },
-    [controller, mode, setIntensity, turnOff],
+    [controller, mode, persistIntensity, setIntensity, turnOff],
   );
 
   const shutdown = useCallback(async () => {
+    flushIntensity();
     await turnOff();
-  }, [turnOff]);
+  }, [flushIntensity, turnOff]);
 
   return {
     mode,

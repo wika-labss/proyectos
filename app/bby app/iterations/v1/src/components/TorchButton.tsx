@@ -5,11 +5,10 @@ import type { TorchMode } from '../types';
 
 interface TorchButtonProps {
   mode: TorchMode;
-  disabled?: boolean;
   onPress: () => void;
 }
 
-export function TorchButton({ mode, disabled = false, onPress }: TorchButtonProps) {
+export function TorchButton({ mode, onPress }: TorchButtonProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -41,7 +40,6 @@ export function TorchButton({ mode, disabled = false, onPress }: TorchButtonProp
 
   return (
     <Pressable
-      disabled={disabled}
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
@@ -53,7 +51,6 @@ export function TorchButton({ mode, disabled = false, onPress }: TorchButtonProp
           styles.button,
           isOn && styles.buttonOn,
           isSos && styles.buttonSos,
-          disabled && styles.buttonDisabled,
           { transform: [{ scale }] },
         ]}
       >
@@ -96,9 +93,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.button,
     shadowColor: colors.accentGlow,
     shadowOpacity: 0.6,
-  },
-  buttonDisabled: {
-    opacity: 0.4,
   },
   sosText: {
     ...typography.sos,
