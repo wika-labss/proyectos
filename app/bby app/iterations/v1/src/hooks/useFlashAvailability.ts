@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useTorchStore } from '../stores/torchStore';
@@ -7,9 +7,11 @@ import { loadPreferences } from '../utils/storage';
 export function useFlashAvailability() {
   const [permission, requestPermission] = useCameraPermissions();
   const [checking, setChecking] = useState(true);
+  const isFlashAvailable = useTorchStore((state) => state.isFlashAvailable);
   const setFlashAvailable = useTorchStore((state) => state.setFlashAvailable);
   const setIntensity = useTorchStore((state) => state.setIntensity);
   const setLoaded = useTorchStore((state) => state.setLoaded);
+  const setMode = useTorchStore((state) => state.setMode);
 
   useEffect(() => {
     let mounted = true;
@@ -68,16 +70,18 @@ export function useFlashAvailability() {
     };
   }, [permission?.granted, requestPermission, setFlashAvailable, setIntensity, setLoaded]);
 
-  const markCameraUnavailable = () => {
+  const markCameraUnavailable = useCallback(() => {
     setFlashAvailable(false);
-  };
+    setMode('off');
+  }, [setFlashAvailable, setMode]);
 
-  const cameraReady = Platform.OS === 'android' && Boolean(permission?.granted);
+  const permissionGranted = Platform.OS === 'android' && Boolean(permission?.granted);
+  const cameraReady = permissionGranted && isFlashAvailable;
 
   return {
     checking,
     cameraReady,
-    permissionGranted: Boolean(permission?.granted),
+    permissionGranted,
     markCameraUnavailable,
   };
 }

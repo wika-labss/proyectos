@@ -15,7 +15,7 @@ interface TorchStoreState {
 export const useTorchStore = create<TorchStoreState>((set) => ({
   mode: 'off',
   intensity: 100,
-  isFlashAvailable: true,
+  isFlashAvailable: false,
   loaded: false,
   setMode: (mode) => set({ mode }),
   setIntensity: (value) => set({ intensity: Math.max(0, Math.min(100, Math.round(value))) }),

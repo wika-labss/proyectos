@@ -1,16 +1,13 @@
 import React, { useCallback, useEffect } from 'react';
 import { AppState, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as Haptics from 'expo-haptics';
 import { GothicBackground } from '../src/components/GothicBackground';
 import { IntensitySlider } from '../src/components/IntensitySlider';
 import { SosButton } from '../src/components/SosButton';
 import { StatusIndicator } from '../src/components/StatusIndicator';
 import { TorchButton } from '../src/components/TorchButton';
 import { colors, spacing, typography } from '../src/constants/theme';
-import { useSosPattern } from '../src/hooks/useSosPattern';
 import { useTorch } from '../src/hooks/useTorch';
-import { useTorchController } from '../src/hooks/TorchProvider';
 import { useTorchStore } from '../src/stores/torchStore';
 
 function UnavailableScreen() {
@@ -31,57 +28,34 @@ function UnavailableScreen() {
 function MainScreen() {
   const mode = useTorchStore((state) => state.mode);
   const intensity = useTorchStore((state) => state.intensity);
-  const setMode = useTorchStore((state) => state.setMode);
-  const { toggle, turnOff, updateIntensity, syncKeepAwake } = useTorch();
-  const { start: startSos, stop: stopSos } = useSosPattern();
-  const controller = useTorchController();
+  const { toggle, enterSos, exitSos, updateIntensity, shutdown } = useTorch();
 
   const handleTorchPress = useCallback(async () => {
-    if (mode === 'sos') {
-      stopSos();
-      await turnOff();
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      return;
-    }
-
     await toggle();
-  }, [mode, stopSos, toggle, turnOff]);
+  }, [toggle]);
 
   const handleSosPress = useCallback(async () => {
     if (mode === 'sos') {
-      stopSos();
-      await turnOff();
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      await exitSos();
       return;
     }
-
-    setMode('sos');
-    startSos();
-    await syncKeepAwake(true);
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-  }, [mode, setMode, startSos, stopSos, syncKeepAwake, turnOff]);
+    await enterSos();
+  }, [enterSos, exitSos, mode]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextState) => {
       if (nextState === 'background' || nextState === 'inactive') {
-        stopSos();
-        controller.stopIntensity();
-        controller.setTorch(false);
-        setMode('off');
-        void syncKeepAwake(false);
+        void shutdown();
       }
     });
 
     return () => {
       subscription.remove();
-      stopSos();
-      controller.stopIntensity();
-      controller.setTorch(false);
-      void syncKeepAwake(false);
+      void shutdown();
     };
-  }, [controller, setMode, stopSos, syncKeepAwake]);
+  }, [shutdown]);
 
-  const sliderDisabled = mode === 'off' || mode === 'sos';
+  const sliderDisabled = mode === 'sos';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -97,7 +71,11 @@ function MainScreen() {
         </View>
 
         <View style={styles.controls}>
-          <IntensitySlider value={intensity} disabled={sliderDisabled} onChange={(value) => void updateIntensity(value)} />
+          <IntensitySlider
+            value={intensity}
+            disabled={sliderDisabled}
+            onChange={(value) => void updateIntensity(value)}
+          />
           <View style={styles.sosSpacing}>
             <SosButton active={mode === 'sos'} onPress={handleSosPress} />
           </View>

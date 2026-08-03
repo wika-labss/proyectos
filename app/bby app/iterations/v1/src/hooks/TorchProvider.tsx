@@ -4,11 +4,7 @@ import { CameraView } from 'expo-camera';
 import { IntensityController } from '../engine/intensityController';
 import type { TorchController } from '../types';
 
-interface TorchContextValue extends TorchController {
-  isTorchMounted: boolean;
-}
-
-const TorchContext = createContext<TorchContextValue | null>(null);
+const TorchContext = createContext<TorchController | null>(null);
 
 interface TorchProviderProps {
   children: React.ReactNode;
@@ -16,7 +12,6 @@ interface TorchProviderProps {
   onCameraUnavailable?: () => void;
 }
 
-// Minimum preview size so Android keeps the camera session active for torch control.
 const CAMERA_PREVIEW_SIZE = 100;
 
 export function TorchProvider({ children, cameraReady, onCameraUnavailable }: TorchProviderProps) {
@@ -47,20 +42,14 @@ export function TorchProvider({ children, cameraReady, onCameraUnavailable }: To
     [setTorchState],
   );
 
-  const value = useMemo<TorchContextValue>(
-    () => ({
-      ...controller,
-      isTorchMounted: cameraReady,
-    }),
-    [cameraReady, controller],
-  );
-
   const handleMountError = useCallback(() => {
+    intensityControllerRef.current?.stop();
+    setTorchState(false);
     onCameraUnavailable?.();
-  }, [onCameraUnavailable]);
+  }, [onCameraUnavailable, setTorchState]);
 
   return (
-    <TorchContext.Provider value={value}>
+    <TorchContext.Provider value={controller}>
       {cameraReady ? (
         <View pointerEvents="none" style={styles.hiddenCamera}>
           <CameraView
@@ -76,7 +65,7 @@ export function TorchProvider({ children, cameraReady, onCameraUnavailable }: To
   );
 }
 
-export function useTorchController(): TorchContextValue {
+export function useTorchController(): TorchController {
   const context = useContext(TorchContext);
   if (!context) {
     throw new Error('useTorchController must be used within TorchProvider');

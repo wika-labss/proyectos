@@ -1,11 +1,10 @@
-import type { TorchController } from '../types';
-
 const PWM_PERIOD_MS = 20;
 
 interface IntensityControllerDeps {
   setTorchState: (enabled: boolean) => void;
 }
 
+// v1: PWM software fallback only. Native torch strength (Android 13+) is out of scope.
 export class IntensityController {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private running = false;
@@ -54,10 +53,5 @@ export class IntensityController {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
-  }
-
-  turnOff(): void {
-    this.stop();
-    this.deps.setTorchState(false);
   }
 }
