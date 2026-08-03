@@ -6,33 +6,51 @@
 - [ ] **Control de intensidad** — Slider o selector para regular la intensidad de la luz (0–100%)
 - [ ] **Modo SOS** — Señal de emergencia con patrón Morse internacional: `··· ——— ···` (3 cortos, 3 largos, 3 cortos), repetido en bucle
 - [ ] **Indicador de estado** — Feedback visual claro: linterna apagada, encendida continua o en modo SOS
-- [ ] **Detección de hardware** — Verificar disponibilidad de flash al iniciar; mensaje informativo si el dispositivo no tiene LED
-- [ ] **Persistencia de preferencias** — Recordar última intensidad seleccionada entre sesiones
+- [ ] **Detección de hardware** — Verificar disponibilidad de flash al iniciar; pantalla informativa con botón **Reintentar** si el dispositivo no tiene LED, la cámara está ocupada o falta el permiso
+- [ ] **Persistencia de preferencias** — Recordar última intensidad seleccionada entre sesiones (guardado con debounce de 400 ms)
 
 ## Modo SOS — Especificación técnica
 
-Patrón Morse estándar de emergencia:
+Patrón Morse estándar de emergencia. Unidad base = 200 ms.
 
-| Elemento | Duración | Repeticiones |
-|----------|----------|--------------|
-| Punto (·) | 200 ms ON / 200 ms OFF | 3 |
-| Pausa intra-grupo | 200 ms OFF | — |
-| Raya (—) | 600 ms ON / 200 ms OFF | 3 |
-| Pausa intra-grupo | 200 ms OFF | — |
-| Punto (·) | 200 ms ON / 200 ms OFF | 3 |
-| Pausa entre ciclos | 1000 ms OFF | — |
+| Elemento | Duración | Unidades |
+|----------|----------|----------|
+| Punto (·) ON | 200 ms | 1 |
+| Raya (—) ON | 600 ms | 3 |
+| Pausa entre símbolos de una letra | 200 ms OFF | 1 |
+| Pausa entre letras (S→O→S) | 600 ms OFF | 3 |
+| Pausa entre ciclos | 1200 ms OFF | 6 |
 
-> El ciclo completo se repite hasta que el usuario desactive SOS o active la linterna continua.
+Secuencia resultante (21 pasos, ciclo completo de **6600 ms**):
+
+```text
+· · ·   [600 ms]   — — —   [600 ms]   · · ·   [1200 ms]
+```
+
+> Las pausas entre letras son obligatorias: sin ellas el patrón no es reconocible como SOS.
+> El ciclo se repite hasta que el usuario desactive SOS o apague la linterna.
 
 ## Control de intensidad — Comportamiento
 
-| Rango | Comportamiento |
-|-------|----------------|
-| 100% | Flash LED a máxima potencia nativa |
-| 50% | Intensidad media (torch strength nativo si disponible; fallback: duty cycle simulado) |
+v1 implementa **PWM software** sobre el torch de `expo-camera`. No usa la API nativa de
+`torch strength` (fuera de alcance en v1).
+
+| Valor slider | Comportamiento |
+|--------------|----------------|
+| 100% | Flash LED encendido de forma continua (máxima potencia) |
+| 21–99% | PWM software: ciclo de 20 ms con duty cycle proporcional |
+| 1–20% | PWM al duty mínimo alcanzable (~20%) |
 | 0% | Flash apagado (equivalente a OFF) |
 
-> En dispositivos Android 13+ (API 33+) con soporte de `torch strength`, usar API nativa. En dispositivos anteriores, simular intensidad mediante PWM software (ciclos ON/OFF rápidos) documentado en arquitectura.
+### Límites conocidos del PWM
+
+- Los timers de React Native no disparan de forma fiable por debajo de ~4 ms, por lo que
+  cada pulso se acota a `[4 ms, 16 ms]` dentro del período de 20 ms.
+- El duty cycle efectivo queda entre **20% y 80%**; valores fuera de ese rango saturan.
+- La atenuación percibida depende del hardware: algunos LED responden con parpadeo en
+  lugar de atenuación suave.
+- Pulsar el botón principal con el slider en 0% eleva la intensidad al mínimo visible (25%)
+  en lugar de no hacer nada.
 
 ## Funcionalidades secundarias
 

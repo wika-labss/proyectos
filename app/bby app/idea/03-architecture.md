@@ -38,6 +38,7 @@
 | `expo-camera` | `~16.0.0` | Flash/torch | ✅ |
 | `expo-keep-awake` | `~14.0.0` | Pantalla activa | ✅ |
 | `expo-haptics` | `~14.0.0` | Feedback táctil | ✅ |
+| `expo-system-ui` | `~4.0.9` | Aplica `userInterfaceStyle: dark` | ✅ |
 | `expo-asset` | `~11.0.5` | Assets | ✅ |
 | `expo-build-properties` | `~0.13.0` | Build nativo | ✅ |
 | `@react-native-async-storage/async-storage` | `1.23.1` | Persistencia | ✅ |
@@ -56,7 +57,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Permite a BBY Light controlar el flash de tu teléfono."
+          "cameraPermission": "Permite a BBY Light controlar el flash de tu teléfono.",
+          "recordAudioAndroid": false
         }
       ],
       [
@@ -112,7 +114,8 @@ app/bby app/
 │   │   │   ├── StatusIndicator.tsx # Indicador OFF/ON/SOS
 │   │   │   └── GothicBackground.tsx # Fondo gótico con gradiente
 │   │   ├── hooks/
-│   │   │   ├── useTorch.ts        # Control del flash LED
+│   │   │   ├── TorchProvider.tsx  # Contexto + CameraView oculta (torch)
+│   │   │   ├── useTorch.ts        # API única de control (ON/OFF/SOS)
 │   │   │   ├── useSosPattern.ts   # Lógica del patrón Morse SOS
 │   │   │   └── useFlashAvailability.ts # Detección de hardware
 │   │   ├── stores/
@@ -138,14 +141,23 @@ app/bby app/
 
 ## Componentes principales
 
-### Motor de linterna (`src/hooks/useTorch.ts` + `src/engine/`)
+### Motor de linterna (`src/hooks/` + `src/engine/`)
 
-- **useTorch** — Hook principal que expone `turnOn()`, `turnOff()`, `setIntensity(0-100)`. Usa `expo-camera` CameraView con `enableTorch` o API torch dedicada
-- **intensityController.ts** — Mapea valor 0–100 a:
-  - Android 13+ (API 33+): torch strength nativo si la API lo expone
-  - Fallback: PWM software (ciclos ON/OFF de 20 ms; duty cycle = intensidad%)
-- **sosPattern.ts** — Array de pasos `{ action: 'on' | 'off', durationMs: number }` que define el patrón Morse completo
-- **useSosPattern.ts** — Ejecuta el patrón en bucle con `setTimeout`/`setInterval` precisos; cancela al desactivar SOS
+- **TorchProvider.tsx** — Monta una `CameraView` de 100×100 fuera de pantalla (opacidad 0.01) que
+  mantiene viva la sesión de cámara necesaria para el torch en Android. Expone el contexto
+  `TorchController` con `setTorch` / `applyIntensity` / `stopIntensity`. Un preview de 1×1 no basta:
+  varios dispositivos no activan el LED sin superficie mínima.
+- **useTorch.ts** — **Única API de control** de la linterna. Expone `turnOn()`, `turnOff()`,
+  `toggle()`, `enterSos()`, `exitSos()`, `updateIntensity()` y `shutdown()`. Ninguna pantalla debe
+  llamar a `torchStore.setMode` ni a `TorchController` directamente.
+- **intensityController.ts** — PWM software sobre el torch. Período 20 ms, pulsos acotados a
+  `[4 ms, 16 ms]` porque los timers de RN no bajan de ~4 ms. Duty cycle efectivo 20–80%;
+  0% apaga y 100% enciende de forma continua. Torch strength nativo (Android 13+) queda fuera
+  de v1.
+- **sosPattern.ts** — Array de pasos `{ action: 'on' | 'off', durationMs: number }` con el patrón
+  Morse completo, incluidas las pausas entre letras (600 ms) y entre ciclos (1200 ms).
+- **useSosPattern.ts** — Ejecuta el patrón en bucle con `setTimeout` encadenados; cancela y apaga
+  el torch al detenerse.
 
 ### Capa de estado (`src/stores/torchStore.ts`)
 
@@ -154,11 +166,15 @@ type TorchMode = 'off' | 'on' | 'sos';
 
 interface TorchState {
   mode: TorchMode;
-  intensity: number;        // 0–100
-  isFlashAvailable: boolean;
+  intensity: number;         // 0–100
+  isFlashAvailable: boolean; // false hasta confirmar permiso + hardware
+  loaded: boolean;           // preferencias cargadas
+  recheckToken: number;      // incrementa al pulsar "Reintentar"
   setMode: (mode: TorchMode) => void;
   setIntensity: (value: number) => void;
   setFlashAvailable: (available: boolean) => void;
+  setLoaded: (loaded: boolean) => void;
+  requestRecheck: () => void;
 }
 ```
 
@@ -172,53 +188,77 @@ interface TorchState {
 
 ## Flujo de datos
 
-### Encender linterna
+> Regla: toda la UI pasa por `useTorch`. El store y el `TorchController` son detalles internos.
+
+### Encender / apagar linterna
 
 ```text
 Usuario toca TorchButton
-  → torchStore.setMode('on')
-  → useTorch.turnOn(intensity)
-  → expo-camera enableTorch = true
-  → intensityController.apply(intensity)
-  → expo-keep-awake activate
+  → useTorch.toggle()
+    → Si mode === 'sos' u 'on': useTorch.turnOff()
+    → Si mode === 'off': useTorch.turnOn()
+        → Si intensity === 0: elevar a 25% (mínimo visible)
+        → torchStore.setMode('on')
+        → intensityController.apply(intensity) → CameraView enableTorch
+        → expo-keep-awake activate
+        → Haptics.impact
   → StatusIndicator → "ENCENDIDA"
-  → storage.save({ intensity, mode: 'on' })
 ```
 
 ### Modo SOS
 
 ```text
 Usuario toca SosButton
-  → torchStore.setMode('sos')
-  → useSosPattern.start()
-  → Loop: sosPattern.steps → useTorch.turnOn/Off con duraciones Morse
+  → useTorch.enterSos()
+    → torchStore.setMode('sos')
+    → useSosPattern.start() → loop sobre SOS_PATTERN → controller.setTorch
+    → expo-keep-awake activate
   → StatusIndicator → "SOS ACTIVO" (pulse rojo)
-  → expo-keep-awake activate
-  → Usuario toca SOS o TorchButton
-    → useSosPattern.stop()
+
+Usuario toca SOS o TorchButton
+  → useTorch.exitSos() / toggle()
+    → useSosPattern.stop() + controller.setTorch(false)
     → torchStore.setMode('off')
-    → useTorch.turnOff()
 ```
 
 ### Ajustar intensidad
 
 ```text
 Usuario mueve IntensitySlider
-  → torchStore.setIntensity(value)
-  → Si mode === 'on': intensityController.apply(value) inmediato
-  → Si mode === 'sos': no aplica (SOS usa máxima intensidad)
-  → storage.save({ intensity: value })
+  → useTorch.updateIntensity(value)
+    → torchStore.setIntensity(value)
+    → persistIntensity(value)  # debounce 400 ms → AsyncStorage
+    → Si mode === 'on' y value > 0: intensityController.apply(value)
+    → Si mode === 'on' y value === 0: turnOff()
+    → Si mode !== 'on': solo actualiza el valor (preajuste)
 ```
 
-### Inicio de app
+> El slider solo se deshabilita en modo SOS; en OFF permite preajustar la intensidad.
+
+### Inicio de app y recuperación
 
 ```text
 App inicia
-  → useFlashAvailability.check()
-    → Si no hay flash: torchStore.setFlashAvailable(false) → pantalla fallback
-    → Si hay flash: continuar
-  → storage.load() → restaurar intensity
-  → Mostrar pantalla principal (linterna apagada)
+  → useFlashAvailability
+    → Platform !== android → flashAvailable = false
+    → requestPermission() denegado → flashAvailable = false
+    → CameraView.isAvailableAsync() === false → flashAvailable = false
+    → OK → storage.load() → setIntensity → flashAvailable = true
+  → Si flashAvailable: TorchProvider monta CameraView + pantalla principal
+  → Si no: pantalla fallback con botón "Reintentar" → requestRecheck()
+     → incrementa recheckToken → re-ejecuta la detección
+
+CameraView.onMountError (cámara ocupada por otra app)
+  → apaga torch + markCameraUnavailable() → pantalla fallback
+```
+
+### Salida de la app
+
+```text
+AppState → background / inactive (o desmontaje)
+  → useTorch.shutdown()
+    → flush de la intensidad pendiente en AsyncStorage
+    → turnOff(): detiene SOS, detiene PWM, apaga torch, keep-awake off
 ```
 
 ---
@@ -230,7 +270,11 @@ App inicia
 | React Native + Expo SDK 52 | Sí | Stack WIKA estándar; `expo-camera` expone torch |
 | Solo Android v1 | Sí | Requisito del proyecto; simplifica permisos y testing |
 | expo-camera para torch | Sí | API Expo oficial; evita módulos nativos custom |
-| PWM fallback para intensidad | Sí | Compatibilidad con dispositivos sin torch strength API |
+| PWM software para intensidad | Sí | Único mecanismo disponible sin módulo nativo; duty efectivo 20–80% |
+| Torch strength nativo | No (v1) | Requiere módulo nativo custom; prohibido por `05-prompt-ia.md` |
+| `recordAudioAndroid: false` | Sí | Evita el permiso `RECORD_AUDIO` que el plugin añade por defecto |
+| CameraView 100×100 oculta | Sí | Un preview de 1×1 no activa el LED en varios dispositivos |
+| `useTorch` como API única | Sí | Evita controlar el hardware desde tres capas distintas |
 | Zustand | Sí | Estado simple (mode + intensity); mínimo boilerplate |
 | Pantalla única | Sí | App de utilidad; no requiere navegación multi-pantalla |
 | Perfil BUILD v1 | Sí | Flash LED requiere APK nativo en dispositivo físico |

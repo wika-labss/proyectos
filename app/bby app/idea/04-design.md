@@ -19,7 +19,7 @@ Estética inspirada en arquitectura gótica y atmósfera nocturna: formas angula
 | Pantalla | Descripción |
 |----------|-------------|
 | **Principal (única)** | Pantalla única con todos los controles: botón central de linterna, slider de intensidad, botón SOS, indicador de estado. Sin navegación adicional en v1 |
-| **Sin flash (fallback)** | Mensaje centrado informando que el dispositivo no tiene flash LED disponible |
+| **Sin flash (fallback)** | Mensaje centrado informando que el dispositivo no tiene flash LED disponible, la cámara está ocupada o falta el permiso, con botón blanco **REINTENTAR** |
 
 ## Flujos de usuario
 
@@ -106,7 +106,9 @@ Estética inspirada en arquitectura gótica y atmósfera nocturna: formas angula
 - Track: `#1A1025` con fill morado (`#6B2D5B`) hasta el valor actual
 - Thumb: círculo blanco (24 dp) con borde morado
 - Label: "INTENSIDAD" en `textSecondary`, valor numérico (ej. "75%") en `textPrimary`
-- Deshabilitado cuando linterna está OFF y no en SOS
+- Habilitado en OFF y ON (permite preajustar antes de encender); deshabilitado solo en SOS
+- El relleno y el thumb no capturan toques (`pointerEvents="none"`) para que el arrastre
+  se calcule siempre contra el track completo
 
 ### Botón SOS (SosButton)
 

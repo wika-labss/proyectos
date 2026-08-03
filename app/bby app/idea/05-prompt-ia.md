@@ -32,6 +32,7 @@ npx expo-doctor
 - [ ] `expo-camera` incluido (control de flash)
 - [ ] `expo-keep-awake` incluido
 - [ ] `expo-haptics` incluido
+- [ ] `expo-system-ui` incluido (requerido por `userInterfaceStyle`)
 - [ ] `expo-asset` incluido
 - [ ] `expo-build-properties` incluido
 - [ ] `@react-native-async-storage/async-storage` incluido
@@ -50,22 +51,26 @@ La iteración **no se considera completa** sin pasar:
 |---|------|---------|
 | 1 | Dependencias | `npx expo-doctor` → 0 errores |
 | 2 | TypeScript | `npx tsc --noEmit` → exit 0 |
-| 3 | Metro | `npx expo start` → arranca |
+| 3 | Bundle JS | `npx expo export --platform android` → sin errores |
 | 4 | Prebuild | `npx expo prebuild --platform android` → sin errores |
-| 5 | APK | `./gradlew assembleDebug` → BUILD SUCCESSFUL |
+| 5 | SDK | `android/local.properties` escrito **después** de prebuild |
+| 6 | APK | `./gradlew assembleDebug` → BUILD SUCCESSFUL |
 
 ---
 
 ## Restricciones adicionales
 
 - **No usar módulos nativos custom** — solo APIs Expo (`expo-camera` para torch)
-- **Patrón SOS exacto** — seguir timings de `02-features.md` (200 ms punto, 600 ms raya, 1000 ms pausa entre ciclos)
-- **Intensidad 0–100** — slider con valor entero; PWM fallback si torch strength no disponible
+- **Patrón SOS exacto** — seguir timings de `02-features.md`, **incluidas las pausas de 600 ms entre letras** y 1200 ms entre ciclos
+- **Intensidad 0–100** — slider con valor entero; PWM software con duty efectivo 20–80%
+- **Una sola vía de control** — la UI solo usa `useTorch`; prohibido llamar a `torchStore.setMode` o al `TorchController` desde pantallas
+- **Persistencia con debounce** — no escribir en AsyncStorage en cada evento de arrastre
 - **Pantalla única** — no crear navegación multi-pantalla en v1
 - **Estilo gótico obligatorio** — usar tokens de `src/constants/theme.ts`; no colores genéricos
 - **Botones blancos** — fondo `#FFFFFF`, texto/icono oscuro
-- **Apagar flash al salir** — cleanup en unmount: apagar torch y cancelar SOS
-- **Detección de hardware** — pantalla fallback si no hay flash LED
+- **Apagar flash al salir** — cleanup en unmount y en `AppState` background: apagar torch y cancelar SOS
+- **Sin timers huérfanos** — todo `setTimeout`/PWM debe limpiarse al desmontar su dueño
+- **Detección de hardware** — pantalla fallback con botón "Reintentar" si no hay flash LED
 
 ---
 
@@ -84,6 +89,7 @@ iterations/v1/
 │   │   ├── StatusIndicator.tsx
 │   │   └── GothicBackground.tsx
 │   ├── hooks/
+│   │   ├── TorchProvider.tsx
 │   │   ├── useTorch.ts
 │   │   ├── useSosPattern.ts
 │   │   └── useFlashAvailability.ts
@@ -111,13 +117,14 @@ iterations/v1/
 ### Funcionales
 
 - [ ] Botón central enciende y apaga el flash LED del teléfono
-- [ ] Slider de intensidad modifica el brillo de la linterna en tiempo real (0–100%)
-- [ ] Botón SOS activa patrón Morse `··· ——— ···` en bucle continuo
+- [ ] Slider de intensidad modifica el brillo en tiempo real y es arrastrable sin saltos
+- [ ] Botón SOS activa patrón Morse `··· ——— ···` con pausas entre letras, en bucle continuo
 - [ ] Desactivar SOS detiene el parpadeo inmediatamente
 - [ ] Indicador de estado muestra OFF / ENCENDIDA / SOS ACTIVO correctamente
-- [ ] App detecta ausencia de flash y muestra pantalla fallback
+- [ ] App detecta ausencia de flash y muestra pantalla fallback con botón "Reintentar"
 - [ ] Intensidad seleccionada persiste entre sesiones
 - [ ] Pantalla permanece encendida mientras linterna o SOS está activo
+- [ ] El flash se apaga al enviar la app a segundo plano
 - [ ] UI sigue estilo gótico: fondo negro, acentos morado/rojo oscuro, botones blancos
 
 ### Técnicos (WIKA — obligatorios)

@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "BBY Light",
+    "slug": "bby-light",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "bbylight",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0F"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A0A0F"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.FLASHLIGHT"
+      ],
+      "package": "com.wika.bbylight"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permite a BBY Light controlar el flash de tu teléfono.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25",
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 24
+          }
+        }
+      ]
+    ]
+  }
+}

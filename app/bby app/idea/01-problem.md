@@ -31,7 +31,7 @@ Crear una aplicación de linterna para Android que controle el flash LED del tel
 
 - [ ] La app enciende y apaga el flash LED del teléfono de forma confiable en dispositivos Android compatibles
 - [ ] El modo SOS transmite el patrón estándar `··· ——— ···` (3 cortos, 3 largos, 3 cortos) de forma continua hasta desactivarse
-- [ ] El control de intensidad modifica el brillo percibido de la linterna (torch strength nativo o fallback documentado)
+- [ ] El control de intensidad modifica el brillo percibido de la linterna mediante PWM software (duty efectivo 20–80%; torch strength nativo fuera de alcance en v1)
 - [ ] La interfaz sigue el estilo gótico definido en `04-design.md` (negro, morado, rojo oscuro, botones blancos)
 - [ ] La app funciona sin conexión a internet
 - [ ] Un usuario puede encender la linterna en menos de 2 toques desde abrir la app
