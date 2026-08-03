@@ -1,17 +1,55 @@
 import { getTargetClues } from './difficulty';
+import { Board, Puzzle } from '../types';
 import {
   cloneBoard,
   countSolutions,
   createEmptyBoard,
   generateCompleteBoard,
+  isValidPlacement,
+  solveBoard,
 } from './solver';
-import { Board, Puzzle } from '../types';
 
 function createGivensMask(puzzle: Board): boolean[][] {
   return puzzle.map((row) => row.map((value) => value !== 0));
 }
 
-function removeCells(solution: Board, cluesTarget: number): Board {
+function isBoardFilled(board: Board): boolean {
+  return board.every((row) => row.every((value) => value !== 0));
+}
+
+function puzzleMatchesSolution(puzzle: Board, solution: Board): boolean {
+  for (let row = 0; row < 9; row += 1) {
+    for (let col = 0; col < 9; col += 1) {
+      if (puzzle[row][col] !== 0 && puzzle[row][col] !== solution[row][col]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+export function validatePuzzle(puzzle: Puzzle): boolean {
+  for (let row = 0; row < 9; row += 1) {
+    for (let col = 0; col < 9; col += 1) {
+      const value = puzzle.puzzle[row][col];
+      if (value !== 0 && !isValidPlacement(puzzle.puzzle, row, col, value)) {
+        return false;
+      }
+    }
+  }
+
+  if (!isBoardFilled(puzzle.solution)) {
+    return false;
+  }
+
+  if (!puzzleMatchesSolution(puzzle.puzzle, puzzle.solution)) {
+    return false;
+  }
+
+  return countSolutions(puzzle.puzzle, 2) === 1;
+}
+
+function removeCells(solution: Board, cluesTarget: number): Board | null {
   const puzzle = cloneBoard(solution);
   const cells = Array.from({ length: 81 }, (_, index) => ({
     row: Math.floor(index / 9),
@@ -33,52 +71,47 @@ function removeCells(solution: Board, cluesTarget: number): Board {
     const backup = puzzle[row][col];
     puzzle[row][col] = 0;
 
-    const solutions = countSolutions(puzzle, 2);
-    if (solutions !== 1) {
+    if (countSolutions(puzzle, 2) !== 1) {
       puzzle[row][col] = backup;
     } else {
       cluesRemaining -= 1;
     }
   }
 
+  if (countSolutions(puzzle, 2) !== 1) {
+    return null;
+  }
+
   return puzzle;
 }
 
 export function generatePuzzle(levelId: number): Puzzle {
-  const cluesTarget = getTargetClues(levelId);
-  let attempts = 0;
+  return generatePuzzleWithClues(levelId, getTargetClues(levelId));
+}
 
-  while (attempts < 20) {
+export function generatePuzzleWithClues(levelId: number, cluesTarget: number): Puzzle {
+  const maxAttempts = 100;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     const solution = generateCompleteBoard();
-    const puzzle = removeCells(solution, cluesTarget);
+    const puzzleBoard = removeCells(solution, cluesTarget);
 
-    if (countSolutions(puzzle, 2) === 1) {
-      return {
-        puzzle,
-        solution: cloneBoard(solution),
-        givens: createGivensMask(puzzle),
-      };
+    if (!puzzleBoard) {
+      continue;
     }
 
-    attempts += 1;
-  }
+    const puzzle: Puzzle = {
+      puzzle: puzzleBoard,
+      solution: cloneBoard(solution),
+      givens: createGivensMask(puzzleBoard),
+    };
 
-  const fallbackSolution = generateCompleteBoard();
-  const fallbackPuzzle = cloneBoard(fallbackSolution);
-
-  for (let row = 0; row < 9; row += 1) {
-    for (let col = 0; col < 9; col += 1) {
-      if (Math.random() > cluesTarget / 81) {
-        fallbackPuzzle[row][col] = 0;
-      }
+    if (validatePuzzle(puzzle)) {
+      return puzzle;
     }
   }
 
-  return {
-    puzzle: fallbackPuzzle,
-    solution: fallbackSolution,
-    givens: createGivensMask(fallbackPuzzle),
-  };
+  throw new Error(`Failed to generate valid puzzle for level ${levelId}`);
 }
 
 export function createEmptyPuzzle(): Puzzle {
@@ -88,4 +121,27 @@ export function createEmptyPuzzle(): Puzzle {
     solution: empty,
     givens: empty.map((row) => row.map(() => false)),
   };
+}
+
+/** Verify a filled board is a valid solved Sudoku. */
+export function isValidSolvedBoard(board: Board): boolean {
+  if (!isBoardFilled(board)) {
+    return false;
+  }
+
+  for (let row = 0; row < 9; row += 1) {
+    for (let col = 0; col < 9; col += 1) {
+      if (!isValidPlacement(board, row, col, board[row][col])) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+/** Solve puzzle and return true if exactly one solution exists. */
+export function verifyUniqueSolution(puzzle: Board): boolean {
+  const working = cloneBoard(puzzle);
+  return countSolutions(working, 2) === 1 && solveBoard(cloneBoard(puzzle));
 }

@@ -133,12 +133,17 @@ export function fillBox(board: Board, row: number, col: number): void {
 }
 
 export function generateCompleteBoard(): Board {
-  const board = createEmptyBoard();
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const board = createEmptyBoard();
 
-  for (let box = 0; box < 9; box += 3) {
-    fillBox(board, box, box);
+    for (let box = 0; box < 9; box += 3) {
+      fillBox(board, box, box);
+    }
+
+    if (solveBoard(board) && board.every((row) => row.every((value) => value !== 0))) {
+      return board;
+    }
   }
 
-  solveBoard(board);
-  return board;
+  throw new Error('Failed to generate complete Sudoku board');
 }
