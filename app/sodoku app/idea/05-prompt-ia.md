@@ -20,6 +20,34 @@ Un juego de Sudoku con **20 niveles progresivos**, interfaz táctil optimizada p
 8. **Persistencia** — guardar progreso, partida activa y settings en AsyncStorage automáticamente
 9. **Offline-first** — cero dependencia de red; todo funciona sin conexión
 10. **Una sola mano** — teclado numérico en la parte inferior, tablero arriba
+11. **Seguir `06-build-environment.md`** — manifiesto de dependencias y toolchain nativo completo
+
+## Dependencias técnicas (WIKA — obligatorio)
+
+Antes de entregar, ejecutar:
+
+```bash
+npx expo install --fix
+npx expo-doctor
+```
+
+Checklist según `06-build-environment.md`:
+
+- [ ] `expo-asset` incluido
+- [ ] `expo-build-properties` incluido
+- [ ] `react-native-screens` ~4.4.0
+- [ ] Plugins en app.json (expo-router, expo-asset, expo-build-properties)
+- [ ] Kotlin 1.9.25 en expo-build-properties
+
+## Gates de verificación (bloqueantes v2)
+
+| Gate | Comando |
+|------|---------|
+| Dependencias | `npx expo-doctor` → 0 errores |
+| TypeScript | `npx tsc --noEmit` |
+| Metro | `npx expo start` |
+| Prebuild | `npx expo prebuild --platform android` |
+| APK debug | `./gradlew assembleDebug` → BUILD SUCCESSFUL |
 
 ## Restricciones adicionales
 
@@ -69,12 +97,22 @@ iterations/v1/
 - [ ] Modo oscuro funcional desde ajustes
 - [ ] UI usable en pantalla de 5" (iPhone SE) y 6.7" (iPhone Pro Max)
 
+### Criterios técnicos WIKA (bloqueantes v2)
+
+- [ ] `npx expo-doctor` sin errores
+- [ ] Manifiesto de `06-build-environment.md` completo
+- [ ] `npx expo prebuild --platform android` exitoso
+- [ ] `./gradlew assembleDebug` → BUILD SUCCESSFUL
+- [ ] App instalable en dispositivo Android físico
+
 ### Orden de implementación sugerido
 
-1. Tipos y constantes (`types/`, `constants/levels.ts`, `constants/theme.ts`)
-2. Motor de puzzles (`engine/generator.ts`, `solver.ts`, `validator.ts`, `difficulty.ts`)
-3. Stores con persistencia (`stores/`, `utils/storage.ts`)
-4. Componentes UI (`components/Board.tsx`, `Cell.tsx`, `NumberPad.tsx`)
-5. Pantallas (`app/index.tsx`, `levels.tsx`, `game/[levelId].tsx`)
-6. Features secundarias (notas, deshacer, timer, pistas, estadísticas)
-7. Polish (animaciones victoria, sonidos, modo oscuro)
+1. Configuración (`package.json`, `app.json`) según `06-build-environment.md`
+2. Tipos y constantes (`types/`, `constants/levels.ts`, `constants/theme.ts`)
+3. Motor de puzzles (`engine/generator.ts`, `solver.ts`, `validator.ts`, `difficulty.ts`)
+4. Stores con persistencia (`stores/`, `utils/storage.ts`)
+5. Componentes UI (`components/Board.tsx`, `Cell.tsx`, `NumberPad.tsx`)
+6. Pantallas (`app/index.tsx`, `levels.tsx`, `game/[levelId].tsx`)
+7. Features secundarias (notas, deshacer, timer, pistas, estadísticas)
+8. Polish (animaciones victoria, sonidos, modo oscuro)
+9. **`npx expo install --fix` + `npx expo-doctor` + verificar gates de build**

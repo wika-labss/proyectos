@@ -47,16 +47,26 @@ idea/
 ├── 02-features.md
 ├── 03-architecture.md
 ├── 04-design.md
-└── 05-prompt-ia.md
+├── 05-prompt-ia.md
+└── 06-build-environment.md
 ```
 
 Estos documentos describen:
 
 - El problema a resolver.
 - Las funcionalidades esperadas.
-- Las restricciones técnicas.
+- Las restricciones técnicas y **dependencias**.
 - El diseño esperado.
 - Las instrucciones para la generación.
+- **El entorno de build y manifiesto de dependencias.**
+
+Templates reutilizables en:
+
+```text
+templates/idea/
+```
+
+Copiar al crear un nuevo proyecto en `app/nombre-proyecto/idea/`.
 
 ---
 
@@ -141,3 +151,18 @@ El arquitecto garantiza la calidad.
 ```
 
 Si la documentación es clara, el proceso de generación será más rápido, consistente y efectivo. 【1-2d3c4a】
+
+---
+
+# Estándares técnicos WIKA
+
+Principios aplicables a todos los proyectos:
+
+| ID | Principio |
+|----|-----------|
+| WIKA-ARCH-01 | La documentación es contrato de build |
+| WIKA-ARCH-02 | Versiones pinneadas (`~`), nunca flotantes (`^`) en expo/react-native |
+| WIKA-ARCH-03 | Perfil DEV vs BUILD explícito en cada iteración |
+| WIKA-ARCH-04 | Toolchain nativo documentado en `06-build-environment.md` |
+| WIKA-ARCH-05 | Gates de verificación obligatorios antes de cerrar iteración |
+| WIKA-ARCH-06 | Preferir starter WIKA validado sobre generación de infra desde cero |

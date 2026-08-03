@@ -13,6 +13,42 @@
 | Testing | Jest + React Native Testing Library |
 | Build | EAS Build (Android APK/AAB + iOS IPA) |
 
+> Manifiesto completo de dependencias: ver `06-build-environment.md`
+
+## Dependencias técnicas
+
+### Manifiesto obligatorio (Expo SDK 52)
+
+| Paquete | Versión |
+|---------|---------|
+| `expo` | `~52.0.0` |
+| `expo-router` | `~4.0.0` |
+| `expo-constants` | `~17.0.0` |
+| `expo-linking` | `~7.0.0` |
+| `expo-status-bar` | `~2.0.0` |
+| `expo-asset` | `~11.0.5` |
+| `expo-build-properties` | `~0.13.0` |
+| `react` | `18.3.1` |
+| `react-native` | `0.76.9` |
+| `react-native-safe-area-context` | `4.12.0` |
+| `react-native-screens` | `~4.4.0` |
+| `@react-native-async-storage/async-storage` | `1.23.1` |
+| `zustand` | `^5.0.0` |
+
+### Reglas WIKA
+
+- Instalar deps Expo con `npx expo install`, nunca manualmente
+- Versiones con `~` en expo/react-native (prohibido `^`)
+- Kotlin **1.9.25** fijado via `expo-build-properties`
+- Gradle JDK **17** en Android Studio
+
+### Perfil de build v1 → v2
+
+| Perfil | v1 | v2 target |
+|--------|-----|-----------|
+| DEV (Expo Go) | Parcial | ✅ |
+| BUILD (APK local) | ❌ Falló | ✅ Obligatorio |
+
 ## Estructura del proyecto
 
 ```text
