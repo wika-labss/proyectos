@@ -60,6 +60,7 @@ Marcar el perfil que aplica a esta iteración:
 | `expo-camera` | `~16.0.0` | Control del flash LED (torch mode) |
 | `expo-keep-awake` | `~14.0.0` | Mantener pantalla activa con linterna encendida |
 | `expo-haptics` | `~14.0.0` | Feedback vibratorio al encender/apagar/SOS |
+| `expo-system-ui` | `~4.0.9` | Requerido para que `userInterfaceStyle: dark` se aplique |
 | `@react-native-async-storage/async-storage` | `1.23.1` | Persistir intensidad y preferencias |
 | `zustand` | `5.0.0` | Estado global (mode, intensity) |
 
@@ -83,7 +84,8 @@ Obligatorio para perfil BUILD:
       [
         "expo-camera",
         {
-          "cameraPermission": "Permite a BBY Light controlar el flash de tu teléfono."
+          "cameraPermission": "Permite a BBY Light controlar el flash de tu teléfono.",
+          "recordAudioAndroid": false
         }
       ],
       [
@@ -134,21 +136,42 @@ android.kotlinVersion=1.9.25
 
 ### Perfil BUILD (APK local) — target v1
 
+Configurar el SDK **antes** de empezar:
+
+```bash
+export ANDROID_HOME="$HOME/Android/Sdk"   # o copiar scripts/local.properties.example
+export JAVA_HOME=/ruta/al/jdk-17          # WIKA exige JDK 17
+```
+
+Pipeline completo (equivale a `npm run verify`):
+
 ```bash
 cd "app/bby app/iterations/v1"
 npm install
 npx expo install --fix
 npx expo-doctor
 npx expo prebuild --platform android
+node scripts/post-prebuild.js
+echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 cd android && ./gradlew assembleDebug
 # APK: android/app/build/outputs/apk/debug/app-debug.apk
 ```
+
+> **Orden obligatorio:** `local.properties` se escribe **después** de `expo prebuild`.
+> Si el directorio `android/` solo contiene `local.properties`, prebuild lo considera un
+> proyecto malformado, lo borra y Gradle falla con `SDK location not found`.
 
 Instalar en dispositivo físico:
 
 ```bash
 adb install android/app/build/outputs/apk/debug/app-debug.apk
 ```
+
+### Nota sobre `package.json`
+
+`expo prebuild` reescribe la sección `scripts` y reinserta `"ios": "expo run:ios"` aunque
+solo se prebuilde Android. El script se mantiene en el repo para que el árbol de git quede
+limpio tras cada build; **el target de v1 sigue siendo Android únicamente**.
 
 ### Perfil DEV (Expo Go) — referencia
 
@@ -169,12 +192,17 @@ Ninguna iteración se considera completa sin pasar:
 
 | Gate | Comando | Resultado esperado |
 |------|---------|-------------------|
+| Toolchain | `java -version` | JDK 17 |
 | Dependencias | `npx expo-doctor` | 0 errores |
 | TypeScript | `npx tsc --noEmit` | Exit code 0 |
-| Metro | `npx expo start` | Arranca sin errores |
+| Bundle JS | `npx expo export --platform android` | Empaqueta sin errores de import |
 | Prebuild | `npx expo prebuild --platform android` | Genera `android/` sin errores |
+| SDK | `android/local.properties` o `ANDROID_HOME` | Ruta válida al SDK |
 | APK debug | `cd android && ./gradlew assembleDebug` | BUILD SUCCESSFUL |
 | Prueba física | Instalar APK en dispositivo Android | Flash enciende/apaga, SOS parpadea |
+
+> `npx expo export` se añade como gate porque `tsc` no detecta imports rotos en tiempo de
+> ejecución; el bundle sí.
 
 ---
 
@@ -184,8 +212,10 @@ Incluir en cada iteración:
 
 | Script | Propósito |
 |--------|-----------|
-| `scripts/verify-build.sh` | Ejecuta todos los gates |
-| `reset-android.bat` | Regenera android/ limpio (Windows) |
+| `scripts/verify-build.sh` | Ejecuta todos los gates en orden (`npm run verify`) |
+| `scripts/post-prebuild.js` | Fija Kotlin 1.9.25 tras cada prebuild |
+| `scripts/reset-android.bat` | Regenera `android/` limpio (Windows) |
+| `scripts/local.properties.example` | Plantilla de ruta del SDK |
 
 ---
 
