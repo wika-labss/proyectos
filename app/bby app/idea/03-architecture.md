@@ -244,15 +244,25 @@ App inicia
   → useFlashAvailability
     → Platform !== android → flashAvailable = false
     → requestPermission() denegado → flashAvailable = false
-    → CameraView.isAvailableAsync() === false → flashAvailable = false
-    → OK → storage.load() → setIntensity → flashAvailable = true
+    → permiso concedido → storage.load() → setIntensity → flashAvailable = true
+    → cualquier excepción → flashAvailable = false
+  → El bloque finally siempre marca loaded = true y checking = false
   → Si flashAvailable: TorchProvider monta CameraView + pantalla principal
   → Si no: pantalla fallback con botón "Reintentar" → requestRecheck()
      → incrementa recheckToken → re-ejecuta la detección
 
-CameraView.onMountError (cámara ocupada por otra app)
+CameraView.onMountError (sin flash LED, o cámara ocupada por otra app)
   → apaga torch + markCameraUnavailable() → pantalla fallback
 ```
+
+> **No usar `CameraView.isAvailableAsync()`**: está marcada `@platform web` y el módulo nativo de
+> Android no la implementa, así que lanza `UnavailabilityError`. Android no expone ninguna API JS
+> para consultar la presencia del LED, por lo que la disponibilidad se asume al conceder el permiso
+> y se degrada mediante `onMountError`.
+
+> **El gate de carga debe resolverse siempre.** `AppShell` muestra un spinner mientras
+> `checking || !loaded`. Si la detección lanza y no hay `try/finally`, la promesa queda rechazada,
+> el estado nunca avanza y la app se queda cargando indefinidamente en el dispositivo.
 
 ### Salida de la app
 
