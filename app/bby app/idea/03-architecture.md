@@ -12,7 +12,7 @@
 | Persistencia | AsyncStorage (intensidad, último modo) |
 | Estilos | StyleSheet nativo + tokens góticos en `src/constants/theme.ts` |
 | Utilidades | `expo-keep-awake` (pantalla activa), `expo-haptics` (feedback) |
-| Build | Prebuild local → APK debug (Android) |
+| Build | Prebuild local → APK release autónomo (Android) |
 
 > Manifiesto completo de dependencias: ver `06-build-environment.md`
 
@@ -90,10 +90,12 @@
 | Perfil | Target esta iteración | Pipeline |
 |--------|----------------------|----------|
 | DEV (Expo Go) | [ ] | `npx expo start` — torch limitado en Expo Go |
-| BUILD (APK local) | [x] | `prebuild` + Gradle → **target v1** |
-| RELEASE (EAS) | [ ] | `eas build` — futuro |
+| BUILD (APK local) | [x] | `prebuild` + `assembleRelease` → **target v1** |
+| RELEASE (EAS) | [ ] | `eas build` + keystore propio — futuro |
 
-> v1 requiere perfil **BUILD** porque el control del flash LED debe probarse en dispositivo físico con APK nativo.
+> v1 requiere perfil **BUILD** porque el control del flash LED debe probarse en dispositivo físico.
+> El entregable es el APK **release** (`npm run apk`): lleva el bundle Hermes embebido y funciona
+> sin servidor Metro. El APK debug solo sirve para desarrollo con hot reload.
 
 ---
 

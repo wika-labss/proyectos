@@ -54,7 +54,7 @@ La iteración **no se considera completa** sin pasar:
 | 3 | Bundle JS | `npx expo export --platform android` → sin errores |
 | 4 | Prebuild | `npx expo prebuild --platform android` → sin errores |
 | 5 | SDK | `android/local.properties` escrito **después** de prebuild |
-| 6 | APK | `./gradlew assembleDebug` → BUILD SUCCESSFUL |
+| 6 | APK | `./gradlew assembleRelease` → BUILD SUCCESSFUL |
 
 ---
 
@@ -140,8 +140,8 @@ iterations/v1/
 
 - [ ] `expo-build-properties` configurado en app.json
 - [ ] Kotlin 1.9.25 fijado
-- [ ] APK debug compila sin errores
-- [ ] APK instala y corre en dispositivo Android físico
+- [ ] APK release compila sin errores
+- [ ] El APK release instala y corre en dispositivo físico **sin servidor Metro**
 
 ---
 

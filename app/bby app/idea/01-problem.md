@@ -35,4 +35,4 @@ Crear una aplicación de linterna para Android que controle el flash LED del tel
 - [ ] La interfaz sigue el estilo gótico definido en `04-design.md` (negro, morado, rojo oscuro, botones blancos)
 - [ ] La app funciona sin conexión a internet
 - [ ] Un usuario puede encender la linterna en menos de 2 toques desde abrir la app
-- [ ] El APK debug compila e instala correctamente en dispositivo físico Android
+- [ ] El APK **release** compila, se instala por sideload y funciona en el teléfono sin PC ni servidor Metro

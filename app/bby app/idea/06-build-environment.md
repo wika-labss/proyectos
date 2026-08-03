@@ -161,11 +161,42 @@ cd android && ./gradlew assembleDebug
 > Si el directorio `android/` solo contiene `local.properties`, prebuild lo considera un
 > proyecto malformado, lo borra y Gradle falla con `SDK location not found`.
 
-Instalar en dispositivo físico:
+### APK autónomo (entregable v1)
+
+El APK **debug** no sirve como entregable: carga el bundle JS desde el servidor Metro, así que
+sin `npx expo start` en la misma red la app muestra pantalla roja. El entregable es el APK
+**release**, que lleva el bundle Hermes embebido y arranca sin PC.
+
+| Variante | Bundle JS | Necesita Metro | Uso |
+|----------|-----------|----------------|-----|
+| `assembleDebug` | Remoto | Sí | Desarrollo con hot reload |
+| `assembleRelease` | Embebido en el APK | **No** | **Entregable: instalar y usar en el teléfono** |
 
 ```bash
-adb install android/app/build/outputs/apk/debug/app-debug.apk
+npm run apk        # Linux/macOS/Git Bash
+npm run apk:win    # Windows (CMD/PowerShell)
 ```
+
+El script encadena prebuild, `post-prebuild.js`, escritura de `local.properties` y
+`gradlew assembleRelease`. Resultado:
+
+```text
+android/app/build/outputs/apk/release/app-release.apk
+```
+
+Instalar en el dispositivo:
+
+```bash
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+```
+
+O copiar el `.apk` al teléfono y abrirlo con **Instalar apps desconocidas** habilitado.
+
+### Firma
+
+`expo prebuild` genera `android/app/debug.keystore` y el buildType `release` lo reutiliza. Eso
+basta para instalar por sideload, pero **no sirve para publicar en Play Store**: allí hace falta
+un keystore propio y un `signingConfig` dedicado. Fuera de alcance en v1 (perfil RELEASE/EAS).
 
 ### Nota sobre `package.json`
 
@@ -198,8 +229,9 @@ Ninguna iteración se considera completa sin pasar:
 | Bundle JS | `npx expo export --platform android` | Empaqueta sin errores de import |
 | Prebuild | `npx expo prebuild --platform android` | Genera `android/` sin errores |
 | SDK | `android/local.properties` o `ANDROID_HOME` | Ruta válida al SDK |
-| APK debug | `cd android && ./gradlew assembleDebug` | BUILD SUCCESSFUL |
-| Prueba física | Instalar APK en dispositivo Android | Flash enciende/apaga, SOS parpadea |
+| APK release | `cd android && ./gradlew assembleRelease` | BUILD SUCCESSFUL |
+| Autonomía | Instalar el APK release con el PC apagado | La app arranca sin Metro |
+| Prueba física | Usar la app en dispositivo Android | Flash enciende/apaga, SOS parpadea |
 
 > `npx expo export` se añade como gate porque `tsc` no detecta imports rotos en tiempo de
 > ejecución; el bundle sí.
@@ -213,6 +245,8 @@ Incluir en cada iteración:
 | Script | Propósito |
 |--------|-----------|
 | `scripts/verify-build.sh` | Ejecuta todos los gates en orden (`npm run verify`) |
+| `scripts/build-apk.sh` | Genera el APK release autónomo (`npm run apk`) |
+| `scripts/build-apk.bat` | Igual, para Windows (`npm run apk:win`) |
 | `scripts/post-prebuild.js` | Fija Kotlin 1.9.25 tras cada prebuild |
 | `scripts/reset-android.bat` | Regenera `android/` limpio (Windows) |
 | `scripts/local.properties.example` | Plantilla de ruta del SDK |
