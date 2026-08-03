@@ -81,7 +81,7 @@ Obligatorio si perfil BUILD o RELEASE:
             "minSdkVersion": 24
           },
           "ios": {
-            "deploymentTarget": "15.0"
+            "deploymentTarget": "15.1"
           }
         }
       ]
