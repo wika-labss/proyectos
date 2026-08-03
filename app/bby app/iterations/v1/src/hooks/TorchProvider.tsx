@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { CameraView } from 'expo-camera';
 import { IntensityController } from '../engine/intensityController';
@@ -13,34 +13,38 @@ const TorchContext = createContext<TorchContextValue | null>(null);
 interface TorchProviderProps {
   children: React.ReactNode;
   cameraReady: boolean;
+  onCameraUnavailable?: () => void;
 }
 
-export function TorchProvider({ children, cameraReady }: TorchProviderProps) {
+// Minimum preview size so Android keeps the camera session active for torch control.
+const CAMERA_PREVIEW_SIZE = 100;
+
+export function TorchProvider({ children, cameraReady, onCameraUnavailable }: TorchProviderProps) {
   const [torchOn, setTorchOn] = useState(false);
   const intensityControllerRef = useRef<IntensityController | null>(null);
 
+  const setTorchState = useCallback((enabled: boolean) => {
+    setTorchOn(enabled);
+  }, []);
+
+  useEffect(() => {
+    intensityControllerRef.current = new IntensityController({ setTorchState });
+  }, [setTorchState]);
+
   const controller = useMemo<TorchController>(
-    () => {
-      const base = {
-        setTorch: (enabled: boolean) => {
-          intensityControllerRef.current?.stop();
-          setTorchOn(enabled);
-        },
-        stopIntensity: () => {
-          intensityControllerRef.current?.stop();
-        },
-      };
-
-      intensityControllerRef.current = new IntensityController({ setTorch: base.setTorch });
-
-      return {
-        ...base,
-        applyIntensity: (intensity: number) => {
-          intensityControllerRef.current?.apply(intensity);
-        },
-      };
-    },
-    [],
+    () => ({
+      setTorch: (enabled: boolean) => {
+        intensityControllerRef.current?.stop();
+        setTorchState(enabled);
+      },
+      applyIntensity: (intensity: number) => {
+        intensityControllerRef.current?.apply(intensity);
+      },
+      stopIntensity: () => {
+        intensityControllerRef.current?.stop();
+      },
+    }),
+    [setTorchState],
   );
 
   const value = useMemo<TorchContextValue>(
@@ -51,11 +55,20 @@ export function TorchProvider({ children, cameraReady }: TorchProviderProps) {
     [cameraReady, controller],
   );
 
+  const handleMountError = useCallback(() => {
+    onCameraUnavailable?.();
+  }, [onCameraUnavailable]);
+
   return (
     <TorchContext.Provider value={value}>
       {cameraReady ? (
         <View pointerEvents="none" style={styles.hiddenCamera}>
-          <CameraView facing="back" enableTorch={torchOn} style={styles.camera} />
+          <CameraView
+            facing="back"
+            enableTorch={torchOn}
+            style={styles.camera}
+            onMountError={handleMountError}
+          />
         </View>
       ) : null}
       {children}
@@ -74,13 +87,15 @@ export function useTorchController(): TorchContextValue {
 const styles = StyleSheet.create({
   hiddenCamera: {
     position: 'absolute',
-    width: 1,
-    height: 1,
-    opacity: 0,
+    left: -CAMERA_PREVIEW_SIZE,
+    top: -CAMERA_PREVIEW_SIZE,
+    width: CAMERA_PREVIEW_SIZE,
+    height: CAMERA_PREVIEW_SIZE,
+    opacity: 0.01,
     overflow: 'hidden',
   },
   camera: {
-    width: 1,
-    height: 1,
+    width: CAMERA_PREVIEW_SIZE,
+    height: CAMERA_PREVIEW_SIZE,
   },
 });

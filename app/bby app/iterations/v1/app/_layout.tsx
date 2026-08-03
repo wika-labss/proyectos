@@ -8,7 +8,7 @@ import { useFlashAvailability } from '../src/hooks/useFlashAvailability';
 import { useTorchStore } from '../src/stores/torchStore';
 
 function AppShell({ children }: { children: React.ReactNode }) {
-  const { checking, cameraReady } = useFlashAvailability();
+  const { checking, cameraReady, markCameraUnavailable } = useFlashAvailability();
   const loaded = useTorchStore((state) => state.loaded);
 
   if (checking || !loaded) {
@@ -19,7 +19,11 @@ function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <TorchProvider cameraReady={cameraReady}>{children}</TorchProvider>;
+  return (
+    <TorchProvider cameraReady={cameraReady} onCameraUnavailable={markCameraUnavailable}>
+      {children}
+    </TorchProvider>
+  );
 }
 
 export default function RootLayout() {

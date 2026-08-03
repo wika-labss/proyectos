@@ -29,7 +29,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Permite a BBY Light controlar el flash de tu teléfono."
+          "cameraPermission": "Permite a BBY Light controlar el flash de tu teléfono.",
+          "recordAudioAndroid": false
         }
       ],
       [

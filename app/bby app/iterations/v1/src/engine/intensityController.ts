@@ -2,11 +2,15 @@ import type { TorchController } from '../types';
 
 const PWM_PERIOD_MS = 20;
 
+interface IntensityControllerDeps {
+  setTorchState: (enabled: boolean) => void;
+}
+
 export class IntensityController {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
   private running = false;
 
-  constructor(private readonly controller: Pick<TorchController, 'setTorch'>) {}
+  constructor(private readonly deps: IntensityControllerDeps) {}
 
   apply(intensity: number): void {
     this.stop();
@@ -14,12 +18,12 @@ export class IntensityController {
     const clamped = Math.max(0, Math.min(100, Math.round(intensity)));
 
     if (clamped <= 0) {
-      this.controller.setTorch(false);
+      this.deps.setTorchState(false);
       return;
     }
 
     if (clamped >= 100) {
-      this.controller.setTorch(true);
+      this.deps.setTorchState(true);
       return;
     }
 
@@ -28,7 +32,7 @@ export class IntensityController {
     let isOn = true;
 
     this.running = true;
-    this.controller.setTorch(true);
+    this.deps.setTorchState(true);
 
     const tick = () => {
       if (!this.running) {
@@ -36,7 +40,7 @@ export class IntensityController {
       }
 
       isOn = !isOn;
-      this.controller.setTorch(isOn);
+      this.deps.setTorchState(isOn);
       const delay = isOn ? onDuration : offDuration;
       this.timeoutId = setTimeout(tick, delay);
     };
@@ -54,6 +58,6 @@ export class IntensityController {
 
   turnOff(): void {
     this.stop();
-    this.controller.setTorch(false);
+    this.deps.setTorchState(false);
   }
 }
