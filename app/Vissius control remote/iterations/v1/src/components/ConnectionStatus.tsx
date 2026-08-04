@@ -27,18 +27,8 @@ function getLabel(state: ConnectionState, deviceName?: string): string {
 }
 
 export function ConnectionStatus({ state, deviceName, error }: ConnectionStatusProps) {
-  const isError = state === 'error' || state === 'disconnected';
-  const isOk = state === 'connected';
-
   return (
-    <View
-      style={[
-        styles.banner,
-        isOk && styles.ok,
-        isError && styles.error,
-        state === 'connecting' && styles.pending,
-      ]}
-    >
+    <View style={styles.banner}>
       <Text style={styles.text}>{getLabel(state, deviceName)}</Text>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
@@ -51,15 +41,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  ok: {
-    backgroundColor: colors.backgroundStrong,
-  },
-  error: {
-    backgroundColor: colors.backgroundStrong,
-  },
-  pending: {
-    backgroundColor: colors.backgroundStrong,
-  },
   text: {
     color: colors.textOnStrong,
     fontSize: 14,
@@ -69,6 +50,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.textOnStrong,
     fontSize: 12,
+    fontWeight: '400',
     marginTop: 4,
     opacity: 0.9,
     textAlign: 'center',

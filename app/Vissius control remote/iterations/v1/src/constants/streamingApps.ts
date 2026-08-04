@@ -12,3 +12,7 @@ export const STREAMING_APPS: StreamingAppDefinition[] = [
   { id: 'youtube', label: 'YouTube', command: 'launch_youtube' },
   { id: 'crunchyroll', label: 'Crunchyroll', command: 'launch_crunchyroll' },
 ];
+
+export function getStreamingAppLabel(id: StreamingAppId): string {
+  return STREAMING_APPS.find((app) => app.id === id)?.label ?? id;
+}

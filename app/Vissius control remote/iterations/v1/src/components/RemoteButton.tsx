@@ -15,23 +15,32 @@ interface RemoteButtonProps extends Omit<PressableProps, 'style'> {
   compact?: boolean;
 }
 
-export function RemoteButton({ label, style, compact = false, ...props }: RemoteButtonProps) {
+export function RemoteButton({
+  label,
+  style,
+  compact = false,
+  disabled = false,
+  ...props
+}: RemoteButtonProps) {
   const [pressed, setPressed] = useState(false);
 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
+      disabled={disabled}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       style={[
         styles.button,
         compact ? styles.compact : styles.regular,
-        pressed && styles.pressed,
+        pressed && !disabled && styles.pressed,
+        disabled && styles.disabled,
         style,
       ]}
       {...props}
     >
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, disabled && styles.labelDisabled]}>{label}</Text>
     </Pressable>
   );
 }
@@ -56,11 +65,18 @@ const styles = StyleSheet.create({
   pressed: {
     backgroundColor: colors.buttonPressed,
     opacity: 0.85,
+    transform: [{ scale: 0.97 }],
+  },
+  disabled: {
+    opacity: 0.45,
   },
   label: {
     color: colors.buttonText,
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  labelDisabled: {
+    color: colors.buttonText,
   },
 });
