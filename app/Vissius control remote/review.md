@@ -105,19 +105,6 @@ Auditoría ejecutada **después de la generación de código**, según ciclo WIK
 
 ---
 
-## Veredicto
-
-- [ ] Aprobado — generar versión final en `final/`
-- [x] **Requiere refinamiento** — continuar con Auditoría 3 (diseño y UX)
-
-## Acciones requeridas (post auditoría 2)
-
-1. Ejecutar **Auditoría 3** — revisar diseño vs `04-design.md` y flujos de usuario
-2. v2: perfil BUILD + protocolo WiFi real con televisor físico
-3. Considerar logos oficiales de streaming apps (licencia) en iteración futura
-
----
-
 ## Auditoría 2 — Motores y hooks (v1)
 
 ### Resumen
@@ -158,7 +145,7 @@ Auditoría ejecutada **después de la generación de código**, según ciclo WIK
 
 ---
 
-## Veredicto (actualizado)
+## Veredicto
 
 - [ ] Aprobado — generar versión final en `final/`
 - [x] **Requiere refinamiento** — continuar con Auditoría 3 (diseño y UX)
