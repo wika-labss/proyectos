@@ -71,6 +71,8 @@ La iteración **no se considera completa** sin pasar:
 - **Apagar flash al salir** — cleanup en unmount y en `AppState` background: apagar torch y cancelar SOS
 - **Sin timers huérfanos** — todo `setTimeout`/PWM debe limpiarse al desmontar su dueño
 - **Detección de hardware** — pantalla fallback con botón "Reintentar" si no hay flash LED
+- **Prohibido `CameraView.isAvailableAsync()`** — es `@platform web` y lanza `UnavailabilityError` en Android
+- **Gates de carga a prueba de fallos** — cualquier `async` que controle un spinner debe cerrar su estado en un `finally`; si no, la app se cuelga en la pantalla de carga
 
 ---
 
@@ -142,6 +144,7 @@ iterations/v1/
 - [ ] Kotlin 1.9.25 fijado
 - [ ] APK release compila sin errores
 - [ ] El APK release instala y corre en dispositivo físico **sin servidor Metro**
+- [ ] La app supera la pantalla de carga y muestra la interfaz en menos de 3 segundos
 
 ---
 

@@ -6,7 +6,7 @@
 - [ ] **Control de intensidad** — Slider o selector para regular la intensidad de la luz (0–100%)
 - [ ] **Modo SOS** — Señal de emergencia con patrón Morse internacional: `··· ——— ···` (3 cortos, 3 largos, 3 cortos), repetido en bucle
 - [ ] **Indicador de estado** — Feedback visual claro: linterna apagada, encendida continua o en modo SOS
-- [ ] **Detección de hardware** — Verificar disponibilidad de flash al iniciar; pantalla informativa con botón **Reintentar** si el dispositivo no tiene LED, la cámara está ocupada o falta el permiso
+- [ ] **Detección de hardware** — La disponibilidad se asume al conceder el permiso de cámara y se degrada si `CameraView` falla al montarse (sin LED o cámara ocupada). Pantalla informativa con botón **Reintentar**. Android no ofrece ninguna API JS para consultar la presencia del flash
 - [ ] **Persistencia de preferencias** — Recordar última intensidad seleccionada entre sesiones (guardado con debounce de 400 ms)
 
 ## Modo SOS — Especificación técnica

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useCameraPermissions } from 'expo-camera';
 import { useTorchStore } from '../stores/torchStore';
 import { loadPreferences } from '../utils/storage';
 
@@ -17,52 +17,36 @@ export function useFlashAvailability() {
   useEffect(() => {
     let active = true;
 
-    const finish = (available: boolean) => {
-      if (!active) {
-        return;
-      }
-      setFlashAvailable(available);
-      setLoaded(true);
-      setChecking(false);
-    };
-
+    // Android has no JS-level API to query for a flash LED: expo-camera's
+    // isAvailableAsync is web-only and throws here. Availability is assumed once
+    // the permission is granted, and CameraView.onMountError demotes it later.
     async function initialize() {
       setChecking(true);
+      let available = false;
 
-      if (Platform.OS !== 'android') {
-        finish(false);
-        return;
-      }
+      try {
+        if (Platform.OS === 'android') {
+          const granted = permission?.granted || (await requestPermission()).granted;
 
-      if (!permission?.granted) {
-        const result = await requestPermission();
-        if (!active) {
-          return;
+          if (active && granted) {
+            const preferences = await loadPreferences();
+
+            if (active) {
+              setIntensity(preferences.intensity);
+              available = true;
+            }
+          }
         }
-
-        if (!result.granted) {
-          finish(false);
-          return;
+      } catch {
+        available = false;
+      } finally {
+        // Always resolves the loading gate, otherwise the app hangs on the spinner.
+        if (active) {
+          setFlashAvailable(available);
+          setLoaded(true);
+          setChecking(false);
         }
       }
-
-      const cameraAvailable = await CameraView.isAvailableAsync();
-      if (!active) {
-        return;
-      }
-
-      if (!cameraAvailable) {
-        finish(false);
-        return;
-      }
-
-      const preferences = await loadPreferences();
-      if (!active) {
-        return;
-      }
-
-      setIntensity(preferences.intensity);
-      finish(true);
     }
 
     void initialize();
