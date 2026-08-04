@@ -6,7 +6,7 @@
 |------|------------|
 | Framework móvil | **React Native + Expo SDK 52** |
 | Lenguaje | TypeScript (strict mode) |
-| Navegación | Expo Router (pantalla única en v1) |
+| Navegación | Expo Router (pantalla única en v2) |
 | Control de flash | `expo-camera` (torch mode) |
 | Estado global | Zustand |
 | Persistencia | AsyncStorage (intensidad, último modo) |
@@ -90,10 +90,10 @@
 | Perfil | Target esta iteración | Pipeline |
 |--------|----------------------|----------|
 | DEV (Expo Go) | [ ] | `npx expo start` — torch limitado en Expo Go |
-| BUILD (APK local) | [x] | `prebuild` + `assembleRelease` → **target v1** |
+| BUILD (APK local) | [x] | `prebuild` + `assembleRelease` → **target v2** |
 | RELEASE (EAS) | [ ] | `eas build` + keystore propio — futuro |
 
-> v1 requiere perfil **BUILD** porque el control del flash LED debe probarse en dispositivo físico.
+> v2 requiere perfil **BUILD** porque el control del flash LED debe probarse en dispositivo físico.
 > El entregable es el APK **release** (`npm run apk`): lleva el bundle Hermes embebido y funciona
 > sin servidor Metro. El APK debug solo sirve para desarrollo con hot reload.
 
@@ -104,7 +104,7 @@
 ```text
 app/bby app/
 ├── idea/
-├── iterations/v1/
+├── iterations/v2/
 │   ├── app/
 │   │   ├── _layout.tsx            # Layout raíz + providers
 │   │   └── index.tsx              # Pantalla principal (linterna)
@@ -155,7 +155,7 @@ app/bby app/
 - **intensityController.ts** — PWM software sobre el torch. Período 20 ms, pulsos acotados a
   `[4 ms, 16 ms]` porque los timers de RN no bajan de ~4 ms. Duty cycle efectivo 20–80%;
   0% apaga y 100% enciende de forma continua. Torch strength nativo (Android 13+) queda fuera
-  de v1.
+  de v2.
 - **sosPattern.ts** — Array de pasos `{ action: 'on' | 'off', durationMs: number }` con el patrón
   Morse completo, incluidas las pausas entre letras (600 ms) y entre ciclos (1200 ms).
 - **useSosPattern.ts** — Ejecuta el patrón en bucle con `setTimeout` encadenados; cancela y apaga
@@ -280,16 +280,16 @@ AppState → background / inactive (o desmontaje)
 | Decisión | Elección | Justificación |
 |----------|----------|---------------|
 | React Native + Expo SDK 52 | Sí | Stack WIKA estándar; `expo-camera` expone torch |
-| Solo Android v1 | Sí | Requisito del proyecto; simplifica permisos y testing |
+| Solo Android v2 | Sí | Requisito del proyecto; simplifica permisos y testing |
 | expo-camera para torch | Sí | API Expo oficial; evita módulos nativos custom |
 | PWM software para intensidad | Sí | Único mecanismo disponible sin módulo nativo; duty efectivo 20–80% |
-| Torch strength nativo | No (v1) | Requiere módulo nativo custom; prohibido por `05-prompt-ia.md` |
+| Torch strength nativo | No (v2) | Requiere módulo nativo custom; prohibido por `05-prompt-ia.md` |
 | `recordAudioAndroid: false` | Sí | Evita el permiso `RECORD_AUDIO` que el plugin añade por defecto |
 | CameraView 100×100 oculta | Sí | Un preview de 1×1 no activa el LED en varios dispositivos |
 | `useTorch` como API única | Sí | Evita controlar el hardware desde tres capas distintas |
 | Zustand | Sí | Estado simple (mode + intensity); mínimo boilerplate |
 | Pantalla única | Sí | App de utilidad; no requiere navegación multi-pantalla |
-| Perfil BUILD v1 | Sí | Flash LED requiere APK nativo en dispositivo físico |
+| Perfil BUILD v2 | Sí | Flash LED requiere APK nativo en dispositivo físico |
 | AsyncStorage | Sí | Solo se persiste intensidad; no requiere SQLite |
 | expo-keep-awake | Sí | Evita que la pantalla se apague mientras la linterna está activa |
 | TypeScript strict | Sí | Seguridad de tipos en lógica de timing SOS crítica |

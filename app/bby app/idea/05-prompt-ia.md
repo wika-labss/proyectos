@@ -2,7 +2,7 @@
 
 ## Instrucciones para el agente
 
-Genera la aplicación **bby app** (linterna gótica Android) basada en la documentación del proyecto. El código debe generarse en `iterations/v1/`.
+Genera la aplicación **bby app** (linterna gótica Android) basada en la documentación del proyecto. El código debe generarse en `iterations/v2/`.
 
 ---
 
@@ -13,7 +13,7 @@ Genera la aplicación **bby app** (linterna gótica Android) basada en la docume
 3. Implementar funcionalidades de `02-features.md` por prioridad (P0 primero)
 4. Respetar diseño gótico de `04-design.md` — paleta negro/morado/rojo oscuro, botones blancos
 5. Código limpio, TypeScript strict, sin `any`
-6. **Solo Android v1** — no generar código iOS
+6. **Solo Android v2** — no generar código iOS
 
 ---
 
@@ -65,7 +65,7 @@ La iteración **no se considera completa** sin pasar:
 - **Intensidad 0–100** — slider con valor entero; PWM software con duty efectivo 20–80%
 - **Una sola vía de control** — la UI solo usa `useTorch`; prohibido llamar a `torchStore.setMode` o al `TorchController` desde pantallas
 - **Persistencia con debounce** — no escribir en AsyncStorage en cada evento de arrastre
-- **Pantalla única** — no crear navegación multi-pantalla en v1
+- **Pantalla única** — no crear navegación multi-pantalla en v2
 - **Estilo gótico obligatorio** — usar tokens de `src/constants/theme.ts`; no colores genéricos
 - **Botones blancos** — fondo `#FFFFFF`, texto/icono oscuro
 - **Apagar flash al salir** — cleanup en unmount y en `AppState` background: apagar torch y cancelar SOS
@@ -79,7 +79,7 @@ La iteración **no se considera completa** sin pasar:
 ## Resultado esperado
 
 ```text
-iterations/v1/
+iterations/v2/
 ├── app/
 │   ├── _layout.tsx
 │   └── index.tsx
