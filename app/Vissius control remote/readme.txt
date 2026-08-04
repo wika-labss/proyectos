@@ -3,20 +3,24 @@ Vissius Control Remote
 
 Proyecto WIKA — mando remoto WiFi para televisor.
 
-Estado: v1 DEV generada y aprobada (Auditorías 1–3 ✅)
+Perfil v1: BUILD — APK release autonomo (sin Metro, sin Expo Go)
 
-Ejecutar v1 (Expo Go):
-  cd "app/Vissius control remote/iterations/v1"
+Generar APK (Windows):
+  cd "app\Vissius control remote\iterations\v1"
+  set "JAVA_HOME=C:\Program Files\Android\Android Studio\jbr"
+  set "ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk"
+  set "Path=%JAVA_HOME%\bin;%ANDROID_HOME%\platform-tools;%Path%"
   npm install
   npx expo install --fix
-  npx expo start
+  npm run apk:win
 
-Verificar gates WIKA:
-  npm run verify
+APK resultante:
+  iterations\v1\android\app\build\outputs\apk\release\app-release.apk
 
-Pantallas:
-  - Emparejamiento WiFi (mock)
-  - Mando: navegación + volumen
-  - Apps: Netflix, HBO, YouTube, Crunchyroll
+Instalar en telefono:
+  adb install -r android\app\build\outputs\apk\release\app-release.apk
 
-Próximo paso WIKA: v2 (BUILD + TV real en LAN)
+Verificar todos los gates WIKA:
+  npm run verify:win
+
+Estado: v1 BUILD — Auditorias re-ejecutadas

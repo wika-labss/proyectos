@@ -41,3 +41,4 @@ Crear una aplicación móvil que permita **conectar y emparejar** el teléfono c
 - [ ] Existe una segunda pantalla con acceso directo a Netflix, HBO, YouTube y Crunchyroll
 - [ ] La interfaz usa la paleta definida en `04-design.md` (fondos `#F7B9AD` / `#E83A17`, botones negros con texto blanco)
 - [ ] La TV emparejada se recuerda al reabrir la app
+- [ ] El APK **release** compila, se instala por sideload y funciona en el teléfono sin PC ni servidor Metro
