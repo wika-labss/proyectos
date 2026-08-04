@@ -18,7 +18,7 @@ Arquitecto WIKA / Cloud Agent
 
 | Iteración | Estado | Notas |
 |-----------|--------|-------|
-| **v1** | **En curso** | Generación ✅ · Auditoría 1 ✅ · Auditoría 2 ✅ · Auditoría 3 pendiente |
+| **v1** | **En curso** | Generación ✅ · Auditoría 1 ✅ · Auditoría 2 ✅ · Auditoría 3 ✅ |
 
 ---
 
@@ -145,13 +145,54 @@ Auditoría ejecutada **después de la generación de código**, según ciclo WIK
 
 ---
 
+## Auditoría 3 — Diseño y UX (v1)
+
+### Resumen
+
+Auditoría ejecutada **después de auditorías 1 y 2**, según ciclo WIKA. Se revisó cumplimiento de `04-design.md`: paleta, componentes, pantallas, flujos de usuario y accesibilidad táctil. Perfil **DEV** — sin gate de dispositivo físico.
+
+| Ámbito | Resultado v1 |
+|--------|--------------|
+| Paleta `#F7B9AD` / `#E83A17` solo en fondos | ✅ |
+| Botones negro `#000000` / blanco `#FFFFFF` | ✅ |
+| Pad navegación 56×56 dp mínimo | ✅ 64×64 dp |
+| Apps grid 2×2, altura ≥ 64 dp | ✅ |
+| Tabs Mando / Apps separados | ✅ |
+| Flujo emparejamiento → mando → apps | ✅ |
+| Sin gradientes ni sombras | ✅ |
+| Gates DEV post-fix | ✅ 18/18, tsc, export 933 módulos |
+
+---
+
+### Checklist auditoría 3
+
+| # | Severidad | Error potencial | v1 | Fix / evidencia |
+|---|-----------|-----------------|----|-----------------|
+| 23 | 🟠 Alto | Tab bar todo `#E83A17` — tab inactivo ilegible | ✅ fix | `(tabs)/_layout.tsx` → activo `#E83A17`, inactivo `#F7B9AD`, texto negro/blanco |
+| 24 | 🟡 Medio | Botones disabled parecen activos | ✅ fix | `RemoteButton` → `opacity: 0.45` + `accessibilityState` |
+| 25 | 🟡 Medio | App activa muestra id (`netflix`) no label | ✅ fix | `getStreamingAppLabel()` en `remote.tsx` |
+| 26 | 🟢 Bajo | Press sin animación scale 0.97 | ✅ fix | `RemoteButton` pressed → `scale: 0.97`, opacity 0.85 |
+| 27 | 🟢 Bajo | Tipografía header tabs sin peso 700 | ✅ fix | `headerTitleStyle: { fontWeight: '700' }` |
+| 28 | 🟢 Bajo | Labels error sin peso 400 | ✅ fix | `ConnectionStatus` errorText fontWeight 400 |
+| 29 | — | Emparejamiento: header rojo + cuerpo coral | ✅ | `index.tsx` |
+| 30 | — | Vol + / Vol − labels | ✅ | `VolumeControls.tsx` |
+| 31 | — | Cuatro apps Netflix/HBO/YouTube/Crunchyroll | ✅ | `apps.tsx` + `streamingApps.ts` |
+| 32 | — | Flujo reconexión automática + Reintentar | ✅ | `tvStore.load()` + botón en index/remote |
+| 33 | — | Pad visible sin scroll en mando | ✅ | `remote.tsx` flex center, sin ScrollView |
+| 34 | ⚠️ | Prueba Expo Go en dispositivo físico | pendiente | Requiere teléfono del usuario |
+| 35 | ⚠️ | TV real en LAN | pendiente | Target v2 BUILD |
+
+**Resultado auditoría 3:** ✅ **APROBADA** (con 6 fixes aplicados)
+
+---
+
 ## Veredicto
 
-- [ ] Aprobado — generar versión final en `final/`
-- [x] **Requiere refinamiento** — continuar con Auditoría 3 (diseño y UX)
+- [x] **v1 DEV aprobada** — iteración mock completa para Expo Go
+- [ ] Versión final en `final/` — pendiente v2 (BUILD + TV real en LAN)
 
-## Acciones requeridas (post auditoría 2)
+## Acciones requeridas (post auditoría 3)
 
-1. Ejecutar **Auditoría 3** — revisar diseño vs `04-design.md` y flujos de usuario
-2. v2: perfil BUILD + protocolo WiFi real con televisor físico
-3. Considerar logos oficiales de streaming apps (licencia) en iteración futura
+1. Probar en **Expo Go** con dispositivo Android físico
+2. Generar **v2** con perfil BUILD + protocolo WiFi real + televisor en LAN
+3. Logos oficiales de streaming apps (licencia) — iteración futura
