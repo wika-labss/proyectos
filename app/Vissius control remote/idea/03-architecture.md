@@ -7,12 +7,12 @@
 | Framework móvil | **React Native + Expo SDK 52** |
 | Lenguaje | TypeScript (strict mode) |
 | Navegación | Expo Router (emparejamiento, mando, apps) |
-| Comunicación TV | WiFi LAN — protocolo de control remoto (mock en v1) |
+| Comunicación TV | WiFi LAN — **discovery real** (Vissius HTTP + Roku ECP) |
 | Estado global | Zustand |
 | Persistencia | AsyncStorage (TV emparejada, preferencias) |
 | Estilos | StyleSheet nativo + tokens en `src/constants/theme.ts` |
 | Utilidades | `expo-haptics` (feedback), `expo-network` (estado WiFi) |
-| Build | Prebuild local → **APK release** autónomo (Android) — **target v1** |
+| Build | Prebuild local → **APK release** autónomo (Android) — **target v2** |
 
 > Manifiesto completo de dependencias: ver `06-build-environment.md`
 
@@ -81,11 +81,11 @@
 
 | Perfil | Target esta iteración | Pipeline |
 |--------|----------------------|----------|
-| DEV (Expo Go) | [ ] | `npx expo start` — solo desarrollo UI opcional |
-| BUILD (APK release) | [x] | `prebuild` + `assembleRelease` → **target v1** |
+| DEV (Expo Go) | [ ] | Solo desarrollo UI opcional |
+| BUILD (APK release) | [x] | `prebuild` + `assembleRelease` → **target v2** |
 | RELEASE (EAS) | [ ] | `eas build` — futuro |
 
-> v1 requiere perfil **BUILD**. Entregable: APK release con bundle embebido, instalable por sideload.
+> v2 requiere perfil **BUILD**. v1 mock queda en `iterations/v1/` como referencia histórica.
 
 ---
 
@@ -94,27 +94,24 @@
 ```text
 app/Vissius control remote/
 ├── idea/
-├── iterations/v1/
+├── iterations/v2/
 │   ├── app/
-│   │   ├── _layout.tsx              # Layout raíz + tabs Mando/Apps
-│   │   ├── index.tsx                # Emparejamiento WiFi con TV
-│   │   ├── remote.tsx               # Pantalla mando (navegación + volumen)
-│   │   └── apps.tsx                 # Segunda pantalla — streaming apps
+│   │   ├── _layout.tsx
+│   │   ├── index.tsx                # Splash Vissiuss (negro)
+│   │   ├── pairing.tsx              # Emparejamiento LAN real
+│   │   └── (tabs)/
+│   │       ├── remote.tsx           # Mando + Cambiar TV
+│   │       └── apps.tsx
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── NavigationPad.tsx    # Pad direccional + OK + Atrás
-│   │   │   ├── VolumeControls.tsx   # Subir / bajar volumen
-│   │   │   ├── StreamingAppButton.tsx # Botón app individual
-│   │   │   ├── TvDeviceCard.tsx     # Tarjeta TV en lista emparejamiento
-│   │   │   ├── ConnectionStatus.tsx # Indicador conectado/desconectado
-│   │   │   └── RemoteButton.tsx     # Botón base negro/blanco reutilizable
-│   │   ├── hooks/
-│   │   │   ├── useTvConnection.ts   # Emparejamiento y conexión WiFi
-│   │   │   └── useRemoteCommand.ts  # Envío de comandos al televisor
 │   │   ├── engine/
-│   │   │   ├── tvRemoteApi.ts       # Cliente de comandos (nav, vol, apps)
-│   │   ├── discovery.ts             # Descubrimiento TVs en LAN
-│   │   │   └── mockTv.ts            # Mock TV para DEV
+│   │   │   ├── discovery.ts
+│   │   │   ├── lanDiscovery.ts      # Escaneo subred
+│   │   │   ├── tvRemoteApi.ts
+│   │   │   └── drivers/
+│   │   │       ├── vissiusDriver.ts # HTTP :8080
+│   │   │       └── rokuDriver.ts    # ECP :8060
+│   │   └── components/
+│   │       └── FeedbackBanner.tsx
 │   │   ├── stores/
 │   │   │   ├── tvStore.ts           # TV conectada, estado, error
 │   │   │   └── pairingStore.ts      # Lista TVs, emparejamiento
@@ -140,8 +137,8 @@ app/Vissius control remote/
 | Módulo | Responsabilidad |
 |--------|-----------------|
 | `tvRemoteApi.ts` | Envía comandos: `nav_up`, `nav_down`, `nav_left`, `nav_right`, `ok`, `back`, `vol_up`, `vol_down`, `launch_app` |
-| `discovery.ts` | Busca TVs en la red WiFi local |
-| `mockTv.ts` | Simula TV para desarrollo sin hardware |
+| `discovery.ts` + `lanDiscovery.ts` | Escaneo subred WiFi; drivers Vissius + Roku |
+| `drivers/*.ts` | Protocolo HTTP por marca/modelo |
 | `tvStore.ts` | Estado: conectado, TV emparejada, loading, error |
 | `NavigationPad` | UI del pad direccional |
 | `VolumeControls` | Botones vol + / vol − |
@@ -167,7 +164,7 @@ app/Vissius control remote/
 | `launch_youtube` | Abrir YouTube |
 | `launch_crunchyroll` | Abrir Crunchyroll |
 
-> Protocolo de transporte WiFi (HTTP, WebSocket, etc.) se definirá según modelo de TV. v1 usa mock.
+> v2: transporte HTTP LAN. Vissius `:8080/api/v1/*`, Roku ECP `:8060`. Más marcas en v3.
 
 ---
 
@@ -196,7 +193,7 @@ TV abre la app correspondiente
 | Decisión | Elección | Justificación |
 |----------|----------|---------------|
 | Dos pantallas | Tabs Mando / Apps | Separación clara de funciones según requerimiento |
-| Mock en DEV | `mockTv.ts` | Desarrollar UI sin TV física |
+| Mock en DEV | Eliminado en v2 discovery | v2 exige LAN real |
 | Botón base único | `RemoteButton.tsx` | Garantiza negro/blanco en todos los controles |
 | Estado | Zustand | Patrón WIKA validado |
 | Tema fijo | Sin dark mode | Paleta obligatoria en `04-design.md` |
