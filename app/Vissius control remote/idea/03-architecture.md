@@ -6,13 +6,13 @@
 |------|------------|
 | Framework móvil | **React Native + Expo SDK 52** |
 | Lenguaje | TypeScript (strict mode) |
-| Navegación | Expo Router (pantallas: conexión, control, ajustes) |
-| Comunicación | `fetch` nativo + polling HTTP (REST Vissius) |
+| Navegación | Expo Router (emparejamiento, mando, apps) |
+| Comunicación TV | WiFi LAN — protocolo de control remoto (mock en v1) |
 | Estado global | Zustand |
-| Persistencia | AsyncStorage (último dispositivo, preferencias) |
+| Persistencia | AsyncStorage (TV emparejada, preferencias) |
 | Estilos | StyleSheet nativo + tokens en `src/constants/theme.ts` |
-| Utilidades | `expo-haptics` (feedback), `expo-network` (estado de red) |
-| Build | Prebuild local → APK release autónomo (Android) |
+| Utilidades | `expo-haptics` (feedback), `expo-network` (estado WiFi) |
+| Build | Prebuild local → APK (target v2) |
 
 > Manifiesto completo de dependencias: ver `06-build-environment.md`
 
@@ -35,9 +35,8 @@
 |---------|---------|------|-------------|
 | `expo` | `~52.0.0` | Core | ✅ |
 | `expo-router` | `~4.0.0` | Navegación | ✅ |
-| `expo-network` | `~7.0.0` | Estado de red | ✅ |
+| `expo-network` | `~7.0.0` | Estado WiFi | ✅ |
 | `expo-haptics` | `~14.0.0` | Feedback táctil | ✅ |
-| `expo-system-ui` | `~4.0.9` | Tema oscuro | ✅ |
 | `expo-asset` | `~11.0.5` | Assets | ✅ |
 | `expo-build-properties` | `~0.13.0` | Build nativo | ✅ |
 | `@react-native-async-storage/async-storage` | `1.23.1` | Persistencia | ✅ |
@@ -82,12 +81,11 @@
 
 | Perfil | Target esta iteración | Pipeline |
 |--------|----------------------|----------|
-| DEV (Expo Go) | [x] | `npx expo start` — validar UI y flujos con mock API |
+| DEV (Expo Go) | [x] | `npx expo start` — UI + mock TV |
 | BUILD (APK local) | [ ] | `prebuild` + Gradle — target v2 |
 | RELEASE (EAS) | [ ] | `eas build` — futuro |
 
-> v1 usa perfil **DEV** con cliente HTTP mock para desarrollo sin hardware Vissius real.
-> v2 migrará a **BUILD** para APK en dispositivo físico en red LAN.
+> v1 usa perfil **DEV** con mock de TV para validar UI y flujos sin televisor real.
 
 ---
 
@@ -98,34 +96,35 @@ app/Vissius control remote/
 ├── idea/
 ├── iterations/v1/
 │   ├── app/
-│   │   ├── _layout.tsx            # Layout raíz + providers
-│   │   ├── index.tsx              # Pantalla de conexión / descubrimiento
-│   │   ├── control.tsx            # Panel de control remoto
-│   │   └── settings.tsx           # Configuración (IP, puerto)
+│   │   ├── _layout.tsx              # Layout raíz + tabs Mando/Apps
+│   │   ├── index.tsx                # Emparejamiento WiFi con TV
+│   │   ├── remote.tsx               # Pantalla mando (navegación + volumen)
+│   │   └── apps.tsx                 # Segunda pantalla — streaming apps
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── PowerButton.tsx    # Botón encender/apagar
-│   │   │   ├── ModeSelector.tsx   # Selector de modos
-│   │   │   ├── StatusPanel.tsx    # Estado del dispositivo
-│   │   │   ├── ParameterSlider.tsx # Slider de parámetros
-│   │   │   ├── ConnectionBanner.tsx # Banner conexión/desconexión
-│   │   │   └── DeviceCard.tsx     # Tarjeta dispositivo en lista
+│   │   │   ├── NavigationPad.tsx    # Pad direccional + OK + Atrás
+│   │   │   ├── VolumeControls.tsx   # Subir / bajar volumen
+│   │   │   ├── StreamingAppButton.tsx # Botón app individual
+│   │   │   ├── TvDeviceCard.tsx     # Tarjeta TV en lista emparejamiento
+│   │   │   ├── ConnectionStatus.tsx # Indicador conectado/desconectado
+│   │   │   └── RemoteButton.tsx     # Botón base negro/blanco reutilizable
 │   │   ├── hooks/
-│   │   │   ├── useDeviceConnection.ts  # Conexión y polling
-│   │   │   └── useStatusPolling.ts     # Polling /api/status
+│   │   │   ├── useTvConnection.ts   # Emparejamiento y conexión WiFi
+│   │   │   └── useRemoteCommand.ts  # Envío de comandos al televisor
 │   │   ├── engine/
-│   │   │   ├── vissiusApi.ts      # Cliente HTTP REST
-│   │   │   ├── discovery.ts       # Escaneo LAN (v1: mock + IP manual)
-│   │   │   └── mockDevice.ts      # Mock para DEV sin hardware
+│   │   │   ├── tvRemoteApi.ts       # Cliente de comandos (nav, vol, apps)
+│   │   ├── discovery.ts             # Descubrimiento TVs en LAN
+│   │   │   └── mockTv.ts            # Mock TV para DEV
 │   │   ├── stores/
-│   │   │   ├── deviceStore.ts     # Estado dispositivo y conexión
-│   │   │   └── settingsStore.ts   # IP, puerto, preferencias
+│   │   │   ├── tvStore.ts           # TV conectada, estado, error
+│   │   │   └── pairingStore.ts      # Lista TVs, emparejamiento
 │   │   ├── constants/
-│   │   │   └── theme.ts           # Tokens de diseño
+│   │   │   ├── theme.ts             # #F7B9AD, #E83A17, negro/blanco
+│   │   │   └── streamingApps.ts     # Netflix, HBO, YouTube, Crunchyroll
 │   │   ├── types/
-│   │   │   └── index.ts           # DeviceStatus, Mode, Command
+│   │   │   └── index.ts             # RemoteCommand, TvDevice, StreamingApp
 │   │   └── utils/
-│   │       └── storage.ts         # AsyncStorage helpers
+│   │       └── storage.ts
 │   ├── assets/
 │   ├── app.json
 │   ├── package.json
@@ -140,28 +139,54 @@ app/Vissius control remote/
 
 | Módulo | Responsabilidad |
 |--------|-----------------|
-| `vissiusApi.ts` | Cliente HTTP puro: GET status, POST power/mode/setpoint. Sin dependencia de React |
-| `discovery.ts` | Descubrimiento LAN; v1 incluye mock y entrada manual de IP |
-| `deviceStore.ts` | Estado global: conexión, power, mode, values, loading, error |
-| `useDeviceConnection.ts` | Orquesta conexión, envío de comandos y manejo de errores |
-| `useStatusPolling.ts` | Polling periódico de `/api/status` mientras conectado |
-| `StatusPanel` | UI de lectura del estado actual |
-| `PowerButton` / `ModeSelector` | Controles de acción principales |
+| `tvRemoteApi.ts` | Envía comandos: `nav_up`, `nav_down`, `nav_left`, `nav_right`, `ok`, `back`, `vol_up`, `vol_down`, `launch_app` |
+| `discovery.ts` | Busca TVs en la red WiFi local |
+| `mockTv.ts` | Simula TV para desarrollo sin hardware |
+| `tvStore.ts` | Estado: conectado, TV emparejada, loading, error |
+| `NavigationPad` | UI del pad direccional |
+| `VolumeControls` | Botones vol + / vol − |
+| `apps.tsx` | Segunda pantalla con 4 botones de streaming |
+| `RemoteButton` | Componente base: fondo `#000000`, texto `#FFFFFF` |
+
+---
+
+## Comandos remotos
+
+| Comando | Acción en TV |
+|---------|--------------|
+| `nav_up` | Mover foco arriba |
+| `nav_down` | Mover foco abajo |
+| `nav_left` | Mover foco izquierda |
+| `nav_right` | Mover foco derecha |
+| `ok` | Seleccionar / confirmar |
+| `back` | Retroceder |
+| `vol_up` | Subir volumen |
+| `vol_down` | Bajar volumen |
+| `launch_netflix` | Abrir Netflix |
+| `launch_hbo` | Abrir HBO |
+| `launch_youtube` | Abrir YouTube |
+| `launch_crunchyroll` | Abrir Crunchyroll |
+
+> Protocolo de transporte WiFi (HTTP, WebSocket, etc.) se definirá según modelo de TV. v1 usa mock.
 
 ---
 
 ## Flujo de datos
 
 ```text
-Usuario → UI (control.tsx)
-    ↓ tap power/mode/slider
-deviceStore → vissiusApi.post(...)
-    ↓ HTTP POST
-Dispositivo Vissius
-    ↓ respuesta / polling GET
-useStatusPolling → deviceStore.updateStatus(...)
+Usuario → RemoteButton tap
     ↓
-StatusPanel / ModeSelector (re-render)
+useRemoteCommand → tvRemoteApi.send(command)
+    ↓ WiFi LAN
+Televisor emparejado
+```
+
+```text
+Usuario → tab Apps → StreamingAppButton tap
+    ↓
+tvRemoteApi.launchApp('netflix' | 'hbo' | 'youtube' | 'crunchyroll')
+    ↓
+TV abre la app correspondiente
 ```
 
 ---
@@ -170,18 +195,14 @@ StatusPanel / ModeSelector (re-render)
 
 | Decisión | Elección | Justificación |
 |----------|----------|---------------|
-| Protocolo v1 | HTTP REST + polling | Simple, debuggeable, sin WebSocket nativo extra |
-| Estado | Zustand | Ligero, patrón WIKA validado en bby/sodoku |
-| Mock en DEV | `mockDevice.ts` | Permite desarrollar UI sin hardware Vissius |
-| Polling vs push | Polling 2 s | Suficiente para control doméstico; push en v2+ |
-| Navegación | Expo Router file-based | Estándar WIKA SDK 52 |
+| Dos pantallas | Tabs Mando / Apps | Separación clara de funciones según requerimiento |
+| Mock en DEV | `mockTv.ts` | Desarrollar UI sin TV física |
+| Botón base único | `RemoteButton.tsx` | Garantiza negro/blanco en todos los controles |
+| Estado | Zustand | Patrón WIKA validado |
+| Tema fijo | Sin dark mode | Paleta obligatoria en `04-design.md` |
 
 ---
 
 ## Toolchain nativo
 
-Ver `06-build-environment.md` para:
-
-- JDK 17, Kotlin 1.9.25, Android SDK 35
-- Configuración `expo-build-properties`
-- Gates de verificación de build
+Ver `06-build-environment.md` para JDK 17, Kotlin 1.9.25, Android SDK 35 y gates de build.

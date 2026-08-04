@@ -2,62 +2,68 @@
 
 ## Funcionalidades principales
 
-- [ ] **Descubrimiento de dispositivos** — Escanear la red local o permitir entrada manual de IP/host del equipo Vissius
-- [ ] **Conexión y emparejamiento** — Establecer sesión con el dispositivo; guardar último equipo conectado
-- [ ] **Encender / apagar** — Botón principal de power con confirmación visual inmediata
-- [ ] **Selector de modos** — Cambiar entre modos de operación definidos por el protocolo Vissius (ej. Auto, Manual, Eco, Boost)
-- [ ] **Panel de estado** — Mostrar estado actual: conexión, encendido/apagado, modo activo, valores clave (temperatura, velocidad, etc.)
-- [ ] **Controles deslizantes** — Ajustar parámetros numéricos (setpoint, velocidad, intensidad) con slider o stepper
-- [ ] **Reconexión automática** — Reintentar conexión si se pierde el enlace WiFi; indicador de desconexión claro
-- [ ] **Persistencia de preferencias** — Recordar último dispositivo, IP y último modo usado entre sesiones
+### Conexión y emparejamiento
 
-## Protocolo de comunicación — Especificación v1
+- [ ] **Detección de red WiFi** — Verificar que el móvil está conectado a una red WiFi antes de buscar TVs
+- [ ] **Buscar televisor** — Escanear la red local o listar TVs disponibles para emparejar
+- [ ] **Emparejar con TV** — Establecer conexión WiFi con el televisor seleccionado
+- [ ] **Recordar TV emparejada** — Guardar la última TV conectada para reconexión automática
+- [ ] **Estado de conexión** — Indicador claro: buscando / conectado / desconectado / error
 
-Comunicación con el dispositivo Vissius vía HTTP REST en puerto configurable (default `8080`).
+### Control remoto — Pantalla principal
 
-| Endpoint | Método | Descripción |
-|----------|--------|-------------|
-| `/api/status` | GET | Estado actual del dispositivo (power, mode, values) |
-| `/api/power` | POST | `{ "on": true \| false }` — Encender/apagar |
-| `/api/mode` | POST | `{ "mode": "auto" \| "manual" \| "eco" \| "boost" }` |
-| `/api/setpoint` | POST | `{ "key": string, "value": number }` — Ajustar parámetro |
-| `/api/discover` | GET | Respuesta de presencia (usado en escaneo LAN) |
+- [ ] **Botones de navegación** — Pad direccional con:
+  - Arriba
+  - Abajo
+  - Izquierda
+  - Derecha
+  - OK / Seleccionar
+  - Atrás (Back)
+- [ ] **Control de volumen** — Dos botones dedicados:
+  - **Subir volumen**
+  - **Bajar volumen**
 
-> Si el protocolo real difiere, actualizar esta tabla antes de generar código. La documentación es contrato.
+### Segunda pantalla — Apps de streaming
 
-### Polling de estado
+Pantalla separada del mando principal, dedicada a apps de streaming en la TV:
 
-- Intervalo: **2 s** mientras la app está en primer plano y conectada
-- Pausar polling en background o al desconectar
-- Actualizar store global con respuesta de `/api/status`
+- [ ] **Netflix** — Botón para abrir/lanzar Netflix en el televisor
+- [ ] **HBO** — Botón para abrir/lanzar HBO en el televisor
+- [ ] **YouTube** — Botón para abrir/lanzar YouTube en el televisor
+- [ ] **Crunchyroll** — Botón para abrir/lanzar Crunchyroll en el televisor
 
-## Funcionalidades secundarias
+> Cada botón de app envía el comando correspondiente al televisor emparejado. Si la app no está instalada en la TV, mostrar mensaje informativo.
 
-- [ ] **Feedback háptico** — Vibración breve al enviar comando exitoso o al fallar conexión
-- [ ] **Historial de comandos** — Log local de últimos 20 comandos enviados (debug/UX)
-- [ ] **Pantalla de configuración** — IP manual, puerto, timeout, reiniciar emparejamiento
-- [ ] **Modo oscuro** — Tema oscuro por defecto; coherente con `04-design.md`
+## Layout de pantallas
+
+| Pantalla | Contenido |
+|----------|-----------|
+| **Emparejamiento** | Buscar TV en WiFi, listar dispositivos, conectar |
+| **Mando (principal)** | Navegación + volumen |
+| **Apps (segunda pantalla)** | Netflix, HBO, YouTube, Crunchyroll |
+
+Navegación entre **Mando** y **Apps** mediante tabs o botón de cambio de pantalla en la parte inferior.
 
 ## Priorización
 
 | Prioridad | Funcionalidad | Descripción |
 |-----------|---------------|-------------|
-| P0 | Conexión al dispositivo | Sin conexión no hay producto |
-| P0 | Encender/apagar | Control básico esencial |
-| P0 | Selector de modos | Requisito core del control remoto |
-| P0 | Panel de estado | Feedback en tiempo real |
-| P1 | Descubrimiento LAN | Mejora UX; IP manual como fallback |
-| P1 | Controles deslizantes | Ajuste fino de parámetros |
-| P1 | Persistencia | Reconexión rápida en sesiones siguientes |
-| P2 | Feedback háptico | Pulido de UX |
-| P2 | Historial de comandos | Utilidad para soporte/debug |
+| P0 | Emparejamiento WiFi con TV | Sin conexión no hay producto |
+| P0 | Botones de navegación | Core del mando remoto |
+| P0 | Volumen subir / bajar | Control básico esencial |
+| P0 | Segunda pantalla de apps | Netflix, HBO, YouTube, Crunchyroll |
+| P0 | Diseño según `04-design.md` | Paleta y botones obligatorios |
+| P1 | Reconexión automática | Reconectar a última TV al abrir app |
+| P1 | Feedback háptico | Vibración breve al pulsar botón |
+| P2 | Indicador de app activa en TV | Mostrar qué app está abierta en el televisor |
 
 ## Fuera de alcance (v1)
 
 - Soporte iOS
-- Control remoto fuera de LAN (VPN, cloud relay)
-- Cuentas de usuario / autenticación multi-dispositivo
-- Backend propio o sincronización en la nube
-- Control por voz o widgets de pantalla de inicio
-- Emparejamiento Bluetooth (solo WiFi en v1)
+- Control fuera de la red WiFi local (internet remoto, VPN)
+- Teclado virtual para búsqueda de texto en la TV
+- Control por voz
+- Emparejamiento Bluetooth
+- Apps de streaming distintas a Netflix, HBO, YouTube y Crunchyroll
+- Cuentas de usuario / login
 - Publicidad o compras in-app

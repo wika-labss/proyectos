@@ -1,14 +1,18 @@
 Vissius Control Remote
 ======================
 
-Proyecto WIKA — aplicación móvil de control remoto para dispositivos Vissius en red local (LAN).
+Proyecto WIKA — mando remoto WiFi para televisor.
 
-Estado: documentación completada, pendiente generación v1.
+Funciones:
+  - Conectar y emparejar con TV por WiFi
+  - Botones de navegación (arriba, abajo, izq, der, OK, atrás)
+  - Volumen subir / bajar
+  - Segunda pantalla: Netflix, HBO, YouTube, Crunchyroll
 
-Estructura:
-  idea/          Documentación del producto (01–06)
-  iterations/    Versiones generadas por IA (v1, v2, …)
-  review.md      Revisión arquitectónica
-  final/         Versión aprobada para publicación
+Diseño:
+  - Fondos sólidos: #F7B9AD y #E83A17
+  - Botones: negro (#000000) con texto blanco (#FFFFFF)
 
-Próximo paso: ejecutar agente IA con 05-prompt-ia.md para generar iterations/v1/
+Estado: documentación actualizada, pendiente generación v1.
+
+Próximo paso: ejecutar agente IA con 05-prompt-ia.md

@@ -2,98 +2,126 @@
 
 ## Experiencia de usuario
 
-La app debe sentirse **profesional, confiable y directa** — un mando remoto digital, no un panel de administración complejo. Interacción con una sola mano: el botón de power y los modos están en la zona inferior accesible al pulgar. Feedback inmediato en cada comando: la UI refleja el estado del dispositivo en tiempo real y muestra claramente si hay conexión o error de red.
+La app debe sentirse como un **mando remoto digital** simple y directo. Dos pantallas claras: una para navegar y controlar volumen, otra para lanzar apps de streaming. Interacción con una sola mano; botones grandes y legibles sobre fondo de color sólido.
 
 Principios UX:
-- **Estado siempre visible** — Conexión, encendido/apagado y modo activo visibles sin scroll
-- **Un toque para lo esencial** — Power y cambio de modo en máximo 2 toques
-- **Confianza** — Indicadores claros de éxito/error al enviar comandos
-- **Accesibilidad** — Targets táctiles ≥ 48×48 dp; contraste WCAG AA en textos
+- **Dos pantallas, un propósito cada una** — Mando vs Apps de streaming
+- **Botones obvios** — Negro sobre fondo coral/rojo; texto blanco siempre legible
+- **Sin decoración innecesaria** — Colores sólidos, sin gradientes complejos ni sombras pesadas
+- **Accesibilidad** — Targets táctiles ≥ 48×48 dp; contraste alto botón negro / texto blanco
 
-## Estilo visual — Control industrial moderno
+## Estilo visual
 
-Estética limpia con acentos en azul eléctrico y verde de estado. Fondo oscuro para uso en entornos con poca luz (taller, cuarto técnico, salón con TV apagada).
+Estética **bold y minimalista**: fondos en colores sólidos cálidos, botones negros con texto blanco. Sin modo oscuro alternativo en v1 — la identidad visual es fija.
+
+## Paleta de colores (obligatoria)
+
+### Fondos — colores sólidos
+
+| Token | Hex | Uso |
+|-------|-----|-----|
+| `backgroundSoft` | `#F7B9AD` | Fondo principal — salmón/coral claro |
+| `backgroundStrong` | `#E83A17` | Fondo de secciones, header, tab activo — rojo intenso |
+
+Distribución sugerida:
+- Zona superior / header: `#E83A17`
+- Zona de contenido / cuerpo: `#F7B9AD`
+- Alternativa válida: pantalla completa `#F7B9AD` con barra inferior `#E83A17`
+
+> **Regla:** solo estos dos colores para fondos. No usar otros colores de fondo en v1.
+
+### Botones — negro y blanco (obligatorio)
+
+| Token | Hex | Uso |
+|-------|-----|-----|
+| `buttonBackground` | `#000000` | Fondo de **todos** los botones |
+| `buttonText` | `#FFFFFF` | Texto e iconos sobre botones |
+| `buttonPressed` | `#1A1A1A` | Estado pressed (opcional, casi negro) |
+
+> **Regla:** todos los botones (navegación, volumen, apps) usan fondo negro y texto/icono blanco. Sin excepciones en v1.
+
+### Textos sobre fondo (no botones)
+
+| Token | Hex | Uso |
+|-------|-----|-----|
+| `textOnSoft` | `#000000` | Textos sobre `#F7B9AD` |
+| `textOnStrong` | `#FFFFFF` | Textos sobre `#E83A17` |
 
 ## Pantallas / Vistas
 
 | Pantalla | Descripción |
 |----------|-------------|
-| **Conexión** | Lista de dispositivos descubiertos o campo IP manual + botón Conectar. Estado: buscando / sin dispositivos / error |
-| **Control** | Panel principal: StatusPanel arriba, PowerButton central, ModeSelector debajo, sliders de parámetros |
-| **Ajustes** | IP, puerto, timeout, modo mock (DEV), reiniciar emparejamiento |
-
-## Flujos de usuario
-
-### Flujo principal — Controlar dispositivo
-
-1. Usuario abre la app → Pantalla conexión (auto-reconecta último dispositivo si existe)
-2. Si no hay dispositivo guardado → Escanea LAN o ingresa IP manualmente → Toca **Conectar**
-3. Navega a pantalla control → Ve estado actual (power, mode, valores)
-4. Toca botón **Power** → Dispositivo enciende/apaga; UI actualiza en < 500 ms
-5. Selecciona modo (Auto, Manual, Eco, Boost) → Comando enviado; badge de modo cambia
-6. Ajusta slider de setpoint → Valor enviado al soltar el dedo (debounce 300 ms)
-
-### Flujo reconexión
-
-1. Se pierde WiFi o el dispositivo no responde
-2. Banner rojo "Desconectado" aparece en parte superior
-3. App reintenta conexión cada 5 s (máx. 3 intentos)
-4. Usuario puede tocar **Reintentar** manualmente
-
-### Flujo sin dispositivo (DEV mock)
-
-1. En ajustes, activar "Modo demo"
-2. App usa `mockDevice.ts` — misma UI, datos simulados
-3. Permite validar flujos sin hardware Vissius
-
-## Identidad visual
-
-### Paleta de colores
-
-| Token | Hex | Uso |
-|-------|-----|-----|
-| `background` | `#0D1117` | Fondo principal — gris oscuro |
-| `surface` | `#161B22` | Tarjetas, paneles |
-| `primary` | `#238636` | Power ON, conexión OK — verde |
-| `primaryDark` | `#1A7F37` | Estados pressed del verde |
-| `accent` | `#388BFD` | Modos activos, links — azul |
-| `accentGlow` | `#388BFD40` | Glow en modo seleccionado |
-| `danger` | `#DA3633` | Power OFF visual, errores, desconectado |
-| `warning` | `#D29922` | Reconectando, estado intermedio |
-| `button` | `#21262D` | Botones secundarios |
-| `buttonPrimary` | `#238636` | Botón power ON |
-| `textPrimary` | `#E6EDF3` | Textos principales |
-| `textSecondary` | `#8B949E` | Labels, valores secundarios |
-| `border` | `#30363D` | Bordes, divisores |
-
-### Tipografía
-
-| Uso | Fuente | Peso | Tamaño |
-|-----|--------|------|--------|
-| Título app | System (sans) | 700 | 24 sp |
-| Valor de estado | System (monospace) | 600 | 32 sp |
-| Botones / modos | System | 600 | 16 sp |
-| Labels | System | 400 | 14 sp |
-
-### Iconografía
-
-- Estilo: outline, trazo 2 px, color `textPrimary` o `accent`
-- Power: círculo con línea vertical (estándar IEC)
-- Modos: iconos distintos por modo (hoja Eco, rayo Boost, engranaje Manual, ciclo Auto)
-- Conexión: icono WiFi con badge verde/rojo
+| **Emparejamiento** | Fondo `#F7B9AD`; lista de TVs encontradas; botón negro "Buscar TV" / "Conectar" |
+| **Mando (principal)** | Pad de navegación central + botones volumen; fondo según distribución de paleta |
+| **Apps (segunda pantalla)** | Cuatro botones grandes: Netflix, HBO, YouTube, Crunchyroll — todos negro/blanco |
+| **Barra inferior** | Tabs "Mando" / "Apps"; tab activo sobre `#E83A17`, inactivo sobre `#F7B9AD` |
 
 ## Componentes UI
 
-| Componente | Comportamiento visual |
-|------------|----------------------|
-| `PowerButton` | Círculo grande (120 dp); verde brillante si ON, gris/rojo si OFF; animación scale al pulsar |
-| `ModeSelector` | Chips horizontales; modo activo con fondo `accent` y borde glow |
-| `StatusPanel` | Tarjeta con filas clave-valor; valores numéricos en monospace |
-| `ParameterSlider` | Track `border`, thumb `accent`; label con valor actual arriba |
-| `ConnectionBanner` | Barra fija superior: verde "Conectado" / rojo "Desconectado" / amarillo "Reconectando…" |
+### Botones de navegación
+
+Layout tipo cruceta (D-pad):
+
+```text
+        [ ▲ Arriba ]
+[ ◄ ]   [  OK  ]   [ ► ]
+        [ ▼ Abajo ]
+              [ ← Atrás ]
+```
+
+- Cada botón: fondo `#000000`, texto/icono `#FFFFFF`
+- Forma: rectángulo con bordes redondeados (radio 8–12 dp) o círculo para OK
+- Tamaño mínimo: 56×56 dp
+
+### Botones de volumen
+
+```text
+[  + Volumen  ]    [  − Volumen  ]
+```
+
+- Misma regla: negro / blanco
+- Ubicación: debajo del pad de navegación o en columna lateral derecha
+- Labels: "Vol +" y "Vol −" o iconos +/−
+
+### Botones de apps (segunda pantalla)
+
+Cuatro botones apilados o en grid 2×2:
+
+| Botón | Label |
+|-------|-------|
+| Netflix | `Netflix` |
+| HBO | `HBO` |
+| YouTube | `YouTube` |
+| Crunchyroll | `Crunchyroll` |
+
+- Fondo `#000000`, texto `#FFFFFF`
+- Ancho completo o 50% según grid; altura mínima 64 dp
+- Sin logos oficiales en v1 (solo texto); logos en iteración futura si hay licencia
+
+## Flujos de usuario
+
+### Flujo principal — Emparejar y controlar
+
+1. Usuario abre la app → Pantalla emparejamiento (fondo `#F7B9AD`)
+2. Toca botón negro **Buscar TV** → App escanea red WiFi
+3. Selecciona TV de la lista → Toca **Conectar** → Estado "Conectado"
+4. Navega a pantalla **Mando** → Usa pad direccional y volumen
+5. Cambia a tab **Apps** → Toca Netflix (u otra) → App se abre en la TV
+
+### Flujo reconexión
+
+1. Usuario abre app con TV ya emparejada → Reconexión automática
+2. Si falla → Mensaje sobre fondo `#F7B9AD` + botón negro **Reintentar**
+
+## Tipografía
+
+| Uso | Fuente | Peso | Color |
+|-----|--------|------|-------|
+| Título pantalla | System sans | 700 | `#FFFFFF` sobre `#E83A17` o `#000000` sobre `#F7B9AD` |
+| Botones | System sans | 600 | `#FFFFFF` |
+| Labels secundarios | System sans | 400 | `#000000` sobre fondo claro |
 
 ## Animaciones
 
-- Transición power ON/OFF: scale 0.95 → 1.0 (150 ms)
-- Cambio de modo: fade del chip anterior → highlight del nuevo (200 ms)
-- Banner conexión: slide-down desde top (250 ms)
+- Press de botón: opacidad 0.85 o escala 0.97 (100 ms) — sutil, sin distraer
+- Cambio de tab Mando/Apps: fade o slide horizontal (200 ms)

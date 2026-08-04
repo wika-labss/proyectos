@@ -2,7 +2,7 @@
 
 ## Instrucciones para el agente
 
-Genera la aplicación **Vissius Control Remote** basada en la documentación del proyecto. El código debe generarse en `iterations/v1/`.
+Genera la aplicación **Vissius Control Remote** — mando remoto WiFi para TV con segunda pantalla de apps de streaming. El código debe generarse en `iterations/v1/`.
 
 ---
 
@@ -11,9 +11,21 @@ Genera la aplicación **Vissius Control Remote** basada en la documentación del
 1. Seguir arquitectura en `03-architecture.md`
 2. Seguir dependencias en `06-build-environment.md` — **manifiesto completo obligatorio**
 3. Implementar funcionalidades de `02-features.md` por prioridad (P0 primero)
-4. Respetar diseño de `04-design.md`
+4. Respetar diseño de `04-design.md` — **paleta obligatoria, sin excepciones**
 5. Código limpio, TypeScript strict, sin `any`
-6. Incluir `mockDevice.ts` para desarrollo sin hardware Vissius real
+6. Incluir `mockTv.ts` para desarrollo sin televisor real
+
+---
+
+## Diseño — reglas bloqueantes
+
+| Regla | Valor |
+|-------|-------|
+| Fondos | Solo `#F7B9AD` y `#E83A17` (colores sólidos) |
+| Botones | Fondo `#000000`, texto/icono `#FFFFFF` — **todos** los botones |
+| Navegación | Pad con arriba, abajo, izquierda, derecha, OK, atrás |
+| Volumen | Botón subir + botón bajar |
+| Apps | Segunda pantalla: Netflix, HBO, YouTube, Crunchyroll |
 
 ---
 
@@ -32,33 +44,30 @@ npx expo-doctor
 - [ ] `expo-asset` incluido
 - [ ] `expo-build-properties` incluido
 - [ ] Versiones con `~`, no `^`
-- [ ] `app.json` incluye plugins de `06-build-environment.md`
-- [ ] Permisos de red Android declarados
+- [ ] Permisos WiFi Android declarados
 
 ---
 
 ## Gates de verificación (bloqueantes)
-
-La iteración **no se considera completa** sin pasar:
 
 | # | Gate | Comando |
 |---|------|---------|
 | 1 | Dependencias | `npx expo-doctor` → 0 errores |
 | 2 | TypeScript | `npx tsc --noEmit` → exit 0 |
 | 3 | Metro | `npx expo start` → arranca |
-| 4 | Mock funcional | Modo demo conecta y responde a power/mode |
-
-> Gates 4–5 de build nativo (prebuild/APK) aplican en v2 cuando el perfil sea BUILD.
+| 4 | UI paleta | Fondos `#F7B9AD`/`#E83A17`, botones negro/blanco |
+| 5 | Mock TV | Emparejamiento demo funciona; comandos responden |
 
 ---
 
 ## Restricciones adicionales
 
-- Cliente HTTP (`vissiusApi.ts`) debe ser módulo puro, testeable sin React
-- Polling de estado: intervalo 2 s, limpiar al desmontar / desconectar
-- Debounce en sliders: 300 ms al soltar
-- No usar librerías de red externas (axios, etc.) — `fetch` nativo
-- Mock device debe simular latencia ~200 ms para UX realista
+- `RemoteButton` componente base reutilizable — negro/blanco obligatorio
+- `theme.ts` debe exportar exactamente los tokens de `04-design.md`
+- No usar otros colores de fondo ni botones de otro color
+- Pad de navegación visible en pantalla Mando sin scroll
+- Pantalla Apps separada con tabs o navegación inferior
+- Mock TV simula latencia ~150 ms
 
 ---
 
@@ -67,16 +76,16 @@ La iteración **no se considera completa** sin pasar:
 ```text
 iterations/v1/
 ├── app/
-│   ├── _layout.tsx
-│   ├── index.tsx
-│   ├── control.tsx
-│   └── settings.tsx
+│   ├── _layout.tsx      # Tabs: Mando | Apps
+│   ├── index.tsx        # Emparejamiento WiFi
+│   ├── remote.tsx       # Navegación + volumen
+│   └── apps.tsx         # Netflix, HBO, YouTube, Crunchyroll
 ├── src/
-│   ├── components/
+│   ├── components/      # NavigationPad, VolumeControls, RemoteButton, ...
 │   ├── hooks/
 │   ├── engine/
 │   ├── stores/
-│   ├── constants/
+│   ├── constants/       # theme.ts, streamingApps.ts
 │   ├── types/
 │   └── utils/
 ├── assets/
@@ -91,30 +100,36 @@ iterations/v1/
 
 ### Funcionales
 
-- [ ] Pantalla de conexión permite conectar vía IP manual o modo demo
-- [ ] Botón power enciende/apaga (mock o dispositivo real)
-- [ ] Selector de modos cambia entre Auto, Manual, Eco, Boost
-- [ ] StatusPanel muestra estado actualizado (polling o mock)
-- [ ] Banner de conexión refleja estado conectado/desconectado
-- [ ] Preferencias (última IP, modo demo) persisten entre sesiones
+- [ ] Pantalla de emparejamiento: buscar y conectar TV por WiFi (mock OK en v1)
+- [ ] Pad de navegación: arriba, abajo, izquierda, derecha, OK, atrás
+- [ ] Volumen: botón subir y botón bajar
+- [ ] Segunda pantalla con botones Netflix, HBO, YouTube, Crunchyroll
+- [ ] Tabs o navegación entre pantalla Mando y pantalla Apps
+- [ ] TV emparejada persiste entre sesiones
 
-### Técnicos (WIKA — obligatorios)
+### Diseño
+
+- [ ] Fondos usan solo `#F7B9AD` y `#E83A17`
+- [ ] Todos los botones: fondo negro, texto blanco
+- [ ] Targets táctiles ≥ 48 dp
+
+### Técnicos (WIKA)
 
 - [ ] `npx expo-doctor` sin errores
 - [ ] `npx tsc --noEmit` sin errores
 - [ ] Dependencias alineadas con `06-build-environment.md`
-- [ ] Perfil DEV declarado cumplido
 
 ---
 
 ## Orden de implementación sugerido
 
-1. Configuración (`package.json`, `app.json`, `tsconfig.json`) — según `06-build-environment.md`
-2. Tipos (`DeviceStatus`, `VissiusMode`, etc.) y constantes (`theme.ts`)
-3. Engine puro: `vissiusApi.ts`, `mockDevice.ts`, `discovery.ts`
-4. Stores: `deviceStore.ts`, `settingsStore.ts`
-5. Hooks: `useDeviceConnection.ts`, `useStatusPolling.ts`
-6. Componentes UI: StatusPanel, PowerButton, ModeSelector, ConnectionBanner, ParameterSlider
-7. Pantallas: index (conexión), control, settings
-8. **`npx expo install --fix` + `npx expo-doctor`**
-9. Verificar gates DEV
+1. Configuración (`package.json`, `app.json`, `tsconfig.json`)
+2. `theme.ts` con paleta obligatoria + `streamingApps.ts`
+3. `RemoteButton` — componente base negro/blanco
+4. Engine: `tvRemoteApi.ts`, `mockTv.ts`, `discovery.ts`
+5. Stores: `tvStore.ts`, `pairingStore.ts`
+6. `NavigationPad`, `VolumeControls`, `StreamingAppButton`
+7. Pantallas: index (emparejamiento), remote (mando), apps (streaming)
+8. Layout con tabs Mando / Apps
+9. **`npx expo install --fix` + `npx expo-doctor`**
+10. Verificar gates DEV

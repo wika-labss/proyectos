@@ -1,6 +1,6 @@
 # Entorno de Build
 
-> Proyecto: **Vissius Control Remote** — Control remoto LAN para dispositivos Vissius
+> Proyecto: **Vissius Control Remote** — Mando remoto WiFi para TV con apps de streaming
 
 ## Perfil de ejecución target
 
@@ -10,7 +10,7 @@ Marcar el perfil que aplica a esta iteración:
 - [ ] **BUILD** — Nativo (`prebuild` + APK/IPA en dispositivo físico o emulador) — target v2
 - [ ] **RELEASE** — EAS Build (publicación en stores)
 
-> v1 usa perfil **DEV** con mock API. v2 migrará a BUILD para APK en dispositivo físico en red LAN.
+> v1 usa perfil **DEV** con mock de TV. v2 migrará a BUILD para probar con televisor real en LAN.
 
 ---
 
@@ -24,12 +24,7 @@ Marcar el perfil que aplica a esta iteración:
 | JDK (Gradle) | **17** | Solo si perfil BUILD (v2+) |
 | Android Studio | Latest stable | Solo si perfil BUILD Android |
 | Android SDK | API 35 | compileSdk 35, minSdk 24 |
-| Dispositivo Android | API 24+ | Expo Go para v1; físico en LAN para v2 |
-
-### Configuración Android Studio (v2+)
-
-- **Gradle JDK:** Java 17 (Eclipse Adoptium o JBR 17)
-- **Proyecto a abrir:** `iterations/vN/android/` (no la raíz Expo)
+| Dispositivo Android | API 24+ | Expo Go para v1; físico + TV en LAN para v2 |
 
 ---
 
@@ -42,7 +37,7 @@ Marcar el perfil que aplica a esta iteración:
 | Paquete | Versión | Motivo |
 |---------|---------|--------|
 | `expo` | `~52.0.0` | Framework base |
-| `expo-router` | `~4.0.0` | Navegación file-based |
+| `expo-router` | `~4.0.0` | Navegación file-based + tabs |
 | `expo-constants` | `~17.0.0` | Constantes de entorno |
 | `expo-linking` | `~7.0.0` | Deep links |
 | `expo-status-bar` | `~2.0.0` | Barra de estado |
@@ -57,11 +52,10 @@ Marcar el perfil que aplica a esta iteración:
 
 | Paquete | Versión | Motivo |
 |---------|---------|--------|
-| `expo-network` | `~7.0.0` | Detectar estado de red WiFi |
-| `expo-haptics` | `~14.0.0` | Feedback vibratorio al enviar comandos |
-| `expo-system-ui` | `~4.0.9` | Aplicar `userInterfaceStyle: dark` |
-| `@react-native-async-storage/async-storage` | `1.23.1` | Persistir IP, preferencias, último dispositivo |
-| `zustand` | `5.0.0` | Estado global (conexión, device status) |
+| `expo-network` | `~7.0.0` | Verificar conexión WiFi antes de emparejar |
+| `expo-haptics` | `~14.0.0` | Feedback al pulsar botones del mando |
+| `@react-native-async-storage/async-storage` | `1.23.1` | Persistir TV emparejada |
+| `zustand` | `5.0.0` | Estado global (conexión TV, emparejamiento) |
 
 ---
 
@@ -76,7 +70,7 @@ Obligatorio si perfil BUILD o RELEASE (v2+):
     "slug": "vissius-control-remote",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "scheme": "vissius-remote",
     "plugins": [
       "expo-router",
@@ -111,6 +105,8 @@ Obligatorio si perfil BUILD o RELEASE (v2+):
 }
 ```
 
+> `userInterfaceStyle: light` — la app usa paleta fija `#F7B9AD` / `#E83A17`, no dark mode del sistema.
+
 ### Matriz de compatibilidad Kotlin (Expo SDK 52)
 
 | Kotlin | Compose Compiler | Estado |
@@ -118,14 +114,6 @@ Obligatorio si perfil BUILD o RELEASE (v2+):
 | 1.9.24 | 1.5.14 | ✅ Válido |
 | 1.9.25 | 1.5.15 | ✅ **Estándar WIKA** |
 | Mezclados | — | ❌ **Prohibido** |
-
-> Fijar siempre via `expo-build-properties`. No editar manualmente salvo emergencia.
-
-En `android/gradle.properties` (post-prebuild):
-
-```properties
-android.kotlinVersion=1.9.25
-```
 
 ---
 
@@ -148,15 +136,6 @@ npx expo install --fix
 npx expo-doctor
 npx expo prebuild --platform android
 cd android && ./gradlew assembleDebug
-# APK: android/app/build/outputs/apk/debug/app-debug.apk
-```
-
-### Perfil RELEASE (EAS)
-
-```bash
-npm install
-npx expo install --fix
-eas build --platform android
 ```
 
 ---
@@ -170,7 +149,8 @@ eas build --platform android
 | Dependencias | `npx expo-doctor` | 0 errores |
 | TypeScript | `npx tsc --noEmit` | Exit code 0 |
 | Metro | `npx expo start` | Arranca sin errores |
-| Mock | Modo demo en app | Power/mode responden |
+| Paleta UI | Inspección visual | Fondos `#F7B9AD`/`#E83A17`, botones negro/blanco |
+| Mock TV | Modo demo | Emparejamiento y comandos responden |
 
 ### v2 (BUILD) — adicional
 
@@ -178,6 +158,7 @@ eas build --platform android
 |------|---------|-------------------|
 | Prebuild | `npx expo prebuild --platform android` | Genera `android/` sin errores |
 | APK debug | `cd android && ./gradlew assembleDebug` | BUILD SUCCESSFUL |
+| TV real | Dispositivo + TV en LAN | Navegación y volumen funcionan |
 
 ---
 
@@ -190,7 +171,6 @@ Incluir en cada iteración BUILD (v2+):
 | `scripts/verify-build.sh` | Ejecuta todos los gates |
 | `scripts/verify-build.bat` | Paridad Windows |
 | `scripts/post-prebuild.js` | Fija Kotlin 1.9.25 post-prebuild |
-| `reset-android.bat` | Regenera android/ limpio (Windows) |
 
 ---
 
@@ -199,8 +179,8 @@ Incluir en cada iteración BUILD (v2+):
 | ID | Principio |
 |----|-----------|
 | WIKA-ARCH-01 | La documentación es contrato de build |
-| WIKA-ARCH-02 | Versiones pinneadas (`~`), nunca flotantes (`^`) en expo/react-native |
+| WIKA-ARCH-02 | Versiones pinneadas (`~`), nunca flotantes (`^`) |
 | WIKA-ARCH-03 | Perfil DEV vs BUILD explícito en cada iteración |
-| WIKA-ARCH-04 | Toolchain nativo documentado y fijado via expo-build-properties |
+| WIKA-ARCH-04 | Toolchain nativo documentado via expo-build-properties |
 | WIKA-ARCH-05 | Gates de verificación obligatorios antes de cerrar iteración |
 | WIKA-ARCH-06 | Preferir starter WIKA validado sobre generación de infra desde cero |
