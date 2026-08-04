@@ -24,3 +24,6 @@ Verificar todos los gates WIKA:
   npm run verify:win
 
 Estado: v1 BUILD — Auditorias re-ejecutadas
+
+Manual completo (prompts, pasos, troubleshooting):
+  app\Vissius control remote\MANUAL-USUARIO.md

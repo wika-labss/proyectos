@@ -7,13 +7,18 @@ echo Genera un APK autonomo: el bundle JS va embebido, no necesita Metro.
 echo.
 
 echo [1/5] Toolchain
-where java >nul 2>&1
-if errorlevel 1 (
-  echo ERROR: Java no encontrado en PATH. Instala JDK 17.
+if not defined JAVA_HOME (
+  echo ERROR: Define JAVA_HOME apuntando a JDK 17.
+  echo   set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
   exit /b 1
 )
+if not exist "%JAVA_HOME%\bin\java.exe" (
+  echo ERROR: No existe %JAVA_HOME%\bin\java.exe
+  exit /b 1
+)
+set "PATH=%JAVA_HOME%\bin;%PATH%"
 
-for /f "tokens=3" %%v in ('java -version 2^>^&1 ^| findstr /i "version"') do (
+for /f "tokens=3" %%v in ('"%JAVA_HOME%\bin\java.exe" -version 2^>^&1 ^| findstr /i "version"') do (
   set "JAVA_RAW=%%v"
   goto :got_java
 )
@@ -25,8 +30,7 @@ echo Java detectado: !JAVA_RAW!
 if not "!JAVA_MAJOR!"=="17" (
   echo.
   echo ERROR: WIKA requiere JDK 17 para Gradle. Detectado: !JAVA_MAJOR!
-  echo Usa el JBR de Android Studio:
-  echo   set "JAVA_HOME=C:\Program Files\Android\Android Studio\jbr"
+  echo   set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
   echo   set "PATH=%%JAVA_HOME%%\bin;%%PATH%%"
   exit /b 1
 )

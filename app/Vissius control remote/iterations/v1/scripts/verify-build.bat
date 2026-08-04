@@ -6,13 +6,18 @@ echo === WIKA Build Verification - Vissius Control Remote v1 ===
 echo.
 
 echo [1/7] Toolchain
-where java >nul 2>&1
-if errorlevel 1 (
-  echo ERROR: Java no encontrado en PATH. Instala JDK 17.
+if not defined JAVA_HOME (
+  echo ERROR: Define JAVA_HOME apuntando a JDK 17.
+  echo   set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
   exit /b 1
 )
+if not exist "%JAVA_HOME%\bin\java.exe" (
+  echo ERROR: No existe %JAVA_HOME%\bin\java.exe
+  exit /b 1
+)
+set "PATH=%JAVA_HOME%\bin;%PATH%"
 
-for /f "tokens=3" %%v in ('java -version 2^>^&1 ^| findstr /i "version"') do (
+for /f "tokens=3" %%v in ('"%JAVA_HOME%\bin\java.exe" -version 2^>^&1 ^| findstr /i "version"') do (
   set "JAVA_RAW=%%v"
   goto :got_java
 )
