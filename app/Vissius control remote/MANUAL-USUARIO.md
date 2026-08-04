@@ -503,7 +503,18 @@ npx expo install expo-system-ui
 
 ---
 
-### Gradle tarda mucho la primera vez
+### "Buscar TV" no hace nada / no detecta TVs
+
+**Causa:** En v1 anterior, si `expo-network` no detectaba WiFi (común en APK release Android), el botón **cancelaba la búsqueda** antes de ejecutar el mock. El usuario veía el aviso amarillo pero nunca aparecían TVs simuladas.
+
+**Solución (parche en rama):** La búsqueda mock ya **no se bloquea** por WiFi. Debes ver 2 TVs simuladas: *Vissius TV — Salón* y *Vissius TV — Dormitorio*.
+
+Si aún falla:
+1. Reinstala APK con la versión más reciente de la rama.
+2. Comprueba que no haya error rojo en el banner (*No se pudieron buscar TVs en la red*).
+3. v1 **no busca TVs reales** — solo mock. v2 usará LAN real.
+
+---
 
 Normal. Gradle descarga dependencias (5–15 min). Ejecuciones siguientes son más rápidas.
 

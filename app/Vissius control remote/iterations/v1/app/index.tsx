@@ -18,19 +18,29 @@ export default function PairingScreen() {
 
   useEffect(() => {
     void (async () => {
-      const onWifi = await checkWifi();
-      if (!onWifi) {
-        setWifiWarning('Conecta el móvil a la misma red WiFi que la TV');
+      try {
+        const onWifi = await checkWifi();
+        if (!onWifi) {
+          setWifiWarning(
+            'No se detectó WiFi. Puedes buscar TVs igualmente (v1 simula dispositivos).',
+          );
+        }
+      } catch {
+        // expo-network puede fallar en algunos APK; la búsqueda mock sigue disponible.
       }
     })();
   }, [checkWifi]);
 
   const handleScan = useCallback(async () => {
-    setWifiWarning(null);
-    const onWifi = await checkWifi();
-    if (!onWifi) {
-      setWifiWarning('Conecta el móvil a la misma red WiFi que la TV');
-      return;
+    try {
+      const onWifi = await checkWifi();
+      setWifiWarning(
+        onWifi
+          ? null
+          : 'No se detectó WiFi. La búsqueda continúa (v1 simula TVs; v2 requerirá la misma red).',
+      );
+    } catch {
+      setWifiWarning(null);
     }
     await scan();
   }, [checkWifi, scan]);
@@ -63,7 +73,11 @@ export default function PairingScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {wifiWarning ? <Text style={styles.warning}>{wifiWarning}</Text> : null}
 
-        <RemoteButton label={scanning ? 'Buscando…' : 'Buscar TV'} onPress={() => void handleScan()} />
+        <RemoteButton
+          disabled={scanning}
+          label={scanning ? 'Buscando…' : 'Buscar TV'}
+          onPress={() => void handleScan()}
+        />
 
         {scanning ? (
           <ActivityIndicator color={colors.backgroundStrong} style={styles.loader} />
