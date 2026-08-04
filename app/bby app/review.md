@@ -21,7 +21,7 @@ Arquitecto WIKA / Cloud Agent
 | Iteración | Estado | Notas |
 |-----------|--------|-------|
 | v1 | Cerrada (mergeada) | 20 fixes en 3 auditorías — ver sección histórica al final |
-| **v2** | **En curso** | Generación ✅ · Auditoría 1 ✅ · Auditoría 2 ✅ |
+| **v2** | **En curso** | Generación ✅ · Auditoría 1 ✅ · Auditoría 2 ✅ · Auditoría 3 ✅ (gate físico pendiente) |
 
 ---
 
@@ -120,7 +120,7 @@ Auditoría ejecutada **después de la generación de código**, según ciclo WIK
 | 12 | 🟢 Bajo | Código muerto (`getSosCycleDurationMs`, `isTorchMounted`, etc.) | ✅ | Ausente en v2 |
 | 13 | 🟢 Bajo | Slider deshabilitado en OFF | ✅ | `disabled={mode === 'sos'}` en `index.tsx` L81 |
 
-**Resultado auditoría 2:** ✅ **APROBADA** — continuar con auditoría 3 (runtime/build real).
+**Resultado auditoría 2:** ✅ **APROBADA**
 
 ---
 
@@ -133,6 +133,8 @@ Auditoría ejecutada **después de la generación de código**, según ciclo WIK
 
 ---
 
+### Mejoras WIKA aplicadas en v2 (no presentes en v1)
+
 | # | Mejora | Motivo | Archivo(s) |
 |---|--------|--------|------------|
 | M1 | Gate `expo export` en pipeline de verificación | WIKA: `tsc` no detecta imports rotos en runtime | `scripts/verify-build.sh`, `verify-build.bat` |
@@ -141,14 +143,91 @@ Auditoría ejecutada **después de la generación de código**, según ciclo WIK
 | M4 | Docs WIKA apuntan a `iterations/v2/` | Re-versionado formal | `idea/03-architecture.md`, `05-prompt-ia.md`, `06-build-environment.md` |
 | M5 | Versión app `2.0.0` | Coherencia semver iteración | `package.json`, `app.json` |
 
-### Mejoras WIKA aplicadas en v2 (no presentes en v1)
+---
 
-### Pendiente post-auditoría 2
+## Auditoría 3 — Runtime y build real (v2)
 
-1. Ejecutar **Auditoría 3** — runtime/build real (dispositivo físico, APK release)
-2. `./gradlew assembleRelease` en máquina con JDK 17 + Android SDK
+### Resumen
+
+Auditoría de comportamiento en runtime y pipeline de entrega real (APK autónomo + dispositivo). Ejecutada el **2026-08-04** sobre `iterations/v2/`.
+
+| Ámbito | Resultado |
+|--------|-----------|
+| Fixes runtime #14–#20 (código) | ✅ 7/7 verificados |
+| Gates automatizados | ✅ doctor, tsc, export, prebuild |
+| `assembleRelease` | ⚠️ no ejecutable en cloud (sin Android SDK/JDK 17) |
+| Autonomía APK (sin Metro) | ⚠️ pendiente — requiere build release local |
+| Prueba en dispositivo físico | ⚠️ pendiente — requiere teléfono + `adb install` |
 
 ---
+
+### Checklist auditoría 3 (7 puntos — heredados de v1)
+
+| # | Severidad | Error potencial | v2 | Evidencia |
+|---|-----------|-----------------|----|-----------|
+| 14 | 🔴 Crítico | Slider: fill/thumb capturan toque → salto a 0% y apaga | ✅ | `IntensitySlider.tsx` L50–51 → `pointerEvents="none"` |
+| 15 | 🟡 Medio | AsyncStorage en cada evento de arrastre | ✅ | `useTorch.ts` → debounce 400 ms + `flushIntensity` en unmount/shutdown |
+| 16 | 🟡 Medio | PWM con pulsos &lt; 4 ms imposibles en RN | ✅ | `intensityController.ts` → `MIN_PULSE_MS = 4`, duty 20–80% |
+| 17 | 🟡 Medio | Timer PWM huérfano al desmontar `TorchProvider` | ✅ | `TorchProvider.tsx` L29–31 → `instance.stop()` en cleanup |
+| 18 | 🔴 Crítico | APK debug necesita Metro → inútil en teléfono | ✅ | Scripts apuntan a `assembleRelease`; bundle embebido vía Gradle release |
+| 19 | 🟠 Alto | `build-apk.bat` no valida JDK 17 | ✅ | `build-apk.bat` L25–31 → rechaza `JAVA_MAJOR !== 17` |
+| 20 | 🔴 Crítico | `isAvailableAsync()` cuelga spinner forever | ✅ | No invocada; solo comentario en `useFlashAvailability.ts`; gate cierra en `finally` L42–48 |
+
+**Timers SOS:** `useSosPattern.ts` L48 → `useEffect(() => stop, [stop])` limpia al desmontar.
+
+**Gate de carga:** `_layout.tsx` L14 → spinner solo mientras `checking || !loaded`; siempre resuelve vía `finally` en hook de disponibilidad.
+
+---
+
+### Gates ejecutados (2026-08-04)
+
+| Gate | Comando | Resultado |
+|------|---------|-----------|
+| Dependencias | `npx expo-doctor` | ✅ 18/18 |
+| TypeScript | `npx tsc --noEmit` | ✅ exit 0 |
+| Bundle JS | `npx expo export --platform android` | ✅ export OK |
+| Prebuild | `npx expo prebuild --platform android` | ✅ sin errores |
+| Manifest | grep `RECORD_AUDIO` | ✅ 0 ocurrencias |
+| Kotlin | `post-prebuild.js` | ✅ 1.9.25 |
+| APK release | `./gradlew assembleRelease` | ⚠️ omitido — `ANDROID_HOME` no configurado en cloud |
+| Autonomía | APK instalado, PC apagado | ⚠️ pendiente usuario |
+| Prueba física | Flash ON/OFF, SOS, slider | ⚠️ pendiente usuario |
+
+---
+
+### Fix aplicado en auditoría 3
+
+Ninguno — los 7 puntos ya estaban corregidos desde v1 y se mantienen en v2 sin regresión.
+
+---
+
+### Pendiente post-auditoría 3 (solo gates físicos)
+
+Validación en máquina del usuario con JDK 17 + Android SDK:
+
+```powershell
+$env:JAVA_HOME = "<ruta jdk-17>"
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$env:Path = "$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$env:Path"
+cd "app\bby app\iterations\v2"
+npm run apk:win
+adb install -r android\app\build\outputs\apk\release\app-release.apk
+```
+
+Checklist manual en teléfono:
+
+- [ ] App supera pantalla de carga en &lt; 3 s
+- [ ] Torch ON/OFF con botón central
+- [ ] Slider sin saltos a 0%
+- [ ] SOS Morse reconocible (`··· ——— ···`)
+- [ ] Background → flash se apaga
+- [ ] APK arranca sin Metro/PC encendido
+
+**Resultado auditoría 3:** ✅ **APROBADA** (código + gates automatizados). Promoción a `final/` bloqueada hasta gate físico.
+
+---
+
+## Funcionalidad (v2)
 
 - [x] Encender / apagar linterna
 - [x] Control de intensidad PWM software
@@ -156,7 +235,7 @@ Auditoría ejecutada **después de la generación de código**, según ciclo WIK
 - [x] Indicador de estado OFF / ON / SOS
 - [x] Detección hardware + fallback + Reintentar
 - [x] Persistencia intensidad (debounce 400 ms)
-- [ ] Verificado end-to-end en dispositivo físico
+- [ ] Verificado end-to-end en dispositivo físico (gate post-auditoría 3)
 
 ---
 
@@ -184,19 +263,16 @@ Auditoría ejecutada **después de la generación de código**, según ciclo WIK
 
 ## Veredicto v2
 
-- [ ] Aprobado — generar versión final en `final/`
-- [x] **Auditoría 2 aprobada — continuar auditoría 3**
+- [ ] Aprobado — generar versión final en `final/` (requiere gate físico)
+- [x] **Auditorías 1–3 aprobadas** — código y build automatizado OK; pendiente prueba en dispositivo
 
 ---
 
 ## Acciones requeridas
 
-1. Ejecutar auditoría 3 (runtime + build real en dispositivo)
-2. Compilar APK release en Windows con JDK 17:
-   ```powershell
-   npm run apk:win
-   adb install -r android\app\build\outputs\apk\release\app-release.apk
-   ```
+1. Compilar e instalar APK release en dispositivo (comandos arriba)
+2. Completar checklist manual post-auditoría 3
+3. Si gate físico OK → promover `iterations/v2/` a `final/`
 
 ---
 
