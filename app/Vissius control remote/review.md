@@ -38,7 +38,9 @@ Ciclo WIKA: **generar código → auditorías**. La iteración v1 se implementó
 | 8 | Componentes UI (6) | ✅ RemoteButton, NavigationPad, VolumeControls, etc. |
 | 9 | Pantallas (`index`, `(tabs)/remote`, `(tabs)/apps`) | ✅ |
 | 10 | `npx expo install --fix` + `npx expo-doctor` | ✅ 18/18 |
-| 11 | Gates DEV | ✅ tsc + export |
+| 11 | Gates DEV | ✅ tsc + export + Metro |
+
+**Estado generación v1:** ✅ **COMPLETA** — código en `iterations/v1/`, listo para Expo Go
 
 **Restricciones cumplidas en generación:**
 
