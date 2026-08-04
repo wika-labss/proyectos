@@ -4,7 +4,7 @@ const DOT_ON = 200;
 const DOT_OFF = 200;
 const DASH_ON = 600;
 const DASH_OFF = 200;
-const CYCLE_PAUSE = 1000;
+const CYCLE_PAUSE = 1200;
 // Inter-letter Morse gap: 600 ms total; each group ends with 200 ms OFF after the last symbol.
 const INTER_LETTER_GAP_MS = 400;
 

@@ -21,7 +21,36 @@ Arquitecto WIKA / Cloud Agent
 | Iteración | Estado | Notas |
 |-----------|--------|-------|
 | v1 | Cerrada (mergeada) | 20 fixes en 3 auditorías — ver sección histórica al final |
-| **v2** | **En curso** | Auditoría 1 completada ✅ |
+| **v2** | **En curso** | Generación ✅ · Auditoría 1 ✅ · Auditoría 2 ✅ |
+
+---
+
+## Generación de código (v2) — `05-prompt-ia.md`
+
+Ciclo WIKA: **generar código → auditorías**. La iteración v2 se implementó siguiendo el orden de `05-prompt-ia.md`:
+
+| Paso | Entregable | Estado |
+|------|------------|--------|
+| 1 | Config (`package.json`, `app.json`, `tsconfig.json`) | ✅ |
+| 2 | `src/constants/theme.ts` | ✅ tokens góticos según `04-design.md` |
+| 3 | `src/types/index.ts` | ✅ TorchMode, SosStep, TorchController |
+| 4 | `src/engine/sosPattern.ts` + `intensityController.ts` | ✅ |
+| 5 | `src/stores/torchStore.ts` | ✅ |
+| 6 | Hooks (`useTorch`, `useSosPattern`, `useFlashAvailability`, `TorchProvider`) | ✅ |
+| 7 | `src/utils/storage.ts` | ✅ debounce vía `useTorch` |
+| 8 | Componentes UI góticos (5) | ✅ |
+| 9 | `app/index.tsx` + `app/_layout.tsx` | ✅ pantalla única |
+| 10 | `npx expo install --fix` + `npx expo-doctor` | ✅ 18/18 |
+| 11 | Prebuild + gates de build | ✅ (Gradle release pendiente en cloud) |
+
+**Restricciones cumplidas en generación:**
+
+- UI solo usa `useTorch` (no `setMode` ni `TorchController` en pantallas)
+- Sin `CameraView.isAvailableAsync()`
+- Gate de carga con `try/catch/finally`
+- PWM con `MIN_PULSE_MS = 4`, duty 20–80%
+- Slider con `pointerEvents="none"` en fill/thumb
+- Cleanup torch en `AppState` background + unmount
 
 ---
 
@@ -57,11 +86,52 @@ v2 se generó copiando el código corregido de v1 y alineando la documentación 
 | 6 | `expo-env.d.ts` + tsconfig paths | ✅ | presentes |
 | 7 | Scripts auxiliares de build | ✅ | `reset-android.bat`, `local.properties.example`, **nuevo** `verify-build.bat` |
 
-**Resultado auditoría 1:** ✅ **APROBADA** — continuar con auditoría 2 (motores y hooks).
+**Resultado auditoría 1:** ✅ **APROBADA**
 
 ---
 
-### Mejoras WIKA aplicadas en v2 (no presentes en v1)
+## Auditoría 2 — Motores y hooks (v2)
+
+### Resumen
+
+Auditoría ejecutada **después de la generación de código**, según ciclo WIKA. Se revisaron motores puros (`engine/`), hooks de control y acoplamiento UI ↔ hardware.
+
+| Gate | Resultado v2 |
+|------|--------------|
+| Patrón SOS Morse completo | ✅ (fix aplicado — ver #8) |
+| API única `useTorch` | ✅ |
+| Intensidad 0 coherente | ✅ |
+| Reset mode en fallback | ✅ |
+| Sin código muerto | ✅ |
+| Slider habilitado en OFF | ✅ |
+| Timers con cleanup | ✅ |
+| Debounce AsyncStorage | ✅ |
+
+---
+
+### Checklist auditoría 2 (6 puntos)
+
+| # | Severidad | Error potencial | v2 | Fix / evidencia |
+|---|-----------|-----------------|----|-----------------|
+| 8 | 🟠 Alto | SOS sin pausa inter-letra (600 ms) o pausa entre ciclos incorrecta | ✅ fix | `CYCLE_PAUSE` corregido de 1000 → **1200 ms** (`02-features.md`); gaps inter-letra `INTER_LETTER_GAP_MS = 400` ya presentes → ciclo **6800 ms**, 21 pasos |
+| 9 | 🟠 Alto | Control fragmentado (`setMode` / `TorchController` desde UI) | ✅ | `app/index.tsx` solo usa `useTorch`; `setMode` restringido a hooks internos |
+| 10 | 🟡 Medio | `turnOn` con intensidad 0 → estado incoherente | ✅ | `MIN_ON_INTENSITY = 25` en `useTorch.ts` L11–72 |
+| 11 | 🟡 Medio | `markCameraUnavailable` no resetea `mode` | ✅ | `useFlashAvailability.ts` L66–68 + `TorchProvider.onMountError` apaga torch |
+| 12 | 🟢 Bajo | Código muerto (`getSosCycleDurationMs`, `isTorchMounted`, etc.) | ✅ | Ausente en v2 |
+| 13 | 🟢 Bajo | Slider deshabilitado en OFF | ✅ | `disabled={mode === 'sos'}` en `index.tsx` L81 |
+
+**Resultado auditoría 2:** ✅ **APROBADA** — continuar con auditoría 3 (runtime/build real).
+
+---
+
+### Fix aplicado en auditoría 2
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/engine/sosPattern.ts` | `CYCLE_PAUSE`: 1000 → 1200 ms (alineado con `02-features.md`) |
+| `idea/02-features.md` | Ciclo documentado: 6600 → 6800 ms; referencias v1 → v2 |
+
+---
 
 | # | Mejora | Motivo | Archivo(s) |
 |---|--------|--------|------------|
@@ -71,17 +141,14 @@ v2 se generó copiando el código corregido de v1 y alineando la documentación 
 | M4 | Docs WIKA apuntan a `iterations/v2/` | Re-versionado formal | `idea/03-architecture.md`, `05-prompt-ia.md`, `06-build-environment.md` |
 | M5 | Versión app `2.0.0` | Coherencia semver iteración | `package.json`, `app.json` |
 
+### Mejoras WIKA aplicadas en v2 (no presentes en v1)
+
+### Pendiente post-auditoría 2
+
+1. Ejecutar **Auditoría 3** — runtime/build real (dispositivo físico, APK release)
+2. `./gradlew assembleRelease` en máquina con JDK 17 + Android SDK
+
 ---
-
-### Pendiente post-auditoría 1
-
-1. Ejecutar **Auditoría 2** — motores y hooks (SOS, useTorch API, slider, timers)
-2. Ejecutar **Auditoría 3** — runtime/build real (dispositivo físico, APK release)
-3. `./gradlew assembleRelease` en máquina con JDK 17 + Android SDK
-
----
-
-## Funcionalidad (v2 — heredada de v1)
 
 - [x] Encender / apagar linterna
 - [x] Control de intensidad PWM software
@@ -118,15 +185,14 @@ v2 se generó copiando el código corregido de v1 y alineando la documentación 
 ## Veredicto v2
 
 - [ ] Aprobado — generar versión final en `final/`
-- [x] **Auditoría 1 aprobada — continuar auditoría 2**
+- [x] **Auditoría 2 aprobada — continuar auditoría 3**
 
 ---
 
 ## Acciones requeridas
 
-1. Ejecutar auditoría 2 (motores y hooks)
-2. Ejecutar auditoría 3 (runtime + build real en dispositivo)
-3. Compilar APK release en Windows con JDK 17:
+1. Ejecutar auditoría 3 (runtime + build real en dispositivo)
+2. Compilar APK release en Windows con JDK 17:
    ```powershell
    npm run apk:win
    adb install -r android\app\build\outputs\apk\release\app-release.apk
