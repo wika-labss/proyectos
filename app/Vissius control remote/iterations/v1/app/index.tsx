@@ -5,20 +5,14 @@ import { colors, layout } from '../src/constants/theme';
 import { ConnectionStatus } from '../src/components/ConnectionStatus';
 import { RemoteButton } from '../src/components/RemoteButton';
 import { TvDeviceCard } from '../src/components/TvDeviceCard';
+import { usePairing } from '../src/hooks/usePairing';
 import { useTvConnection } from '../src/hooks/useTvConnection';
-import { usePairingStore } from '../src/stores/pairingStore';
-import { useTvStore } from '../src/stores/tvStore';
 import type { TvDevice } from '../src/types';
 
 export default function PairingScreen() {
-  const connectionState = useTvStore((state) => state.connectionState);
-  const pairedDevice = useTvStore((state) => state.pairedDevice);
-  const error = useTvStore((state) => state.error);
-  const { connect, checkWifi, forgetDevice } = useTvConnection();
-  const devices = usePairingStore((state) => state.devices);
-  const scanning = usePairingStore((state) => state.scanning);
-  const scanError = usePairingStore((state) => state.scanError);
-  const scan = usePairingStore((state) => state.scan);
+  const { connectionState, pairedDevice, error, connect, checkWifi, forgetDevice } =
+    useTvConnection();
+  const { devices, scanning, scanError, scan } = usePairing();
   const [connectingId, setConnectingId] = useState<string | null>(null);
   const [wifiWarning, setWifiWarning] = useState<string | null>(null);
 

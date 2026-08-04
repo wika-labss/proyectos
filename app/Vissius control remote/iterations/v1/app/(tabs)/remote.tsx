@@ -11,7 +11,7 @@ import type { NavigationCommand, VolumeCommand } from '../../src/types';
 
 export default function RemoteScreen() {
   const { connectionState, pairedDevice, reconnect, isConnected } = useTvConnection();
-  const { send, status, error } = useRemoteCommand();
+  const { send, status, error, sendingCommand } = useRemoteCommand();
 
   if (!pairedDevice) {
     return <Redirect href="/" />;
@@ -45,8 +45,8 @@ export default function RemoteScreen() {
           ) : null}
         </View>
 
-        <NavigationPad onCommand={handleNav} disabled={!isConnected} />
-        <VolumeControls onCommand={handleVolume} disabled={!isConnected} />
+        <NavigationPad onCommand={handleNav} disabled={!isConnected || sendingCommand} />
+        <VolumeControls onCommand={handleVolume} disabled={!isConnected || sendingCommand} />
 
         {!isConnected ? (
           <Pressable accessibilityRole="button" onPress={() => void reconnect()}>

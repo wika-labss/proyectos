@@ -18,7 +18,7 @@ Arquitecto WIKA / Cloud Agent
 
 | Iteración | Estado | Notas |
 |-----------|--------|-------|
-| **v1** | **En curso** | Generación ✅ · Auditoría 1 ✅ · Auditoría 2 pendiente |
+| **v1** | **En curso** | Generación ✅ · Auditoría 1 ✅ · Auditoría 2 ✅ · Auditoría 3 pendiente |
 
 ---
 
@@ -108,10 +108,63 @@ Auditoría ejecutada **después de la generación de código**, según ciclo WIK
 ## Veredicto
 
 - [ ] Aprobado — generar versión final en `final/`
-- [x] **Requiere refinamiento** — continuar con Auditoría 2 (motores y hooks)
+- [x] **Requiere refinamiento** — continuar con Auditoría 3 (diseño y UX)
 
-## Acciones requeridas (post auditoría 1)
+## Acciones requeridas (post auditoría 2)
 
-1. Ejecutar **Auditoría 2** — revisar `engine/`, hooks y acoplamiento UI ↔ comandos
+1. Ejecutar **Auditoría 3** — revisar diseño vs `04-design.md` y flujos de usuario
+2. v2: perfil BUILD + protocolo WiFi real con televisor físico
+3. Considerar logos oficiales de streaming apps (licencia) en iteración futura
+
+---
+
+## Auditoría 2 — Motores y hooks (v1)
+
+### Resumen
+
+Auditoría ejecutada **después de la generación de código**, según ciclo WIKA. Se revisaron motores puros (`engine/`), hooks de control y acoplamiento UI ↔ store ↔ engine.
+
+| Gate | Resultado v1 |
+|------|--------------|
+| Engine puro sin React | ✅ `mockTv.ts`, `discovery.ts`, `tvRemoteApi.ts` |
+| UI no importa engine directamente | ✅ solo stores importan engine |
+| API única `useRemoteCommand` para comandos | ✅ remote.tsx, apps.tsx |
+| API única `useTvConnection` para conexión | ✅ tras fix #13 |
+| API única `usePairing` para escaneo | ✅ tras fix #14 |
+| Guard in-flight comandos | ✅ `sendingCommand` en tvStore |
+| Volumen clamp 0–100 | ✅ `mockTv.ts` |
+| Apps launch actualizan `activeApp` | ✅ |
+| Sin código muerto en engine | ✅ tras fix #15 |
+| Gates DEV post-fix | ✅ 18/18, tsc, export 933 módulos |
+
+---
+
+### Checklist auditoría 2
+
+| # | Severidad | Error potencial | v1 | Fix / evidencia |
+|---|-----------|-----------------|----|-----------------|
+| 13 | 🟠 Alto | Control fragmentado — `index.tsx` lee `useTvStore` directo | ✅ fix | Migrado a `useTvConnection` + `usePairing` |
+| 14 | 🟠 Alto | Emparejamiento acoplado a store desde UI | ✅ fix | Nuevo hook `usePairing.ts` |
+| 15 | 🟡 Medio | Doble fuente de verdad — `isTvConnected()` en engine vs store | ✅ fix | `sendCommand` usa `connectionState === 'connected'`; eliminados `getTvStatus`/`isTvConnected` de API pública |
+| 16 | 🟡 Medio | Haptic dispara aunque TV desconectada | ✅ fix | `useRemoteCommand` verifica `connectionState` antes de vibrar |
+| 17 | 🟡 Medio | Comandos concurrentes — race en status | ✅ fix | Flag `sendingCommand` + botones disabled mientras envía |
+| 18 | 🟡 Medio | `mockDisconnect` no resetea status interno | ✅ fix | Status vuelve a defaults al desconectar |
+| 19 | 🟡 Medio | Doble tap en conectar — race | ✅ fix | Guard `connectionState === 'connecting'` en `connect()` |
+| 20 | 🟢 Bajo | Parámetro `useMock` muerto en `discovery.ts` | ✅ fix | Simplificado a `discoverTvs()` sin param |
+| 21 | 🟢 Bajo | Exports muertos en mock (`mockGetStatus`, etc.) | ✅ fix | Eliminados |
+| 22 | 🟢 Bajo | Error en comando no sincronizaba engine | ✅ fix | `sendCommand` catch llama `disconnectFromTv()` |
+
+**Resultado auditoría 2:** ✅ **APROBADA** (con 10 fixes aplicados)
+
+---
+
+## Veredicto (actualizado)
+
+- [ ] Aprobado — generar versión final en `final/`
+- [x] **Requiere refinamiento** — continuar con Auditoría 3 (diseño y UX)
+
+## Acciones requeridas (post auditoría 2)
+
+1. Ejecutar **Auditoría 3** — revisar diseño vs `04-design.md` y flujos de usuario
 2. v2: perfil BUILD + protocolo WiFi real con televisor físico
 3. Considerar logos oficiales de streaming apps (licencia) en iteración futura

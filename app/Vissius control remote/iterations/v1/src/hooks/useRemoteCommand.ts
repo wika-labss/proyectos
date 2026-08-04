@@ -8,13 +8,17 @@ export function useRemoteCommand() {
   const status = useTvStore((state) => state.status);
   const connectionState = useTvStore((state) => state.connectionState);
   const error = useTvStore((state) => state.error);
+  const sendingCommand = useTvStore((state) => state.sendingCommand);
 
   const send = useCallback(
     async (command: RemoteCommand) => {
+      if (connectionState !== 'connected' || sendingCommand) {
+        return;
+      }
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       await sendCommand(command);
     },
-    [sendCommand],
+    [connectionState, sendingCommand, sendCommand],
   );
 
   return {
@@ -22,6 +26,7 @@ export function useRemoteCommand() {
     status,
     connectionState,
     error,
+    sendingCommand,
     isConnected: connectionState === 'connected',
   };
 }

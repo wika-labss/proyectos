@@ -11,7 +11,7 @@ import type { LaunchCommand } from '../../src/types';
 
 export default function AppsScreen() {
   const { connectionState, pairedDevice, isConnected } = useTvConnection();
-  const { send, error } = useRemoteCommand();
+  const { send, error, sendingCommand } = useRemoteCommand();
 
   if (!pairedDevice) {
     return <Redirect href="/" />;
@@ -38,7 +38,7 @@ export default function AppsScreen() {
               <StreamingAppButton
                 label={app.label}
                 command={app.command}
-                disabled={!isConnected}
+                disabled={!isConnected || sendingCommand}
                 onPress={handleLaunch}
               />
             </View>

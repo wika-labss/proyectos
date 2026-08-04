@@ -1,12 +1,6 @@
 import { create } from 'zustand';
 import type { ConnectionState, RemoteCommand, TvDevice, TvStatus } from '../types';
-import {
-  connectToTv,
-  disconnectFromTv,
-  getTvStatus,
-  isTvConnected,
-  sendRemoteCommand,
-} from '../engine/tvRemoteApi';
+import { connectToTv, disconnectFromTv, sendRemoteCommand } from '../engine/tvRemoteApi';
 import { clearPairedDevice, loadPreferences, savePairedDevice } from '../utils/storage';
 
 interface TvStore {
@@ -15,6 +9,7 @@ interface TvStore {
   pairedDevice: TvDevice | null;
   status: TvStatus;
   error: string | null;
+  sendingCommand: boolean;
   load: () => Promise<void>;
   connect: (device: TvDevice) => Promise<boolean>;
   reconnect: () => Promise<boolean>;
@@ -36,13 +31,14 @@ export const useTvStore = create<TvStore>((set, get) => ({
   pairedDevice: null,
   status: defaultStatus,
   error: null,
+  sendingCommand: false,
 
   load: async () => {
     const preferences = await loadPreferences();
     set({ pairedDevice: preferences.pairedDevice, loaded: true });
 
     if (preferences.pairedDevice) {
-      set({ connectionState: 'connecting' });
+      set({ connectionState: 'connecting', error: null });
       try {
         const status = await connectToTv(preferences.pairedDevice);
         set({ connectionState: 'connected', status, error: null });
@@ -57,6 +53,11 @@ export const useTvStore = create<TvStore>((set, get) => ({
   },
 
   connect: async (device) => {
+    const { connectionState } = get();
+    if (connectionState === 'connecting') {
+      return false;
+    }
+
     set({ connectionState: 'connecting', error: null });
     try {
       const status = await connectToTv(device);
@@ -90,6 +91,7 @@ export const useTvStore = create<TvStore>((set, get) => ({
     set({
       connectionState: 'disconnected',
       status: defaultStatus,
+      sendingCommand: false,
     });
   },
 
@@ -101,23 +103,31 @@ export const useTvStore = create<TvStore>((set, get) => ({
       pairedDevice: null,
       status: defaultStatus,
       error: null,
+      sendingCommand: false,
     });
   },
 
   sendCommand: async (command) => {
-    if (!isTvConnected()) {
+    const { connectionState, sendingCommand } = get();
+    if (connectionState !== 'connected') {
       set({ error: 'TV no conectada', connectionState: 'disconnected' });
       return;
     }
+    if (sendingCommand) {
+      return;
+    }
 
+    set({ sendingCommand: true, error: null });
     try {
       const status = await sendRemoteCommand(command);
-      set({ status, error: null, connectionState: 'connected' });
+      set({ status, connectionState: 'connected', sendingCommand: false });
     } catch {
+      await disconnectFromTv();
       set({
         error: 'Error al enviar comando',
         connectionState: 'disconnected',
-        status: getTvStatus(),
+        status: defaultStatus,
+        sendingCommand: false,
       });
     }
   },

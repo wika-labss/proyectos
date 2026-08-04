@@ -51,6 +51,12 @@ export async function mockConnect(device: TvDevice): Promise<TvStatus> {
 export async function mockDisconnect(): Promise<void> {
   await delay(MOCK_LATENCY_MS);
   connectedDevice = null;
+  status = {
+    power: false,
+    volume: 0,
+    activeApp: null,
+    lastCommand: null,
+  };
 }
 
 export async function mockSendCommand(command: RemoteCommand): Promise<TvStatus> {
@@ -73,16 +79,4 @@ export async function mockSendCommand(command: RemoteCommand): Promise<TvStatus>
   }
 
   return { ...status };
-}
-
-export function mockGetConnectedDevice(): TvDevice | null {
-  return connectedDevice;
-}
-
-export function mockGetStatus(): TvStatus {
-  return { ...status };
-}
-
-export function mockIsConnected(): boolean {
-  return connectedDevice !== null;
 }
