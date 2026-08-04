@@ -6,11 +6,11 @@
 
 Marcar el perfil que aplica a esta iteración:
 
-- [x] **DEV** — Expo Go (`npx expo start` + app Expo Go en dispositivo) — **target v1**
-- [ ] **BUILD** — Nativo (`prebuild` + APK/IPA en dispositivo físico o emulador) — target v2
+- [ ] **DEV** — Expo Go (`npx expo start` + app Expo Go en dispositivo)
+- [x] **BUILD** — Nativo (`prebuild` + APK release en dispositivo físico) — **target v1**
 - [ ] **RELEASE** — EAS Build (publicación en stores)
 
-> v1 usa perfil **DEV** con mock de TV. v2 migrará a BUILD para probar con televisor real en LAN.
+> v1 requiere perfil **BUILD**: el entregable es un APK **release** autónomo (bundle Hermes embebido, sin Metro ni PC).
 
 ---
 
@@ -21,10 +21,23 @@ Marcar el perfil que aplica a esta iteración:
 | Node.js | 20 LTS | Obligatorio |
 | npm | 10+ | Incluido con Node |
 | Git | 2.x+ | Control de versiones |
-| JDK (Gradle) | **17** | Solo si perfil BUILD (v2+) |
-| Android Studio | Latest stable | Solo si perfil BUILD Android |
+| JDK (Gradle) | **17** | **Obligatorio** para BUILD. **No usar JDK 21 ni 26** |
+| Android Studio | Latest stable | Obligatorio para BUILD Android |
 | Android SDK | API 35 | compileSdk 35, minSdk 24 |
-| Dispositivo Android | API 24+ | Expo Go para v1; físico + TV en LAN para v2 |
+| Dispositivo Android físico | API 24+ | **Obligatorio** — sideload del APK release |
+
+### Configuración Android Studio
+
+- **Gradle JDK:** Java 17 (Eclipse Adoptium o JBR 17 de Android Studio)
+- **Proyecto a abrir:** `iterations/v1/android/` (no la raíz Expo)
+
+### Configuración Windows (PowerShell)
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$env:Path = "$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$env:Path"
+```
 
 ---
 
@@ -61,7 +74,7 @@ Marcar el perfil que aplica a esta iteración:
 
 ## Configuración nativa (app.json)
 
-Obligatorio si perfil BUILD o RELEASE (v2+):
+Obligatorio para perfil BUILD:
 
 ```json
 {
@@ -83,9 +96,6 @@ Obligatorio si perfil BUILD o RELEASE (v2+):
             "compileSdkVersion": 35,
             "targetSdkVersion": 34,
             "minSdkVersion": 24
-          },
-          "ios": {
-            "deploymentTarget": "15.1"
           }
         }
       ]
@@ -97,15 +107,12 @@ Obligatorio si perfil BUILD o RELEASE (v2+):
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.ACCESS_WIFI_STATE"
       ]
-    },
-    "ios": {
-      "bundleIdentifier": "com.wika.vissiuscontrolremote"
     }
   }
 }
 ```
 
-> `userInterfaceStyle: light` — la app usa paleta fija `#F7B9AD` / `#E83A17`, no dark mode del sistema.
+> `userInterfaceStyle: light` — paleta fija `#F7B9AD` / `#E83A17`.
 
 ### Matriz de compatibilidad Kotlin (Expo SDK 52)
 
@@ -115,62 +122,98 @@ Obligatorio si perfil BUILD o RELEASE (v2+):
 | 1.9.25 | 1.5.15 | ✅ **Estándar WIKA** |
 | Mezclados | — | ❌ **Prohibido** |
 
+En `android/gradle.properties` (post-prebuild via `scripts/post-prebuild.js`):
+
+```properties
+android.kotlinVersion=1.9.25
+```
+
 ---
 
 ## Pipeline de build
 
-### Perfil DEV (Expo Go) — v1
+### Perfil BUILD (APK release) — v1
 
 ```bash
 npm install
 npx expo install --fix
 npx expo-doctor
+npm run apk          # Linux/macOS
+# npm run apk:win    # Windows
+```
+
+Pipeline interno (`scripts/build-apk.sh`):
+
+```bash
+npx expo prebuild --platform android
+node scripts/post-prebuild.js
+# android/local.properties ← después de prebuild (ANDROID_HOME)
+cd android && ./gradlew assembleRelease
+# APK: android/app/build/outputs/apk/release/app-release.apk
+```
+
+Instalar en teléfono:
+
+```bash
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+```
+
+> El APK **release** lleva el bundle JS embebido (Hermes). Funciona sin PC ni servidor Metro.
+
+### Perfil DEV (opcional — solo desarrollo UI)
+
+```bash
 npx expo start
 ```
 
-### Perfil BUILD (APK local) — v2
-
-```bash
-npm install
-npx expo install --fix
-npx expo-doctor
-npx expo prebuild --platform android
-cd android && ./gradlew assembleDebug
-```
+Expo Go no es el entregable v1; solo sirve para iterar UI con hot reload.
 
 ---
 
 ## Gates de verificación (bloqueantes)
 
-### v1 (DEV)
+Ninguna iteración v1 se considera completa sin pasar:
 
 | Gate | Comando | Resultado esperado |
 |------|---------|-------------------|
 | Dependencias | `npx expo-doctor` | 0 errores |
 | TypeScript | `npx tsc --noEmit` | Exit code 0 |
-| Metro | `npx expo start` | Arranca sin errores |
-| Paleta UI | Inspección visual | Fondos `#F7B9AD`/`#E83A17`, botones negro/blanco |
-| Mock TV | Modo demo | Emparejamiento y comandos responden |
-
-### v2 (BUILD) — adicional
-
-| Gate | Comando | Resultado esperado |
-|------|---------|-------------------|
+| Bundle JS | `npx expo export --platform android` | Export OK |
 | Prebuild | `npx expo prebuild --platform android` | Genera `android/` sin errores |
-| APK debug | `cd android && ./gradlew assembleDebug` | BUILD SUCCESSFUL |
-| TV real | Dispositivo + TV en LAN | Navegación y volumen funcionan |
+| Kotlin | `scripts/post-prebuild.js` | `android.kotlinVersion=1.9.25` |
+| APK release | `./gradlew assembleRelease` | BUILD SUCCESSFUL |
+| Autonomía | APK instalado, PC apagado | App abre y funciona |
+| Paleta UI | Inspección en dispositivo | `#F7B9AD`/`#E83A17`, botones negro/blanco |
 
 ---
 
 ## Scripts estándar WIKA
 
-Incluir en cada iteración BUILD (v2+):
+Incluir en `iterations/v1/`:
 
 | Script | Propósito |
 |--------|-----------|
-| `scripts/verify-build.sh` | Ejecuta todos los gates |
+| `scripts/verify-build.sh` | Ejecuta todos los gates (Linux/macOS) |
 | `scripts/verify-build.bat` | Paridad Windows |
+| `scripts/build-apk.sh` | Genera APK release (Linux/macOS) |
+| `scripts/build-apk.bat` | Genera APK release (Windows) |
 | `scripts/post-prebuild.js` | Fija Kotlin 1.9.25 post-prebuild |
+| `scripts/reset-android.bat` | Regenera `android/` limpio (Windows) |
+| `scripts/local.properties.example` | Plantilla SDK path |
+
+### package.json scripts
+
+```json
+{
+  "scripts": {
+    "verify": "bash scripts/verify-build.sh",
+    "verify:win": "scripts\\verify-build.bat",
+    "apk": "bash scripts/build-apk.sh",
+    "apk:win": "scripts\\build-apk.bat",
+    "prebuild:android": "expo prebuild --platform android && node scripts/post-prebuild.js"
+  }
+}
+```
 
 ---
 
@@ -180,7 +223,7 @@ Incluir en cada iteración BUILD (v2+):
 |----|-----------|
 | WIKA-ARCH-01 | La documentación es contrato de build |
 | WIKA-ARCH-02 | Versiones pinneadas (`~`), nunca flotantes (`^`) |
-| WIKA-ARCH-03 | Perfil DEV vs BUILD explícito en cada iteración |
+| WIKA-ARCH-03 | Perfil BUILD explícito en v1 |
 | WIKA-ARCH-04 | Toolchain nativo documentado via expo-build-properties |
 | WIKA-ARCH-05 | Gates de verificación obligatorios antes de cerrar iteración |
-| WIKA-ARCH-06 | Preferir starter WIKA validado sobre generación de infra desde cero |
+| WIKA-ARCH-06 | APK release autónomo como entregable, no Expo Go |

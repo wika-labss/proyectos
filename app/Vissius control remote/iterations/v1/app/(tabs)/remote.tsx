@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Redirect } from 'expo-router';
 import { colors, layout } from '../../src/constants/theme';
+import { getStreamingAppLabel } from '../../src/constants/streamingApps';
 import { ConnectionStatus } from '../../src/components/ConnectionStatus';
 import { NavigationPad } from '../../src/components/NavigationPad';
 import { VolumeControls } from '../../src/components/VolumeControls';
@@ -40,7 +41,7 @@ export default function RemoteScreen() {
           {status.activeApp ? (
             <>
               <Text style={styles.statusLabel}>App activa</Text>
-              <Text style={styles.statusValue}>{status.activeApp}</Text>
+              <Text style={styles.statusValue}>{getStreamingAppLabel(status.activeApp)}</Text>
             </>
           ) : null}
         </View>

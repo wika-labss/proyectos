@@ -12,7 +12,7 @@
 | Persistencia | AsyncStorage (TV emparejada, preferencias) |
 | Estilos | StyleSheet nativo + tokens en `src/constants/theme.ts` |
 | Utilidades | `expo-haptics` (feedback), `expo-network` (estado WiFi) |
-| Build | Prebuild local → APK (target v2) |
+| Build | Prebuild local → **APK release** autónomo (Android) — **target v1** |
 
 > Manifiesto completo de dependencias: ver `06-build-environment.md`
 
@@ -81,11 +81,11 @@
 
 | Perfil | Target esta iteración | Pipeline |
 |--------|----------------------|----------|
-| DEV (Expo Go) | [x] | `npx expo start` — UI + mock TV |
-| BUILD (APK local) | [ ] | `prebuild` + Gradle — target v2 |
+| DEV (Expo Go) | [ ] | `npx expo start` — solo desarrollo UI opcional |
+| BUILD (APK release) | [x] | `prebuild` + `assembleRelease` → **target v1** |
 | RELEASE (EAS) | [ ] | `eas build` — futuro |
 
-> v1 usa perfil **DEV** con mock de TV para validar UI y flujos sin televisor real.
+> v1 requiere perfil **BUILD**. Entregable: APK release con bundle embebido, instalable por sideload.
 
 ---
 

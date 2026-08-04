@@ -2,7 +2,7 @@
 
 ## Versión evaluada
 
-**v1** — Primera iteración generada por IA (`app/Vissius control remote/iterations/v1/`)
+**v1** — Perfil **BUILD** (APK release) — `app/Vissius control remote/iterations/v1/`
 
 ## Evaluador
 
@@ -10,148 +10,149 @@ Arquitecto WIKA / Cloud Agent
 
 ## Fecha
 
-2026-08-04
+2026-08-04 (re-auditoría BUILD)
 
 ---
 
 ## Historial de iteraciones
 
-| Iteración | Estado | Notas |
-|-----------|--------|-------|
-| **v1** | **En curso** | Generación ✅ · Auditoría 1 ✅ · Auditoría 2 ✅ · Auditoría 3 pendiente |
+| Iteración | Perfil | Estado | Notas |
+|-----------|--------|--------|-------|
+| **v1** | **BUILD** | **En curso** | Docs BUILD ✅ · Generación ✅ · Auditorías 1–3 ✅ · APK release ⚠️ pendiente máquina local |
 
 ---
 
-## Generación de código (v1) — `05-prompt-ia.md`
+## Cambio de perfil (DEV → BUILD)
 
-Ciclo WIKA: **generar código → auditorías**. La iteración v1 se implementó siguiendo el orden de `05-prompt-ia.md`:
+Documentación y código actualizados para cumplir WIKA-ARCH-03: v1 entrega **APK release autónomo**, no Expo Go.
+
+| Artefacto | Cambio |
+|-----------|--------|
+| `06-build-environment.md` | Perfil BUILD target v1, pipeline `assembleRelease` |
+| `03-architecture.md` | Build → APK release |
+| `05-prompt-ia.md` | Gates BUILD, scripts WIKA |
+| `01-problem.md` | Criterio éxito APK sideload |
+| `iterations/v1/scripts/` | verify-build, build-apk, post-prebuild (.sh + .bat) |
+| `package.json` | `verify`, `verify:win`, `apk`, `apk:win` |
+
+---
+
+## Generación de código (v1 BUILD)
 
 | Paso | Entregable | Estado |
 |------|------------|--------|
-| 1 | Config (`package.json`, `app.json`, `tsconfig.json`) | ✅ |
-| 2 | `src/constants/theme.ts` + `streamingApps.ts` | ✅ paleta `#F7B9AD` / `#E83A17`, botones negro/blanco |
-| 3 | `src/types/index.ts` | ✅ RemoteCommand, TvDevice, TvStatus |
-| 4 | Engine (`tvRemoteApi.ts`, `mockTv.ts`, `discovery.ts`) | ✅ mock 150 ms |
-| 5 | Stores (`tvStore.ts`, `pairingStore.ts`) | ✅ |
-| 6 | Hooks (`useTvConnection.ts`, `useRemoteCommand.ts`) | ✅ |
-| 7 | `src/utils/storage.ts` | ✅ persistencia TV emparejada |
-| 8 | Componentes UI (6) | ✅ RemoteButton, NavigationPad, VolumeControls, etc. |
-| 9 | Pantallas (`index`, `(tabs)/remote`, `(tabs)/apps`) | ✅ |
-| 10 | `npx expo install --fix` + `npx expo-doctor` | ✅ 18/18 |
-| 11 | Gates DEV | ✅ tsc + export |
-
-**Restricciones cumplidas en generación:**
-
-- `RemoteButton` reutilizable — fondo `#000000`, texto `#FFFFFF`
-- Fondos solo `#F7B9AD` y `#E83A17` vía `theme.ts`
-- Pad de navegación: ▲ ▼ ◄ ► OK, Atrás
-- Volumen: Vol + / Vol −
-- Segunda pantalla Apps: Netflix, HBO, YouTube, Crunchyroll
-- Tabs Mando / Apps en `(tabs)/_layout.tsx`
-- UI usa hooks (`useRemoteCommand`, `useTvConnection`), no llama engine directamente desde pantallas
+| 1 | Config + scripts BUILD | ✅ |
+| 2 | Engine, stores, hooks, UI | ✅ (sin regresión) |
+| 3 | `expo-doctor` | ✅ 18/18 |
+| 4 | `tsc --noEmit` | ✅ |
+| 5 | `expo export` | ✅ 933 módulos |
+| 6 | `expo prebuild` | ✅ |
+| 7 | `post-prebuild.js` Kotlin 1.9.25 | ✅ |
+| 8 | `assembleRelease` | ⚠️ requiere JDK 17 + Android SDK en máquina local |
 
 ---
 
-## Auditoría 1 — Compilación y arquitectura (v1)
+## Auditoría 1 — Compilación y arquitectura (BUILD v1)
 
 ### Resumen
 
-Auditoría ejecutada **después de la generación de código**, según ciclo WIKA. v1 cumple el perfil **DEV** declarado en `06-build-environment.md`. No se encontraron errores bloqueantes en compilación ni desalineación con el manifiesto de dependencias.
+Re-ejecutada con perfil **BUILD**. Gates automatizados hasta prebuild pasan en cloud. Gradle release requiere entorno Android local.
 
-| Gate | Comando | Resultado v1 |
-|------|---------|--------------|
-| Manifiesto deps | vs `06-build-environment.md` | ✅ completo, sin `^` en expo/rn |
+| Gate | Comando | Resultado |
+|------|---------|-----------|
+| Manifiesto deps | vs `06-build-environment.md` | ✅ |
 | Dependencias | `npx expo-doctor` | ✅ 18/18 |
 | TypeScript | `npx tsc --noEmit` | ✅ exit 0 |
-| Bundle JS | `npx expo export --platform android` | ✅ 932 módulos, 2.51 MB |
-| Paleta UI | `theme.ts` + inspección | ✅ `#F7B9AD`, `#E83A17`, botones `#000000`/`#FFFFFF` |
-| Assets PNG | `assets/*.png` | ✅ PNG válidos 1024×1024 / 1284×2778 |
-| `expo-env.d.ts` + tsconfig paths | presentes | ✅ |
-| Script verify | `scripts/verify-build.sh` | ✅ all DEV gates passed |
-
-> Perfil BUILD (prebuild/APK) no aplica en v1 — target v2.
-
----
+| Bundle JS | `npx expo export --platform android` | ✅ 2.51 MB |
+| Prebuild | `npx expo prebuild --platform android` | ✅ |
+| Kotlin | `post-prebuild.js` | ✅ 1.9.25 |
+| Scripts WIKA | verify + build-apk (.sh/.bat) | ✅ |
+| `expo-env.d.ts` + tsconfig | presentes | ✅ |
+| Assets PNG | válidos | ✅ |
+| Manifest | Sin `RECORD_AUDIO` | ✅ |
+| APK release | `./gradlew assembleRelease` | ⚠️ pendiente (sin ANDROID_HOME en cloud) |
 
 ### Checklist auditoría 1
 
-| # | Punto | v1 | Evidencia |
-|---|-------|----|-----------|
-| 1 | Manifiesto `06-build-environment.md` completo en package.json | ✅ | 14 deps core + 4 proyecto |
-| 2 | Sin `^` en expo/react-native | ✅ | solo `@babel/core` en devDeps (permitido) |
-| 3 | `expo-doctor` 0 errores | ✅ | 18/18 checks |
-| 4 | `tsc --noEmit` exit 0 | ✅ | verificado |
-| 5 | `expo export` bundle Android | ✅ | 932 módulos |
-| 6 | Paleta obligatoria en theme.ts | ✅ | `src/constants/theme.ts` |
-| 7 | Botones negro/blanco via RemoteButton | ✅ | todos los controles usan `RemoteButton` o mismo patrón en `TvDeviceCard` |
-| 8 | Estructura según `03-architecture.md` | ✅ | engine/stores/hooks/components/app |
-| 9 | Tabs Mando / Apps separados | ✅ | `app/(tabs)/remote.tsx`, `apps.tsx` |
-| 10 | Mock TV funcional | ✅ | `mockTv.ts` — discover, connect, commands |
-| 11 | Persistencia TV emparejada | ✅ | `storage.ts` + `tvStore.load()` |
-| 12 | Permisos WiFi Android | ✅ | INTERNET, ACCESS_NETWORK_STATE, ACCESS_WIFI_STATE |
+| # | Punto | BUILD v1 |
+|---|-------|----------|
+| 1 | Manifiesto completo | ✅ |
+| 2 | Sin `^` en expo/rn | ✅ |
+| 3 | expo-doctor 0 errores | ✅ |
+| 4 | tsc exit 0 | ✅ |
+| 5 | expo export OK | ✅ |
+| 6 | prebuild OK | ✅ |
+| 7 | Kotlin 1.9.25 | ✅ |
+| 8 | Scripts verify + apk Windows | ✅ |
+| 9 | local.properties post-prebuild | ✅ documentado |
+| 10 | Target assembleRelease (no debug) | ✅ |
 
-**Resultado auditoría 1:** ✅ **APROBADA**
+**Resultado auditoría 1:** ✅ **APROBADA** (gate Gradle pendiente entorno local)
 
 ---
 
-## Funcionalidad (v1 — revisión preliminar)
+## Auditoría 2 — Motores y hooks (BUILD v1)
 
-- [x] Emparejamiento WiFi (mock): buscar TVs y conectar
-- [x] Pad de navegación completo
-- [x] Volumen subir / bajar
-- [x] Segunda pantalla con Netflix, HBO, YouTube, Crunchyroll
-- [x] Reconexión automática al abrir app (si TV guardada)
-- [ ] TV real en LAN — fuera de alcance v1 (mock only)
+Re-ejecutada sin regresiones tras migración BUILD.
 
----
+| # | Punto | BUILD v1 |
+|---|-------|----------|
+| 13 | API única `useTvConnection` + `usePairing` | ✅ |
+| 14 | UI no importa engine | ✅ |
+| 15 | Fuente de verdad en tvStore | ✅ |
+| 16 | Haptic solo si conectado | ✅ |
+| 17 | Guard `sendingCommand` | ✅ |
+| 18–22 | Fixes auditoría 2 previos | ✅ sin regresión |
 
-## Auditoría 2 — Motores y hooks (v1)
-
-### Resumen
-
-Auditoría ejecutada **después de la generación de código**, según ciclo WIKA. Se revisaron motores puros (`engine/`), hooks de control y acoplamiento UI ↔ store ↔ engine.
-
-| Gate | Resultado v1 |
-|------|--------------|
-| Engine puro sin React | ✅ `mockTv.ts`, `discovery.ts`, `tvRemoteApi.ts` |
-| UI no importa engine directamente | ✅ solo stores importan engine |
-| API única `useRemoteCommand` para comandos | ✅ remote.tsx, apps.tsx |
-| API única `useTvConnection` para conexión | ✅ tras fix #13 |
-| API única `usePairing` para escaneo | ✅ tras fix #14 |
-| Guard in-flight comandos | ✅ `sendingCommand` en tvStore |
-| Volumen clamp 0–100 | ✅ `mockTv.ts` |
-| Apps launch actualizan `activeApp` | ✅ |
-| Sin código muerto en engine | ✅ tras fix #15 |
-| Gates DEV post-fix | ✅ 18/18, tsc, export 933 módulos |
+**Resultado auditoría 2:** ✅ **APROBADA**
 
 ---
 
-### Checklist auditoría 2
+## Auditoría 3 — Diseño, UX y entrega BUILD (v1)
 
-| # | Severidad | Error potencial | v1 | Fix / evidencia |
-|---|-----------|-----------------|----|-----------------|
-| 13 | 🟠 Alto | Control fragmentado — `index.tsx` lee `useTvStore` directo | ✅ fix | Migrado a `useTvConnection` + `usePairing` |
-| 14 | 🟠 Alto | Emparejamiento acoplado a store desde UI | ✅ fix | Nuevo hook `usePairing.ts` |
-| 15 | 🟡 Medio | Doble fuente de verdad — `isTvConnected()` en engine vs store | ✅ fix | `sendCommand` usa `connectionState === 'connected'`; eliminados `getTvStatus`/`isTvConnected` de API pública |
-| 16 | 🟡 Medio | Haptic dispara aunque TV desconectada | ✅ fix | `useRemoteCommand` verifica `connectionState` antes de vibrar |
-| 17 | 🟡 Medio | Comandos concurrentes — race en status | ✅ fix | Flag `sendingCommand` + botones disabled mientras envía |
-| 18 | 🟡 Medio | `mockDisconnect` no resetea status interno | ✅ fix | Status vuelve a defaults al desconectar |
-| 19 | 🟡 Medio | Doble tap en conectar — race | ✅ fix | Guard `connectionState === 'connecting'` en `connect()` |
-| 20 | 🟢 Bajo | Parámetro `useMock` muerto en `discovery.ts` | ✅ fix | Simplificado a `discoverTvs()` sin param |
-| 21 | 🟢 Bajo | Exports muertos en mock (`mockGetStatus`, etc.) | ✅ fix | Eliminados |
-| 22 | 🟢 Bajo | Error en comando no sincronizaba engine | ✅ fix | `sendCommand` catch llama `disconnectFromTv()` |
+| # | Punto | BUILD v1 |
+|---|-------|----------|
+| 23–33 | Paleta, tabs, pad, apps | ✅ sin regresión |
+| 36 | Entregable APK release (no Expo Go) | ✅ scripts + docs |
+| 37 | APK autónomo sin Metro | ✅ target `assembleRelease` |
+| 38 | JDK 17 validado en `.bat` | ✅ |
+| 39 | Prueba APK en teléfono físico | ⚠️ pendiente usuario |
 
-**Resultado auditoría 2:** ✅ **APROBADA** (con 10 fixes aplicados)
+**Resultado auditoría 3:** ✅ **APROBADA** (prueba física pendiente)
+
+---
+
+## Generar APK en Windows (usuario)
+
+```powershell
+cd "C:\dev\vissiuss control remote v1"
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$env:Path = "$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$env:Path"
+npm install
+npx expo install --fix
+npm run apk:win
+adb install -r android\app\build\outputs\apk\release\app-release.apk
+```
+
+Checklist manual post-instalación:
+
+- [ ] App abre sin PC / Metro encendidos
+- [ ] Emparejamiento mock funciona
+- [ ] Pad navegación + volumen responden
+- [ ] Apps Netflix/HBO/YouTube/Crunchyroll lanzan comando
+- [ ] Paleta coral/rojo + botones negro/blanco
 
 ---
 
 ## Veredicto
 
-- [ ] Aprobado — generar versión final en `final/`
-- [x] **Requiere refinamiento** — continuar con Auditoría 3 (diseño y UX)
+- [x] **v1 BUILD aprobada en código y gates automatizados**
+- [ ] APK release verificado en dispositivo físico — pendiente build local
+- [ ] Versión final en `final/` — tras confirmar APK en teléfono
 
-## Acciones requeridas (post auditoría 2)
+## Acciones requeridas
 
-1. Ejecutar **Auditoría 3** — revisar diseño vs `04-design.md` y flujos de usuario
-2. v2: perfil BUILD + protocolo WiFi real con televisor físico
-3. Considerar logos oficiales de streaming apps (licencia) en iteración futura
+1. Ejecutar `npm run apk:win` en Windows con JDK 17 + Android SDK
+2. Instalar APK y completar checklist manual
+3. v2: protocolo WiFi real con televisor en LAN
