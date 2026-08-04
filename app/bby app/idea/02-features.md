@@ -21,7 +21,7 @@ Patrón Morse estándar de emergencia. Unidad base = 200 ms.
 | Pausa entre letras (S→O→S) | 600 ms OFF | 3 |
 | Pausa entre ciclos | 1200 ms OFF | 6 |
 
-Secuencia resultante (21 pasos, ciclo completo de **6600 ms**):
+Secuencia resultante (21 pasos, ciclo completo de **6800 ms**):
 
 ```text
 · · ·   [600 ms]   — — —   [600 ms]   · · ·   [1200 ms]
@@ -32,8 +32,8 @@ Secuencia resultante (21 pasos, ciclo completo de **6600 ms**):
 
 ## Control de intensidad — Comportamiento
 
-v1 implementa **PWM software** sobre el torch de `expo-camera`. No usa la API nativa de
-`torch strength` (fuera de alcance en v1).
+v2 implementa **PWM software** sobre el torch de `expo-camera`. No usa la API nativa de
+`torch strength` (fuera de alcance en v2).
 
 | Valor slider | Comportamiento |
 |--------------|----------------|
@@ -66,13 +66,13 @@ v1 implementa **PWM software** sobre el torch de `expo-camera`. No usa la API na
 | P0 | Modo SOS | Requisito explícito del proyecto |
 | P0 | Control de intensidad | Requisito explícito del proyecto |
 | P0 | UI gótica | Estilo visual definido en `04-design.md` |
-| P1 | Persistencia de intensidad | Mejora UX sin bloquear v1 |
+| P1 | Persistencia de intensidad | Mejora UX sin bloquear v2 |
 | P1 | Detección de hardware | Evita crashes en dispositivos sin flash |
 | P1 | Pantalla siempre encendida | Útil mientras la linterna está activa |
 | P2 | Feedback háptico | Pulido de UX |
 | P2 | Pantalla como luz auxiliar | Nice-to-have |
 
-## Fuera de alcance (v1)
+## Fuera de alcance (v2)
 
 - Soporte iOS
 - Linterna frontal (selfie flash)

@@ -7,10 +7,10 @@
 Marcar el perfil que aplica a esta iteración:
 
 - [ ] **DEV** — Expo Go (`npx expo start` + app Expo Go en dispositivo)
-- [x] **BUILD** — Nativo (`prebuild` + APK/IPA en dispositivo físico o emulador) — **target v1**
+- [x] **BUILD** — Nativo (`prebuild` + APK/IPA en dispositivo físico o emulador) — **target v2**
 - [ ] **RELEASE** — EAS Build (publicación en stores)
 
-> v1 requiere BUILD: el control del flash LED debe probarse en dispositivo Android físico con APK nativo.
+> v2 requiere BUILD: el control del flash LED debe probarse en dispositivo Android físico con APK nativo.
 
 ---
 
@@ -29,7 +29,7 @@ Marcar el perfil que aplica a esta iteración:
 ### Configuración Android Studio
 
 - **Gradle JDK:** Java 17 (Eclipse Adoptium o JBR 17)
-- **Proyecto a abrir:** `iterations/v1/android/` (no la raíz Expo)
+- **Proyecto a abrir:** `iterations/v2/android/` (no la raíz Expo)
 
 ---
 
@@ -134,7 +134,7 @@ android.kotlinVersion=1.9.25
 
 ## Pipeline de build
 
-### Perfil BUILD (APK local) — target v1
+### Perfil BUILD (APK local) — target v2
 
 Configurar el SDK **antes** de empezar:
 
@@ -146,7 +146,7 @@ export JAVA_HOME=/ruta/al/jdk-17          # WIKA exige JDK 17
 Pipeline completo (equivale a `npm run verify`):
 
 ```bash
-cd "app/bby app/iterations/v1"
+cd "app/bby app/iterations/v2"
 npm install
 npx expo install --fix
 npx expo-doctor
@@ -161,7 +161,7 @@ cd android && ./gradlew assembleDebug
 > Si el directorio `android/` solo contiene `local.properties`, prebuild lo considera un
 > proyecto malformado, lo borra y Gradle falla con `SDK location not found`.
 
-### APK autónomo (entregable v1)
+### APK autónomo (entregable v2)
 
 El APK **debug** no sirve como entregable: carga el bundle JS desde el servidor Metro, así que
 sin `npx expo start` en la misma red la app muestra pantalla roja. El entregable es el APK
@@ -196,13 +196,13 @@ O copiar el `.apk` al teléfono y abrirlo con **Instalar apps desconocidas** hab
 
 `expo prebuild` genera `android/app/debug.keystore` y el buildType `release` lo reutiliza. Eso
 basta para instalar por sideload, pero **no sirve para publicar en Play Store**: allí hace falta
-un keystore propio y un `signingConfig` dedicado. Fuera de alcance en v1 (perfil RELEASE/EAS).
+un keystore propio y un `signingConfig` dedicado. Fuera de alcance en v2 (perfil RELEASE/EAS).
 
 ### Nota sobre `package.json`
 
 `expo prebuild` reescribe la sección `scripts` y reinserta `"ios": "expo run:ios"` aunque
 solo se prebuilde Android. El script se mantiene en el repo para que el árbol de git quede
-limpio tras cada build; **el target de v1 sigue siendo Android únicamente**.
+limpio tras cada build; **el target de v2 sigue siendo Android únicamente**.
 
 ### Perfil DEV (Expo Go) — referencia
 
@@ -245,6 +245,7 @@ Incluir en cada iteración:
 | Script | Propósito |
 |--------|-----------|
 | `scripts/verify-build.sh` | Ejecuta todos los gates en orden (`npm run verify`) |
+| `scripts/verify-build.bat` | Igual, para Windows (`npm run verify:win`) |
 | `scripts/build-apk.sh` | Genera el APK release autónomo (`npm run apk`) |
 | `scripts/build-apk.bat` | Igual, para Windows (`npm run apk:win`) |
 | `scripts/post-prebuild.js` | Fija Kotlin 1.9.25 tras cada prebuild |

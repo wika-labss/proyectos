@@ -18,7 +18,7 @@ Estética inspirada en arquitectura gótica y atmósfera nocturna: formas angula
 
 | Pantalla | Descripción |
 |----------|-------------|
-| **Principal (única)** | Pantalla única con todos los controles: botón central de linterna, slider de intensidad, botón SOS, indicador de estado. Sin navegación adicional en v1 |
+| **Principal (única)** | Pantalla única con todos los controles: botón central de linterna, slider de intensidad, botón SOS, indicador de estado. Sin navegación adicional en v2 |
 | **Sin flash (fallback)** | Mensaje centrado informando que el dispositivo no tiene flash LED disponible, la cámara está ocupada o falta el permiso, con botón blanco **REINTENTAR** |
 
 ## Flujos de usuario
