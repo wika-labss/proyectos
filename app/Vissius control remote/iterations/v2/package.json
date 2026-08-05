@@ -10,6 +10,7 @@
     "verify:win": "scripts\\verify-build.bat",
     "apk": "bash scripts/build-apk.sh",
     "apk:win": "scripts\\build-apk.bat",
+    "apk:ps1": "powershell -ExecutionPolicy Bypass -File build.ps1",
     "prebuild:android": "expo prebuild --platform android && node scripts/post-prebuild.js"
   },
   "dependencies": {
