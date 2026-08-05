@@ -4,7 +4,9 @@ import { Redirect } from 'expo-router';
 import { STREAMING_APPS } from '../../src/constants/streamingApps';
 import { colors, layout } from '../../src/constants/theme';
 import { ConnectionStatus } from '../../src/components/ConnectionStatus';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { StreamingAppButton } from '../../src/components/StreamingAppButton';
+import { useChangeTv } from '../../src/hooks/useChangeTv';
 import { useRemoteCommand } from '../../src/hooks/useRemoteCommand';
 import { useTvConnection } from '../../src/hooks/useTvConnection';
 import type { LaunchCommand } from '../../src/types';
@@ -12,6 +14,7 @@ import type { LaunchCommand } from '../../src/types';
 export default function AppsScreen() {
   const { connectionState, pairedDevice, isConnected } = useTvConnection();
   const { send, error, sendingCommand } = useRemoteCommand();
+  const changeTv = useChangeTv();
 
   if (!pairedDevice) {
     return <Redirect href="/pairing" />;
@@ -23,6 +26,8 @@ export default function AppsScreen() {
 
   return (
     <View style={styles.container}>
+      <ScreenHeader showChangeTv title="Apps" onChangeTv={changeTv} />
+
       <ConnectionStatus
         state={connectionState}
         deviceName={pairedDevice.name}
@@ -57,6 +62,7 @@ const styles = StyleSheet.create({
   content: {
     gap: 16,
     padding: layout.screenPadding,
+    paddingBottom: 32,
   },
   intro: {
     color: colors.textOnSoft,

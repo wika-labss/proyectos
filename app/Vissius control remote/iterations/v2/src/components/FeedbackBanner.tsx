@@ -13,7 +13,7 @@ function toneColor(tone: FeedbackTone): string {
     case 'success':
       return colors.feedbackSuccess;
     case 'warning':
-      return colors.feedbackWarning;
+      return colors.backgroundStrong;
     case 'error':
       return colors.feedbackError;
     default:
@@ -22,9 +22,14 @@ function toneColor(tone: FeedbackTone): string {
 }
 
 export function FeedbackBanner({ message, tone }: FeedbackBannerProps) {
+  const displayMessage = tone === 'success' ? `✓ ${message}` : message;
+
   return (
-    <View style={[styles.banner, { backgroundColor: toneColor(tone) }]}>
-      <Text style={styles.text}>{message}</Text>
+    <View
+      accessibilityRole="alert"
+      style={[styles.banner, { backgroundColor: toneColor(tone) }]}
+    >
+      <Text style={styles.text}>{displayMessage}</Text>
     </View>
   );
 }

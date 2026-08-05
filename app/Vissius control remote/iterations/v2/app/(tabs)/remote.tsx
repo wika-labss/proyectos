@@ -1,15 +1,15 @@
 import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Redirect, router } from 'expo-router';
+import { Redirect } from 'expo-router';
 import { colors, layout } from '../../src/constants/theme';
 import { getStreamingAppLabel } from '../../src/constants/streamingApps';
 import { ConnectionStatus } from '../../src/components/ConnectionStatus';
 import { FeedbackBanner } from '../../src/components/FeedbackBanner';
 import { NavigationPad } from '../../src/components/NavigationPad';
-import { RemoteButton } from '../../src/components/RemoteButton';
+import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { VolumeControls } from '../../src/components/VolumeControls';
+import { useChangeTv } from '../../src/hooks/useChangeTv';
 import { useRemoteCommand } from '../../src/hooks/useRemoteCommand';
-import { usePairing } from '../../src/hooks/usePairing';
 import { useTvConnection } from '../../src/hooks/useTvConnection';
 import type { NavigationCommand, VolumeCommand } from '../../src/types';
 
@@ -20,11 +20,10 @@ export default function RemoteScreen() {
     reconnect,
     isConnected,
     feedback,
-    leaveForPairing,
     clearFeedback,
   } = useTvConnection();
-  const { clear: clearPairing } = usePairing();
   const { send, status, error, sendingCommand } = useRemoteCommand();
+  const changeTv = useChangeTv();
 
   useEffect(() => {
     if (!feedback) {
@@ -46,19 +45,9 @@ export default function RemoteScreen() {
     void send(command);
   };
 
-  const handleChangeTv = () => {
-    void (async () => {
-      clearPairing();
-      await leaveForPairing();
-      router.replace('/pairing');
-    })();
-  };
-
   return (
     <View style={styles.container}>
-      <View style={styles.topBar}>
-        <RemoteButton compact label="← Cambiar TV" onPress={handleChangeTv} style={styles.backButton} />
-      </View>
+      <ScreenHeader showChangeTv title="Mando" onChangeTv={changeTv} />
 
       <ConnectionStatus
         state={connectionState}
@@ -69,14 +58,12 @@ export default function RemoteScreen() {
       <View style={styles.body}>
         {feedback ? <FeedbackBanner message={feedback.text} tone={feedback.tone} /> : null}
 
-        <View style={styles.statusCard}>
-          {status.activeApp ? (
-            <>
-              <Text style={styles.statusLabel}>App activa</Text>
-              <Text style={styles.statusValue}>{getStreamingAppLabel(status.activeApp)}</Text>
-            </>
-          ) : null}
-        </View>
+        {status.activeApp ? (
+          <View style={styles.statusCard}>
+            <Text style={styles.statusLabel}>App activa</Text>
+            <Text style={styles.statusValue}>{getStreamingAppLabel(status.activeApp)}</Text>
+          </View>
+        ) : null}
 
         <NavigationPad onCommand={handleNav} disabled={!isConnected || sendingCommand} />
         <VolumeControls
@@ -101,15 +88,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundSoft,
     flex: 1,
   },
-  topBar: {
-    backgroundColor: colors.backgroundStrong,
-    paddingHorizontal: layout.screenPadding,
-    paddingTop: 48,
-    paddingBottom: 8,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-  },
   body: {
     flex: 1,
     gap: 24,
@@ -127,12 +105,12 @@ const styles = StyleSheet.create({
   statusLabel: {
     color: colors.textOnSoft,
     fontSize: 14,
-    marginTop: 4,
   },
   statusValue: {
     color: colors.textOnSoft,
     fontSize: 22,
     fontWeight: '700',
+    marginTop: 4,
   },
   hint: {
     color: colors.textOnSoft,
