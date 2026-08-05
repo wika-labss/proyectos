@@ -1,5 +1,6 @@
-import type { RemoteCommand, TvDevice, TvStatus } from '../../types';
+import type { RemoteCommand, StreamingAppId, TvDevice, TvStatus } from '../../types';
 import { fetchWithTimeout } from '../httpClient';
+import { applyVolumeStep, normalizeVolumeLevel } from '../volumeLogic';
 
 const BASE = (device: TvDevice) => `http://${device.ip}:${device.port}`;
 
@@ -8,6 +9,29 @@ interface VissiusInfoResponse {
   name: string;
   volume: number;
   muted?: boolean;
+}
+
+function appFromCommand(command: RemoteCommand): StreamingAppId | null {
+  if (command === 'launch_netflix') return 'netflix';
+  if (command === 'launch_hbo') return 'hbo';
+  if (command === 'launch_youtube') return 'youtube';
+  if (command === 'launch_crunchyroll') return 'crunchyroll';
+  return null;
+}
+
+function toStatus(
+  volumeLevel: number,
+  muted: boolean,
+  activeApp: StreamingAppId | null = null,
+  lastCommand: RemoteCommand | null = null,
+): TvStatus {
+  const normalized = normalizeVolumeLevel(volumeLevel, muted);
+  return {
+    power: true,
+    ...normalized,
+    activeApp,
+    lastCommand,
+  };
 }
 
 export async function probeVissius(ip: string): Promise<TvDevice | null> {
@@ -39,7 +63,7 @@ export async function connectVissius(device: TvDevice): Promise<TvStatus> {
     throw new Error('TV Vissius no responde');
   }
   const data = (await response.json()) as VissiusInfoResponse;
-  return normalizeStatus(data.volume, Boolean(data.muted));
+  return toStatus(data.volume, Boolean(data.muted));
 }
 
 export async function sendVissiusCommand(
@@ -58,7 +82,7 @@ export async function sendVissiusCommand(
     if (!response?.ok) {
       throw new Error('Error de volumen en TV Vissius');
     }
-    return next;
+    return toStatus(next.volume, next.muted, null, command);
   }
 
   const response = await fetchWithTimeout(`${BASE(device)}/api/v1/command`, {
@@ -70,41 +94,16 @@ export async function sendVissiusCommand(
     throw new Error('Comando rechazado por TV Vissius');
   }
 
+  const launchedApp = appFromCommand(command);
+
   try {
     const data = (await response.json()) as Partial<VissiusInfoResponse>;
     if (typeof data.volume === 'number') {
-      return normalizeStatus(data.volume, Boolean(data.muted));
+      return toStatus(data.volume, Boolean(data.muted), launchedApp, command);
     }
   } catch {
-    // status parcial OK
+    // respuesta vacía OK
   }
 
-  return normalizeStatus(volume, muted);
-}
-
-function applyVolumeStep(current: number, muted: boolean, command: 'vol_up' | 'vol_down'): TvStatus {
-  if (command === 'vol_down') {
-    if (muted || current <= 0) {
-      return normalizeStatus(0, true);
-    }
-    const next = Math.max(0, current - 5);
-    return normalizeStatus(next, next === 0);
-  }
-
-  if (muted || current === 0) {
-    return normalizeStatus(5, false);
-  }
-  return normalizeStatus(Math.min(100, current + 5), false);
-}
-
-function normalizeStatus(volumeLevel: number, muted: boolean): TvStatus {
-  const clamped = Math.max(0, Math.min(100, Math.round(volumeLevel)));
-  const isMuted = muted || clamped === 0;
-  return {
-    power: true,
-    volume: isMuted ? 0 : clamped,
-    muted: isMuted,
-    activeApp: null,
-    lastCommand: null,
-  };
+  return toStatus(volume, muted, launchedApp, command);
 }

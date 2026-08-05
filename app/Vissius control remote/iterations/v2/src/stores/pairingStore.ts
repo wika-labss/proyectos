@@ -11,13 +11,17 @@ interface PairingStore {
   clear: () => void;
 }
 
-export const usePairingStore = create<PairingStore>((set) => ({
+export const usePairingStore = create<PairingStore>((set, get) => ({
   devices: [],
   scanning: false,
   scanError: null,
   scanEmpty: false,
 
   scan: async () => {
+    if (get().scanning) {
+      return;
+    }
+
     set({ scanning: true, scanError: null, scanEmpty: false, devices: [] });
     try {
       const devices = await scanForTvs();

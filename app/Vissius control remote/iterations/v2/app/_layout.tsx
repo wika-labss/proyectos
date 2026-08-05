@@ -1,17 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '../src/constants/theme';
-import { useTvStore } from '../src/stores/tvStore';
+import { useTvBootstrap } from '../src/hooks/useTvBootstrap';
 
 export default function RootLayout() {
-  const loaded = useTvStore((state) => state.loaded);
-  const load = useTvStore((state) => state.load);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const { loaded } = useTvBootstrap();
 
   if (!loaded) {
     return (

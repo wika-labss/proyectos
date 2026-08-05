@@ -9,6 +9,7 @@ import { NavigationPad } from '../../src/components/NavigationPad';
 import { RemoteButton } from '../../src/components/RemoteButton';
 import { VolumeControls } from '../../src/components/VolumeControls';
 import { useRemoteCommand } from '../../src/hooks/useRemoteCommand';
+import { usePairing } from '../../src/hooks/usePairing';
 import { useTvConnection } from '../../src/hooks/useTvConnection';
 import type { NavigationCommand, VolumeCommand } from '../../src/types';
 
@@ -22,6 +23,7 @@ export default function RemoteScreen() {
     leaveForPairing,
     clearFeedback,
   } = useTvConnection();
+  const { clear: clearPairing } = usePairing();
   const { send, status, error, sendingCommand } = useRemoteCommand();
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export default function RemoteScreen() {
 
   const handleChangeTv = () => {
     void (async () => {
+      clearPairing();
       await leaveForPairing();
       router.replace('/pairing');
     })();

@@ -1,6 +1,6 @@
 import type { RemoteCommand, StreamingAppId, TvDevice, TvStatus } from '../../types';
-import { volume as volumeConfig } from '../../constants/theme';
 import { fetchWithTimeout } from '../httpClient';
+import { applyVolumeStep, normalizeVolumeLevel } from '../volumeLogic';
 
 const ROKU_PORT = 8060;
 
@@ -64,13 +64,20 @@ export async function sendRokuCommand(
   muted: boolean,
 ): Promise<TvStatus> {
   if (command === 'vol_up' || command === 'vol_down') {
-    const next = applyVolumeStep(currentVolume, muted, command);
-    const key = next.muted ? 'VolumeMute' : command === 'vol_up' ? 'VolumeUp' : 'VolumeDown';
+    const volumeState = applyVolumeStep(currentVolume, muted, command);
+    const key =
+      volumeState.muted && command === 'vol_down'
+        ? 'VolumeMute'
+        : command === 'vol_up'
+          ? 'VolumeUp'
+          : 'VolumeDown';
     await postKey(device, key);
-    if (next.muted && command === 'vol_down') {
-      await postKey(device, 'VolumeMute');
-    }
-    return { ...next, lastCommand: command };
+    return {
+      power: true,
+      ...volumeState,
+      activeApp: null,
+      lastCommand: command,
+    };
   }
 
   const key = KEY_MAP[command];
@@ -116,38 +123,4 @@ async function launchApp(device: TvDevice, appId: string): Promise<void> {
   if (!response?.ok) {
     throw new Error('Roku rechazó lanzar app');
   }
-}
-
-function applyVolumeStep(current: number, muted: boolean, command: 'vol_up' | 'vol_down'): TvStatus {
-  if (command === 'vol_down') {
-    if (muted || current <= volumeConfig.min) {
-      return { power: true, volume: 0, muted: true, activeApp: null, lastCommand: 'vol_down' };
-    }
-    const next = Math.max(0, current - volumeConfig.step);
-    return {
-      power: true,
-      volume: next,
-      muted: next === 0,
-      activeApp: null,
-      lastCommand: 'vol_down',
-    };
-  }
-
-  if (muted || current === 0) {
-    return {
-      power: true,
-      volume: volumeConfig.unmuteLevel,
-      muted: false,
-      activeApp: null,
-      lastCommand: 'vol_up',
-    };
-  }
-
-  return {
-    power: true,
-    volume: Math.min(volumeConfig.max, current + volumeConfig.step),
-    muted: false,
-    activeApp: null,
-    lastCommand: 'vol_up',
-  };
 }

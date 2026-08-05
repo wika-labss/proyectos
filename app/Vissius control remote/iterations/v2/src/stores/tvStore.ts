@@ -136,7 +136,10 @@ export const useTvStore = create<TvStore>((set, get) => ({
   },
 
   leaveForPairing: async () => {
-    const { pairedDevice } = get();
+    const { pairedDevice, sendingCommand } = get();
+    if (sendingCommand) {
+      return;
+    }
     await disconnectFromTv(pairedDevice);
     set({
       connectionState: 'idle',

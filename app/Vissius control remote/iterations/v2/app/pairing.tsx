@@ -53,6 +53,9 @@ export default function PairingScreen() {
 
   const handleConnect = useCallback(
     async (device: TvDevice) => {
+      if (connectingId || connectionState === 'connecting') {
+        return;
+      }
       setConnectingId(device.id);
       const ok = await connect(device);
       setConnectingId(null);
@@ -60,7 +63,7 @@ export default function PairingScreen() {
         router.replace('/(tabs)/remote');
       }
     },
-    [connect],
+    [connect, connectingId, connectionState],
   );
 
   if (connectionState === 'connected' && pairedDevice) {

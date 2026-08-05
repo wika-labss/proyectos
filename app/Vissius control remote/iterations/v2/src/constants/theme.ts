@@ -13,15 +13,10 @@ export const colors = {
   feedbackError: '#B71C1C',
 } as const;
 
+export { volume } from './volume';
+
 export const layout = {
   minTouchTarget: 48,
   buttonRadius: 10,
   screenPadding: 20,
-} as const;
-
-export const volume = {
-  min: 0,
-  max: 100,
-  step: 5,
-  unmuteLevel: 5,
 } as const;
