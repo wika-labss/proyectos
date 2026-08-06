@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -14,13 +14,9 @@ import { ConnectionStatus } from '../src/components/ConnectionStatus';
 import { FeedbackBanner } from '../src/components/FeedbackBanner';
 import { RemoteButton } from '../src/components/RemoteButton';
 import { TvDeviceCard } from '../src/components/TvDeviceCard';
-import {
-  getAndroidTvCert,
-  setAndroidTvPinProvider,
-} from '../src/engine/drivers/androidTvDriver';
+import { useAndroidTvPin } from '../src/hooks/useAndroidTvPin';
 import { usePairing } from '../src/hooks/usePairing';
 import { useTvConnection } from '../src/hooks/useTvConnection';
-import { saveAndroidTvCert } from '../src/utils/storage';
 import type { TvDevice, TvProtocol } from '../src/types';
 
 export default function PairingScreen() {
@@ -35,25 +31,19 @@ export default function PairingScreen() {
     clearFeedback,
   } = useTvConnection();
   const { devices, scanning, scanError, scanEmpty, progress, scan, connectByIp } = usePairing();
+  const {
+    pinVisible,
+    pinValue,
+    setPinValue,
+    submitPin,
+    cancelPin,
+    persistCertIfNeeded,
+  } = useAndroidTvPin();
+
   const [connectingId, setConnectingId] = useState<string | null>(null);
   const [wifiWarning, setWifiWarning] = useState<string | null>(null);
   const [manualIp, setManualIp] = useState('');
   const [manualProtocol, setManualProtocol] = useState<TvProtocol | 'auto'>('auto');
-  const [pinVisible, setPinVisible] = useState(false);
-  const [pinValue, setPinValue] = useState('');
-  const pinResolver = useRef<((code: string) => void) | null>(null);
-
-  useEffect(() => {
-    setAndroidTvPinProvider(
-      () =>
-        new Promise<string>((resolve) => {
-          setPinValue('');
-          setPinVisible(true);
-          pinResolver.current = resolve;
-        }),
-    );
-    return () => setAndroidTvPinProvider(null);
-  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -96,18 +86,15 @@ export default function PairingScreen() {
       }
       setConnectingId(device.id);
       const ok = await connect(device);
-      if (ok && device.protocol === 'androidtv') {
-        const cert = getAndroidTvCert(device.id);
-        if (cert) {
-          await saveAndroidTvCert(device.id, cert);
-        }
+      if (ok) {
+        await persistCertIfNeeded(device);
+        setConnectingId(null);
+        router.replace('/(tabs)/remote');
+        return;
       }
       setConnectingId(null);
-      if (ok) {
-        router.replace('/(tabs)/remote');
-      }
     },
-    [connect, connectingId, connectionState],
+    [connect, connectingId, connectionState, persistCertIfNeeded],
   );
 
   const handleManualIp = useCallback(async () => {
@@ -121,13 +108,6 @@ export default function PairingScreen() {
       await handleConnect(device);
     }
   }, [manualIp, manualProtocol, scanning, connectByIp, clearFeedback, handleConnect]);
-
-  const submitPin = () => {
-    const code = pinValue.trim().toUpperCase();
-    setPinVisible(false);
-    pinResolver.current?.(code);
-    pinResolver.current = null;
-  };
 
   if (connectionState === 'connected' && pairedDevice) {
     return <Redirect href="/(tabs)/remote" />;
@@ -259,14 +239,7 @@ export default function PairingScreen() {
               onChangeText={setPinValue}
             />
             <RemoteButton label="Confirmar PIN" onPress={submitPin} />
-            <RemoteButton
-              label="Cancelar"
-              onPress={() => {
-                setPinVisible(false);
-                pinResolver.current?.('');
-                pinResolver.current = null;
-              }}
-            />
+            <RemoteButton label="Cancelar" onPress={cancelPin} />
           </View>
         </View>
       </Modal>

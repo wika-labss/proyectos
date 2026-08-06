@@ -21,4 +21,11 @@ Generar APK (Windows — PowerShell, sin instalar):
 APK:
   android\app\build\outputs\apk\release\app-release.apk
 
-Estado: v3 — Auditoria 1 APROBADA (pairing fix urgente)
+Estado: v3 — Auditoria 1 APROBADA + Android TV / Google TV (PIN)
+
+Prueba Android TV:
+  1. Misma WiFi que la TV
+  2. Buscar TV o IP manual + protocolo Android
+  3. Al conectar, la TV muestra un PIN de 6 caracteres
+  4. Introducir PIN en el modal de la app
+
