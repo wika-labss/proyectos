@@ -1,69 +1,91 @@
 # Funcionalidades
 
+## Iteración v3.1 — cambios respecto a v3
+
+| Área | v3 | v3.1 |
+|------|----|------|
+| Diagnóstico | Solo consola / feedback UI | **Módulo logs** `ejecución → resultado` |
+| Export | No | **Share texto + JSON** |
+| Pantalla Logs | No | **`/logs`** filtros + limpiar |
+| Discovery fix | Pendiente | **Sin fix aún** (diagnóstico primero) |
+
+---
+
+## Iteración v3 — cambios respecto a v2
+
+| Área | v2 | v3 |
+|------|----|----|
+| Discovery | Timeout 700 ms, batches 40, sin cleartext | **Timeout 2.5 s**, batches 16, **HTTP cleartext**, progreso visible |
+| Protocolos | Roku + Vissius | **Android TV / Google TV** (6466/6467 + PIN) + Roku + Vissius |
+| Emparejamiento | Connect Roku sin verificar | **Probe real** + **PIN Android TV** + IP manual |
+| Volumen | Paso 5 | **Paso 1** (0–100 de uno en uno) |
+| Entradas | No | **Pantalla Entradas** HDMI 1–4, AV, TV |
+| Perfil | BUILD v2 | BUILD **v3** |
+
+---
+
 ## Funcionalidades principales
 
-### Conexión y emparejamiento
+### Pantalla de inicio
 
-- [ ] **Detección de red WiFi** — Verificar que el móvil está conectado a una red WiFi antes de buscar TVs
-- [ ] **Buscar televisor** — Escanear la red local o listar TVs disponibles para emparejar
-- [ ] **Emparejar con TV** — Establecer conexión WiFi con el televisor seleccionado
-- [ ] **Recordar TV emparejada** — Guardar la última TV conectada para reconexión automática
-- [ ] **Estado de conexión** — Indicador claro: buscando / conectado / desconectado / error
+- [x] Splash Vissiuss (negro / blanco / watermark)
 
-### Control remoto — Pantalla principal
+### Conexión y emparejamiento (P0 URGENTE)
 
-- [ ] **Botones de navegación** — Pad direccional con:
-  - Arriba
-  - Abajo
-  - Izquierda
-  - Derecha
-  - OK / Seleccionar
-  - Atrás (Back)
-- [ ] **Control de volumen** — Dos botones dedicados:
-  - **Subir volumen**
-  - **Bajar volumen**
+- [x] **Android TV / Google TV** — Discovery puerto 6467 + emparejamiento PIN (protocolo Remote v2)
+- [x] **Cleartext HTTP LAN** — `usesCleartextTraffic: true` (Android bloquea HTTP sin esto)
+- [x] **Escaneo largo** — timeout probe ≥ 2500 ms; lotes ≤ 16 hosts
+- [x] **Progreso de búsqueda** — "Escaneando red… X%" o hosts revisados
+- [x] **Mínimo tiempo de búsqueda** — al menos ~8–12 s de escaneo visible (no cerrar en <1 s)
+- [x] **Verificar al conectar** — `connect` hace probe HTTP real; falla si TV no responde
+- [x] **IP manual** — campo para IP + seleccionar protocolo (Roku / Vissius) si el escaneo falla
+- [x] **Aviso sin TVs** — mensaje claro + sugerencia de IP manual
+- [x] **Conexión exitosa** — banner ✓
+- [x] Recordar TV emparejada
 
-### Segunda pantalla — Apps de streaming
+### Diagnóstico (v3.1)
 
-Pantalla separada del mando principal, dedicada a apps de streaming en la TV:
+- [x] Logger `ejecución --> resultado`
+- [x] Exportar texto / JSON (Share)
+- [x] Pantalla Logs con filtros
+- [x] Instrumentación discovery / WiFi / Android TV / connect
 
-- [ ] **Netflix** — Botón para abrir/lanzar Netflix en el televisor
-- [ ] **HBO** — Botón para abrir/lanzar HBO en el televisor
-- [ ] **YouTube** — Botón para abrir/lanzar YouTube en el televisor
-- [ ] **Crunchyroll** — Botón para abrir/lanzar Crunchyroll en el televisor
+### Control remoto
 
-> Cada botón de app envía el comando correspondiente al televisor emparejado. Si la app no está instalada en la TV, mostrar mensaje informativo.
+- [x] Pad navegación + Cambiar TV
+- [x] **Volumen 0–100, pasos 1**; 0 = mute
+
+### Apps
+
+- [x] Netflix, HBO, YouTube, Crunchyroll
+
+### Entradas (v3)
+
+- [x] **HDMI 1, HDMI 2, HDMI 3, HDMI 4**
+- [x] **AV / TV Tuner** (si el protocolo lo soporta)
+- [x] Tab o pantalla **Entradas** junto a Mando / Apps
 
 ## Layout de pantallas
 
 | Pantalla | Contenido |
 |----------|-----------|
-| **Emparejamiento** | Buscar TV en WiFi, listar dispositivos, conectar |
-| **Mando (principal)** | Navegación + volumen |
-| **Apps (segunda pantalla)** | Netflix, HBO, YouTube, Crunchyroll |
+| Splash | Negro, Vissiuss |
+| Emparejamiento | Buscar + progreso + IP manual + enlace Logs |
+| **Logs (v3.1)** | Lista ejecución→resultado + exportar |
+| Mando | Pad + volumen step 1 + Logs |
+| Apps | Streaming |
+| **Entradas** | HDMI 1–4, AV, TV |
 
-Navegación entre **Mando** y **Apps** mediante tabs o botón de cambio de pantalla en la parte inferior.
+## Priorización v3.1
 
-## Priorización
+| Prioridad | Funcionalidad |
+|-----------|---------------|
+| **P0** | Módulo logs exportables para diagnosticar discovery vacío |
+| P1 | Fix discovery (tras logs del dispositivo) |
 
-| Prioridad | Funcionalidad | Descripción |
-|-----------|---------------|-------------|
-| P0 | Emparejamiento WiFi con TV | Sin conexión no hay producto |
-| P0 | Botones de navegación | Core del mando remoto |
-| P0 | Volumen subir / bajar | Control básico esencial |
-| P0 | Segunda pantalla de apps | Netflix, HBO, YouTube, Crunchyroll |
-| P0 | Diseño según `04-design.md` | Paleta y botones obligatorios |
-| P1 | Reconexión automática | Reconectar a última TV al abrir app |
-| P1 | Feedback háptico | Vibración breve al pulsar botón |
-| P2 | Indicador de app activa en TV | Mostrar qué app está abierta en el televisor |
+## Fuera de alcance (v3.1)
 
-## Fuera de alcance (v1)
-
-- Soporte iOS
-- Control fuera de la red WiFi local (internet remoto, VPN)
-- Teclado virtual para búsqueda de texto en la TV
-- Control por voz
-- Emparejamiento Bluetooth
-- Apps de streaming distintas a Netflix, HBO, YouTube y Crunchyroll
-- Cuentas de usuario / login
-- Publicidad o compras in-app
+- Fix de permisos / IP / Nearby WiFi (siguiente iteración tras logs)
+- iOS
+- Bluetooth
+- Samsung/LG APIs propietarias completas (v4+)

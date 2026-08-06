@@ -1,29 +1,30 @@
 Vissius Control Remote
 ======================
 
-Proyecto WIKA — mando remoto WiFi para televisor.
+Iteracion: v3.1 — Modulo de logs exportables (diagnostico discovery)
 
-Perfil v1: BUILD — APK release autonomo (sin Metro, sin Expo Go)
+Codigo:
+  app\Vissius control remote\iterations\v3.1
 
-Generar APK (Windows):
-  cd "app\Vissius control remote\iterations\v1"
-  set "JAVA_HOME=C:\Program Files\Android\Android Studio\jbr"
-  set "ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk"
-  set "Path=%JAVA_HOME%\bin;%ANDROID_HOME%\platform-tools;%Path%"
+Traer a PC:
+  git clone -b cursor/vissius-v3-1-diagnostics-logs-8679 --single-branch https://github.com/wika-labss/proyectos.git C:\dev\vissius-temp
+  Copy-Item -Recurse "C:\dev\vissius-temp\app\Vissius control remote\iterations\v3.1\*" "C:\dev\vissiuss control remote v3.1\"
+
+Generar APK (PowerShell, JDK 17):
+  cd "C:\dev\vissiuss control remote v3.1"
+  $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
+  $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+  $env:Path = "$env:JAVA_HOME\bin;C:\Program Files\nodejs;$env:ANDROID_HOME\platform-tools"
   npm install
-  npx expo install --fix
-  npm run apk:win
+  npx expo prebuild --platform android
+  node scripts/post-prebuild.js
+  "sdk.dir=$($env:ANDROID_HOME -replace '\\','/')" | Set-Content android/local.properties
+  cd android; .\gradlew.bat assembleRelease; cd ..
 
-APK resultante:
-  iterations\v1\android\app\build\outputs\apk\release\app-release.apk
+APK:
+  android\app\build\outputs\apk\release\app-release.apk
 
-Instalar en telefono:
-  adb install -r android\app\build\outputs\apk\release\app-release.apk
-
-Verificar todos los gates WIKA:
-  npm run verify:win
-
-Estado: v1 BUILD — Auditorias re-ejecutadas
-
-Manual completo (prompts, pasos, troubleshooting):
-  app\Vissius control remote\MANUAL-USUARIO.md
+Uso diagnostico:
+  1. Abrir app → Emparejar → Buscar TV (o IP manual)
+  2. Abrir "Ver logs / exportar"
+  3. Exportar texto o JSON y enviar para analisis

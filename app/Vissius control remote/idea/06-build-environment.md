@@ -7,10 +7,10 @@
 Marcar el perfil que aplica a esta iteración:
 
 - [ ] **DEV** — Expo Go (`npx expo start` + app Expo Go en dispositivo)
-- [x] **BUILD** — Nativo (`prebuild` + APK release en dispositivo físico) — **target v1**
+- [x] **BUILD** — Nativo (`prebuild` + APK release en dispositivo físico) — **target v3**
 - [ ] **RELEASE** — EAS Build (publicación en stores)
 
-> v1 requiere perfil **BUILD**: el entregable es un APK **release** autónomo (bundle Hermes embebido, sin Metro ni PC).
+> v3 requiere perfil **BUILD**: APK **release** autónomo + cleartext HTTP LAN.
 
 ---
 
@@ -29,7 +29,7 @@ Marcar el perfil que aplica a esta iteración:
 ### Configuración Android Studio
 
 - **Gradle JDK:** Java 17 (Eclipse Adoptium o JBR 17 de Android Studio)
-- **Proyecto a abrir:** `iterations/v1/android/` (no la raíz Expo)
+- **Proyecto a abrir:** `iterations/v3/android/` (no la raíz Expo)
 
 ### Configuración Windows (PowerShell)
 
@@ -69,6 +69,11 @@ $env:Path = "$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$env:Path"
 | `expo-haptics` | `~14.0.0` | Feedback al pulsar botones del mando |
 | `@react-native-async-storage/async-storage` | `1.23.1` | Persistir TV emparejada |
 | `zustand` | `5.0.0` | Estado global (conexión TV, emparejamiento) |
+| `react-native-tcp-socket` | `6.4.2` | TLS Android TV Remote (6466/6467) |
+| `node-forge` | `1.3.1` | Certificados cliente emparejamiento Android TV |
+| `protobufjs` | `7.4.0` | Mensajes protocolo Android TV |
+| `crypto-js` | `4.2.0` | Hash PIN emparejamiento Android TV |
+| `buffer` | `6.0.3` | Polyfill Buffer para protobuf/TLS |
 
 ---
 
@@ -81,7 +86,7 @@ Obligatorio para perfil BUILD:
   "expo": {
     "name": "Vissius Control Remote",
     "slug": "vissius-control-remote",
-    "version": "1.0.0",
+    "version": "3.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "vissius-remote",
@@ -132,7 +137,7 @@ android.kotlinVersion=1.9.25
 
 ## Pipeline de build
 
-### Perfil BUILD (APK release) — v1
+### Perfil BUILD (APK release) — v3
 
 ```bash
 npm install
@@ -172,7 +177,7 @@ Expo Go no es el entregable v1; solo sirve para iterar UI con hot reload.
 
 ## Gates de verificación (bloqueantes)
 
-Ninguna iteración v1 se considera completa sin pasar:
+Ninguna iteración v3 se considera completa sin pasar:
 
 | Gate | Comando | Resultado esperado |
 |------|---------|-------------------|
@@ -189,7 +194,7 @@ Ninguna iteración v1 se considera completa sin pasar:
 
 ## Scripts estándar WIKA
 
-Incluir en `iterations/v1/`:
+Incluir en `iterations/v3/`:
 
 | Script | Propósito |
 |--------|-----------|
@@ -223,7 +228,7 @@ Incluir en `iterations/v1/`:
 |----|-----------|
 | WIKA-ARCH-01 | La documentación es contrato de build |
 | WIKA-ARCH-02 | Versiones pinneadas (`~`), nunca flotantes (`^`) |
-| WIKA-ARCH-03 | Perfil BUILD explícito en v1 |
+| WIKA-ARCH-03 | Perfil BUILD explícito en v3 |
 | WIKA-ARCH-04 | Toolchain nativo documentado via expo-build-properties |
 | WIKA-ARCH-05 | Gates de verificación obligatorios antes de cerrar iteración |
 | WIKA-ARCH-06 | APK release autónomo como entregable, no Expo Go |

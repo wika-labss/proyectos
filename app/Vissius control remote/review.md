@@ -2,7 +2,7 @@
 
 ## Versión evaluada
 
-**v1** — Perfil **BUILD** (APK release) — `app/Vissius control remote/iterations/v1/`
+**v3.1** — Módulo de logs exportables — `app/Vissius control remote/iterations/v3.1/`
 
 ## Evaluador
 
@@ -10,7 +10,7 @@ Arquitecto WIKA / Cloud Agent
 
 ## Fecha
 
-2026-08-04 (re-auditoría BUILD)
+2026-08-06 (v3.1 diagnostics — en curso)
 
 ---
 
@@ -18,141 +18,48 @@ Arquitecto WIKA / Cloud Agent
 
 | Iteración | Perfil | Estado | Notas |
 |-----------|--------|--------|-------|
-| **v1** | **BUILD** | **En curso** | Docs BUILD ✅ · Generación ✅ · Auditorías 1–3 ✅ · APK release ⚠️ pendiente máquina local |
+| v1 | BUILD | Cerrada | Mock TV |
+| v2 | BUILD | Cerrada | LAN Roku/Vissius |
+| v3 | BUILD | Cerrada | Android TV + pairing · Auditorías 1–3 ✅ |
+| **v3.1** | **BUILD** | **En curso** | Logs `ejecución → resultado` exportables |
 
 ---
 
-## Cambio de perfil (DEV → BUILD)
+## Cambios v3.1 (resumen)
 
-Documentación y código actualizados para cumplir WIKA-ARCH-03: v1 entrega **APK release autónomo**, no Expo Go.
+| Área | Cambio |
+|------|--------|
+| Módulo `src/diagnostics/` | Logger en memoria (máx. 800), niveles info/ok/fail/warn |
+| Formato | `[ts] LEVEL ejecucion --> resultado` |
+| Export | Share texto + JSON (`exportLogsAsText` / `exportLogsAsJson`) |
+| UI | Pantalla `/logs` — filtros, limpiar, exportar |
+| Instrumentación | Discovery, WiFi, connect, Android TV TLS/PIN, pairingStore |
+| Versión | `3.1.0` |
 
-| Artefacto | Cambio |
-|-----------|--------|
-| `06-build-environment.md` | Perfil BUILD target v1, pipeline `assembleRelease` |
-| `03-architecture.md` | Build → APK release |
-| `05-prompt-ia.md` | Gates BUILD, scripts WIKA |
-| `01-problem.md` | Criterio éxito APK sideload |
-| `iterations/v1/scripts/` | verify-build, build-apk, post-prebuild (.sh + .bat) |
-| `package.json` | `verify`, `verify:win`, `apk`, `apk:win` |
-
----
-
-## Generación de código (v1 BUILD)
-
-| Paso | Entregable | Estado |
-|------|------------|--------|
-| 1 | Config + scripts BUILD | ✅ |
-| 2 | Engine, stores, hooks, UI | ✅ (sin regresión) |
-| 3 | `expo-doctor` | ✅ 18/18 |
-| 4 | `tsc --noEmit` | ✅ |
-| 5 | `expo export` | ✅ 933 módulos |
-| 6 | `expo prebuild` | ✅ |
-| 7 | `post-prebuild.js` Kotlin 1.9.25 | ✅ |
-| 8 | `assembleRelease` | ⚠️ requiere JDK 17 + Android SDK en máquina local |
+**Fuera de alcance v3.1:** fix de discovery (permisos/IP) — se aplica tras analizar logs exportados.
 
 ---
 
-## Auditoría 1 — Compilación y arquitectura (BUILD v1)
+## Cómo usar
 
-### Resumen
-
-Re-ejecutada con perfil **BUILD**. Gates automatizados hasta prebuild pasan en cloud. Gradle release requiere entorno Android local.
-
-| Gate | Comando | Resultado |
-|------|---------|-----------|
-| Manifiesto deps | vs `06-build-environment.md` | ✅ |
-| Dependencias | `npx expo-doctor` | ✅ 18/18 |
-| TypeScript | `npx tsc --noEmit` | ✅ exit 0 |
-| Bundle JS | `npx expo export --platform android` | ✅ 2.51 MB |
-| Prebuild | `npx expo prebuild --platform android` | ✅ |
-| Kotlin | `post-prebuild.js` | ✅ 1.9.25 |
-| Scripts WIKA | verify + build-apk (.sh/.bat) | ✅ |
-| `expo-env.d.ts` + tsconfig | presentes | ✅ |
-| Assets PNG | válidos | ✅ |
-| Manifest | Sin `RECORD_AUDIO` | ✅ |
-| APK release | `./gradlew assembleRelease` | ⚠️ pendiente (sin ANDROID_HOME en cloud) |
-
-### Checklist auditoría 1
-
-| # | Punto | BUILD v1 |
-|---|-------|----------|
-| 1 | Manifiesto completo | ✅ |
-| 2 | Sin `^` en expo/rn | ✅ |
-| 3 | expo-doctor 0 errores | ✅ |
-| 4 | tsc exit 0 | ✅ |
-| 5 | expo export OK | ✅ |
-| 6 | prebuild OK | ✅ |
-| 7 | Kotlin 1.9.25 | ✅ |
-| 8 | Scripts verify + apk Windows | ✅ |
-| 9 | local.properties post-prebuild | ✅ documentado |
-| 10 | Target assembleRelease (no debug) | ✅ |
-
-**Resultado auditoría 1:** ✅ **APROBADA** (gate Gradle pendiente entorno local)
+1. Compilar APK v3.1 e instalar
+2. Reproducir “Buscar TV” / IP manual
+3. Emparejar → **Ver logs / exportar** (o Mando → Logs)
+4. Enviar export texto o JSON
 
 ---
 
-## Auditoría 2 — Motores y hooks (BUILD v1)
-
-Re-ejecutada sin regresiones tras migración BUILD.
-
-| # | Punto | BUILD v1 |
-|---|-------|----------|
-| 13 | API única `useTvConnection` + `usePairing` | ✅ |
-| 14 | UI no importa engine | ✅ |
-| 15 | Fuente de verdad en tvStore | ✅ |
-| 16 | Haptic solo si conectado | ✅ |
-| 17 | Guard `sendingCommand` | ✅ |
-| 18–22 | Fixes auditoría 2 previos | ✅ sin regresión |
-
-**Resultado auditoría 2:** ✅ **APROBADA**
-
----
-
-## Auditoría 3 — Diseño, UX y entrega BUILD (v1)
-
-| # | Punto | BUILD v1 |
-|---|-------|----------|
-| 23–33 | Paleta, tabs, pad, apps | ✅ sin regresión |
-| 36 | Entregable APK release (no Expo Go) | ✅ scripts + docs |
-| 37 | APK autónomo sin Metro | ✅ target `assembleRelease` |
-| 38 | JDK 17 validado en `.bat` | ✅ |
-| 39 | Prueba APK en teléfono físico | ⚠️ pendiente usuario |
-
-**Resultado auditoría 3:** ✅ **APROBADA** (prueba física pendiente)
-
----
-
-## Generar APK en Windows (usuario)
+## Compilar APK
 
 ```powershell
-cd "C:\dev\vissiuss control remote v1"
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
 $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
-$env:Path = "$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$env:Path"
+$env:Path = "$env:JAVA_HOME\bin;C:\Program Files\nodejs;$env:ANDROID_HOME\platform-tools"
+cd "C:\dev\vissiuss control remote v3.1"
 npm install
-npx expo install --fix
-npm run apk:win
-adb install -r android\app\build\outputs\apk\release\app-release.apk
+npx expo prebuild --platform android
+node scripts/post-prebuild.js
+"sdk.dir=$($env:ANDROID_HOME -replace '\\','/')" | Set-Content android/local.properties
+cd android; .\gradlew.bat assembleRelease; cd ..
+Copy-Item "android\app\build\outputs\apk\release\app-release.apk" "C:\dev\Vissiuss-Control-Remote-v3.1.apk"
 ```
-
-Checklist manual post-instalación:
-
-- [ ] App abre sin PC / Metro encendidos
-- [ ] Emparejamiento mock funciona
-- [ ] Pad navegación + volumen responden
-- [ ] Apps Netflix/HBO/YouTube/Crunchyroll lanzan comando
-- [ ] Paleta coral/rojo + botones negro/blanco
-
----
-
-## Veredicto
-
-- [x] **v1 BUILD aprobada en código y gates automatizados**
-- [ ] APK release verificado en dispositivo físico — pendiente build local
-- [ ] Versión final en `final/` — tras confirmar APK en teléfono
-
-## Acciones requeridas
-
-1. Ejecutar `npm run apk:win` en Windows con JDK 17 + Android SDK
-2. Instalar APK y completar checklist manual
-3. v2: protocolo WiFi real con televisor en LAN

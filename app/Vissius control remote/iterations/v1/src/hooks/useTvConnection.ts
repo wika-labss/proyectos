@@ -12,8 +12,27 @@ export function useTvConnection() {
   const forgetDevice = useTvStore((state) => state.forgetDevice);
 
   const checkWifi = useCallback(async (): Promise<boolean> => {
-    const state = await Network.getNetworkStateAsync();
-    return state.type === Network.NetworkStateType.WIFI && state.isConnected === true;
+    try {
+      const state = await Network.getNetworkStateAsync();
+
+      if (state.isConnected === false) {
+        return false;
+      }
+
+      if (state.type === Network.NetworkStateType.WIFI) {
+        return true;
+      }
+
+      // Android release a menudo reporta UNKNOWN aunque el móvil esté en WiFi.
+      if (state.type === Network.NetworkStateType.UNKNOWN) {
+        return true;
+      }
+
+      return false;
+    } catch {
+      // v1 mock: no bloquear emparejamiento si expo-network falla en el APK.
+      return true;
+    }
   }, []);
 
   return {
