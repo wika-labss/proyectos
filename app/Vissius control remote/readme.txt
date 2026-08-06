@@ -3,22 +3,22 @@ Vissius Control Remote
 
 Proyecto WIKA — mando remoto WiFi para televisor.
 
-Iteracion activa: v2 — BUILD (APK release, discovery LAN real)
+Iteracion activa: v3 — BUILD (emparejamiento robusto + HDMI + volumen step 1)
 
-Codigo v2:
-  app\Vissius control remote\iterations\v2
+Codigo v3:
+  app\Vissius control remote\iterations\v3
 
-Generar APK (Windows):
-  cd "app\Vissius control remote\iterations\v2"
-  set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
-  set "ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk"
-  set "Path=%JAVA_HOME%\bin;%ANDROID_HOME%\platform-tools;C:\Program Files\nodejs;%Path%"
-  npm install
-  npx expo install --fix
-  npm run apk:win
+Generar APK (Windows — PowerShell, sin instalar):
+  cd "C:\dev\vissiuss control remote v3"
+  $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
+  $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+  $env:Path = "$env:JAVA_HOME\bin;C:\Program Files\nodejs;$env:ANDROID_HOME\platform-tools"
+  npx expo prebuild --platform android
+  node scripts/post-prebuild.js
+  "sdk.dir=$($env:ANDROID_HOME -replace '\\','/')" | Set-Content android/local.properties
+  cd android; .\gradlew.bat assembleRelease; cd ..
 
-Verificar gates WIKA:
-  npm run verify:win
+APK:
+  android\app\build\outputs\apk\release\app-release.apk
 
-Estado: v2 — Auditoria 1 APROBADA
-Manual: MANUAL-USUARIO.md
+Estado: v3 — Auditoria 1 APROBADA (pairing fix urgente)

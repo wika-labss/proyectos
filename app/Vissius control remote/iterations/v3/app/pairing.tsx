@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,8 +14,13 @@ import { ConnectionStatus } from '../src/components/ConnectionStatus';
 import { FeedbackBanner } from '../src/components/FeedbackBanner';
 import { RemoteButton } from '../src/components/RemoteButton';
 import { TvDeviceCard } from '../src/components/TvDeviceCard';
+import {
+  getAndroidTvCert,
+  setAndroidTvPinProvider,
+} from '../src/engine/drivers/androidTvDriver';
 import { usePairing } from '../src/hooks/usePairing';
 import { useTvConnection } from '../src/hooks/useTvConnection';
+import { saveAndroidTvCert } from '../src/utils/storage';
 import type { TvDevice, TvProtocol } from '../src/types';
 
 export default function PairingScreen() {
@@ -33,6 +39,21 @@ export default function PairingScreen() {
   const [wifiWarning, setWifiWarning] = useState<string | null>(null);
   const [manualIp, setManualIp] = useState('');
   const [manualProtocol, setManualProtocol] = useState<TvProtocol | 'auto'>('auto');
+  const [pinVisible, setPinVisible] = useState(false);
+  const [pinValue, setPinValue] = useState('');
+  const pinResolver = useRef<((code: string) => void) | null>(null);
+
+  useEffect(() => {
+    setAndroidTvPinProvider(
+      () =>
+        new Promise<string>((resolve) => {
+          setPinValue('');
+          setPinVisible(true);
+          pinResolver.current = resolve;
+        }),
+    );
+    return () => setAndroidTvPinProvider(null);
+  }, []);
 
   useEffect(() => {
     void (async () => {
@@ -75,6 +96,12 @@ export default function PairingScreen() {
       }
       setConnectingId(device.id);
       const ok = await connect(device);
+      if (ok && device.protocol === 'androidtv') {
+        const cert = getAndroidTvCert(device.id);
+        if (cert) {
+          await saveAndroidTvCert(device.id, cert);
+        }
+      }
       setConnectingId(null);
       if (ok) {
         router.replace('/(tabs)/remote');
@@ -95,6 +122,13 @@ export default function PairingScreen() {
     }
   }, [manualIp, manualProtocol, scanning, connectByIp, clearFeedback, handleConnect]);
 
+  const submitPin = () => {
+    const code = pinValue.trim().toUpperCase();
+    setPinVisible(false);
+    pinResolver.current?.(code);
+    pinResolver.current = null;
+  };
+
   if (connectionState === 'connected' && pairedDevice) {
     return <Redirect href="/(tabs)/remote" />;
   }
@@ -108,7 +142,7 @@ export default function PairingScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Emparejar TV</Text>
-        <Text style={styles.subtitle}>Busca televisores en tu red WiFi (v3)</Text>
+        <Text style={styles.subtitle}>Android TV · Roku · Vissius (v3)</Text>
       </View>
 
       <ConnectionStatus state={scanning ? 'scanning' : connectionState} error={error ?? scanError} />
@@ -128,9 +162,7 @@ export default function PairingScreen() {
             {scanning ? (
               <ActivityIndicator color={colors.backgroundStrong} style={styles.loader} />
             ) : null}
-            <Text style={styles.progressText}>
-              {progress?.phase ?? 'Escaneando…'}
-            </Text>
+            <Text style={styles.progressText}>{progress?.phase ?? 'Escaneando…'}</Text>
             {progress && progress.total > 0 ? (
               <Text style={styles.progressDetail}>
                 {percent}% · {progress.found} encontrada(s) · espera ~10 s mínimo
@@ -142,7 +174,7 @@ export default function PairingScreen() {
         {scanEmpty && !scanning ? (
           <FeedbackBanner
             tone="warning"
-            message="No se encontró ninguna TV. Comprueba WiFi, que la TV esté encendida (Roku o Vissius :8080), o introduce la IP manualmente abajo."
+            message="No se encontró TV. Prueba IP manual (Android TV / Google TV en Ajustes → Red). Al conectar Android TV, la TV mostrará un PIN."
           />
         ) : null}
 
@@ -169,11 +201,19 @@ export default function PairingScreen() {
             onChangeText={setManualIp}
           />
           <View style={styles.protocolRow}>
-            {(['auto', 'roku', 'vissius'] as const).map((option) => (
+            {(['auto', 'androidtv', 'roku', 'vissius'] as const).map((option) => (
               <RemoteButton
                 key={option}
                 compact
-                label={option === 'auto' ? 'Auto' : option === 'roku' ? 'Roku' : 'Vissius'}
+                label={
+                  option === 'auto'
+                    ? 'Auto'
+                    : option === 'androidtv'
+                      ? 'Android'
+                      : option === 'roku'
+                        ? 'Roku'
+                        : 'Vissius'
+                }
                 style={[
                   styles.protocolButton,
                   manualProtocol === option ? styles.protocolActive : null,
@@ -200,6 +240,36 @@ export default function PairingScreen() {
           <RemoteButton label="Olvidar TV" onPress={() => void forgetDevice()} />
         ) : null}
       </ScrollView>
+
+      <Modal transparent visible={pinVisible} animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>PIN de Android TV</Text>
+            <Text style={styles.modalHint}>
+              Mira el código de 6 caracteres en la pantalla de la TV e introdúcelo aquí.
+            </Text>
+            <TextInput
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={6}
+              placeholder="A1B2C3"
+              placeholderTextColor="#666"
+              style={styles.input}
+              value={pinValue}
+              onChangeText={setPinValue}
+            />
+            <RemoteButton label="Confirmar PIN" onPress={submitPin} />
+            <RemoteButton
+              label="Cancelar"
+              onPress={() => {
+                setPinVisible(false);
+                pinResolver.current?.('');
+                pinResolver.current = null;
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -285,14 +355,41 @@ const styles = StyleSheet.create({
   },
   protocolRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   protocolButton: {
-    flex: 1,
+    flexGrow: 1,
+    minWidth: '22%',
   },
   protocolActive: {
     opacity: 0.7,
     borderWidth: 2,
     borderColor: colors.backgroundStrong,
+  },
+  modalBackdrop: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: layout.buttonRadius,
+    gap: 12,
+    padding: 20,
+    width: '100%',
+  },
+  modalTitle: {
+    color: colors.textOnSoft,
+    fontSize: 20,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  modalHint: {
+    color: colors.textOnSoft,
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

@@ -69,6 +69,11 @@ $env:Path = "$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$env:Path"
 | `expo-haptics` | `~14.0.0` | Feedback al pulsar botones del mando |
 | `@react-native-async-storage/async-storage` | `1.23.1` | Persistir TV emparejada |
 | `zustand` | `5.0.0` | Estado global (conexión TV, emparejamiento) |
+| `react-native-tcp-socket` | `6.4.2` | TLS Android TV Remote (6466/6467) |
+| `node-forge` | `1.3.1` | Certificados cliente emparejamiento Android TV |
+| `protobufjs` | `7.4.0` | Mensajes protocolo Android TV |
+| `crypto-js` | `4.2.0` | Hash PIN emparejamiento Android TV |
+| `buffer` | `6.0.3` | Polyfill Buffer para protobuf/TLS |
 
 ---
 

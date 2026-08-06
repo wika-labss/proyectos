@@ -15,7 +15,12 @@ export function TvDeviceCard({ device, onConnect, connecting = false }: TvDevice
       <View style={styles.info}>
         <Text style={styles.name}>{device.name}</Text>
         <Text style={styles.ip}>
-          {device.ip}:{device.port} · {device.protocol === 'roku' ? 'Roku' : 'Vissius'}
+          {device.ip}:{device.port} ·{' '}
+          {device.protocol === 'roku'
+            ? 'Roku'
+            : device.protocol === 'androidtv'
+              ? 'Android TV'
+              : 'Vissius'}
         </Text>
       </View>
       <Pressable

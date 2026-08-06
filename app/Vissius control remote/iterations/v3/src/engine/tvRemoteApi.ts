@@ -1,4 +1,9 @@
 import type { RemoteCommand, TvDevice, TvProtocol, TvStatus } from '../types';
+import {
+  connectAndroidTv,
+  disconnectAndroidTv,
+  sendAndroidTvCommand,
+} from './drivers/androidTvDriver';
 import { connectRoku, sendRokuCommand } from './drivers/rokuDriver';
 import { connectVissius, sendVissiusCommand } from './drivers/vissiusDriver';
 import { discoverTvs } from './discovery';
@@ -21,14 +26,19 @@ export async function connectToTv(device: TvDevice): Promise<TvStatus> {
     throw new Error('La TV no responde. Comprueba IP, WiFi y que esté encendida.');
   }
 
+  if (device.protocol === 'androidtv') {
+    return connectAndroidTv(device);
+  }
   if (device.protocol === 'roku') {
     return connectRoku(device);
   }
   return connectVissius(device);
 }
 
-export async function disconnectFromTv(_device: TvDevice | null): Promise<void> {
-  // HTTP stateless
+export async function disconnectFromTv(device: TvDevice | null): Promise<void> {
+  if (device?.protocol === 'androidtv') {
+    await disconnectAndroidTv(device.id);
+  }
 }
 
 export async function sendRemoteCommand(
@@ -36,6 +46,15 @@ export async function sendRemoteCommand(
   command: RemoteCommand,
   status: TvStatus,
 ): Promise<TvStatus> {
+  if (device.protocol === 'androidtv') {
+    return sendAndroidTvCommand(
+      device,
+      command,
+      status.volume,
+      status.muted,
+      status.activeInput,
+    );
+  }
   if (device.protocol === 'roku') {
     return sendRokuCommand(
       device,

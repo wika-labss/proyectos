@@ -1,5 +1,6 @@
 import * as Network from 'expo-network';
 import type { ScanProgress, TvDevice, TvProtocol } from '../types';
+import { probeAndroidTv } from './drivers/androidTvDriver';
 import { probeRoku } from './drivers/rokuDriver';
 import { probeVissius } from './drivers/vissiusDriver';
 import {
@@ -11,13 +12,18 @@ import {
   mapInBatches,
   parseSubnet,
 } from './httpClient';
+import { probeAndroidTvPort } from './androidtv/session';
 
 export type ProgressCallback = (progress: ScanProgress) => void;
 
 async function probeHost(ip: string): Promise<TvDevice | null> {
-  // Probar ambos protocolos en paralelo (más rápido y fiable que secuencial)
-  const [vissius, roku] = await Promise.all([probeVissius(ip), probeRoku(ip)]);
-  return vissius ?? roku;
+  // Android TV + Roku + Vissius en paralelo
+  const [androidtv, vissius, roku] = await Promise.all([
+    probeAndroidTv(ip),
+    probeVissius(ip),
+    probeRoku(ip),
+  ]);
+  return androidtv ?? vissius ?? roku;
 }
 
 export async function scanLocalSubnet(
@@ -60,7 +66,7 @@ export async function scanLocalSubnet(
     scanned: 0,
     total: 254,
     found: 0,
-    phase: `Escaneando ${subnet}.0/24…`,
+    phase: `Escaneando ${subnet}.0/24 (Android TV / Roku / Vissius)…`,
   });
 
   const hosts = Array.from({ length: 254 }, (_, index) => `${subnet}.${index + 1}`);
@@ -112,7 +118,6 @@ async function ensureMinScanDuration(started: number): Promise<void> {
   }
 }
 
-/** Conectar por IP manual: prueba el protocolo indicado o ambos. */
 export async function discoverByIp(
   ip: string,
   protocol?: TvProtocol,
@@ -128,12 +133,23 @@ export async function discoverByIp(
   if (protocol === 'vissius') {
     return probeVissius(trimmed);
   }
+  if (protocol === 'androidtv') {
+    return probeAndroidTv(trimmed);
+  }
 
-  const [vissius, roku] = await Promise.all([probeVissius(trimmed), probeRoku(trimmed)]);
-  return vissius ?? roku;
+  const [androidtv, vissius, roku] = await Promise.all([
+    probeAndroidTv(trimmed),
+    probeVissius(trimmed),
+    probeRoku(trimmed),
+  ]);
+  return androidtv ?? vissius ?? roku;
 }
 
 export async function verifyDeviceReachable(device: TvDevice): Promise<boolean> {
+  if (device.protocol === 'androidtv') {
+    return probeAndroidTvPort(device.ip, CONNECT_TIMEOUT_MS);
+  }
+
   const url =
     device.protocol === 'roku'
       ? `http://${device.ip}:${device.port}/query/device-info`

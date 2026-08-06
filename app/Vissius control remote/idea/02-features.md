@@ -5,7 +5,8 @@
 | Área | v2 | v3 |
 |------|----|----|
 | Discovery | Timeout 700 ms, batches 40, sin cleartext | **Timeout 2.5 s**, batches 16, **HTTP cleartext**, progreso visible |
-| Emparejamiento | Connect Roku sin verificar | **Probe real al conectar** + IP manual |
+| Protocolos | Roku + Vissius | **Android TV / Google TV** (6466/6467 + PIN) + Roku + Vissius |
+| Emparejamiento | Connect Roku sin verificar | **Probe real** + **PIN Android TV** + IP manual |
 | Volumen | Paso 5 | **Paso 1** (0–100 de uno en uno) |
 | Entradas | No | **Pantalla Entradas** HDMI 1–4, AV, TV |
 | Perfil | BUILD v2 | BUILD **v3** |
@@ -20,6 +21,7 @@
 
 ### Conexión y emparejamiento (P0 URGENTE)
 
+- [ ] **Android TV / Google TV** — Discovery puerto 6467 + emparejamiento PIN (protocolo Remote v2)
 - [ ] **Cleartext HTTP LAN** — `usesCleartextTraffic: true` (Android bloquea HTTP sin esto)
 - [ ] **Escaneo largo** — timeout probe ≥ 2500 ms; lotes ≤ 16 hosts
 - [ ] **Progreso de búsqueda** — "Escaneando red… X%" o hosts revisados
@@ -59,7 +61,8 @@
 
 | Prioridad | Funcionalidad |
 |-----------|---------------|
-| **P0 URGENTE** | Emparejamiento funcional (cleartext + timeouts + verify connect) |
+| **P0 URGENTE** | Emparejamiento Android TV funcional (PIN + TLS) |
+| P0 | Cleartext + timeouts + verify connect |
 | P0 | Volumen paso 1 |
 | P0 | Pantalla Entradas HDMI |
 | P1 | IP manual |

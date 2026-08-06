@@ -1,4 +1,4 @@
-export type TvProtocol = 'vissius' | 'roku';
+export type TvProtocol = 'vissius' | 'roku' | 'androidtv';
 
 export type NavigationCommand =
   | 'nav_up'
