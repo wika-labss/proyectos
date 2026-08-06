@@ -12,7 +12,7 @@
 | Persistencia | AsyncStorage (TV emparejada, preferencias) |
 | Estilos | StyleSheet nativo + tokens en `src/constants/theme.ts` |
 | Utilidades | `expo-haptics` (feedback), `expo-network` (estado WiFi) |
-| Build | Prebuild local → **APK release** autónomo (Android) — **target v3** |
+| Build | Prebuild local → **APK release** autónomo (Android) — **target v3.2** |
 
 > Manifiesto completo de dependencias: ver `06-build-environment.md`
 
@@ -82,10 +82,10 @@
 | Perfil | Target esta iteración | Pipeline |
 |--------|----------------------|----------|
 | DEV (Expo Go) | [ ] | Solo desarrollo UI opcional |
-| BUILD (APK release) | [x] | `prebuild` + `assembleRelease` → **target v3.1** |
+| BUILD (APK release) | [x] | `prebuild` + `assembleRelease` → **target v3.2** |
 | RELEASE (EAS) | [ ] | `eas build` — futuro |
 
-> v3.1 = v3 + módulo `src/diagnostics/` (logs exportables). Emparejamiento LAN: cleartext HTTP + timeouts largos.
+> v3.2 = v3.1 + purga mock + logs de alto nivel (`scan.*` / `connect.*`) con guía de conexión para v4.
 
 ---
 
@@ -136,7 +136,7 @@ app/Vissius control remote/
 
 | Módulo | Responsabilidad |
 |--------|-----------------|
-| `src/diagnostics/` (v3.1) | Logger `ejecución --> resultado`, export texto/JSON, UI `/logs` |
+| `src/diagnostics/` (v3.2) | Logs alto nivel `scan.*` / `connect.*`, export + guía v4, UI `/logs` |
 | `tvRemoteApi.ts` | Envía comandos: `nav_up`, `nav_down`, `nav_left`, `nav_right`, `ok`, `back`, `vol_up`, `vol_down`, `launch_app` |
 | `discovery.ts` + `lanDiscovery.ts` | Escaneo subred WiFi; drivers Vissius + Roku + Android TV |
 | `drivers/*.ts` | Protocolo HTTP/TLS por marca/modelo |
