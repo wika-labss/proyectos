@@ -38,6 +38,7 @@ Mando remoto digital con flujo claro: **splash de marca → emparejar TV real �
 | **Emparejamiento** | Buscar TV, lista real, aviso amarillo si 0 TVs, banner éxito al conectar |
 | **Mando** | Pad + volumen **0–100** (muestra "Mute" en 0) + botón negro **Cambiar TV** |
 | **Apps** | Grid streaming (negro/blanco) |
+| **Entradas (v3)** | Grid HDMI 1–4, AV, TV — botones negro/blanco |
 
 ## Mensajes de feedback (v2)
 
@@ -56,7 +57,8 @@ Mando remoto digital con flujo claro: **splash de marca → emparejar TV real �
 
 - Rango **0–100** entero visible
 - **0 = mute** — etiqueta "Mute" junto al número
-- Subir desde 0 quita mute y sube a 5 (paso configurable)
+- **Paso 1** (v3): cada toque sube/baja **1** unidad (volumen estable)
+- Subir desde 0 quita mute y sube a **1**
 
 ## Flujos de usuario v2
 

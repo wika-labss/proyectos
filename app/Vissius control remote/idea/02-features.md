@@ -1,70 +1,72 @@
 # Funcionalidades
 
-## Iteración v2 — cambios respecto a v1
+## Iteración v3 — cambios respecto a v2
 
-| Área | v1 | v2 |
+| Área | v2 | v3 |
 |------|----|----|
-| Discovery | Mock (2 TVs simuladas) | **Escaneo LAN real** (Vissius HTTP + Roku ECP) |
-| Pantalla inicio | Emparejamiento directo | **Splash Vissiuss** (negro, texto blanco, marca de agua) |
-| Navegación mando | Solo tabs | **Botón atrás** → volver a buscar otra TV |
-| Volumen | Subir/bajar sin rango | **0–100**, **0 = mute** |
-| Feedback | Banner estado | **Aviso sin TVs** + **mensaje conexión exitosa** |
-| Perfil build | BUILD APK release | BUILD APK release (target **v2**) |
+| Discovery | Timeout 700 ms, batches 40, sin cleartext | **Timeout 2.5 s**, batches 16, **HTTP cleartext**, progreso visible |
+| Emparejamiento | Connect Roku sin verificar | **Probe real al conectar** + IP manual |
+| Volumen | Paso 5 | **Paso 1** (0–100 de uno en uno) |
+| Entradas | No | **Pantalla Entradas** HDMI 1–4, AV, TV |
+| Perfil | BUILD v2 | BUILD **v3** |
 
 ---
 
 ## Funcionalidades principales
 
-### Pantalla de inicio (v2)
+### Pantalla de inicio
 
-- [ ] **Splash Vissiuss** — Fondo negro `#000000`, nombre **Vissiuss** en blanco `#FFFFFF`, marca de agua semitransparente
-- [ ] Transición automática a emparejamiento tras ~2 s (o tap para continuar)
+- [ ] Splash Vissiuss (negro / blanco / watermark)
 
-### Conexión y emparejamiento
+### Conexión y emparejamiento (P0 URGENTE)
 
-- [ ] **Detección de red WiFi** — Verificar WiFi; no bloquear escaneo si el módulo reporta UNKNOWN (Android release)
-- [ ] **Buscar televisor real** — Escanear subred LAN y detectar TVs (protocolo Vissius `:8080`, Roku `:8060`)
-- [ ] **Aviso sin TVs** — Mensaje claro si el escaneo no encuentra dispositivos
-- [ ] **Emparejar con TV** — Conexión HTTP real con el televisor seleccionado
-- [ ] **Conexión exitosa** — Mensaje visible: *Conectado exitosamente a {nombre TV}*
-- [ ] **Recordar TV emparejada** — AsyncStorage + reconexión al abrir
-- [ ] **Estado de conexión** — buscando / conectado / desconectado / error
+- [ ] **Cleartext HTTP LAN** — `usesCleartextTraffic: true` (Android bloquea HTTP sin esto)
+- [ ] **Escaneo largo** — timeout probe ≥ 2500 ms; lotes ≤ 16 hosts
+- [ ] **Progreso de búsqueda** — "Escaneando red… X%" o hosts revisados
+- [ ] **Mínimo tiempo de búsqueda** — al menos ~8–12 s de escaneo visible (no cerrar en <1 s)
+- [ ] **Verificar al conectar** — `connect` hace probe HTTP real; falla si TV no responde
+- [ ] **IP manual** — campo para IP + seleccionar protocolo (Roku / Vissius) si el escaneo falla
+- [ ] **Aviso sin TVs** — mensaje claro + sugerencia de IP manual
+- [ ] **Conexión exitosa** — banner ✓
+- [ ] Recordar TV emparejada
 
-### Control remoto — Pantalla principal
+### Control remoto
 
-- [ ] **Botón atrás (UI)** — Desde mando, volver a pantalla de emparejamiento para buscar otra TV
-- [ ] **Botones de navegación** — Pad ▲ ▼ ◄ ► OK + Atrás (comando TV)
-- [ ] **Control de volumen 0–100** — Vol + / Vol −; **nivel 0 = mute**; indicador numérico y estado Mute
+- [ ] Pad navegación + Cambiar TV
+- [ ] **Volumen 0–100, paso 1**; 0 = mute
 
-### Segunda pantalla — Apps de streaming
+### Apps
 
-- [ ] Netflix, HBO, YouTube, Crunchyroll — comandos reales vía driver de TV
+- [ ] Netflix, HBO, YouTube, Crunchyroll
+
+### Entradas (v3)
+
+- [ ] **HDMI 1, HDMI 2, HDMI 3, HDMI 4**
+- [ ] **AV / TV Tuner** (si el protocolo lo soporta)
+- [ ] Tab o pantalla **Entradas** junto a Mando / Apps
 
 ## Layout de pantallas
 
 | Pantalla | Contenido |
 |----------|-----------|
-| **Inicio (splash)** | Negro, Vissiuss blanco, marca de agua |
-| **Emparejamiento** | Buscar TV real, lista, aviso sin resultados, conectar |
-| **Mando** | Pad + volumen 0–100 + botón **Cambiar TV** |
-| **Apps** | Netflix, HBO, YouTube, Crunchyroll |
+| Splash | Negro, Vissiuss |
+| Emparejamiento | Buscar + progreso + IP manual |
+| Mando | Pad + volumen step 1 |
+| Apps | Streaming |
+| **Entradas** | HDMI 1–4, AV, TV |
 
-## Priorización v2
+## Priorización v3
 
 | Prioridad | Funcionalidad |
 |-----------|---------------|
-| P0 | Discovery LAN real + conexión funcional |
-| P0 | Splash inicio Vissiuss |
-| P0 | Botón volver a emparejamiento |
-| P0 | Volumen 0–100, mute en 0 |
-| P0 | Mensajes sin TV / conexión exitosa |
-| P0 | Paleta mando según `04-design.md` |
-| P1 | Reconexión automática |
-| P1 | Feedback háptico |
+| **P0 URGENTE** | Emparejamiento funcional (cleartext + timeouts + verify connect) |
+| P0 | Volumen paso 1 |
+| P0 | Pantalla Entradas HDMI |
+| P1 | IP manual |
+| P1 | Progreso de escaneo |
 
-## Fuera de alcance (v2)
+## Fuera de alcance (v3)
 
 - iOS
-- Control remoto fuera de LAN
-- Emparejamiento Bluetooth
-- Todas las marcas de TV del mercado (v2: Vissius HTTP + Roku; más drivers en v3)
+- Bluetooth
+- Samsung/LG APIs propietarias completas (v4+)

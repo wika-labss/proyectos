@@ -12,7 +12,7 @@
 | Persistencia | AsyncStorage (TV emparejada, preferencias) |
 | Estilos | StyleSheet nativo + tokens en `src/constants/theme.ts` |
 | Utilidades | `expo-haptics` (feedback), `expo-network` (estado WiFi) |
-| Build | Prebuild local → **APK release** autónomo (Android) — **target v2** |
+| Build | Prebuild local → **APK release** autónomo (Android) — **target v3** |
 
 > Manifiesto completo de dependencias: ver `06-build-environment.md`
 
@@ -82,10 +82,10 @@
 | Perfil | Target esta iteración | Pipeline |
 |--------|----------------------|----------|
 | DEV (Expo Go) | [ ] | Solo desarrollo UI opcional |
-| BUILD (APK release) | [x] | `prebuild` + `assembleRelease` → **target v2** |
+| BUILD (APK release) | [x] | `prebuild` + `assembleRelease` → **target v3** |
 | RELEASE (EAS) | [ ] | `eas build` — futuro |
 
-> v2 requiere perfil **BUILD**. v1 mock queda en `iterations/v1/` como referencia histórica.
+> v3 requiere perfil **BUILD**. Emparejamiento LAN: cleartext HTTP + timeouts largos.
 
 ---
 
