@@ -10,7 +10,7 @@ Arquitecto WIKA / Cloud Agent
 
 ## Fecha
 
-2026-08-06 (Auditoría 1 v3 — emparejamiento urgente)
+2026-08-06 (Auditorías 1–3 v3 — listo para compilar)
 
 ---
 
@@ -19,96 +19,93 @@ Arquitecto WIKA / Cloud Agent
 | Iteración | Perfil | Estado | Notas |
 |-----------|--------|--------|-------|
 | v1 | BUILD | Cerrada | Mock TV |
-| v2 | BUILD | Cerrada (auditorías 1–3) | LAN real pero timeouts cortos / cleartext |
-| **v3** | **BUILD** | **En curso** | Emparejamiento robusto · Volumen step 1 · HDMI · **Auditoría 1 ✅** |
+| v2 | BUILD | Cerrada | LAN Roku/Vissius |
+| **v3** | **BUILD** | **Lista para APK** | Android TV + pairing fix · **Auditorías 1–3 ✅** |
 
 ---
 
-## Diagnóstico emparejamiento v2 → fix v3
-
-| Causa v2 | Fix v3 |
-|----------|--------|
-| Android bloquea HTTP claro sin `usesCleartextTraffic` | `expo-build-properties` + post-prebuild |
-| Probe timeout **700 ms** demasiado corto | **2500 ms** probe / **5000 ms** connect |
-| Batches de 40 hosts | Batches de **16** |
-| Escaneo “flash” (<1 s) → “sin TV” | **Mínimo 10 s** de escaneo + progreso % |
-| `connectRoku` no verificaba TV | Probe HTTP real antes de marcar conectado |
-| Sin Android TV | **Protocolo Android TV Remote v2** (6466/6467 + PIN) |
-| Sin fallback | **IP manual** + protocolo Auto/Android/Roku/Vissius |
-
----
-
-## Cambios v3
+## Cambios v3 (resumen)
 
 | Área | Cambio |
 |------|--------|
-| Discovery | Timeouts largos, progreso UI, min 10 s, **Android TV** |
-| Cleartext | HTTP LAN habilitado |
-| Android TV | TLS + PIN en TV + certs en AsyncStorage |
-| Connect | Verificación real |
-| IP manual | Campo + Auto / Android / Roku / Vissius |
-| Volumen | **Paso 1** (0–100) |
+| Android TV / Google TV | Protocolo Remote v2 (TLS 6466/6467) + PIN |
+| Discovery | Timeouts 2.5s, min 10s, progreso %, cleartext |
+| IP manual | Auto / Android / Roku / Vissius |
+| Volumen | Paso **1** (0–100), mute en 0 |
 | Entradas | Tab HDMI 1–4, AV, TV |
 
 ---
 
-## Generación de código (v3)
+## Auditoría 1 — Compilación (BUILD v3) ✅
 
-| Paso | Entregable | Estado |
-|------|------------|--------|
-| 1 | Docs `idea/` → v3 | ✅ |
-| 2 | `iterations/v3/` | ✅ |
-| 3 | Cleartext + discovery + IP manual | ✅ |
-| 4 | Volumen step 1 + tab Entradas | ✅ |
-| 5 | `expo-doctor` | ✅ 18/18 |
-| 6 | `tsc --noEmit` | ✅ |
-| 7 | `expo export` | ✅ 2.55 MB |
-| 8 | `prebuild` + Kotlin 1.9.25 + cleartext | ✅ |
-| 9 | `assembleRelease` | ⚠️ pendiente PC Windows |
+Re-ejecutada 2026-08-06 tras Android TV.
+
+| Gate | Resultado |
+|------|-----------|
+| `npx expo-doctor` | ✅ 18/18 |
+| `npx tsc --noEmit` | ✅ |
+| `npx expo export --platform android` | ✅ 3.44 MB |
+| `npx expo prebuild --platform android` | ✅ |
+| Kotlin 1.9.25 | ✅ |
+| Cleartext HTTP | ✅ |
+| `VOLUME_STEP = 1` | ✅ |
+| Scripts verify / apk | ✅ |
+| `assembleRelease` | ⚠️ en PC Windows del usuario |
+
+**Resultado:** ✅ **APROBADA** — listo para `gradlew assembleRelease` en local.
 
 ---
 
-## Auditoría 1 — Compilación y arquitectura (BUILD v3)
-
-| Gate | Comando | Resultado v3 |
-|------|---------|--------------|
-| Manifiesto deps | vs `06-build-environment.md` | ✅ |
-| Dependencias | `npx expo-doctor` | ✅ 18/18 |
-| TypeScript | `npx tsc --noEmit` | ✅ |
-| Bundle JS | `npx expo export --platform android` | ✅ |
-| Prebuild | `npx expo prebuild --platform android` | ✅ |
-| Kotlin | `post-prebuild.js` | ✅ 1.9.25 |
-| Cleartext HTTP | manifest / build-properties | ✅ |
-| Volume STEP | `constants/volume.ts` = 1 | ✅ |
-| Scripts WIKA | verify + build-apk | ✅ v3 |
-| APK release | `assembleRelease` | ⚠️ local |
-
-### Checklist auditoría 1 (v3)
+## Auditoría 2 — Motores y hooks (v3) ✅
 
 | # | Punto | v3 |
 |---|-------|-----|
-| 1–10 | Gates BUILD estándar | ✅ |
-| 11 | `usesCleartextTraffic` | ✅ |
-| 12 | Probe ≥ 2500 ms | ✅ |
-| 13 | MIN_SCAN_DURATION 10 s | ✅ |
-| 14 | Connect verifica HTTP | ✅ |
-| 15 | IP manual | ✅ |
-| 16 | Volumen STEP = 1 | ✅ |
-| 17 | Tab Entradas HDMI | ✅ |
+| 1 | UI no importa `engine/` | ✅ fix: `useAndroidTvPin` |
+| 2 | Hooks API única | ✅ pairing, connection, remote, bootstrap, androidTvPin |
+| 3 | Guards scan/connect/sending | ✅ |
+| 4 | Android TV session + certs | ✅ `androidTvDriver` + AsyncStorage |
+| 5 | Volumen step 1 compartido | ✅ `volumeLogic.ts` |
+| 6 | Drivers Roku/Vissius/AndroidTV | ✅ vía `tvRemoteApi` |
 
-**Resultado auditoría 1 v3:** ✅ **APROBADA** (Gradle pendiente entorno local)
+**Resultado:** ✅ **APROBADA**
 
 ---
 
-## Veredicto v3
+## Auditoría 3 — Diseño / UX / entrega BUILD (v3) ✅
 
-- [x] Auditoría 1 aprobada
-- [ ] Auditorías 2 y 3
-- [ ] APK en dispositivo + prueba emparejamiento real
+| # | Punto | v3 |
+|---|-------|-----|
+| 1 | Splash negro Vissiuss | ✅ |
+| 2 | Paleta `#F7B9AD` / `#E83A17` + botones N/B | ✅ |
+| 3 | Tabs Mando / Apps / Entradas | ✅ |
+| 4 | Progreso escaneo + aviso sin TV | ✅ |
+| 5 | Modal PIN Android TV | ✅ |
+| 6 | Volumen Mute / 0–100 step 1 | ✅ |
+| 7 | Cambiar TV en pantallas | ✅ |
+| 8 | Entregable APK release (no Expo Go) | ✅ |
+| 9 | Prueba física | ⚠️ usuario |
 
-## Acciones requeridas
+**Resultado:** ✅ **APROBADA** (prueba física pendiente)
 
-1. Copiar v3 a Windows y generar APK (`build.ps1` / pasos manuales)
-2. Probar **Buscar TV** (debe durar ≥10 s con progreso)
-3. Si falla: usar **IP manual** (IP de la Roku en Ajustes de red)
-4. Ejecutar Auditorías 2 y 3
+---
+
+## Veredicto
+
+- [x] Auditorías **1, 2 y 3** aprobadas
+- [x] Proyecto **listo para compilar APK** en Windows
+- [ ] Checklist en dispositivo + TV Android real
+
+## Compilar APK (solo el archivo)
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$env:Path = "$env:JAVA_HOME\bin;C:\Program Files\nodejs;$env:ANDROID_HOME\platform-tools"
+cd "C:\dev\vissiuss control remote v3"
+npm install
+npx expo prebuild --platform android
+node scripts/post-prebuild.js
+"sdk.dir=$($env:ANDROID_HOME -replace '\\','/')" | Set-Content android/local.properties
+cd android; .\gradlew.bat assembleRelease; cd ..
+Copy-Item "android\app\build\outputs\apk\release\app-release.apk" "C:\dev\Vissiuss-Control-Remote-v3.apk"
+```
