@@ -82,10 +82,10 @@
 | Perfil | Target esta iteración | Pipeline |
 |--------|----------------------|----------|
 | DEV (Expo Go) | [ ] | Solo desarrollo UI opcional |
-| BUILD (APK release) | [x] | `prebuild` + `assembleRelease` → **target v3** |
+| BUILD (APK release) | [x] | `prebuild` + `assembleRelease` → **target v3.1** |
 | RELEASE (EAS) | [ ] | `eas build` — futuro |
 
-> v3 requiere perfil **BUILD**. Emparejamiento LAN: cleartext HTTP + timeouts largos.
+> v3.1 = v3 + módulo `src/diagnostics/` (logs exportables). Emparejamiento LAN: cleartext HTTP + timeouts largos.
 
 ---
 
@@ -136,9 +136,10 @@ app/Vissius control remote/
 
 | Módulo | Responsabilidad |
 |--------|-----------------|
+| `src/diagnostics/` (v3.1) | Logger `ejecución --> resultado`, export texto/JSON, UI `/logs` |
 | `tvRemoteApi.ts` | Envía comandos: `nav_up`, `nav_down`, `nav_left`, `nav_right`, `ok`, `back`, `vol_up`, `vol_down`, `launch_app` |
-| `discovery.ts` + `lanDiscovery.ts` | Escaneo subred WiFi; drivers Vissius + Roku |
-| `drivers/*.ts` | Protocolo HTTP por marca/modelo |
+| `discovery.ts` + `lanDiscovery.ts` | Escaneo subred WiFi; drivers Vissius + Roku + Android TV |
+| `drivers/*.ts` | Protocolo HTTP/TLS por marca/modelo |
 | `tvStore.ts` | Estado: conectado, TV emparejada, loading, error |
 | `NavigationPad` | UI del pad direccional |
 | `VolumeControls` | Botones vol + / vol − |

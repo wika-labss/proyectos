@@ -1,5 +1,16 @@
 # Funcionalidades
 
+## Iteración v3.1 — cambios respecto a v3
+
+| Área | v3 | v3.1 |
+|------|----|------|
+| Diagnóstico | Solo consola / feedback UI | **Módulo logs** `ejecución → resultado` |
+| Export | No | **Share texto + JSON** |
+| Pantalla Logs | No | **`/logs`** filtros + limpiar |
+| Discovery fix | Pendiente | **Sin fix aún** (diagnóstico primero) |
+
+---
+
 ## Iteración v3 — cambios respecto a v2
 
 | Área | v2 | v3 |
@@ -17,59 +28,64 @@
 
 ### Pantalla de inicio
 
-- [ ] Splash Vissiuss (negro / blanco / watermark)
+- [x] Splash Vissiuss (negro / blanco / watermark)
 
 ### Conexión y emparejamiento (P0 URGENTE)
 
-- [ ] **Android TV / Google TV** — Discovery puerto 6467 + emparejamiento PIN (protocolo Remote v2)
-- [ ] **Cleartext HTTP LAN** — `usesCleartextTraffic: true` (Android bloquea HTTP sin esto)
-- [ ] **Escaneo largo** — timeout probe ≥ 2500 ms; lotes ≤ 16 hosts
-- [ ] **Progreso de búsqueda** — "Escaneando red… X%" o hosts revisados
-- [ ] **Mínimo tiempo de búsqueda** — al menos ~8–12 s de escaneo visible (no cerrar en <1 s)
-- [ ] **Verificar al conectar** — `connect` hace probe HTTP real; falla si TV no responde
-- [ ] **IP manual** — campo para IP + seleccionar protocolo (Roku / Vissius) si el escaneo falla
-- [ ] **Aviso sin TVs** — mensaje claro + sugerencia de IP manual
-- [ ] **Conexión exitosa** — banner ✓
-- [ ] Recordar TV emparejada
+- [x] **Android TV / Google TV** — Discovery puerto 6467 + emparejamiento PIN (protocolo Remote v2)
+- [x] **Cleartext HTTP LAN** — `usesCleartextTraffic: true` (Android bloquea HTTP sin esto)
+- [x] **Escaneo largo** — timeout probe ≥ 2500 ms; lotes ≤ 16 hosts
+- [x] **Progreso de búsqueda** — "Escaneando red… X%" o hosts revisados
+- [x] **Mínimo tiempo de búsqueda** — al menos ~8–12 s de escaneo visible (no cerrar en <1 s)
+- [x] **Verificar al conectar** — `connect` hace probe HTTP real; falla si TV no responde
+- [x] **IP manual** — campo para IP + seleccionar protocolo (Roku / Vissius) si el escaneo falla
+- [x] **Aviso sin TVs** — mensaje claro + sugerencia de IP manual
+- [x] **Conexión exitosa** — banner ✓
+- [x] Recordar TV emparejada
+
+### Diagnóstico (v3.1)
+
+- [x] Logger `ejecución --> resultado`
+- [x] Exportar texto / JSON (Share)
+- [x] Pantalla Logs con filtros
+- [x] Instrumentación discovery / WiFi / Android TV / connect
 
 ### Control remoto
 
-- [ ] Pad navegación + Cambiar TV
-- [ ] **Volumen 0–100, paso 1**; 0 = mute
+- [x] Pad navegación + Cambiar TV
+- [x] **Volumen 0–100, pasos 1**; 0 = mute
 
 ### Apps
 
-- [ ] Netflix, HBO, YouTube, Crunchyroll
+- [x] Netflix, HBO, YouTube, Crunchyroll
 
 ### Entradas (v3)
 
-- [ ] **HDMI 1, HDMI 2, HDMI 3, HDMI 4**
-- [ ] **AV / TV Tuner** (si el protocolo lo soporta)
-- [ ] Tab o pantalla **Entradas** junto a Mando / Apps
+- [x] **HDMI 1, HDMI 2, HDMI 3, HDMI 4**
+- [x] **AV / TV Tuner** (si el protocolo lo soporta)
+- [x] Tab o pantalla **Entradas** junto a Mando / Apps
 
 ## Layout de pantallas
 
 | Pantalla | Contenido |
 |----------|-----------|
 | Splash | Negro, Vissiuss |
-| Emparejamiento | Buscar + progreso + IP manual |
-| Mando | Pad + volumen step 1 |
+| Emparejamiento | Buscar + progreso + IP manual + enlace Logs |
+| **Logs (v3.1)** | Lista ejecución→resultado + exportar |
+| Mando | Pad + volumen step 1 + Logs |
 | Apps | Streaming |
 | **Entradas** | HDMI 1–4, AV, TV |
 
-## Priorización v3
+## Priorización v3.1
 
 | Prioridad | Funcionalidad |
 |-----------|---------------|
-| **P0 URGENTE** | Emparejamiento Android TV funcional (PIN + TLS) |
-| P0 | Cleartext + timeouts + verify connect |
-| P0 | Volumen paso 1 |
-| P0 | Pantalla Entradas HDMI |
-| P1 | IP manual |
-| P1 | Progreso de escaneo |
+| **P0** | Módulo logs exportables para diagnosticar discovery vacío |
+| P1 | Fix discovery (tras logs del dispositivo) |
 
-## Fuera de alcance (v3)
+## Fuera de alcance (v3.1)
 
+- Fix de permisos / IP / Nearby WiFi (siguiente iteración tras logs)
 - iOS
 - Bluetooth
 - Samsung/LG APIs propietarias completas (v4+)
