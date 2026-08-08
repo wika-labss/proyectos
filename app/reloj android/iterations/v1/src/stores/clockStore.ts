@@ -1,12 +1,34 @@
 import { create } from 'zustand';
 
+import { pickPreferences } from '../engine/preferences';
 import { loadPreferences, savePreferences } from '../utils/storage';
 import { DEFAULT_PREFERENCES, type ClockPreferences } from '../types';
+
+const SAVE_DEBOUNCE_MS = 400;
 
 interface ClockStore extends ClockPreferences {
   loaded: boolean;
   hydrate: () => Promise<void>;
-  setPreference: <K extends keyof ClockPreferences>(key: K, value: ClockPreferences[K]) => Promise<void>;
+  setPreference: <K extends keyof ClockPreferences>(key: K, value: ClockPreferences[K]) => void;
+  flushPreferences: () => Promise<void>;
+}
+
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingPreferences: ClockPreferences | null = null;
+
+function scheduleSave(preferences: ClockPreferences): void {
+  pendingPreferences = preferences;
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+  }
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    const snapshot = pendingPreferences;
+    pendingPreferences = null;
+    if (snapshot) {
+      void savePreferences(snapshot);
+    }
+  }, SAVE_DEBOUNCE_MS);
 }
 
 export const useClockStore = create<ClockStore>((set, get) => ({
@@ -16,16 +38,22 @@ export const useClockStore = create<ClockStore>((set, get) => ({
     const preferences = await loadPreferences();
     set({ ...preferences, loaded: true });
   },
-  setPreference: async (key, value) => {
-    const next = { ...get(), [key]: value };
+  setPreference: (key, value) => {
     set({ [key]: value });
-    const { loaded: _loaded, hydrate: _hydrate, setPreference: _setPreference, ...prefs } = next;
-    await savePreferences(prefs);
+    const state = get();
+    scheduleSave(pickPreferences(state));
+  },
+  flushPreferences: async () => {
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+    }
+    const snapshot = pendingPreferences ?? pickPreferences(get());
+    pendingPreferences = null;
+    await savePreferences(snapshot);
   },
 }));
 
-export function getClockPreferencesSnapshot(): ClockPreferences {
-  const { loaded: _loaded, hydrate: _hydrate, setPreference: _setPreference, ...prefs } =
-    useClockStore.getState();
-  return prefs;
+export function selectPreferences(state: ClockStore): ClockPreferences {
+  return pickPreferences(state);
 }

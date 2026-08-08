@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { normalizePreferences } from '../engine/preferences';
 import { DEFAULT_PREFERENCES, STORAGE_KEY, type ClockPreferences } from '../types';
 
 export async function loadPreferences(): Promise<ClockPreferences> {
@@ -9,7 +10,7 @@ export async function loadPreferences(): Promise<ClockPreferences> {
       return DEFAULT_PREFERENCES;
     }
     const parsed = JSON.parse(raw) as Partial<ClockPreferences>;
-    return { ...DEFAULT_PREFERENCES, ...parsed };
+    return normalizePreferences(parsed);
   } catch {
     return DEFAULT_PREFERENCES;
   }

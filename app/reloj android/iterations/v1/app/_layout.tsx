@@ -9,6 +9,7 @@ import { useClockStore } from '../src/stores/clockStore';
 
 export default function RootLayout() {
   const hydrate = useClockStore((state) => state.hydrate);
+  const flushPreferences = useClockStore((state) => state.flushPreferences);
   const loadedPrefs = useClockStore((state) => state.loaded);
 
   const [fontsLoaded] = useFonts({
@@ -17,7 +18,10 @@ export default function RootLayout() {
 
   useEffect(() => {
     void hydrate();
-  }, [hydrate]);
+    return () => {
+      void flushPreferences();
+    };
+  }, [flushPreferences, hydrate]);
 
   if (!fontsLoaded || !loadedPrefs) {
     return (

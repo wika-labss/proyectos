@@ -9,6 +9,7 @@ interface SevenSegmentDisplayProps {
   glowColor: string;
   size?: 'large' | 'medium' | 'small';
   ampm?: string | null;
+  blinkColon?: boolean;
 }
 
 const SIZE_MAP = {
@@ -23,14 +24,19 @@ export function SevenSegmentDisplay({
   glowColor,
   size = 'large',
   ampm = null,
+  blinkColon = true,
 }: SevenSegmentDisplayProps) {
   const [colonVisible, setColonVisible] = useState(true);
   const fontSize = SIZE_MAP[size];
+  const hasColon = value.includes(':');
 
   useEffect(() => {
+    if (!blinkColon || !hasColon) {
+      return undefined;
+    }
     const id = setInterval(() => setColonVisible((visible) => !visible), 500);
     return () => clearInterval(id);
-  }, []);
+  }, [blinkColon, hasColon]);
 
   const rendered = useMemo(() => {
     return value.split('').map((char, index) => {
@@ -43,7 +49,7 @@ export function SevenSegmentDisplay({
               {
                 color,
                 fontSize,
-                opacity: colonVisible ? 1 : 0.3,
+                opacity: blinkColon && hasColon ? (colonVisible ? 1 : 0.3) : 1,
                 textShadowColor: glowColor,
               },
             ]}
@@ -68,7 +74,7 @@ export function SevenSegmentDisplay({
         </Text>
       );
     });
-  }, [colonVisible, color, fontSize, glowColor, value]);
+  }, [blinkColon, colonVisible, color, fontSize, glowColor, hasColon, value]);
 
   return (
     <View style={styles.row}>

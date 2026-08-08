@@ -1,56 +1,38 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DateLine } from '../src/components/DateLine';
 import { RetroBezel } from '../src/components/RetroBezel';
 import { SevenSegmentDisplay } from '../src/components/SevenSegmentDisplay';
-import { formatClock } from '../src/engine/formatTime';
-import { useClock } from '../src/hooks/useClock';
+import { colors } from '../src/constants/theme';
+import { useClockDisplay } from '../src/hooks/useClockDisplay';
+import { useKeepAwake } from '../src/hooks/useKeepAwake';
 import { useWidgetSync } from '../src/hooks/useWidgetSync';
-import { colors, getPresetTokens } from '../src/constants/theme';
-import { useClockStore } from '../src/stores/clockStore';
 
 export default function ClockScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const now = useClock();
+  const { preferences, tokens, formatted } = useClockDisplay();
   useWidgetSync();
-
-  const format24h = useClockStore((state) => state.format24h);
-  const showSeconds = useClockStore((state) => state.showSeconds);
-  const showDate = useClockStore((state) => state.showDate);
-  const colorPreset = useClockStore((state) => state.colorPreset);
-  const keepAwake = useClockStore((state) => state.keepAwake);
-
-  const tokens = getPresetTokens(colorPreset);
-  const formatted = formatClock(now, {
-    format24h,
-    showSeconds,
-    showDate,
-    colorPreset,
-    keepAwake,
-  });
-
-  useEffect(() => {
-    if (!keepAwake) {
-      return undefined;
-    }
-    void activateKeepAwakeAsync('reloj-mesa');
-    return () => {
-      deactivateKeepAwake('reloj-mesa');
-    };
-  }, [keepAwake]);
+  useKeepAwake(preferences.keepAwake);
+  const [settingsPressed, setSettingsPressed] = useState(false);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 },
+      ]}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Ajustes"
+        onPressIn={() => setSettingsPressed(true)}
+        onPressOut={() => setSettingsPressed(false)}
         onPress={() => router.push('/settings')}
-        style={styles.settingsButton}
+        style={[styles.settingsButton, settingsPressed && styles.pressed]}
       >
         <Text style={styles.settingsIcon}>⚙</Text>
       </Pressable>
@@ -63,9 +45,10 @@ export default function ClockScreen() {
             color={tokens.display}
             glowColor={tokens.displayGlow}
             ampm={formatted.ampm}
+            blinkColon
           />
         </RetroBezel>
-        {showDate ? <DateLine value={formatted.date} color={tokens.display} /> : null}
+        {preferences.showDate ? <DateLine value={formatted.date} color={tokens.display} /> : null}
       </View>
     </View>
   );
@@ -83,6 +66,9 @@ const styles = StyleSheet.create({
     height: 48,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  pressed: {
+    transform: [{ scale: 0.97 }],
   },
   settingsIcon: {
     color: colors.textPrimary,

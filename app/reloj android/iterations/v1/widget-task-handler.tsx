@@ -1,16 +1,16 @@
 import React from 'react';
 import type { WidgetTaskHandlerProps } from 'react-native-android-widget';
 
-import { formatWidgetTime } from './src/engine/formatTime';
+import { buildWidgetModel } from './src/engine/widgetRenderer';
 import { RetroClockWidget } from './src/widgets/RetroClockWidget';
 import { loadPreferences } from './src/utils/storage';
-import { DEFAULT_PREFERENCES, WIDGET_NAME } from './src/types';
+import { WIDGET_NAME } from './src/types';
 
 async function renderClockWidget(renderWidget: WidgetTaskHandlerProps['renderWidget']): Promise<void> {
   const preferences = await loadPreferences();
-  const timeText = formatWidgetTime(new Date(), preferences);
+  const model = buildWidgetModel(new Date(), preferences);
   renderWidget(
-    <RetroClockWidget timeText={timeText} colorPreset={preferences.colorPreset} />,
+    <RetroClockWidget timeText={model.timeText} colorPreset={model.colorPreset} />,
   );
 }
 
@@ -23,8 +23,6 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
     case 'WIDGET_ADDED':
     case 'WIDGET_UPDATE':
     case 'WIDGET_RESIZED':
-      await renderClockWidget(props.renderWidget);
-      break;
     case 'WIDGET_CLICK':
       await renderClockWidget(props.renderWidget);
       break;
@@ -35,8 +33,6 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps): Promise<
 
 export async function renderWidgetSnapshot(): Promise<React.ReactElement> {
   const preferences = await loadPreferences();
-  const timeText = formatWidgetTime(new Date(), preferences);
-  return <RetroClockWidget timeText={timeText} colorPreset={preferences.colorPreset} />;
+  const model = buildWidgetModel(new Date(), preferences);
+  return <RetroClockWidget timeText={model.timeText} colorPreset={model.colorPreset} />;
 }
-
-export { DEFAULT_PREFERENCES };

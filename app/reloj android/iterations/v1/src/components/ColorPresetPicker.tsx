@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { PRESET_LABELS, colors, getPresetTokens } from '../constants/theme';
@@ -18,20 +18,49 @@ export function ColorPresetPicker({ value, onChange }: ColorPresetPickerProps) {
         const token = getPresetTokens(preset);
         const selected = preset === value;
         return (
-          <Pressable
+          <PresetSwatch
             key={preset}
-            accessibilityRole="button"
-            accessibilityLabel={PRESET_LABELS[preset]}
+            label={PRESET_LABELS[preset]}
+            color={token.display}
+            glowColor={token.displayGlow}
+            selected={selected}
             onPress={() => onChange(preset)}
-            style={[
-              styles.swatch,
-              { backgroundColor: token.display },
-              selected && styles.swatchSelected,
-            ]}
           />
         );
       })}
     </View>
+  );
+}
+
+function PresetSwatch({
+  label,
+  color,
+  glowColor,
+  selected,
+  onPress,
+}: {
+  label: string;
+  color: string;
+  glowColor: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  const [pressed, setPressed] = useState(false);
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      style={[
+        styles.swatch,
+        { backgroundColor: color, shadowColor: glowColor },
+        selected && styles.swatchSelected,
+        pressed && styles.swatchPressed,
+      ]}
+    />
   );
 }
 
@@ -50,9 +79,15 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 2,
     borderColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
   },
   swatchSelected: {
     borderColor: colors.textPrimary,
+  },
+  swatchPressed: {
+    transform: [{ scale: 0.97 }],
   },
   legend: {
     marginTop: 8,

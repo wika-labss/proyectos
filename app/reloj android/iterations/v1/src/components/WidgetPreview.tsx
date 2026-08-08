@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { formatWidgetTime } from '../engine/formatTime';
+import { buildWidgetModel } from '../engine/widgetRenderer';
 import { getPresetTokens, colors } from '../constants/theme';
 import type { ClockPreferences } from '../types';
 import { RetroBezel } from './RetroBezel';
@@ -14,21 +14,19 @@ interface WidgetPreviewProps {
 
 export function WidgetPreview({ now, preferences }: WidgetPreviewProps) {
   const tokens = getPresetTokens(preferences.colorPreset);
-  const widgetTime = formatWidgetTime(now, preferences);
-  const parts = widgetTime.split(' ');
-  const time = parts[0] ?? widgetTime;
-  const ampm = parts[1] ?? null;
+  const model = buildWidgetModel(now, preferences);
 
   return (
     <View style={styles.wrap}>
       <Text style={styles.title}>VISTA PREVIA WIDGET</Text>
       <RetroBezel compact>
         <SevenSegmentDisplay
-          value={time}
+          value={model.time}
           color={tokens.display}
           glowColor={tokens.displayGlow}
           size="medium"
-          ampm={ampm}
+          ampm={model.ampm}
+          blinkColon
         />
       </RetroBezel>
     </View>

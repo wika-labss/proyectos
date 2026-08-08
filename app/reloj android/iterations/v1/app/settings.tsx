@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -10,38 +9,32 @@ import {
 } from '../src/components/ColorPresetPicker';
 import { SettingsRow } from '../src/components/SettingsRow';
 import { WidgetPreview } from '../src/components/WidgetPreview';
-import { useClock } from '../src/hooks/useClock';
-import { refreshWidget } from '../src/hooks/useWidgetSync';
 import { colors } from '../src/constants/theme';
-import { useClockStore } from '../src/stores/clockStore';
+import { useClockDisplay } from '../src/hooks/useClockDisplay';
+import { useClockPreferences } from '../src/hooks/useClockPreferences';
 import type { ColorPreset } from '../src/types';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const now = useClock();
-  const setPreference = useClockStore((state) => state.setPreference);
-  const preferences = useClockStore((state) => ({
-    format24h: state.format24h,
-    showSeconds: state.showSeconds,
-    showDate: state.showDate,
-    colorPreset: state.colorPreset,
-    keepAwake: state.keepAwake,
-  }));
-
-  const update = async <K extends keyof typeof preferences>(
-    key: K,
-    value: (typeof preferences)[K],
-  ) => {
-    await setPreference(key, value);
-    void Haptics.selectionAsync();
-    await refreshWidget();
-  };
+  const { now, preferences } = useClockDisplay();
+  const { updatePreference } = useClockPreferences();
+  const [backPressed, setBackPressed] = useState(false);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 8 }]}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 8 },
+      ]}
+    >
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
+        <Pressable
+          onPress={() => router.back()}
+          onPressIn={() => setBackPressed(true)}
+          onPressOut={() => setBackPressed(false)}
+          style={[styles.backButton, backPressed && styles.pressed]}
+        >
           <Text style={styles.backText}>← VOLVER</Text>
         </Pressable>
         <Text style={styles.headerTitle}>AJUSTES</Text>
@@ -53,7 +46,7 @@ export default function SettingsScreen() {
         <SettingsRow label="Formato 24 horas">
           <Switch
             value={preferences.format24h}
-            onValueChange={(value) => void update('format24h', value)}
+            onValueChange={(value) => void updatePreference('format24h', value)}
             trackColor={{ false: colors.border, true: colors.accent }}
           />
         </SettingsRow>
@@ -61,7 +54,7 @@ export default function SettingsScreen() {
         <SettingsRow label="Mostrar segundos">
           <Switch
             value={preferences.showSeconds}
-            onValueChange={(value) => void update('showSeconds', value)}
+            onValueChange={(value) => void updatePreference('showSeconds', value)}
             trackColor={{ false: colors.border, true: colors.accent }}
           />
         </SettingsRow>
@@ -69,7 +62,7 @@ export default function SettingsScreen() {
         <SettingsRow label="Mostrar fecha">
           <Switch
             value={preferences.showDate}
-            onValueChange={(value) => void update('showDate', value)}
+            onValueChange={(value) => void updatePreference('showDate', value)}
             trackColor={{ false: colors.border, true: colors.accent }}
           />
         </SettingsRow>
@@ -77,7 +70,7 @@ export default function SettingsScreen() {
         <SettingsRow label="Pantalla siempre encendida">
           <Switch
             value={preferences.keepAwake}
-            onValueChange={(value) => void update('keepAwake', value)}
+            onValueChange={(value) => void updatePreference('keepAwake', value)}
             trackColor={{ false: colors.border, true: colors.accent }}
           />
         </SettingsRow>
@@ -86,7 +79,7 @@ export default function SettingsScreen() {
           <Text style={styles.sectionLabel}>COLOR DEL DISPLAY</Text>
           <ColorPresetPicker
             value={preferences.colorPreset}
-            onChange={(preset: ColorPreset) => void update('colorPreset', preset)}
+            onChange={(preset: ColorPreset) => void updatePreference('colorPreset', preset)}
           />
           <ColorPresetLegend value={preferences.colorPreset} />
         </View>
@@ -115,6 +108,9 @@ const styles = StyleSheet.create({
   backButton: {
     alignSelf: 'flex-start',
     paddingVertical: 8,
+  },
+  pressed: {
+    transform: [{ scale: 0.97 }],
   },
   backText: {
     color: colors.accent,
