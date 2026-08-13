@@ -1,108 +1,202 @@
-# Arquitectura
+# Architecture
 
-## Stack tecnológico
+# Metadata
 
-| Capa | Tecnología |
-|------|------------|
-| Framework | |
-| Lenguaje | TypeScript (strict mode) |
-| Navegación | |
-| Estado global | |
-| Persistencia | |
-| Estilos | |
-| Testing | |
-| Build | |
-
-> Completar stack. Si es móvil Expo, ver dependencias en `06-build-environment.md`.
+| Campo | Valor |
+|---------|---------|
+| Proyecto | |
+| Autor | |
+| Fecha | |
+| Estado | Draft / Review / Approved |
+| Versión | 1.0 |
+| Tipo de Proyecto | Simple / Intermedio / Avanzado |
 
 ---
 
-## Dependencias técnicas
+# Objetivo
 
-> Referencia obligatoria: `06-build-environment.md`. El manifiesto de dependencias debe estar completo **antes** de generar código.
+Definir las decisiones técnicas y restricciones arquitectónicas que deberá respetar la solución.
 
-### Reglas WIKA de dependencias
+Este documento no describe una implementación detallada.
 
-1. Instalar con `npx expo install <paquete>` (proyectos Expo)
-2. Usar prefijo `~` en versiones Expo/RN — **prohibido `^`**
-3. Ejecutar `npx expo install --fix` al finalizar cada iteración
-4. Validar con `npx expo-doctor` — 0 errores bloqueantes
-
-### Manifiesto del proyecto
-
-| Paquete | Versión | Capa | Obligatorio |
-|---------|---------|------|-------------|
-| | | | |
-
-### Plugins nativos (app.json)
-
-```json
-{
-  "expo": {
-    "plugins": []
-  }
-}
-```
+Su propósito es proporcionar a los agentes IA y arquitectos una guía técnica clara antes de iniciar la generación.
 
 ---
 
-## Perfil de build
+# Nivel de Complejidad
 
-| Perfil | Target esta iteración | Pipeline |
-|--------|----------------------|----------|
-| DEV (Expo Go) | [ ] | `npx expo start` |
-| BUILD (APK/IPA local) | [ ] | `prebuild` + Gradle/Xcode |
-| RELEASE (EAS) | [ ] | `eas build` |
+Seleccione una opción:
+
+- [ ] Simple
+- [ ] Intermedio
+- [ ] Avanzado
 
 ---
 
-## Estructura del proyecto
+# Plataforma
+
+¿Dónde se ejecutará la solución?
+
+Seleccione todas las que correspondan.
+
+- [ ] Android
+- [ ] iOS
+- [ ] Web
+- [ ] Backend
+- [ ] Escritorio
+- [ ] Otra
+
+---
+
+# Tecnologías Requeridas
+
+Defina tecnologías obligatorias para el proyecto.
+
+## Frontend
+
+Ejemplo:
 
 ```text
-nombre-proyecto/
-├── idea/
-├── iterations/v1/
-│   ├── app/              # Pantallas (Expo Router)
-│   ├── src/
-│   │   ├── components/
-│   │   ├── stores/
-│   │   ├── hooks/
-│   │   ├── types/
-│   │   └── utils/
-│   ├── assets/
-│   ├── app.json
-│   ├── package.json
-│   └── tsconfig.json
-├── review.md
-└── final/
+Flutter
 ```
 
 ---
 
-## Componentes principales
+## Backend
 
-<!-- Describir módulos y responsabilidades -->
+Ejemplo:
 
----
-
-## Flujo de datos
-
-<!-- Describir flujos principales -->
+```text
+Supabase
+```
 
 ---
 
-## Decisiones técnicas
+## Base de Datos
 
-| Decisión | Elección | Justificación |
-|----------|----------|---------------|
-| | | |
+Ejemplo:
+
+```text
+PostgreSQL (Supabase)
+```
 
 ---
 
-## Toolchain nativo (si aplica)
+# Integraciones
 
-Ver `06-build-environment.md` para:
+Documentar integraciones obligatorias.
 
-- JDK 17, Kotlin 1.9.25, Android SDK 35
-- Configuración `expo-build-properties`
-- Gates de verificación de build
+## Integración 1
+
+Nombre:
+
+Descripción:
+
+Propósito:
+
+---
+
+## Integración 2
+
+Nombre:
+
+Descripción:
+
+Propósito:
+
+---
+
+# Autenticación
+
+Seleccione una opción.
+
+- [ ] No requiere autenticación
+- [ ] Email y contraseña
+- [ ] Google
+- [ ] Microsoft
+- [ ] Active Directory
+- [ ] Otra
+
+Comentarios adicionales:
+
+---
+
+# Almacenamiento
+
+¿La aplicación almacenará información?
+
+Descripción:
+
+---
+
+# Modo Offline
+
+Seleccione una opción.
+
+- [ ] No requerido
+- [ ] Deseable
+- [ ] Obligatorio
+
+Comentarios:
+
+---
+
+# Seguridad
+
+Documentar restricciones relevantes.
+
+Ejemplos:
+
+- No almacenar contraseñas localmente.
+- Validar permisos por usuario.
+- Proteger información sensible.
+
+---
+
+# Restricciones Técnicas
+
+Registrar limitaciones importantes.
+
+Ejemplos:
+
+- Debe ejecutarse en Android 10 o superior.
+- Debe funcionar en tablets.
+- Debe operar dentro de la red corporativa.
+- Debe utilizar exclusivamente servicios aprobados.
+
+---
+
+# Decisiones Arquitectónicas
+
+Registrar decisiones importantes tomadas durante la definición del proyecto.
+
+Ejemplo:
+
+```text
+Se utilizará Flutter para maximizar reutilización entre Android e iOS.
+```
+
+---
+
+# Información Adicional
+
+Agregar cualquier detalle técnico relevante para la generación.
+
+Puede incluir:
+
+- Diagramas simples.
+- Referencias.
+- Consideraciones especiales.
+- Enlaces de apoyo.
+
+---
+
+# Resultado Esperado
+
+Al finalizar este documento cualquier persona o agente IA debe poder responder:
+
+1. ¿Dónde se ejecutará la solución?
+2. ¿Qué tecnologías deben utilizarse?
+3. ¿Qué integraciones existen?
+4. ¿Qué restricciones técnicas deben respetarse?
+5. ¿Qué decisiones arquitectónicas ya fueron tomadas?

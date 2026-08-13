@@ -1,101 +1,131 @@
-# Prompt IA
+# AI Generation Prompt
 
-## Instrucciones para el agente
+# Metadata
 
-Genera la aplicación basada en la documentación del proyecto. El código debe generarse en `iterations/vN/`.
-
----
-
-## Reglas de generación
-
-1. Seguir arquitectura en `03-architecture.md`
-2. Seguir dependencias en `06-build-environment.md` — **manifiesto completo obligatorio**
-3. Implementar funcionalidades de `02-features.md` por prioridad
-4. Respetar diseño de `04-design.md`
-5. Código limpio, TypeScript strict, sin `any`
+| Campo | Valor |
+|---------|---------|
+| Proyecto | |
+| Autor | |
+| Fecha | |
+| Estado | Draft / Review / Approved |
+| Versión | 1.0 |
 
 ---
 
-## Dependencias técnicas (obligatorio)
+# Objetivo
 
-Antes de entregar código:
+Definir instrucciones adicionales para el agente IA encargando de generar la solución.
 
-```bash
-npx expo install --fix          # Si proyecto Expo
-npx expo-doctor                 # 0 errores
-```
+Este documento complementa la documentación del proyecto y permite ajustar prioridades, restricciones y comportamiento durante la generación.
 
-### Checklist de package.json
-
-- [ ] Todas las deps `expo-*` listadas en `06-build-environment.md`
-- [ ] `expo-asset` incluido
-- [ ] `expo-build-properties` incluido (si build nativo)
-- [ ] Versiones con `~`, no `^`
-- [ ] `app.json` incluye plugins de `06-build-environment.md`
-
----
-
-## Gates de verificación (bloqueantes)
-
-La iteración **no se considera completa** sin pasar:
-
-| # | Gate | Comando |
-|---|------|---------|
-| 1 | Dependencias | `npx expo-doctor` → 0 errores |
-| 2 | TypeScript | `npx tsc --noEmit` → exit 0 |
-| 3 | Metro | `npx expo start` → arranca |
-| 4 | Prebuild | `npx expo prebuild --platform android` → sin errores *(si BUILD)* |
-| 5 | APK | `./gradlew assembleDebug` → BUILD SUCCESSFUL *(si BUILD)* |
-
----
-
-## Restricciones adicionales
-
-<!-- Restricciones específicas del proyecto -->
-
----
-
-## Resultado esperado
+No debe duplicar información existente en:
 
 ```text
-iterations/vN/
-├── app/
-├── src/
-├── assets/
-├── app.json
-├── package.json
-└── tsconfig.json
+01-problem.md
+02-features.md
+03-architecture.md
+04-design.md
+06-build-environment.md
 ```
 
 ---
 
-## Criterios de aceptación
+# Contexto
 
-### Funcionales
+La generación deberá basarse obligatoriamente en:
 
-- [ ] <!-- criterio funcional -->
+```text
+01-problem.md
+02-features.md
+03-architecture.md
+04-design.md
+06-build-environment.md
+```
 
-### Técnicos (WIKA — obligatorios)
-
-- [ ] `npx expo-doctor` sin errores
-- [ ] `npx tsc --noEmit` sin errores
-- [ ] Dependencias alineadas con `06-build-environment.md`
-- [ ] Perfil de build declarado cumplido (DEV / BUILD / RELEASE)
-
-### Build nativo (si perfil BUILD)
-
-- [ ] `expo-build-properties` configurado en app.json
-- [ ] Kotlin 1.9.25 fijado
-- [ ] APK debug compila sin errores
+Estos documentos representan la fuente oficial de verdad del proyecto.
 
 ---
 
-## Orden de implementación sugerido
+# Prioridades de Generación
 
-1. Configuración (`package.json`, `app.json`, `tsconfig.json`) — según `06-build-environment.md`
-2. Tipos y constantes
-3. Lógica de negocio / stores
-4. Componentes UI
-5. Pantallas
-6. **`npx expo install --fix` + `npx expo-doctor`**
-7. Verificar gates de build
+Indicar qué aspectos tienen mayor relevancia para esta versión.
+
+Ejemplos:
+
+- Priorizar velocidad de desarrollo.
+- Priorizar simplicidad.
+- Priorizar experiencia móvil.
+- Priorizar mantenibilidad.
+- Priorizar rendimiento.
+
+---
+
+# Restricciones Adicionales
+
+Registrar restricciones que no fueron documentadas previamente.
+
+Ejemplos:
+
+- Evitar dependencias innecesarias.
+- Mantener la solución simple.
+- Minimizar cantidad de pantallas.
+- No incorporar funcionalidades fuera del alcance.
+
+---
+
+# Alcance de la Generación
+
+Definir qué se espera obtener de esta ejecución.
+
+Seleccione una opción:
+
+- [ ] Prototipo visual
+- [ ] Aplicación funcional mínima
+- [ ] Aplicación lista para revisión
+- [ ] Aplicación lista para demostración
+- [ ] Aplicación lista para producción
+
+Comentarios:
+
+---
+
+# Entregables Esperados
+
+Seleccionar qué artefactos deberá generar la IA.
+
+- [ ] Código fuente
+- [ ] APK
+- [ ] Documentación técnica
+- [ ] Instrucciones de instalación
+- [ ] Reporte de generación
+
+---
+
+# Consideraciones para el Arquitecto
+
+Información que deba tener presente el arquitecto durante la revisión.
+
+Ejemplos:
+
+- Revisar rendimiento.
+- Validar experiencia móvil.
+- Verificar reglas de negocio específicas.
+- Evaluar diseño propuesto.
+
+---
+
+# Observaciones
+
+Registrar cualquier indicación adicional para esta generación.
+
+---
+
+# Resultado Esperado
+
+Al finalizar este documento cualquier agente IA debe ser capaz de responder:
+
+1. ¿Qué debe generar?
+2. ¿Qué prioridad debe seguir?
+3. ¿Qué restricciones adicionales existen?
+4. ¿Qué entregables debe producir?
+5. ¿Qué debe validar posteriormente el arquitecto?

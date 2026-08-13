@@ -1,24 +1,70 @@
-# Funcionalidades
+# Features
 
-## Funcionalidades principales
+# Metadata
 
-- [ ] <!-- Funcionalidad principal 1 -->
-- [ ] <!-- Funcionalidad principal 2 -->
-- [ ] <!-- Funcionalidad principal 3 -->
+| Campo | Valor |
+|---------|---------|
+| Proyecto | |
+| Autor | |
+| Fecha | |
+| Estado | Draft / Review / Approved |
 
-## Funcionalidades secundarias
+---
 
-- [ ] <!-- Funcionalidad secundaria 1 -->
-- [ ] <!-- Funcionalidad secundaria 2 -->
+# Resumen
 
-## Priorización
+Describe brevemente qué hará la aplicación.
 
-| Prioridad | Funcionalidad | Descripción |
-|-----------|---------------|-------------|
-| P0 | | Obligatoria para v1 |
-| P1 | | Importante, puede diferirse |
-| P2 | | Nice-to-have |
+---
 
-## Fuera de alcance (v1)
+# Funcionalidades Obligatorias
 
-- <!-- Funcionalidad explícitamente excluida -->
+## Funcionalidad 1
+
+Descripción.
+
+---
+
+## Funcionalidad 2
+
+Descripción.
+
+---
+
+## Funcionalidad 3
+
+Descripción.
+
+---
+
+# Funcionalidades Deseables
+
+Funcionalidades que sería positivo implementar si existe tiempo suficiente.
+
+---
+
+# Reglas de Negocio
+
+Reglas que deben respetarse.
+
+Ejemplo:
+
+- Un usuario sólo puede ver sus registros.
+- No se puede eliminar información histórica.
+
+---
+
+# Fuera de Alcance
+
+Funcionalidades que NO deben desarrollarse en esta versión.
+
+---
+
+# Resultado Esperado
+
+Al finalizar este documento cualquier persona o agente IA debe poder responder:
+
+1. ¿Qué debe hacer la aplicación?
+2. ¿Qué funcionalidades son obligatorias?
+3. ¿Qué funcionalidades son opcionales?
+4. ¿Qué queda fuera de esta versión?

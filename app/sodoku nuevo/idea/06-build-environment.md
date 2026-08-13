@@ -1,184 +1,161 @@
-# Entorno de Build
+# Build Environment
 
-> Template WIKA — Completar para cada proyecto. Copiar desde `templates/idea/` al crear un nuevo proyecto.
+# Metadata
 
-## Perfil de ejecución target
-
-Marcar el perfil que aplica a esta iteración:
-
-- [ ] **DEV** — Expo Go (`npx expo start` + app Expo Go en dispositivo)
-- [ ] **BUILD** — Nativo (`prebuild` + APK/IPA en dispositivo físico o emulador)
-- [ ] **RELEASE** — EAS Build (publicación en stores)
-
----
-
-## Entorno de desarrollo requerido
-
-| Herramienta | Versión | Notas |
-|-------------|---------|-------|
-| Node.js | 20 LTS | Obligatorio |
-| npm | 10+ | Incluido con Node |
-| Git | 2.x+ | Control de versiones |
-| JDK (Gradle) | **17** | Solo si perfil BUILD o RELEASE. **No usar JDK 21 ni 26** |
-| Android Studio | Latest stable | Solo si perfil BUILD Android |
-| Android SDK | API 35 | compileSdk 35, minSdk 24 |
-| Xcode | 15+ | Solo si perfil BUILD iOS (macOS) |
-
-### Configuración Android Studio
-
-- **Gradle JDK:** Java 17 (Eclipse Adoptium o JBR 17)
-- **Proyecto a abrir:** `iterations/vN/android/` (no la raíz Expo)
+| Campo | Valor |
+|---------|---------|
+| Proyecto | |
+| Autor | |
+| Fecha | |
+| Estado | Draft / Review / Approved |
+| Versión | 1.0 |
+| Tipo de Proyecto | Simple / Intermedio / Avanzado |
 
 ---
 
-## Manifiesto de dependencias
+# Objetivo
 
-> Regla WIKA: todas las dependencias `expo-*` y `react-native-*` se instalan con `npx expo install`, nunca manualmente. Usar prefijo `~` (no `^`).
+Definir el entorno de compilación y despliegue requerido por el proyecto.
 
-### Dependencias core (obligatorias — Expo SDK 52 + Expo Router)
-
-| Paquete | Versión | Motivo |
-|---------|---------|--------|
-| `expo` | `~52.0.0` | Framework base |
-| `expo-router` | `~4.0.0` | Navegación file-based |
-| `expo-constants` | `~17.0.0` | Constantes de entorno |
-| `expo-linking` | `~7.0.0` | Deep links |
-| `expo-status-bar` | `~2.0.0` | Barra de estado |
-| `expo-asset` | `~11.0.5` | Iconos, splash, assets |
-| `expo-build-properties` | `~0.13.0` | Fijar Kotlin/JDK/SDK en build nativo |
-| `react` | `18.3.1` | Core React |
-| `react-native` | `0.76.9` | Core RN (versión validada SDK 52) |
-| `react-native-safe-area-context` | `4.12.0` | Safe areas |
-| `react-native-screens` | `~4.4.0` | Navegación nativa |
-
-### Dependencias del proyecto
-
-<!-- Añadir dependencias específicas del proyecto -->
-
-| Paquete | Versión | Motivo |
-|---------|---------|--------|
-| | | |
+Este documento debe permitir generar un artefacto instalable de forma reproducible, sin depender de conocimiento implícito del equipo.
 
 ---
 
-## Configuración nativa (app.json)
+# Entregable Final
 
-Obligatorio si perfil BUILD o RELEASE:
+Describe el artefacto esperado.
 
-```json
-{
-  "expo": {
-    "plugins": [
-      "expo-router",
-      "expo-asset",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "kotlinVersion": "1.9.25",
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 34,
-            "minSdkVersion": 24
-          },
-          "ios": {
-            "deploymentTarget": "15.1"
-          }
-        }
-      ]
-    ]
-  }
-}
+Ejemplo:
+
+```text
+APK Release
 ```
 
-### Matriz de compatibilidad Kotlin (Expo SDK 52)
+Indica también qué entregables quedan fuera de alcance para esta versión.
 
-| Kotlin | Compose Compiler | Estado |
-|--------|------------------|--------|
-| 1.9.24 | 1.5.14 | ✅ Válido |
-| 1.9.25 | 1.5.15 | ✅ **Estándar WIKA** |
-| Mezclados | — | ❌ **Prohibido** |
+---
 
-> Fijar siempre via `expo-build-properties`. No editar manualmente salvo emergencia.
+# Framework y Versiones
 
-En `android/gradle.properties` (post-prebuild):
+Documenta el stack obligatorio:
 
-```properties
-android.kotlinVersion=1.9.25
+```yaml
+framework:
+language:
+runtime:
+package_manager:
+```
+
+## Plataforma Objetivo
+
+Completa según aplique:
+
+```yaml
+android_min_sdk:
+android_target_sdk:
+android_compile_sdk:
+jdk:
+kotlin:
+ios_deployment_target:
+node:
+python:
+dotnet:
 ```
 
 ---
 
-## Pipeline de build
+# Dependencias Críticas
 
-### Perfil DEV (Expo Go)
+Lista las dependencias indispensables para compilar y ejecutar la solución.
+
+Ejemplo:
+
+```text
+dependencia-a
+dependencia-b
+dependencia-c
+```
+
+---
+
+# Estructura de Build Esperada
+
+Describe la estructura mínima del código generado para que el build sea viable.
+
+```text
+source/
+├── ...
+├── package.json / pubspec.yaml / *.csproj
+└── ...
+```
+
+---
+
+# Pipeline de Build
+
+Documenta los pasos exactos para producir el artefacto.
+
+## 1. Instalación de dependencias
 
 ```bash
-npm install
-npx expo install --fix
-npx expo-doctor
-npx expo start
+# comando
 ```
 
-### Perfil BUILD (APK local)
+## 2. Verificación de entorno
 
 ```bash
-npm install
-npx expo install --fix
-npx expo-doctor
-npx expo prebuild --platform android
-cd android && ./gradlew assembleDebug
-# APK: android/app/build/outputs/apk/debug/app-debug.apk
+# comando
 ```
 
-En terminal separada:
+## 3. Compilación
 
 ```bash
-npx expo start
+# comando
 ```
 
-### Perfil RELEASE (EAS)
+## 4. Generación del artefacto
 
 ```bash
-npm install
-npx expo install --fix
-eas build --platform android
-eas build --platform ios
+# comando
+```
+
+## 5. Validación del artefacto
+
+```bash
+# comando
 ```
 
 ---
 
-## Gates de verificación (bloqueantes)
+# Firmado y Distribución
 
-Ninguna iteración se considera completa sin pasar:
-
-| Gate | Comando | Resultado esperado |
-|------|---------|-------------------|
-| Dependencias | `npx expo-doctor` | 0 errores |
-| TypeScript | `npx tsc --noEmit` | Exit code 0 |
-| Metro | `npx expo start` | Arranca sin errores |
-| Prebuild | `npx expo prebuild --platform android` | Genera `android/` sin errores |
-| APK debug | `cd android && ./gradlew assembleDebug` | BUILD SUCCESSFUL |
+Describe requisitos de firmado, keystores, perfiles o canales de distribución cuando apliquen.
 
 ---
 
-## Scripts estándar WIKA
+# Restricciones
 
-Incluir en cada iteración:
+Lista limitaciones técnicas del entorno:
 
-| Script | Propósito |
-|--------|-----------|
-| `scripts/verify-build.sh` | Ejecuta todos los gates |
-| `reset-android.bat` | Regenera android/ limpio (Windows) |
+- Versiones bloqueadas.
+- Herramientas prohibidas.
+- Servicios externos no permitidos.
+- Requisitos offline / online.
 
 ---
 
-## Principios WIKA aplicables
+# Criterios de Aceptación del Entorno
 
-| ID | Principio |
-|----|-----------|
-| WIKA-ARCH-01 | La documentación es contrato de build |
-| WIKA-ARCH-02 | Versiones pinneadas (`~`), nunca flotantes (`^`) en expo/react-native |
-| WIKA-ARCH-03 | Perfil DEV vs BUILD explícito en cada iteración |
-| WIKA-ARCH-04 | Toolchain nativo documentado y fijado via expo-build-properties |
-| WIKA-ARCH-05 | Gates de verificación obligatorios antes de cerrar iteración |
-| WIKA-ARCH-06 | Preferir starter WIKA validado sobre generación de infra desde cero |
+El entorno se considera válido cuando:
+
+- [ ] Las versiones están definidas.
+- [ ] El pipeline es reproducible.
+- [ ] El artefacto final está identificado.
+- [ ] Las dependencias críticas están listadas.
+- [ ] No existen pasos implícitos sin documentar.
+
+---
+
+# Notas Adicionales
+
+Espacio para consideraciones específicas del proyecto.
