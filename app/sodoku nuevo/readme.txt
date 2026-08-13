@@ -9,19 +9,12 @@ Construcción V1 → Auditoría de Release → Refinamiento → Publicación
 
 Estado actual:
 - idea/01–05 completados
-- audits/auditoria-documentacion.md → APROBADO
-- audits/auditoria-modulos.md → APROBADO
-- audits/auditoria-ensamblado.md → APROBADO
-- Siguiente: Construcción V1 (iterations/v1/) — pendiente
+- audits documentación/módulos/ensamblado → APROBADO
+- iterations/v1/ construida (Expo)
+- audits/auditoria-release-v1.md → REQUIERE CORRECCIONES (APK pendiente)
+- Siguiente: Refinamiento V2 (APK + dispositivo)
 
-idea/ (fuente de verdad):
-  01-problem.md
-  02-features.md
-  03-module-discovery.md
-  04-application-design.md
-  05-build-plan.md
-  assets/vissiuss-logo.png
-
+idea/
 audits/
-iterations/
+iterations/v1/
 final/
