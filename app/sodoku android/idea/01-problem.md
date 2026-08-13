@@ -137,10 +137,11 @@ Entregar una aplicación Android de Sudoku offline con **20 niveles progresivos*
 
 # Información Adicional
 
-- Carpeta del proyecto en el portafolio: `app/sodoku app/` (nombre histórico del repositorio).
+- Carpeta del proyecto en el portafolio: `app/sodoku android/`.
 - Nombre oficial del producto/documentación: **Sudoku Android**.
-- Existe historial de iteraciones (`iterations/v1`, `iterations/v2`) y `review.md`; la fuente de verdad documental sigue siendo `idea/`.
+- Fuente de verdad documental: `idea/`.
 - Detalle funcional ampliado: `02-features.md`.
+- Plantillas WIKA copiadas en `idea/` (`03`–`06`) pendientes de completar en etapas posteriores.
 - No documentar aquí arquitectura, módulos ni stack: quedan fuera de esta etapa.
 
 ---
