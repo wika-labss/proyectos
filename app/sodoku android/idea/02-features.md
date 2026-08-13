@@ -4,7 +4,7 @@
 
 | Campo | Valor |
 |---------|---------|
-| Proyecto | Sudoku Android |
+| Proyecto | Sodoku Android |
 | Autor | WIKA |
 | Fecha | 2026-08-13 |
 | Estado | Draft |
