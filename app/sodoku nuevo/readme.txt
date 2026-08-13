@@ -12,7 +12,8 @@ Estado actual:
 - audits documentación/módulos/ensamblado → APROBADO
 - iterations/v1/ construida (Expo)
 - audits/auditoria-release-v1.md → REQUIERE CORRECCIONES (APK pendiente)
-- Siguiente: Refinamiento V2 (APK + dispositivo)
+- Entregable: APK Release SIN Metro (ver iterations/v1/BUILD-APK.md)
+- Siguiente: generar APK con scripts/verify-build.bat → re-auditoría Release
 
 idea/
 audits/

@@ -41,4 +41,8 @@
 
 ## Entregable
 
-Código fuente en `iterations/v1/`. APK nativo pendiente de pipeline local (`expo prebuild` + Gradle) según entorno.
+- Código fuente en `iterations/v1/`.
+- **Objetivo de Release:** APK Release sideload **sin Metro**.
+- Pipeline: `scripts/verify-build.bat` (Windows) / `scripts/verify-build.sh` (Unix).
+- Guía: `BUILD-APK.md`.
+- `npx expo start` es solo DEV opcional; **no** cierra Auditoría de Release.
