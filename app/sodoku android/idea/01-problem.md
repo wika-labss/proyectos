@@ -2,7 +2,7 @@
 
 ## Nombre del Proyecto
 
-Sudoku Android
+Sodoku Android
 
 ---
 
@@ -138,11 +138,11 @@ Entregar una aplicación Android de Sudoku offline con **20 niveles progresivos*
 # Información Adicional
 
 - Carpeta del proyecto en el portafolio: `app/sodoku android/`.
-- Nombre oficial del producto/documentación: **Sudoku Android**.
-- Fuente de verdad documental: `idea/`.
-- Detalle funcional ampliado: `02-features.md`.
-- Plantillas WIKA copiadas en `idea/` (`03`–`06`) pendientes de completar en etapas posteriores.
-- No documentar aquí arquitectura, módulos ni stack: quedan fuera de esta etapa.
+- Nombre oficial del producto/documentación: **Sodoku Android**.
+- El producto es un juego de Sudoku; el nombre de carpeta/proyecto WIKA es `sodoku android`.
+- Fuente de verdad documental: `idea/` (01–06).
+- Detalle funcional: `02-features.md`. Arquitectura/diseño/build: `03`–`06`.
+- Antecedente histórico: `app/sodoku app/` (iteraciones previas); este proyecto es la fuente oficial Android.
 
 ---
 
