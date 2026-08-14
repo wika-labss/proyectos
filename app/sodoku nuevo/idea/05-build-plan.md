@@ -70,15 +70,15 @@ Construir la iteración `iterations/v3` siguiendo el flujo WIKA, reutilizando V2
 
 | Ítem | Hecho |
 |------|-------|
-| 100 niveles jugables | ☐ |
-| Dificultad interna alternada, oculta | ☐ |
-| Reward aleatorio con nombres literales | ☐ |
-| Inventario solo visualiza | ☐ |
-| Home: Jugar, Inventario, Puntaje, Histórico, Regalos | ☐ |
-| Paleta Pinki Cute aplicada | ☐ |
-| `validate:levels` 100/100 | ☐ |
-| APK Release generado en máquina local | ☐ |
-| Docs idea/ + audits actualizados | ☐ |
+| 100 niveles jugables | ☑ (código + validate 100/100) |
+| Dificultad interna alternada, oculta | ☑ |
+| Reward aleatorio con nombres literales | ☑ |
+| Inventario solo visualiza | ☑ |
+| Home: Jugar, Inventario, Puntaje, Histórico, Regalos | ☑ |
+| Paleta Pinki Cute aplicada | ☑ |
+| `validate:levels` 100/100 | ☑ |
+| APK Release generado en máquina local | ☐ (pendiente entorno local) |
+| Docs idea/ + audits actualizados | ☑ |
 
 ---
 
