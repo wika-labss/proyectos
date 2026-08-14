@@ -1,383 +1,176 @@
-# Descubrimiento de Módulos
+# 03 — Descubrimiento de módulos
 
-Objetivo:
-Identificar las capacidades necesarias para implementar las funcionalidades definidas en el proyecto.
+## Proyecto
+Sodoku nuevo — Android (Expo / React Native)
 
----
+## Versión de documentación
+V3
 
-## Módulo
-
-### Nombre
-
-sudoku-engine
-
-### Responsabilidad
-
-Generar, validar y resolver puzzles Sudoku 9×9 con solución única; detectar conflictos de fila/columna/bloque.
-
-### Funcionalidades asociadas
-
-- Feature 01 — Tablero Sudoku 9×9
-- Feature 03 — Aviso de errores al jugador
-- Feature 05 — 100% offline (sin API de puzzles)
-
-### Entradas
-
-- Nivel / dificultad
-- Tablero parcial
-- Movimiento (fila, columna, valor)
-
-### Salidas
-
-- Puzzle + solución
-- Resultado de validación (válido / conflicto)
-- Estado de completitud del tablero
-
-### Dependencias
-
-- Ninguna de red
-- Tipado de tablero compartido con UI
-
-### Reutilizable
-
-Sí
-
-### Observaciones
-
-Motor puro, independiente de UI y de almacenamiento.
-
-**V2 — calidad de puzzles (obligatorio):**
-
-- Todo puzzle debe pasar `validatePuzzle()` → `countSolutions === 1`.
-- No entregar fallbacks sin unicidad.
-- Gate: `npm run validate:levels` genera/valida niveles 1–20 antes de release.
+## Objetivo de esta etapa
+Traducir `02-features.md` en módulos reutilizables. V3 **agrega** módulos nuevos (`rewards`, `inventory`) y **extiende** módulos existentes (`level-progression`, `home-branding`, `local-score`, `offline-progress`). No se reescribe el motor Sudoku desde cero.
 
 ---
 
-## Módulo
+## Inventario de módulos (V3)
 
-### Nombre
-
-hints
-
-### Responsabilidad
-
-Otorgar hasta **3 pistas por nivel**: revelar el valor correcto de una celda vacía y marcarla como fija en la partida.
-
-### Funcionalidades asociadas
-
-- Feature 12 — Pistas de ayuda: 3 por nivel
-
-### Entradas
-
-- Tablero actual, solución, givens, pistas restantes, celda seleccionada (opcional)
-
-### Salidas
-
-- Celda revelada + pistas restantes decrementadas
-- Estado deshabilitado si pistas = 0
-
-### Dependencias
-
-- sudoku-engine (solución)
-- sudoku-board (aplicar valor)
-
-### Reutilizable
-
-Sí
-
-### Observaciones
-
-Al reiniciar nivel, pistas = 3.
+| Módulo | Tipo | Estado V3 | Justificación |
+|--------|------|-----------|---------------|
+| `sudoku-engine` | core | Reutilizar (V2) | Motor + unicidad; sin cambio de reglas |
+| `level-progression` | core | Extender | 20 → **100** niveles; dificultad interna easy/medium alternada, **oculta** |
+| `rewards` | core | **Nuevo** | Regalo aleatorio `regalo 1`…`regalo 8` al completar nivel |
+| `inventory` | core | **Nuevo** | Almacenar y listar regalos ganados (solo visualización) |
+| `local-score` | core | Extender | Score + contador de regalos ganados |
+| `offline-progress` | infra | Extender | Persistencia de progreso 100 niveles + inventario + score |
+| `home-branding` | ui | Extender | Botones jugar / inventario / puntaje / histórico / regalos; paleta Pinki Cute |
+| `history-list` | ui | Reutilizar/extender | Pantalla historial (desde V2) |
+| `hint-system` | ui | Reutilizar | 3 pistas por nivel (V2) |
+| `android-release` | infra | Reutilizar | Pipeline APK Release |
 
 ---
 
-## Módulo
+## Módulos nuevos — detalle
 
-### Nombre
+### `rewards` (nuevo)
 
-sudoku-board
+**Propósito:** Entregar un regalo aleatorio al completar un nivel.
 
-### Responsabilidad
+**API conceptual:**
+```
+rollReward(): "regalo 1" | "regalo 2" | ... | "regalo 8"
+onLevelComplete(levelId): RewardEvent
+```
 
-Renderizar e interactuar con la grilla 9×9 (selección de celda, entrada numérica, bordes, estados visuales).
+**Reglas:**
+- Nombres literales exactamente: `regalo 1` … `regalo 8`
+- Selección uniforme al azar (cada uno con probabilidad 1/8)
+- Se dispara **una vez** por nivel completado exitosamente
+- Emite evento consumible por `inventory` y por UI de victoria
 
-### Funcionalidades asociadas
+**Dependencias:** `level-progression` (señal de victoria)
 
-- Feature 01 — Tablero Sudoku 9×9
-- Feature 03 — Aviso de errores (números/celdas en rojo)
-- Feature 09 — Identidad visual blanco / negro / rojo
-
-### Entradas
-
-- Estado del tablero
-- Celda seleccionada
-- Indicadores de error
-- Tokens de tema
-
-### Salidas
-
-- Eventos de selección / colocación / borrado
-
-### Dependencias
-
-- sudoku-engine (validación)
-- app-theme (colores)
-
-### Reutilizable
-
-Sí (UI de tablero Sudoku)
-
-### Observaciones
-
-No calcula reglas de Sudoku; delega en `sudoku-engine`.
+**No depende de:** red, compras, anuncios
 
 ---
 
-## Módulo
+### `inventory` (nuevo)
 
-### Nombre
+**Propósito:** Almacenar regalos ganados y permitir **solo visualización**.
 
-level-progression
+**API conceptual:**
+```
+addGift(name: RewardName): void
+listGifts(): RewardName[]   // disponibles / ganados
+countGifts(): number
+```
 
-### Responsabilidad
+**Reglas:**
+- Solo se visualizan regalos disponibles (los ganados)
+- No hay canje, uso, eliminación ni tienda en V3
+- Persistencia local vía `offline-progress`
 
-Gestionar exactamente 20 niveles, desbloqueo secuencial, rejugabilidad y reinicio del nivel en curso.
+**Dependencias:** `rewards` (entrada), `offline-progress` (persistencia)
 
-### Funcionalidades asociadas
-
-- Feature 02 — 20 niveles progresivos
-- Feature 06 — Reinicio de nivel
-
-### Entradas
-
-- Nivel actual
-- Evento de victoria / reinicio
-
-### Salidas
-
-- Lista de niveles con estado (bloqueado / desbloqueado / completado)
-- Nivel activo / puzzle regenerado al reiniciar
-
-### Dependencias
-
-- sudoku-engine (nuevo puzzle al iniciar/reiniciar)
-- local-storage (persistir desbloqueos)
-
-### Reutilizable
-
-Sí (patrón de progresión por niveles)
-
-### Observaciones
-
-—
+**UI:** pantalla Inventario accesible desde Home → botón **Inventario**
 
 ---
 
-## Módulo
+## Módulos extendidos — detalle
 
-### Nombre
+### `level-progression` (extender)
 
-scoring
+| Antes (V2) | V3 |
+|------------|-----|
+| 20 niveles | **100 niveles** |
+| Dificultad fija/no documentada como alternancia | Alternancia interna: impar = easy, par = medium |
+| Jugador ve solo número de nivel | Jugador **nunca** ve etiqueta de dificultad |
 
-### Responsabilidad
+**API conceptual:**
+```
+getLevel(n: 1..100): Level
+getInternalDifficulty(n): "easy" | "medium"  // solo interno / generación
+isDifficultyVisibleToPlayer(): false
+advanceOnWin(n): n+1 | completed
+```
 
-Calcular, mostrar y acumular puntaje del jugador.
-
-### Funcionalidades asociadas
-
-- Feature 04 — Puntaje
-- Feature 10 — Persistencia local (puntaje)
-
-### Entradas
-
-- Eventos de juego (movimiento válido, error, victoria, reinicio)
-
-### Salidas
-
-- Puntaje de partida
-- Puntaje acumulado / por nivel
-
-### Dependencias
-
-- local-storage
-
-### Reutilizable
-
-Sí
-
-### Observaciones
-
-Reglas de cálculo deben ser deterministas y locales.
+**Dependencias:** `sudoku-engine`, `offline-progress`, `rewards` (al ganar)
 
 ---
 
-## Módulo
+### `home-branding` (extender)
 
-### Nombre
+**Home V3 — botones de acción:**
+1. **Jugar** → pantalla de juego / nivel actual
+2. **Inventario** → pantalla inventario
 
-local-storage
+**Home V3 — botones de información:**
+1. **Puntaje** → score actual / histórico de puntaje
+2. **Histórico** → niveles completados / historial
+3. **Regalos** (número de regalos ganados) → resumen o enlace a inventario
 
-### Responsabilidad
-
-Persistencia local de progreso, puntaje y partida relevante en el dispositivo.
-
-### Funcionalidades asociadas
-
-- Feature 05 — 100% offline
-- Feature 10 — Persistencia local
-
-### Entradas
-
-- Clave / valor (progreso, settings de partida, puntaje)
-
-### Salidas
-
-- Datos restaurados al iniciar la app
-
-### Dependencias
-
-- Almacenamiento local del dispositivo (sin red)
-
-### Reutilizable
-
-Sí
-
-### Observaciones
-
-Capacidad transversal WIKA; sin backend.
+**Diseño:** paleta **Pinki Cute** documentada en `imagenes/diseño ui.md` y `imagenes/PALETA.md`.
 
 ---
 
-## Módulo
+### `local-score` (extender)
 
-### Nombre
-
-home-branding
-
-### Responsabilidad
-
-Pantalla de inicio con marca de agua / logo VISSIUSS.
-
-### Funcionalidades asociadas
-
-- Feature 07 — Pantalla de inicio con marca de agua VISSIUSS
-- Feature 13 — Home con iconos de progreso (puntaje, histórico, completados)
-
-### Entradas
-
-- Asset de logo (`idea/assets/vissiuss-logo.png`)
-- Puntaje total, histórico local, niveles completados
-
-### Salidas
-
-- Pantalla de inicio renderizada con iconos de progreso
-- Navegación hacia selección de nivel / continuar / histórico
-
-### Dependencias
-
-- app-theme
-- Asset VISSIUSS
-
-### Reutilizable
-
-Parcial (patrón de home con marca; asset específico VISSIUSS)
-
-### Observaciones
-
-—
+- Mantener score por aciertos
+- Agregar **contador de regalos ganados** (`giftsWonCount`)
+- Exponer ambos para botones de información en Home
 
 ---
 
-## Módulo
+### `offline-progress` (extender)
 
-### Nombre
-
-victory-feedback
-
-### Responsabilidad
-
-Mostrar el mensaje de victoria por nivel con la regla de signos de exclamación.
-
-### Funcionalidades asociadas
-
-- Feature 08 — Mensaje de ganador por nivel
-
-### Entradas
-
-- Número de nivel completado (1–20)
-
-### Salidas
-
-- Texto: `muy bien culiaitoo` + N signos `!` (N = nivel)
-- Acciones: siguiente nivel / repetir / inicio
-
-### Dependencias
-
-- level-progression
-- scoring (mostrar puntaje en victoria, opcional)
-
-### Reutilizable
-
-Parcial (regla de mensaje es específica del producto)
-
-### Observaciones
-
-Fórmula: `mensaje = "muy bien culiaitoo" + ("!" * nivel)`.
+Persistir:
+- `currentLevel` (1–100)
+- `completedLevels[]`
+- `score`
+- `inventory: RewardName[]`
+- `giftsWonCount`
+- (opcional) historial de partidas
 
 ---
 
-## Módulo
+## Módulos reutilizados sin cambio de contrato
 
-### Nombre
-
-app-theme
-
-### Responsabilidad
-
-Tokens visuales obligatorios: fondo blanco, letras/números negros, bordes negros, errores en rojo.
-
-### Funcionalidades asociadas
-
-- Feature 09 — Identidad visual blanco / negro / rojo
-
-### Entradas
-
-- Tokens de color / tipografía
-
-### Salidas
-
-- Tema aplicado a pantallas y tablero
-
-### Dependencias
-
-- Ninguna
-
-### Reutilizable
-
-Sí (tema de alto contraste)
-
-### Observaciones
-
-Rojo exclusivo para errores.
+| Módulo | Nota |
+|--------|------|
+| `sudoku-engine` | Validación unicidad V2 se mantiene; generar/validar pack de 100 |
+| `hint-system` | 3 pistas por nivel |
+| `history-list` | Pantalla historial |
+| `android-release` | `npm run build:apk` / `verify-build` |
 
 ---
 
-## Mapeo Feature → Módulos
+## Qué NO es módulo nuevo en V3
 
-| Feature | Módulos |
-|---------|---------|
-| 01 Tablero 9×9 | sudoku-board, sudoku-engine |
-| 02 20 niveles | level-progression |
-| 03 Errores en rojo | sudoku-engine, sudoku-board, app-theme |
-| 04 Puntaje | scoring, home-branding |
-| 05 Offline | local-storage, sudoku-engine |
-| 06 Reinicio | level-progression |
-| 07 Home VISSIUSS | home-branding |
-| 08 Mensaje ganador | victory-feedback |
-| 09 Visual B/N/R | app-theme, sudoku-board |
-| 10 Persistencia | local-storage, scoring, level-progression |
-| 11 Motor solución única (V2) | sudoku-engine |
-| 12 Pistas ×3 (V2) | hints, sudoku-board, sudoku-engine |
-| 13 Home iconos progreso (V2) | home-branding, scoring, level-progression, local-storage |
-| 14–16 Deseables | Fuera de V2 obligatoria |
+| Idea descartada / diferida | Motivo |
+|----------------------------|--------|
+| Tienda / canje de regalos | Fuera de alcance; inventario solo visualiza |
+| Mostrar dificultad al jugador | Explícitamente prohibido |
+| Niveles hard / expert | Solo easy/medium internos |
+| Online / cuentas | Offline-first |
+| Ads / IAP | No |
+
+---
+
+## Orden de construcción sugerido (módulos)
+
+1. Extender `level-progression` → pack 100 + dificultad interna oculta  
+2. Nuevo `rewards` → `rollReward()`  
+3. Nuevo `inventory` → store + UI lista  
+4. Extender `offline-progress` → persistir inventario + progreso 100  
+5. Extender `home-branding` → botones Jugar / Inventario / info  
+6. Extender `local-score` → contador regalos  
+7. Validar pack 100 con `validate:levels`  
+8. Release APK  
+
+---
+
+## Criterio de salida — Descubrimiento V3
+
+- [x] Módulos nuevos identificados: `rewards`, `inventory`
+- [x] Módulos a extender listados con delta V2→V3
+- [x] Dependencias explícitas
+- [x] Fuera de alcance claro
+- [x] Auditoría de módulos V3 (`audits/auditoria-modulos-v3.md` — APROBADO)

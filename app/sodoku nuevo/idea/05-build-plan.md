@@ -1,67 +1,104 @@
-# Plan de Construcción
+# 05 — Plan de construcción
 
-## Alcance de la V2
+## Proyecto
+Sodoku nuevo — Android (Expo / React Native)
 
-Corregir el motor de puzzles y completar Features V2 obligatorias:
+## Versión
+V3
 
-- Feature 11 — Motor con solución única + validación de 20 niveles
-- Feature 12 — 3 pistas por nivel
-- Feature 13 — Home con iconos de puntaje, histórico local y niveles completados
-- Mantener Features 01–10 de V1
-- Entregable: código en `iterations/v2/` + gates de validación; APK Release sin Metro
-
----
-
-## Módulos incluidos
-
-Todos los de V1 + **hints**; refuerzo de **sudoku-engine** y **home-branding**.
+## Objetivo
+Construir la iteración `iterations/v3` siguiendo el flujo WIKA, reutilizando V2 como base y agregando: 100 niveles, rewards, inventory, home V3, paleta Pinki Cute.
 
 ---
 
-## Orden de implementación
+## Prerrequisitos
 
-1. **Documentar** idea/ (este plan + features/módulos/diseño V2).
-2. **Corregir sudoku-engine** — eliminar fallbacks inválidos; `validatePuzzle`.
-3. **Gate `validate:levels`** — generar/validar niveles 1–20 (solución única) **antes** de UI nueva.
-4. **hints** — 3 pistas/nivel en game store + UI.
-5. **home-branding** — iconos puntaje / histórico / completados + pantalla histórico.
-6. Persistencia de histórico en **local-storage**.
-7. Typecheck + documentar generation-report V2.
-
-Justificación: no implementar UI de pistas/home sobre un motor que aún entregue puzzles inválidos.
-
----
-
-## Dependencias externas
-
-- Android SDK, JDK 17, Expo SDK 52 (igual V1).
-- Sin red / sin APIs de puzzles.
+- [x] `01-problem.md` V3
+- [x] `02-features.md` V3
+- [x] `03-module-discovery.md` V3 (módulos nuevos `rewards`, `inventory`)
+- [x] `04-application-design.md` V3
+- [x] Auditoría documentación V3 **APROBADO** (`audits/auditoria-documentacion-v3.md`)
+- [x] Auditoría módulos V3 **APROBADO** (`audits/auditoria-modulos-v3.md`)
+- [x] Auditoría ensamblado V3 **APROBADO** (`audits/auditoria-ensamblado-v3.md`)
+- Base de código: copiar/partir de `iterations/v2`
 
 ---
 
-## Riesgos
+## Fases de construcción
 
-- Generación lenta en niveles difíciles → más intentos + aceptar más clues si unicidad OK.
-- Histórico inconsistente → escribir solo en victoria confirmada.
-- APK/SDK path en Windows → `local.properties` / `ANDROID_HOME` (ver `BUILD-APK.md`).
+### Fase A — Bootstrap V3
+1. Crear `iterations/v3/` desde `iterations/v2/`
+2. Actualizar `README` / version label a V3
+3. Preparar claves de storage `sodoku:v3:*`
+
+### Fase B — Niveles (100)
+1. Extender generador / pack a niveles 1–100
+2. Regla interna: impar → easy, par → medium
+3. **No** exponer dificultad en UI ni en strings de jugador
+4. Gate: `npm run validate:levels` → **100/100 PASSED**
+
+### Fase C — Módulo `rewards`
+1. Implementar `rollReward()` → `"regalo 1"` … `"regalo 8"`
+2. Hook en victoria de nivel
+3. Mostrar nombre del regalo en pantalla de victoria
+
+### Fase D — Módulo `inventory`
+1. Store en memoria + persistencia
+2. `addGift` / `listGifts` / `countGifts`
+3. Pantalla Inventario (solo visualización)
+4. Empty state
+
+### Fase E — Home + score
+1. Botones acción: **Jugar**, **Inventario**
+2. Botones info: **Puntaje**, **Histórico**, **Regalos** (count)
+3. Aplicar tokens Pinki Cute (`imagenes/PALETA.md`)
+
+### Fase F — Persistencia y regresión
+1. Guardar progreso 100 + inventario + score
+2. Smoke: completar nivel → regalo → aparece en inventario → count++
+3. Regresión: hints, errores en rojo, reset, watermark VISSIUSS
+
+### Fase G — Release
+1. `npm run validate:levels`
+2. `cmd /c "scripts\verify-build.bat"` (Windows) → APK Release
+3. Actualizar `BUILD-APK.md` si cambian pasos
+4. Documentar en `idea/V3.md` el resultado
 
 ---
 
-## Estrategia de pruebas
+## Checklist de definición de terminado (DoD)
 
-- `npm run validate:levels` — 20 niveles, cada uno `countSolutions === 1`.
-- Unitarias: `validatePuzzle`, `buildVictoryMessage`, hints decremento 3→0.
-- Manual: home iconos; pista×3; reinicio restaura pistas; victoria + histórico.
-- APK Release sin Metro (cuando toolchain local disponible).
+| Ítem | Hecho |
+|------|-------|
+| 100 niveles jugables | ☑ (código + validate 100/100) |
+| Dificultad interna alternada, oculta | ☑ |
+| Reward aleatorio con nombres literales | ☑ |
+| Inventario solo visualiza | ☑ |
+| Home: Jugar, Inventario, Puntaje, Histórico, Regalos | ☑ |
+| Paleta Pinki Cute aplicada | ☑ |
+| `validate:levels` 100/100 | ☑ |
+| APK Release generado en máquina local | ☐ (pendiente entorno local) |
+| Docs idea/ + audits actualizados | ☑ |
 
 ---
 
-## Criterios de aprobación V2
+## Fuera de alcance (no construir en V3)
 
-- [ ] Motor no entrega puzzles sin solución única.
-- [ ] `validate:levels` pasa para 1–20.
-- [ ] 3 pistas por nivel funcionales.
-- [ ] Home muestra puntaje, histórico y completados.
-- [ ] Features 01–10 siguen OK.
-- [ ] Documentación idea/ actualizada a V2.
-- [ ] TypeScript OK.
+- Canje / uso de regalos
+- Mostrar dificultad
+- Niveles hard
+- Online / cuentas / ads / IAP
+
+---
+
+## Orden WIKA (recordatorio)
+
+```
+Idea → Preparación → Auditoría Documentación
+     → Descubrimiento Módulos → Auditoría Módulos
+     → Diseño → Auditoría Ensamblado
+     → Construcción (iterations/v3) → Auditoría Release
+```
+
+**Estado actual del proceso:** documentación + módulos + diseño + auditorías APROBADO → **construcción `iterations/v3` en curso / completa**.  
+**Siguiente:** `npm run validate:levels` (100/100) + typecheck + Auditoría Release V3.
