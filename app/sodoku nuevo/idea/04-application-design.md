@@ -2,44 +2,36 @@
 
 ## Objetivo
 
-Definir cómo interactúan los módulos identificados para formar la aplicación Sodoku nuevo (Android, offline, 20 niveles).
+Definir cómo interactúan los módulos para Sodoku nuevo V2 (Android, offline, 20 niveles, puzzles validados, pistas ×3, home con progreso).
 
 ---
 
 ## Arquitectura General
 
-Aplicación móvil Android offline organizada por capacidades (módulos):
-
 ```text
 [home-branding] → [level-progression] → [sudoku-board] ↔ [sudoku-engine]
-                         ↓                      ↓
-                  [local-storage] ←—————— [scoring]
-                         ↓
-                 [victory-feedback]
-                         ↑
-                    [app-theme] (transversal UI)
+       ↓                   ↓                   ↓              ↑
+ [scoring/histórico] [local-storage]         [hints] ─────────┘
+       ↓
+[victory-feedback]
+       ↑
+  [app-theme]
 ```
-
-- **Capa de presentación:** home-branding, sudoku-board, victory-feedback, app-theme.
-- **Capa de dominio:** sudoku-engine, level-progression, scoring.
-- **Capa de persistencia:** local-storage.
-- Sin backend ni servicios en red.
 
 ---
 
-## Módulos Utilizados
+## Módulos Utilizados (V2)
 
-V1 incluye todos los módulos descubiertos:
-
-| Módulo | Rol en V1 |
-|--------|-----------|
-| sudoku-engine | Generación y validación |
-| sudoku-board | Tablero interactivo |
+| Módulo | Rol |
+|--------|-----|
+| sudoku-engine | Generación + **validatePuzzle (solución única)** |
+| sudoku-board | Tablero |
+| hints | 3 pistas por nivel |
 | level-progression | 20 niveles + reinicio |
-| scoring | Puntaje |
+| scoring | Puntaje + histórico |
 | local-storage | Persistencia |
-| home-branding | Inicio + marca VISSIUSS |
-| victory-feedback | Mensaje `muy bien culiaitoo` + `!`×nivel |
+| home-branding | VISSIUSS + iconos puntaje/histórico/completados |
+| victory-feedback | Mensaje con `!`×nivel |
 | app-theme | Blanco / negro / rojo-errores |
 
 ---
@@ -48,47 +40,44 @@ V1 incluye todos los módulos descubiertos:
 
 | Desde | Hacia | Relación |
 |-------|-------|----------|
-| sudoku-board | sudoku-engine | Valida cada movimiento; consulta completitud |
-| level-progression | sudoku-engine | Solicita puzzle al iniciar/reiniciar nivel |
-| level-progression | local-storage | Persiste desbloqueos y nivel actual |
-| scoring | local-storage | Persiste puntaje |
-| sudoku-board | scoring | Notifica aciertos/errores/victoria |
-| sudoku-board | app-theme | Aplica colores (error = rojo) |
-| home-branding | level-progression | Navega a niveles / continuar |
-| victory-feedback | level-progression | Desbloquea siguiente; ofrece reinicio/avance |
-| home-branding | app-theme | Fondo blanco, tipografía negra, logo |
+| sudoku-board | sudoku-engine | Valida movimientos / completitud |
+| hints | sudoku-engine | Lee solución para revelar celda |
+| hints | sudoku-board | Aplica valor y fija celda |
+| level-progression | sudoku-engine | Puzzle al iniciar/reiniciar (**solo si validatePuzzle OK**) |
+| home-branding | scoring / level-progression / local-storage | Muestra puntaje, histórico, completados |
+| victory-feedback | level-progression | Desbloqueo + registro histórico |
 
-No se definen dependencias circulares: el dominio no depende de la UI.
+Sin dependencias circulares dominio→UI.
 
 ---
 
 ## Flujo principal de usuario
 
-1. Abrir app → **home-branding** (marca de agua VISSIUSS).
-2. Jugar / Continuar → lista o nivel actual (**level-progression**).
-3. Entrar a nivel → **sudoku-engine** genera puzzle → **sudoku-board** muestra grilla.
-4. Jugador coloca número → **sudoku-engine** valida → si error, **sudoku-board** pinta en rojo; **scoring** actualiza.
-5. Completa tablero → **victory-feedback** muestra `muy bien culiaitoo` + N `!` → actualiza progreso/puntaje en **local-storage**.
-6. Opción reiniciar en cualquier momento del nivel → **level-progression** regenera puzzle del mismo nivel.
+1. Home VISSIUSS con iconos: puntaje, histórico, completados → Jugar.
+2. Selección de nivel (20).
+3. Generar puzzle → **validar solución única** → tablero.
+4. Jugar / error en rojo / **pista (máx 3)** / reiniciar.
+5. Victoria → mensaje + histórico local actualizado.
 
 ---
 
 ## Navegación
 
-| Pantalla | Módulos principales | Descripción |
-|----------|---------------------|-------------|
-| Inicio | home-branding, app-theme | Logo VISSIUSS, CTA jugar |
-| Niveles | level-progression | 20 niveles, estados bloqueado/desbloqueado/completado |
-| Juego | sudoku-board, sudoku-engine, scoring, level-progression | Tablero, puntaje, reinicio |
-| Victoria | victory-feedback, scoring | Mensaje con `!`×nivel, avanzar/repetir |
+| Pantalla | Descripción |
+|----------|-------------|
+| Inicio | VISSIUSS + iconos puntaje / histórico / completados + Jugar |
+| Histórico | Lista local de victorias (nivel, puntaje, fecha) |
+| Niveles | 20 niveles con estado |
+| Juego | Tablero, puntaje, pistas restantes, reinicio |
+| Victoria | `muy bien culiaitoo` + `!`×nivel |
 
-Estados clave del juego: `idle`, `playing`, `errorHighlight`, `completed`, `resetting`.
+Estados: `idle`, `playing`, `errorHighlight`, `hinting`, `completed`, `resetting`.
 
 ---
 
 ## Riesgos de diseño
 
-- Generación de puzzles lenta en dispositivos bajos → mitigar con generación asíncrona / límites por nivel.
-- Confundir rojo con otros estados → regla estricta: rojo solo errores (`app-theme`).
-- Pérdida de progreso → persistir en cada victoria y al pausar/cerrar (**local-storage**).
-- Mensaje de victoria incorrecto → unit test de `!("!" * nivel)` en **victory-feedback**.
+- Puzzles sin solución / multi-solución → gate `validate:levels` bloqueante en V2.
+- Generación lenta → aceptar más pistas iniciales si mantiene unicidad.
+- Agotar pistas → UI deshabilitada clara.
+- Histórico crece → limitar a N entradas recientes en local storage.

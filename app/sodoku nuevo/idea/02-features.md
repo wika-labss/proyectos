@@ -4,7 +4,7 @@
 
 ### Feature 01 — Tablero Sudoku 9×9
 
-Grilla interactiva 9×9 con celdas fijas (pistas) y celdas editables. Bordes negros; números en negro sobre fondo blanco.
+Grilla interactiva 9×9 con celdas fijas (pistas iniciales del puzzle) y celdas editables. Bordes negros; números en negro sobre fondo blanco.
 
 ### Feature 02 — 20 niveles progresivos
 
@@ -16,7 +16,7 @@ Al colocar un número inválido o en conflicto (fila, columna o bloque 3×3), el
 
 ### Feature 04 — Puntaje
 
-Sistema de puntaje visible durante y/o al completar la partida. El puntaje se asocia al progreso del jugador y se persiste localmente.
+Sistema de puntaje visible en partida y en home (icono). Persistido localmente.
 
 ### Feature 05 — 100% offline
 
@@ -28,25 +28,11 @@ El jugador puede reiniciar el nivel en curso y volver a empezar ese puzzle/nivel
 
 ### Feature 07 — Pantalla de inicio con marca de agua VISSIUSS
 
-Pantalla de inicio que muestra marca de agua / logo VISSIUSS. Recurso oficial: `idea/assets/vissiuss-logo.png`.
+Pantalla de inicio con marca de agua / logo VISSIUSS. Recurso: `idea/assets/vissiuss-logo.png`.
 
 ### Feature 08 — Mensaje de ganador por nivel
 
-Al completar un nivel se muestra exactamente:
-
-```text
-muy bien culiaitoo
-```
-
-seguido de **un signo de exclamación por cada número de nivel**:
-
-| Nivel | Mensaje |
-|-------|---------|
-| 1 | `muy bien culiaitoo!` |
-| 2 | `muy bien culiaitoo!!` |
-| 3 | `muy bien culiaitoo!!!` |
-| … | … |
-| 20 | `muy bien culiaitoo` + 20 signos `!` |
+Al completar un nivel: `muy bien culiaitoo` + un `!` por cada número de nivel (nivel 1 → 1 signo, …, nivel 20 → 20 signos).
 
 ### Feature 09 — Identidad visual blanco / negro / rojo
 
@@ -58,25 +44,55 @@ seguido de **un signo de exclamación por cada número de nivel**:
 
 ### Feature 10 — Persistencia local
 
-Guardar progreso de niveles, puntaje y partida relevante en el dispositivo entre sesiones.
+Guardar progreso de niveles, puntaje, histórico local y partida relevante entre sesiones.
+
+### Feature 11 — Motor de puzzles con solución única (V2)
+
+Todo puzzle entregado al jugador debe:
+
+1. Ser un Sudoku 9×9 válido.
+2. Tener **exactamente una solución**.
+3. Ser resoluble (al menos una solución existe; y no más de una).
+
+Reglas del motor:
+
+- Generación + verificación `countSolutions === 1` **obligatoria**.
+- **Prohibido** entregar fallbacks sin verificar unicidad.
+- Si no se alcanza el target de pistas iniciales manteniendo unicidad, se acepta un puzzle con **más pistas** siempre que conserve solución única.
+- Validar los 20 niveles (script/gate) antes de considerar V2 lista.
+
+### Feature 12 — Pistas de ayuda: 3 por nivel (V2)
+
+En cada partida de nivel el jugador tiene **exactamente 3 pistas**.
+
+- Una pista revela el número correcto de una celda vacía (seleccionada si aplica, o la primera vacía).
+- La celda revelada queda como valor fijo de la partida (no editable).
+- Al agotar las 3, el botón de pista se deshabilita.
+- Al reiniciar el nivel, el contador de pistas vuelve a 3.
+
+### Feature 13 — Home con iconos de progreso (V2)
+
+La pantalla principal muestra, además del CTA Jugar y la marca VISSIUSS:
+
+| Icono / bloque | Contenido |
+|----------------|-----------|
+| Puntaje | Puntaje total acumulado |
+| Histórico | Historial local de partidas/victorias (resumen persistido) |
+| Completados | Cantidad / listado de niveles completados |
 
 ---
 
 ## Funcionalidades deseables
 
-### Feature 11 — Temporizador por partida
+### Feature 14 — Temporizador por partida
 
 Cronómetro opcional por nivel.
 
-### Feature 12 — Deshacer movimiento
+### Feature 15 — Deshacer movimiento
 
 Revertir el último número colocado.
 
-### Feature 13 — Pistas limitadas
-
-Revelar un número correcto con límite por nivel.
-
-### Feature 14 — Notas / candidatos
+### Feature 16 — Notas / candidatos
 
 Modo lápiz para marcar posibles números en una celda.
 
@@ -84,11 +100,11 @@ Modo lápiz para marcar posibles números en una celda.
 
 ## Fuera de alcance
 
-- iOS u otras plataformas (v1 solo Android)
+- iOS u otras plataformas (solo Android)
 - Multijugador / online
 - Rankings globales
 - Cuentas de usuario / autenticación
 - Anuncios o compras in-app
 - Variantes de Sudoku (Killer, Hyper, Samurai, etc.)
 - Backend o sincronización en la nube
-- Temas de color distintos al esquema blanco/negro/rojo-errores en v1
+- Temas distintos al esquema blanco/negro/rojo-errores

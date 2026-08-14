@@ -46,6 +46,50 @@ Sí
 
 Motor puro, independiente de UI y de almacenamiento.
 
+**V2 — calidad de puzzles (obligatorio):**
+
+- Todo puzzle debe pasar `validatePuzzle()` → `countSolutions === 1`.
+- No entregar fallbacks sin unicidad.
+- Gate: `npm run validate:levels` genera/valida niveles 1–20 antes de release.
+
+---
+
+## Módulo
+
+### Nombre
+
+hints
+
+### Responsabilidad
+
+Otorgar hasta **3 pistas por nivel**: revelar el valor correcto de una celda vacía y marcarla como fija en la partida.
+
+### Funcionalidades asociadas
+
+- Feature 12 — Pistas de ayuda: 3 por nivel
+
+### Entradas
+
+- Tablero actual, solución, givens, pistas restantes, celda seleccionada (opcional)
+
+### Salidas
+
+- Celda revelada + pistas restantes decrementadas
+- Estado deshabilitado si pistas = 0
+
+### Dependencias
+
+- sudoku-engine (solución)
+- sudoku-board (aplicar valor)
+
+### Reutilizable
+
+Sí
+
+### Observaciones
+
+Al reiniciar nivel, pistas = 3.
+
 ---
 
 ## Módulo
@@ -218,15 +262,17 @@ Pantalla de inicio con marca de agua / logo VISSIUSS.
 ### Funcionalidades asociadas
 
 - Feature 07 — Pantalla de inicio con marca de agua VISSIUSS
+- Feature 13 — Home con iconos de progreso (puntaje, histórico, completados)
 
 ### Entradas
 
 - Asset de logo (`idea/assets/vissiuss-logo.png`)
+- Puntaje total, histórico local, niveles completados
 
 ### Salidas
 
-- Pantalla de inicio renderizada
-- Navegación hacia selección de nivel / continuar
+- Pantalla de inicio renderizada con iconos de progreso
+- Navegación hacia selección de nivel / continuar / histórico
 
 ### Dependencias
 
@@ -324,11 +370,14 @@ Rojo exclusivo para errores.
 | 01 Tablero 9×9 | sudoku-board, sudoku-engine |
 | 02 20 niveles | level-progression |
 | 03 Errores en rojo | sudoku-engine, sudoku-board, app-theme |
-| 04 Puntaje | scoring |
+| 04 Puntaje | scoring, home-branding |
 | 05 Offline | local-storage, sudoku-engine |
 | 06 Reinicio | level-progression |
 | 07 Home VISSIUSS | home-branding |
 | 08 Mensaje ganador | victory-feedback |
 | 09 Visual B/N/R | app-theme, sudoku-board |
 | 10 Persistencia | local-storage, scoring, level-progression |
-| 11–14 Deseables | Fuera de V1 obligatoria; no bloquean módulos base |
+| 11 Motor solución única (V2) | sudoku-engine |
+| 12 Pistas ×3 (V2) | hints, sudoku-board, sudoku-engine |
+| 13 Home iconos progreso (V2) | home-branding, scoring, level-progression, local-storage |
+| 14–16 Deseables | Fuera de V2 obligatoria |
