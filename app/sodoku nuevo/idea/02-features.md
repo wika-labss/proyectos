@@ -4,107 +4,140 @@
 
 ### Feature 01 — Tablero Sudoku 9×9
 
-Grilla interactiva 9×9 con celdas fijas (pistas iniciales del puzzle) y celdas editables. Bordes negros; números en negro sobre fondo blanco.
+Grilla 9×9 interactiva (fijas + editables). Estilo visual según `imagenes/` (Pinki Cute).
 
-### Feature 02 — 20 niveles progresivos
+### Feature 02 — 100 niveles progresivos (V3)
 
-Exactamente 20 niveles. El nivel 1 inicia desbloqueado; completar un nivel desbloquea el siguiente. Los niveles desbloqueados pueden rejugarse.
+Exactamente **100 niveles**. Nivel 1 desbloqueado; completar desbloquea el siguiente. Rejugables una vez desbloqueados.
 
-### Feature 03 — Aviso de errores al jugador
+El jugador **solo ve el número de nivel** y avanza. **No se muestra** etiqueta de dificultad.
 
-Al colocar un número inválido o en conflicto (fila, columna o bloque 3×3), el error se muestra al jugador en **rojo**. No debe usarse rojo para otros estados.
+### Feature 03 — Aviso de errores
+
+Conflictos fila/columna/bloque se muestran como error (color de error de la paleta `imagenes/`).
 
 ### Feature 04 — Puntaje
 
-Sistema de puntaje visible en partida y en home (icono). Persistido localmente.
+Puntaje acumulado persistente. En home se accede mediante **botón informativo de puntaje**.
 
 ### Feature 05 — 100% offline
 
-La app es totalmente jugable sin conexión. Sin backend, sin APIs externas de puzzles, sin cuenta.
+Sin backend, sin cuentas, sin APIs de puzzles.
 
 ### Feature 06 — Reinicio de nivel
 
-El jugador puede reiniciar el nivel en curso y volver a empezar ese puzzle/nivel sin salir de la app.
+Reiniciar el nivel en curso regenerando puzzle válido.
 
-### Feature 07 — Pantalla de inicio con marca de agua VISSIUSS
+### Feature 07 — Home VISSIUSS + acciones V3
 
-Pantalla de inicio con marca de agua / logo VISSIUSS. Recurso: `idea/assets/vissiuss-logo.png`.
+Pantalla principal con marca VISSIUSS y:
 
-### Feature 08 — Mensaje de ganador por nivel
+**Botones de acción (únicos disponibles para jugar/gestionar):**
 
-Al completar un nivel: `muy bien culiaitoo` + un `!` por cada número de nivel (nivel 1 → 1 signo, …, nivel 20 → 20 signos).
+| Botón | Acción |
+|-------|--------|
+| Jugar | Ir a niveles / continuar |
+| Inventario | Ver regalos disponibles |
 
-### Feature 09 — Identidad visual blanco / negro / rojo
+**Botones informativos:**
 
-- Fondo: blanco
-- Letras: negras
-- Celdas: bordes negros
-- Números: negros
-- Errores: rojo
+| Botón | Información |
+|-------|-------------|
+| Puntaje | Puntaje total |
+| Histórico | Historial local de victorias |
+| Regalos | Número de regalos ganados (total en inventario) |
+
+### Feature 08 — Mensaje de ganador
+
+`muy bien culiaitoo` + un `!` por número de nivel (1–100).
+
+### Feature 09 — Identidad visual Pinki Cute (V3)
+
+Fuente de verdad: carpeta del proyecto `imagenes/`.
+
+- Spec: `imagenes/diseño ui.md`
+- Referencias: `imagenes/image.png`, `imagenes/ChatGPT Image 14 ago 2026, 11_13_38.png`
+- Paleta (resumen):
+
+| Token | Hex | Uso |
+|-------|-----|-----|
+| Rosa Claro | `#FFB6D5` | Fondo |
+| Rosa Fuerte | `#FF69B4` | Acentos / botones |
+| Lila Claro | `#D291FF` | Secundario |
+| Morado | `#8A2BE2` | Activos |
+| Negro Suave | `#1A1A1A` | Texto fuerte / números |
+| Rosa Muy Claro | `#FFF0F6` | Superficies |
+
+Errores: tono alto contraste compatible (rojo o rosa saturado definido en tokens de implementación, no usado para otros estados).
 
 ### Feature 10 — Persistencia local
 
-Guardar progreso de niveles, puntaje, histórico local y partida relevante entre sesiones.
+Progreso (100 niveles), puntaje, histórico, inventario de regalos y partida activa.
 
-### Feature 11 — Motor de puzzles con solución única (V2)
+### Feature 11 — Motor solución única
 
-Todo puzzle entregado al jugador debe:
+Todo puzzle: exactamente una solución. Gate `validate:levels` para 1–100.
 
-1. Ser un Sudoku 9×9 válido.
-2. Tener **exactamente una solución**.
-3. Ser resoluble (al menos una solución existe; y no más de una).
+### Feature 12 — Pistas: 3 por nivel
 
-Reglas del motor:
+3 pistas por partida de nivel; reinicio restaura a 3.
 
-- Generación + verificación `countSolutions === 1` **obligatoria**.
-- **Prohibido** entregar fallbacks sin verificar unicidad.
-- Si no se alcanza el target de pistas iniciales manteniendo unicidad, se acepta un puzzle con **más pistas** siempre que conserve solución única.
-- Validar los 20 niveles (script/gate) antes de considerar V2 lista.
+### Feature 13 — Dificultad oculta fácil/media alternada (V3)
 
-### Feature 12 — Pistas de ayuda: 3 por nivel (V2)
+Internamente:
 
-En cada partida de nivel el jugador tiene **exactamente 3 pistas**.
+| Niveles | Dificultad interna |
+|---------|-------------------|
+| Impares (1,3,5,…) | Fácil |
+| Pares (2,4,6,…) | Media |
 
-- Una pista revela el número correcto de una celda vacía (seleccionada si aplica, o la primera vacía).
-- La celda revelada queda como valor fijo de la partida (no editable).
-- Al agotar las 3, el botón de pista se deshabilita.
-- Al reiniciar el nivel, el contador de pistas vuelve a 3.
+**No se muestra** al jugador. Solo completar y avanzar.
 
-### Feature 13 — Home con iconos de progreso (V2)
+### Feature 14 — Sistema de recompensas (V3)
 
-La pantalla principal muestra, además del CTA Jugar y la marca VISSIUSS:
+Al completar un nivel se otorga **al azar** exactamente uno de:
 
-| Icono / bloque | Contenido |
-|----------------|-----------|
-| Puntaje | Puntaje total acumulado |
-| Histórico | Historial local de partidas/victorias (resumen persistido) |
-| Completados | Cantidad / listado de niveles completados |
+```text
+regalo 1
+regalo 2
+regalo 3
+regalo 4
+regalo 5
+regalo 6
+regalo 7
+regalo 8
+```
+
+- Nombres literales obligatorios.
+- Selección uniforme aleatoria entre los 8.
+- El regalo se agrega al inventario inmediatamente.
+
+### Feature 15 — Sistema de inventario (V3)
+
+- Almacena regalos ganados (conteo por tipo y/o lista).
+- **Solo visualización** de regalos disponibles.
+- Sin canje, venta, crafting ni borrado en V3.
+- Acceso desde botón **Inventario** en home.
 
 ---
 
 ## Funcionalidades deseables
 
-### Feature 14 — Temporizador por partida
+### Feature 16 — Temporizador
 
-Cronómetro opcional por nivel.
+### Feature 17 — Deshacer
 
-### Feature 15 — Deshacer movimiento
+### Feature 18 — Notas / candidatos
 
-Revertir el último número colocado.
-
-### Feature 16 — Notas / candidatos
-
-Modo lápiz para marcar posibles números en una celda.
+### Feature 19 — Animación al recibir regalo
 
 ---
 
 ## Fuera de alcance
 
-- iOS u otras plataformas (solo Android)
-- Multijugador / online
-- Rankings globales
-- Cuentas de usuario / autenticación
-- Anuncios o compras in-app
-- Variantes de Sudoku (Killer, Hyper, Samurai, etc.)
-- Backend o sincronización en la nube
-- Temas distintos al esquema blanco/negro/rojo-errores
+- iOS
+- Online / rankings / cuentas / anuncios
+- Mostrar dificultad al jugador
+- Canje o uso consumible de regalos
+- Más de 8 tipos de regalo o nombres distintos
+- Backend

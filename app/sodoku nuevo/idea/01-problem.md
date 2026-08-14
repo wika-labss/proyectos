@@ -6,44 +6,41 @@ Sodoku nuevo
 
 ## Descripción
 
-Se necesita una aplicación Android de Sudoku clásico 9×9, 100% offline, con exactamente 20 niveles progresivos. El jugador debe recibir aviso visual de errores, acumular puntaje, poder reiniciar el nivel, usar pistas limitadas y completar cada nivel con un mensaje de victoria de marca. La experiencia debe ser limpia (fondo blanco, tipografía y números negros), mostrar en la pantalla de inicio la marca de agua VISSIUSS, y exponer en home el puntaje, histórico local y niveles completados.
+Aplicación Android de Sudoku 9×9 100% offline con **100 niveles** de dificultad fácil/media alternada (oculta al jugador). Al completar un nivel se otorga al azar uno de ocho regalos (`regalo 1` … `regalo 8`), almacenados en inventario local. La home ofrece botones **Jugar** e **Inventario**, y botones informativos de puntaje, histórico y cantidad de regalos. El diseño visual sigue la paleta e imágenes de `imagenes/` (estilo Pinki Cute).
 
 ## Usuarios
 
-- Jugadores casuales de Android que quieren partidas offline sin cuenta ni anuncios.
-- Principiantes que necesitan feedback claro de errores (números en rojo) y hasta 3 pistas por nivel.
-- Jugadores que buscan progresión corta y medible en 20 niveles, con historial local visible.
-- Uso esperado: abrir la app → home VISSIUSS (puntaje / histórico / completados) → niveles → jugar 9×9 → pista/reinicio → victoria.
+- Jugadores casuales Android offline.
+- Jugadores que quieren progresión larga (100 niveles) sin ver etiquetas de dificultad.
+- Jugadores motivados por colección de regalos en inventario.
+- Uso: home → Jugar / Inventario / puntaje / histórico / regalos → completar niveles → recibir regalo.
 
 ## Objetivo
 
-Entregar una app Android de Sudoku 9×9 offline con 20 niveles **siempre solucionables (solución única validada)**, puntaje, errores en rojo, 3 pistas por nivel, reinicio, home con marca VISSIUSS e indicadores de progreso local, y mensaje de ganador por nivel según `02-features.md`.
+Entregar V3 con 100 niveles (fácil/media alternados, ocultos), recompensas aleatorias, inventario de regalos, home con botones Jugar e Inventario e info de puntaje/histórico/regalos, motor de puzzles con solución única, y UI según `imagenes/`.
 
 ## Beneficios esperados
 
-- Juego usable sin internet ni registro.
-- Progresión clara en 20 niveles con puzzles confiables.
-- Feedback inmediato (errores, pistas, puntaje).
-- Home informativa (puntaje, histórico, completados).
-- Identidad VISSIUSS y UI blanco/negro legible.
+- Más contenido (100 niveles).
+- Motivación por colección (8 tipos de regalos).
+- Home clara (acciones vs información).
+- Identidad visual Pinki Cute documentada en `imagenes/`.
 
 ## Restricciones
 
-- **Tecnología:** Android; tablero Sudoku clásico 9×9.
-- **Infraestructura:** 100% offline; sin backend, sin nube, sin autenticación.
-- **Motor:** Todo puzzle generado debe tener **exactamente una solución**; se valida antes de entregar al jugador.
-- **Operativas:** Progreso, puntaje e histórico persistidos localmente; reinicio y 3 pistas por nivel.
-- **Seguridad / privacidad:** Sin permisos sensibles; sin envío de datos fuera del dispositivo.
-- **Diseño:** Fondo blanco; letras negras; celdas con bordes negros; números negros; errores en rojo.
-- **Marca:** Home con marca de agua VISSIUSS; logo en `idea/assets/vissiuss-logo.png`.
-- **Entregable:** APK Release sideload **sin Metro**.
+- **Plataforma:** Android; offline; sin backend/cuentas/anuncios.
+- **Niveles:** Exactamente 100; dificultad fácil/media alternada **sin mostrarse** al jugador.
+- **Motor:** Solución única obligatoria (`validatePuzzle`).
+- **Regalos:** Solo nombres `regalo 1` … `regalo 8`; otorgamiento aleatorio al completar nivel.
+- **Inventario:** Solo visualización de regalos disponibles (sin tienda/canje en V3).
+- **Diseño:** Fuente de verdad visual = carpeta `imagenes/` (paleta + referencias UI).
+- **Entregable:** APK Release sin Metro.
 
 ## Criterios de éxito
 
-- Tablero 9×9 jugable con 20 niveles.
-- Cada nivel genera/usa un puzzle con solución única verificada.
-- Errores en rojo; 3 pistas por nivel.
-- Puntaje e histórico local visibles en home (iconos).
-- Home muestra niveles completados.
-- Offline, reinicio, victoria `muy bien culiaitoo` + `!`×nivel.
-- APK Release instalable sin Metro.
+- 100 niveles jugables con avance secuencial.
+- Dificultad alterna fácil/media sin UI de dificultad.
+- Cada victoria otorga 1 regalo aleatorio (1–8) al inventario.
+- Inventario muestra solo regalos disponibles.
+- Home: botones Jugar e Inventario; botones info puntaje, histórico, nº regalos.
+- Diseño alineado a `imagenes/diseño ui.md` y assets de referencia.
