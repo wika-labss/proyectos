@@ -100,5 +100,5 @@ Idea → Preparación → Auditoría Documentación
      → Construcción (iterations/v3) → Auditoría Release
 ```
 
-**Estado actual del proceso:** documentación + módulos + diseño + auditorías de prep.  
-**Construcción de código `iterations/v3`:** siguiente paso tras auditorías APROBADO (o bajo petición explícita).
+**Estado actual del proceso:** documentación + módulos + diseño + auditorías APROBADO → **construcción `iterations/v3` en curso / completa**.  
+**Siguiente:** `npm run validate:levels` (100/100) + typecheck + Auditoría Release V3.
