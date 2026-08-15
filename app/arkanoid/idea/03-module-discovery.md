@@ -241,3 +241,4 @@ saveHighScore(n): Promise<void>
 - [x] Separación menú futurista vs partida retro
 - [x] Dependencias explícitas
 - [x] Fuera de alcance claro
+- [x] Auditoría de módulos (`audits/auditoria-modulos.md` — APROBADO)

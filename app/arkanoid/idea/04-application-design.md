@@ -197,4 +197,4 @@ const BALL_SPEED_BASE = 280; // px/s aprox. en coords lógicas
 - [x] Contratos entre módulos
 - [x] Modelo de datos
 - [x] Tokens menú futurista + partida retro
-- [x] Listo para auditoría de ensamblado
+- [x] Auditoría de ensamblado (`audits/auditoria-ensamblado.md` — APROBADO)
