@@ -123,11 +123,11 @@ Regla WIKA: instalar `expo-*` / `react-native-*` con `npx expo install`; version
 - [x] Auditoría de documentación APROBADA
 - [x] Auditoría de módulos APROBADA
 - [x] Auditoría de ensamblado APROBADA
-- [ ] Serpiente crece al comer pelotita
-- [ ] 3 vidas funcionan hasta Game Over
-- [ ] Score = tiempo vivo × 10; high score persiste
+- [x] Serpiente crece al comer pelotita
+- [x] 3 vidas funcionan hasta Game Over
+- [x] Score = tiempo vivo × 10; high score persiste
 - [ ] APK Release instalable sin Metro
-- [ ] `generation-report.md` generado
+- [x] `generation-report.md` generado
 
 ---
 
@@ -138,9 +138,9 @@ Idea → Preparación (01–05)
      → Auditoría Documentación ✓
      → Auditoría Módulos ✓
      → Auditoría Ensamblado ✓
-     → Construcción iterations/v1 ← SIGUIENTE
-     → Auditoría Release
+     → Construcción iterations/v1 ✓
+     → Auditoría Release ← APK pendiente (local)
 ```
 
-**Estado actual:** Preparación + auditorías V1 **APROBADAS**.  
-**Siguiente:** Generación IA → `iterations/v1/`.
+**Estado actual:** Código V1 listo; gates smoke/typecheck/export OK.  
+**Siguiente:** `npm run apk` con JDK 17 + Android SDK → re-auditoría Release → `final/`.
