@@ -1,7 +1,7 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 cd /d "%~dp0\.."
-echo === WIKA APK Release — Arkanoid v1 ===
+echo === WIKA APK Release - Arkanoid v1 ===
 echo Genera un APK autonomo: el bundle JS va embebido, no necesita Metro.
 echo.
 
@@ -23,23 +23,22 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo [2/4] Android SDK
-if not exist android\local.properties (
-  if defined ANDROID_HOME (
-    echo sdk.dir=%ANDROID_HOME:\=/% > android\local.properties
-    echo Escrito android\local.properties desde ANDROID_HOME
-  ) else if defined ANDROID_SDK_ROOT (
-    echo sdk.dir=%ANDROID_SDK_ROOT:\=/% > android\local.properties
-    echo Escrito android\local.properties desde ANDROID_SDK_ROOT
-  ) else (
-    echo ERROR: Android SDK no configurado.
-    echo Define ANDROID_HOME o copia scripts\local.properties.example a android\local.properties
-    exit /b 1
-  )
-) else (
-  echo Usando android\local.properties existente
+if not defined ANDROID_HOME if defined ANDROID_SDK_ROOT set "ANDROID_HOME=%ANDROID_SDK_ROOT%"
+if not defined ANDROID_HOME (
+  echo ERROR: Android SDK no configurado.
+  echo Define ANDROID_HOME, por ejemplo:
+  echo   set ANDROID_HOME=%%LOCALAPPDATA%%\Android\Sdk
+  exit /b 1
 )
 
+REM Gradle local.properties: escape \ as \\ and NEVER leave a trailing space.
+REM (A space before ">" in echo is written into the file and breaks sdk.dir.)
+if not exist android mkdir android
+> android\local.properties echo sdk.dir=%ANDROID_HOME:\=\\%
+echo Escrito android\local.properties:
+type android\local.properties
 echo.
+
 echo [3/4] gradle assembleRelease
 cd android
 call gradlew.bat assembleRelease
