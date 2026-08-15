@@ -16,7 +16,7 @@ cd ".\proyectos\app\arkanoid\iterations\v1"
 npm install
 npm run smoke
 npm run typecheck
-npm run apk
+npm run apk:win
 ```
 
 Si el repo **ya está clonado**:
@@ -27,7 +27,18 @@ git fetch origin cursor/arkanoid-v1-11b9
 git checkout cursor/arkanoid-v1-11b9
 cd ".\app\arkanoid\iterations\v1"
 npm install
-npm run apk
+npm run apk:win
+```
+
+> En PowerShell usa **`npm run apk:win`** (no `npm run apk`, que requiere Git Bash/WSL).
+
+Requisitos de entorno Windows:
+
+```powershell
+# JDK 17
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.x-hotspot"  # ajusta ruta
+# Android SDK (Android Studio)
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
 ```
 
 APK:
