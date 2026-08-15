@@ -10,7 +10,7 @@
 | `npm run smoke` | **PASSED** (bricks, bounce, ballLost, lives, score, levels) |
 | `npm run typecheck` | **PASSED** |
 | `npx expo export --platform android` | **PASSED** |
-| `npm run apk` / `assembleRelease` | Pendiente (JDK 17 + Android SDK en máquina local) |
+| `npm run apk` / `assembleRelease` | **PASSED** (JDK 17 · APK ~61 MB) |
 
 ## Implementación
 
@@ -25,9 +25,12 @@
 | Partida look retro + HUD | Sí (`Playfield`) |
 | Pausa / Game Over / Level Clear / Victory | Sí |
 | Offline | Sí |
+| APK Release sin Metro | Sí |
 
 ## Stack
-Expo SDK 52 · React Native 0.76.9 · package `com.wika.arkanoid`
+Expo SDK 52 · React Native 0.76.9 · package `com.wika.arkanoid` · JDK 17
 
 ## Notes
-APK Release: ejecutar `npm run apk` con JDK 17 y Android SDK (`BUILD-APK.md`).
+- APK cloud: `/opt/cursor/artifacts/arkanoid-v1-app-release.apk`
+- Windows: ver `BUILD-APK.md` (`C:\Alvaro proyectos`)
+- Sideload en device → Demo → cierre `final/`

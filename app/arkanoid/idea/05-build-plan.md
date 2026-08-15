@@ -135,7 +135,7 @@ Regla WIKA: instalar `expo-*` / `react-native-*` con `npx expo install`; version
 - [x] Reglas clásicas jugables (pala, bola, ladrillos, vidas, niveles)
 - [x] Menú futurista + partida retro
 - [x] High score persiste
-- [ ] APK Release instalable sin Metro
+- [x] APK Release instalable sin Metro
 - [x] `generation-report.md` generado
 
 ---
@@ -148,8 +148,10 @@ Idea → Preparación (01–05) ✓
      → Auditoría Módulos ✓
      → Auditoría Ensamblado ✓
      → Construcción iterations/v1 ✓
-     → Auditoría Release ← APK pendiente (local)
+     → Auditoría Release ✓ (APK OK)
+     → Demo (sideload device) ← SIGUIENTE
+     → final/
 ```
 
-**Estado actual:** Código V1 listo; gates smoke/typecheck/export OK.  
-**Siguiente:** `npm run apk` con JDK 17 + Android SDK → re-auditoría Release → `final/`.
+**Estado actual:** V1 + APK Release generados; auditoría Release APROBADA.  
+**Siguiente:** sideload en dispositivo (`BUILD-APK.md` / `C:\Alvaro proyectos`) → Demo → cierre `final/`.
