@@ -26,3 +26,11 @@ adb install -r android/app/build/outputs/apk/release/app-release.apk
 ```
 
 El APK Release es autónomo (bundle embebido) — **no requiere Metro**.
+
+## Windows
+
+```powershell
+npm.cmd run apk:win
+```
+
+No abras la carpeta `android/` en Android Studio 2026+: sube AGP/Gradle y Expo 52 falla con `unknown property 'release'`. `post-prebuild.js` deja Gradle **8.10.2** y AGP **8.6.1**.
