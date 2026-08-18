@@ -1,0 +1,18 @@
+{
+  "$schema": "wika-tokens/v1",
+  "project": "sodoku-nuevo",
+  "version": "v3.2",
+  "status": "approved",
+  "approvedAt": "2026-08-18",
+  "approvalRef": "visual-expectation/sodoku-nuevo-v3.2/approval.md",
+  "inherits": "tokens/cute-pink/",
+  "componentHeights": {
+    "cta-full": 72,
+    "cta-compact": 56,
+    "cta-medium": 48,
+    "action-bar": 48,
+    "clear-bar": 44,
+    "pill-link": 40
+  },
+  "notes": "Overrides específicos del kit Sodoku. Activos desde aprobación 2026-08-18."
+}

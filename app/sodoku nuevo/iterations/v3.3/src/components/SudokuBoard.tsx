@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, typography } from '../modules/app-theme';
+import { colors, typography, lineWidth } from '../design-system';
 import { Board } from '../types';
 
 interface BoardProps {
@@ -60,7 +60,7 @@ export function SudokuBoard({ board, givens, selected, conflicts, onSelect }: Bo
 
 const styles = StyleSheet.create({
   board: {
-    borderWidth: 3,
+    borderWidth: lineWidth.thick,
     borderColor: colors.borderBold,
     backgroundColor: colors.surface,
     aspectRatio: 1,
@@ -69,15 +69,19 @@ const styles = StyleSheet.create({
   row: { flex: 1, flexDirection: 'row' },
   cell: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: lineWidth.thin,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  thickRight: { borderRightWidth: 3 },
-  thickBottom: { borderBottomWidth: 3 },
+  thickRight: { borderRightWidth: lineWidth.thick },
+  thickBottom: { borderBottomWidth: lineWidth.thick },
   selected: { backgroundColor: colors.selected },
-  number: { color: colors.number, fontSize: typography.cell, fontWeight: '400' },
+  number: {
+    color: colors.number,
+    fontSize: typography.cell,
+    fontWeight: '400',
+  },
   given: { fontWeight: '700', color: colors.given },
   error: { color: colors.error, fontWeight: '700' },
 });

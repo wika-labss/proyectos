@@ -6,7 +6,14 @@ import {
   Text,
   ImageSourcePropType,
 } from 'react-native';
-import { colors, typography } from '../app-theme';
+import {
+  colors,
+  typography,
+  fontWeight,
+  layout,
+  radius,
+  interaction,
+} from '../../design-system';
 import { UiAssets } from './assets';
 
 type ChipKind = 'puntaje' | 'historico' | 'regalos';
@@ -24,11 +31,18 @@ interface Props {
   onPress?: () => void;
 }
 
+/** SodokuInfoChip — spec: design-system/components/sodoku-ui-kit/sodoku-info-chip */
 export function SodokuInfoChip({ kind, label, value, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.wrap, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.wrap,
+        pressed && {
+          opacity: interaction.chipPressedOpacity,
+          transform: [{ scale: interaction.chipPressedScale }],
+        },
+      ]}
       accessibilityRole="button"
       accessibilityLabel={`${label} ${value}`}
     >
@@ -46,22 +60,21 @@ export function SodokuInfoChip({ kind, label, value, onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { width: 96 },
-  pressed: { opacity: 0.9, transform: [{ scale: 0.97 }] },
+  wrap: { width: layout.chipWidth },
   chip: {
-    width: 96,
-    height: 72,
+    width: layout.chipWidth,
+    height: layout.chipHeight,
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingBottom: 8,
     paddingHorizontal: 4,
   },
-  img: { borderRadius: 14 },
+  img: { borderRadius: radius.lg },
   label: {
     color: colors.active,
-    fontSize: 10,
+    fontSize: typography.xs,
     fontWeight: '700',
-    textShadowColor: 'rgba(255,255,255,0.8)',
+    textShadowColor: colors.white,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 2,
   },

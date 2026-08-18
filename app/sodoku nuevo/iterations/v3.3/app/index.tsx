@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { TOTAL_LEVELS } from '../src/constants/levels';
-import { colors, spacing, typography } from '../src/modules/app-theme';
+import { colors, spacing, typography, layout } from '../src/modules/app-theme';
 import { SodokuInfoChip, SodokuUiButton } from '../src/modules/sodoku-ui-kit';
 import { useProgressStore } from '../src/stores/progressStore';
 
@@ -48,7 +48,7 @@ export default function HomeScreen() {
         >
           <Text style={styles.brand}>VISSIUSS</Text>
           <Text style={styles.title}>Sodoku nuevo</Text>
-          <Text style={styles.badge}>v3.3 · design-system</Text>
+          <Text style={styles.badge}>v3.3 · design-system ✓</Text>
           <Text style={styles.subtitle}>
             Nivel {continueLevelId} · {completedCount}/{TOTAL_LEVELS}
           </Text>
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   actions: {
     width: '100%',
-    maxWidth: 340,
+    maxWidth: layout.ctaMaxWidth,
     gap: spacing.sm,
     marginBottom: spacing.xl,
   },

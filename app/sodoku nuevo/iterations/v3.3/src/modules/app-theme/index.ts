@@ -1,11 +1,15 @@
 /**
- * app-theme V3.3 — consume tokens oficiales cute-pink (Design System WIKA)
+ * app-theme V3.3 — facade Design System WIKA (tokens JSON oficiales)
  */
 export {
+  tokenMeta,
   colors,
   spacing,
-  typography,
   layout,
+  typography,
+  fontWeight,
+  radius,
+  lineWidth,
   componentHeights,
-  tokenMeta,
-} from '../../tokens/cute-pink';
+  interaction,
+} from '../../design-system';

@@ -7,7 +7,14 @@ import {
   ViewStyle,
   ImageSourcePropType,
 } from 'react-native';
-import { colors, typography } from '../app-theme';
+import {
+  colors,
+  typography,
+  fontWeight,
+  layout,
+  radius,
+  interaction,
+} from '../../design-system';
 import { SodokuButtonVariant, UiAssets, variantHeight } from './assets';
 
 interface Props {
@@ -28,7 +35,7 @@ const sourceFor: Record<SodokuButtonVariant, ImageSourcePropType> = {
   pillLink: UiAssets.pillLink,
 };
 
-/** Botón gráfico del pack recursos sodoku */
+/** SodokuUiButton — spec: design-system/components/sodoku-ui-kit/sodoku-ui-button */
 export function SodokuUiButton({
   label,
   variant = 'ctaFull',
@@ -46,7 +53,14 @@ export function SodokuUiButton({
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.wrap, style, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.wrap,
+        style,
+        pressed && {
+          opacity: interaction.pressedOpacity,
+          transform: [{ scale: interaction.pressedScale }],
+        },
+      ]}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
@@ -71,25 +85,24 @@ export function SodokuUiButton({
 }
 
 const styles = StyleSheet.create({
-  wrap: { width: '100%', maxWidth: 340, alignSelf: 'center' },
-  pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
+  wrap: { width: '100%', maxWidth: layout.ctaMaxWidth, alignSelf: 'center' },
   btn: {
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 28,
   },
-  img: { borderRadius: 20 },
+  img: { borderRadius: radius.xl },
   label: {
     fontSize: typography.body,
     fontWeight: '800',
     textAlign: 'center',
-    textShadowColor: 'rgba(90,42,58,0.3)',
+    textShadowColor: colors.textShadow,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   pillLabel: {
-    fontSize: typography.small,
+    fontSize: typography.sm,
     fontWeight: '700',
     textShadowRadius: 0,
   },

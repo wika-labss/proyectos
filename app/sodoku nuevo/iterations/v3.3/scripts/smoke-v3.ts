@@ -12,6 +12,7 @@ import {
   initialHints,
 } from '../src/modules/hints';
 import { INFINITE_HINTS } from '../src/constants/testMode';
+import { tokenMeta } from '../src/design-system';
 import { HINTS_PER_LEVEL, REWARD_NAMES } from '../src/types';
 import { getInternalDifficulty, TOTAL_LEVELS } from '../src/constants/levels';
 
@@ -28,6 +29,8 @@ function assert(cond: boolean, msg: string) {
 
 assert(TOTAL_LEVELS === 100, 'TOTAL_LEVELS=100');
 assert(INFINITE_HINTS === false, 'INFINITE_HINTS disabled (v3.3 prod)');
+assert(tokenMeta.status === 'approved', 'design-system tokens approved');
+assert(tokenMeta.family === 'cute-pink', 'token family cute-pink');
 assert(initialHints() === HINTS_PER_LEVEL, 'initialHints = 3');
 assert(canUseHint(3) === true, 'canUseHint at 3');
 assert(canUseHint(0) === false, 'canUseHint false at 0');

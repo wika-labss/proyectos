@@ -1,6 +1,6 @@
 import React from 'react';
 import { ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../app-theme';
+import { colors, fontWeight, layout, radius } from '../../design-system';
 import { UiAssets } from './assets';
 
 interface Props {
@@ -10,6 +10,7 @@ interface Props {
   onPress?: () => void;
 }
 
+/** SodokuLevelTile — spec: design-system/components/sodoku-ui-kit/sodoku-level-tile */
 export function SodokuLevelTile({ levelId, unlocked, completed, onPress }: Props) {
   const source = !unlocked
     ? UiAssets.tileLocked
@@ -35,14 +36,19 @@ export function SodokuLevelTile({ levelId, unlocked, completed, onPress }: Props
 }
 
 const styles = StyleSheet.create({
-  wrap: { width: 72, height: 72 },
-  tile: { width: 72, height: 72, alignItems: 'center', justifyContent: 'center' },
-  img: { borderRadius: 14 },
+  wrap: { width: layout.tileSize, height: layout.tileSize },
+  tile: {
+    width: layout.tileSize,
+    height: layout.tileSize,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  img: { borderRadius: radius.lg },
   id: {
     color: colors.text,
     fontSize: 20,
     fontWeight: '800',
-    textShadowColor: 'rgba(255,245,248,0.9)',
+    textShadowColor: colors.blush,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 3,
   },

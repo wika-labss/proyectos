@@ -3,7 +3,7 @@
  * Metro lo interpreta como escala de densidad y busca el base sin sufijo.
  */
 
-import { componentHeights } from '../../tokens/cute-pink';
+import { componentHeights } from '../../design-system';
 
 export const UiAssets = {
   ctaFull: require('../../../assets/recursos/ui/btn_sodoku_cta_full.png'),

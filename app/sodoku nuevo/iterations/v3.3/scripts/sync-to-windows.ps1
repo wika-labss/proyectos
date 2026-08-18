@@ -36,6 +36,9 @@ Set-Location $Destination
 Write-Host "==> npm install..."
 npm install
 
+Write-Host "==> Sincronizando Design System (tokens oficiales)..."
+& (Join-Path $Destination "scripts\sync-design-system.ps1")
+
 Write-Host "==> Validación rápida..."
 npm run typecheck
 npm run smoke:v3

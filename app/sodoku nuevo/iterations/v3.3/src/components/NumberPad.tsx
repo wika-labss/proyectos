@@ -1,6 +1,13 @@
 import React from 'react';
 import { ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, typography } from '../modules/app-theme';
+import {
+  colors,
+  typography,
+  fontWeight,
+  layout,
+  radius,
+  componentHeights,
+} from '../design-system';
 import { UiAssets } from '../modules/sodoku-ui-kit';
 import { CellValue } from '../types';
 
@@ -44,27 +51,31 @@ const styles = StyleSheet.create({
   wrap: { gap: 8 },
   row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6 },
   key: {
-    width: 36,
-    height: 44,
+    width: layout.keyWidth,
+    height: layout.keyHeight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  keyImg: { borderRadius: 8 },
+  keyImg: { borderRadius: radius.sm },
   text: {
     color: colors.white,
     fontSize: typography.body,
     fontWeight: '800',
-    textShadowColor: 'rgba(90,42,58,0.4)',
+    textShadowColor: colors.textShadow,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   clearWrap: { width: '100%' },
   clear: {
     width: '100%',
-    height: 44,
+    height: componentHeights.clearBar,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  clearImg: { borderRadius: 12 },
-  clearText: { color: colors.text, fontSize: typography.body, fontWeight: '700' },
+  clearImg: { borderRadius: radius.md },
+  clearText: {
+    color: colors.text,
+    fontSize: typography.body,
+    fontWeight: '700',
+  },
 });
