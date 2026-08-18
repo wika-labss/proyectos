@@ -40,6 +40,7 @@ type android\local.properties
 
 echo.
 echo [5/6] gradle assembleRelease
+set "NODE_ENV=production"
 cd android
 call gradlew.bat assembleRelease
 if errorlevel 1 exit /b 1
