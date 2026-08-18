@@ -18,6 +18,7 @@ node scripts/post-prebuild.js
 
 echo ""
 echo "[3/4] gradle assembleRelease"
+export NODE_ENV=production
 cd android
 ./gradlew assembleRelease
 cd ..
