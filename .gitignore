@@ -1,0 +1,4 @@
+# Archivos temporales de diseño y exportaciones pesadas
+*.psd
+*.ai
+*.tmp
