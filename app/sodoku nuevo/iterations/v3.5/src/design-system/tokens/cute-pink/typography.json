@@ -1,0 +1,33 @@
+{
+  "$schema": "wika-tokens/v1",
+  "family": "cute-pink",
+  "source": "sodoku-nuevo-v3.2",
+  "status": "approved",
+  "approvedAt": "2026-08-18",
+  "approvalRef": "visual-expectation/sodoku-nuevo-v3.2/approval.md",
+  "fontFamily": {
+    "base": { "value": "System", "description": "Platform default sans-serif" },
+    "display": { "value": "System", "description": "Brand headlines (VISSIUSS)" }
+  },
+  "fontSize": {
+    "xs": { "value": 10, "unit": "px" },
+    "sm": { "value": 12, "unit": "px" },
+    "body": { "value": 16, "unit": "px" },
+    "subtitle": { "value": 18, "unit": "px" },
+    "cell": { "value": 20, "unit": "px" },
+    "title": { "value": 32, "unit": "px" },
+    "display-sm": { "value": 48, "unit": "px" }
+  },
+  "fontWeight": {
+    "regular": { "value": 400 },
+    "semibold": { "value": 600 },
+    "bold": { "value": 700 },
+    "extrabold": { "value": 800 },
+    "black": { "value": 900 }
+  },
+  "lineHeight": {
+    "tight": { "value": 1.1 },
+    "normal": { "value": 1.4 },
+    "relaxed": { "value": 1.6 }
+  }
+}
