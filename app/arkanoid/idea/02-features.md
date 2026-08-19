@@ -67,6 +67,15 @@
 - Para completar un nivel hay que **destruir el muro y derrotar al jefe**.
 - WIN solo al completar el último nivel con ambos objetivos.
 
+### Feature 23 — Pack gráfico Design System (V4)
+
+- El pack `inspiration/arkanoid` (`boss.png`, `win.png`, `lose.png`) es la identidad visual de runtime.
+- Menú y Cómo jugar usan la foto del jefe como fondo.
+- WIN / LOSER usan `win.png` / `lose.png`.
+- El sprite del jefe es **la misma foto** (`contain`; pueden quedar bordes).
+- Tokens oficiales en `iterations/v4/src/design-system/tokens/overrides.json`.
+- High score: `arkanoid:v4:highScore`.
+
 ### Feature 07 — Puntuación
 
 - Puntos por ladrillo destruido (V1):

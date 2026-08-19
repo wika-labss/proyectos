@@ -148,12 +148,12 @@ Idea → Preparación (01–05) ✓
      → Auditoría Módulos ✓
      → Auditoría Ensamblado ✓
      → Construcción iterations/v1 ✓
-     → Construcción iterations/v2 ← ACTUAL (jefe + LOSER/WIN)
+     → Construcción iterations/v4 ← ACTUAL (pack gráfico DS)
      → Auditoría Release
 ```
 
-**Estado actual:** V3 — jefe en todos los niveles + flujo Design System.  
-**Siguiente:** APK local + aprobación visual.
+**Estado actual:** V4 — pack gráfico DS (foto jefe + WIN + LOSER) aplicado en `iterations/v4/`.  
+**Siguiente:** APK local + sideload.
 
 ---
 
@@ -166,3 +166,21 @@ Idea → Preparación (01–05) ✓
 | `/lose` | Pantalla LOSER dedicada |
 | `/win` | Pantalla WIN dedicada |
 | High score | Clave `arkanoid:v2:highScore` |
+
+## Delta V3
+
+| Incluido | Notas |
+|----------|-------|
+| Jefe en todos los niveles | Hits 4/6/8 |
+| Clear | Muro **y** jefe |
+| Arte DS | WIN / LOSER / jefe |
+| High score | Clave `arkanoid:v3:highScore` |
+
+## Delta V4
+
+| Incluido | Notas |
+|----------|-------|
+| Pack gráfico | `assets/pack/{boss,win,lose}.png` |
+| Tokens DS | `src/design-system/tokens/overrides.json` |
+| Menú | Fondo = foto del jefe |
+| High score | Clave `arkanoid:v4:highScore` |
