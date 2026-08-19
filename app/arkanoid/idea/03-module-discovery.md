@@ -11,14 +11,15 @@ Traducir `02-features.md` en módulos reutilizables con responsabilidades claras
 
 ---
 
-## Inventario de módulos (V1)
+## Inventario de módulos (V1 + V2)
 
 | Módulo | Tipo | Estado V1 | Justificación |
 |--------|------|-----------|---------------|
 | `arkanoid-engine` | core | **Nuevo** | Pala, bola, ladrillos, colisiones, rebotes clásicos |
 | `brick-field` | core | **Nuevo** | Layouts de niveles, hits restantes, clear level |
+| `boss` | core | **V2** | Jefe móvil, HP, derrota |
 | `lives-system` | core | **Nuevo** | 3 vidas, pérdida por bola caída, game over |
-| `arkanoid-score` | core | **Nuevo** | Puntos por ladrillo + high score en memoria |
+| `arkanoid-score` | core | **Nuevo** | Puntos por ladrillo + jefe + high score en memoria |
 | `game-loop` | core | **Nuevo** | Tick/frame, estados de partida, pausa |
 | `level-progress` | core | **Nuevo** | Avance de niveles, victoria de partida |
 | `offline-progress` | infra | **Nuevo** | Persistencia local del high score |
@@ -200,7 +201,9 @@ saveHighScore(n): Promise<void>
 
 ### `arkanoid-screens` (ui)
 
-**Responsabilidad:** Navegación Menú / Game / Level Clear / Game Over / Victory / Pausa / Cómo jugar.
+**Responsabilidad:** Navegación Menú / Game / Level Clear / **LOSER** / **WIN** / Pausa / Cómo jugar.
+
+**V2:** LOSER y WIN son pantallas propias (`/lose`, `/win`), no overlays.
 
 **Dependencias:** módulos ui + `game-loop`.
 

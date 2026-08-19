@@ -45,7 +45,20 @@
 
 - V1: al menos **3 niveles** con layouts distintos (más ladrillos / filas / resistentes).
 - Completar nivel → pantalla breve de victoria de nivel → siguiente nivel (vidas se conservan).
-- Completar el último nivel → victoria de partida (Victory) + actualización de high score.
+- Completar el último nivel **y derrotar al jefe** → victoria de partida (WIN) + actualización de high score.
+
+### Feature 20 — Jefe (V2)
+
+- Tras 3 niveles de ladrillos, el nivel 4 es un **jefe** móvil.
+- El jefe patrulla horizontalmente, rebota en laterales y requiere **8 impactos**.
+- Derrotar al jefe otorga **1000** pts y abre la pantalla **WIN**.
+- Guardianes (ladrillos hard) flanquean al jefe; no bloquean la victoria si el jefe ya cayó.
+
+### Feature 21 — Pantallas LOSER y WIN (V2)
+
+- **LOSER** (`/lose`): derrota a 0 vidas. Título explícito, score, high score, Reintentar / Menú.
+- **WIN** (`/win`): victoria al derrotar al jefe. Título explícito, score, high score, Jugar de nuevo / Menú.
+- Ya no se resuelven como overlays sobre Game; son rutas propias.
 
 ### Feature 07 — Puntuación
 
