@@ -152,8 +152,8 @@ Idea → Preparación (01–05) ✓
      → Auditoría Release
 ```
 
-**Estado actual:** V1 generada. V2 añade jefe, pantalla LOSER y pantalla WIN.  
-**Siguiente:** gates v2 + APK local.
+**Estado actual:** V3 — jefe en todos los niveles + flujo Design System.  
+**Siguiente:** APK local + aprobación visual.
 
 ---
 
