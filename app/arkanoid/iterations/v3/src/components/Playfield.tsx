@@ -41,20 +41,26 @@ export function Playfield({ world, scale }: Props) {
       })}
 
       {world.boss && world.boss.hitsLeft > 0 ? (
-        <Image
-          source={require('../../assets/boss.png')}
+        <View
           style={{
             position: 'absolute',
             left: world.boss.x * scale,
             top: world.boss.y * scale,
             width: world.boss.w * scale,
             height: world.boss.h * scale,
+            backgroundColor: '#000000',
             borderRadius: 4,
             borderWidth: 2,
             borderColor: play.bossCore,
+            overflow: 'hidden',
           }}
-          resizeMode="cover"
-        />
+        >
+          <Image
+            source={require('../../assets/boss.png')}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="contain"
+          />
+        </View>
       ) : null}
 
       <View
