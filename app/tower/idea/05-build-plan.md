@@ -143,12 +143,12 @@ Regla WIKA: instalar `expo-*` / `react-native-*` con `npx expo install`; version
 - [x] Auditoría de documentación APROBADA
 - [x] Auditoría de módulos APROBADA
 - [x] Auditoría de ensamblado APROBADA
-- [ ] 15 mapas distintos jugables
-- [ ] 4 torres colocables con roles distintos
-- [ ] Oleadas/dificultad escalan con el nivel
-- [ ] Campaña + persistencia local
+- [x] 15 mapas distintos jugables
+- [x] 4 torres colocables con roles distintos
+- [x] Oleadas/dificultad escalan con el nivel
+- [x] Campaña + persistencia local
 - [ ] APK Release instalable sin Metro
-- [ ] `generation-report.md` generado
+- [x] `generation-report.md` generado
 
 ---
 
@@ -159,9 +159,9 @@ Idea → Preparación (01–05) ✓
      → Auditoría Documentación ✓
      → Auditoría Módulos ✓
      → Auditoría Ensamblado ✓
-     → Construcción iterations/v1 ← SIGUIENTE
-     → Auditoría Release
+     → Construcción iterations/v1 ✓
+     → Auditoría Release (smoke/typecheck/export ✓ · APK pendiente) ← SIGUIENTE
 ```
 
-**Estado actual:** Documentación y auditorías pre-código APROBADAS.  
-**Siguiente:** construcción `iterations/v1`.
+**Estado actual:** `iterations/v1` construido; release audit requiere APK local.  
+**Siguiente:** `npm run apk` (JDK 17 + SDK) → sideload → re-auditoría → `final/`.
