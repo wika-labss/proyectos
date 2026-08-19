@@ -1,0 +1,31 @@
+{
+  "$schema": "wika-tokens/v1",
+  "project": "arkanoid",
+  "version": "v4",
+  "status": "approved",
+  "approvedAt": "2026-08-19",
+  "approvalRef": "visual-expectation/arkanoid-v3/approval.md",
+  "pack": {
+    "boss": "assets/pack/boss.png",
+    "win": "assets/pack/win.png",
+    "lose": "assets/pack/lose.png"
+  },
+  "colors": {
+    "void": "#050B18",
+    "nebulaTop": "#0E1A33",
+    "nebulaBottom": "#1A0B2E",
+    "neon": "#2EE6D6",
+    "magenta": "#E84AFF",
+    "text": "#E8F4FF",
+    "muted": "#7A93B0",
+    "crt": "#1A1020",
+    "paddle": "#ECF0F1",
+    "ball": "#FFFFFF",
+    "hud": "#F5EE9E",
+    "boss": "#FF3B6B",
+    "bossCore": "#FFD36A",
+    "loseBg": "#14080E"
+  },
+  "radius": { "cta": 4 },
+  "notes": "Tokens dual-look Arkanoid V4. Pack gráfico: foto jefe + WIN + LOSER."
+}
