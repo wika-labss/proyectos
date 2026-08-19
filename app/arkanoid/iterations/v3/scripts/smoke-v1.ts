@@ -5,6 +5,8 @@
 import assert from 'node:assert/strict';
 import {
   BALL_RADIUS,
+  BOSS_HEIGHT,
+  BOSS_WIDTH,
   INITIAL_LIVES,
   LEVEL_COUNT,
   SCORE_BOSS_BASE,
@@ -206,6 +208,8 @@ function testBossOnEveryLevel() {
     const world = createWorld(WORLD_WIDTH, WORLD_HEIGHT, i);
     assert.ok(world.boss, `level ${i} must have a boss`);
     assert.equal(world.boss.hitsLeft, bossHitsForLevel(i));
+    assert.equal(world.boss.w, BOSS_WIDTH);
+    assert.equal(world.boss.h, BOSS_HEIGHT);
     assert.equal(isLevelCleared(world.bricks, world.boss, i), false);
   }
 

@@ -27,7 +27,7 @@ export const SCORE_BOSS_PER_LEVEL = 250;
 export const BOSS_HITS_BASE = 4;
 export const BOSS_HITS_PER_LEVEL = 2;
 export const BOSS_WIDTH = 132;
-export const BOSS_HEIGHT = 36;
+export const BOSS_HEIGHT = 88;
 export const BOSS_SPEED_BASE = 70;
 export const BOSS_SPEED_PER_LEVEL = 18;
 

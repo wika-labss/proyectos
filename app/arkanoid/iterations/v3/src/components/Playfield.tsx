@@ -50,6 +50,8 @@ export function Playfield({ world, scale }: Props) {
             width: world.boss.w * scale,
             height: world.boss.h * scale,
             borderRadius: 4,
+            borderWidth: 2,
+            borderColor: play.bossCore,
           }}
           resizeMode="cover"
         />

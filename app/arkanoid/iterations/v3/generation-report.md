@@ -19,6 +19,7 @@
 | Jefe en **todos** los niveles | Sí (HP 4/6/8) |
 | Clear = muro + jefe | Sí |
 | Arte jefe / WIN / LOSER | Sí (`assets/*.png` desde DS inspiration) |
+| Retrato kingpin del jefe | Sí (regenerado 2026-08-19; hitbox 132×88) |
 
 ## Stack
 Expo SDK 52 · RN 0.76.9 · `com.wika.arkanoid` · high score `arkanoid:v3:highScore`

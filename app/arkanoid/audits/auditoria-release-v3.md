@@ -7,6 +7,7 @@
 - [x] Jefe en todos los niveles (4/6/8 hits)
 - [x] Clear = muro + jefe
 - [x] LOSER / WIN con arte DS
+- [x] Retrato kingpin en `assets/boss.png` (hitbox 132×88)
 - [x] High score `arkanoid:v3:highScore`
 
 ## Gates
