@@ -25,8 +25,8 @@ Sincronizar tokens desde GitHub:
 
 | Área | V3.2 | V3.3 |
 |------|------|------|
-| Tokens | TS hardcoded | JSON design-system + resolver |
-| Componentes | valores sueltos (340, 96…) | `layout.*`, `radius.*`, `fontWeight.*` |
+| Tokens | TS hardcoded (falso DS) | JSON `design-system` + `src/design-system/tokens/` |
+| Componentes | valores sueltos | `layout.*`, `radius.*`, specs DS |
 | Pistas | ∞ (test) | 3/nivel |
 | Storage | `v3.2:*` | `v3.3:*` |
 

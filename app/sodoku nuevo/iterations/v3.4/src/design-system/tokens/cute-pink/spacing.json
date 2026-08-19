@@ -1,0 +1,24 @@
+{
+  "$schema": "wika-tokens/v1",
+  "family": "cute-pink",
+  "source": "sodoku-nuevo-v3.2",
+  "status": "approved",
+  "approvedAt": "2026-08-18",
+  "approvalRef": "visual-expectation/sodoku-nuevo-v3.2/approval.md",
+  "spacing": {
+    "xs": { "value": 4, "unit": "px" },
+    "sm": { "value": 8, "unit": "px" },
+    "md": { "value": 16, "unit": "px" },
+    "lg": { "value": 24, "unit": "px" },
+    "xl": { "value": 32, "unit": "px" }
+  },
+  "layout": {
+    "cta-max-width": { "value": 340, "unit": "dp" },
+    "chip-width": { "value": 96, "unit": "dp" },
+    "chip-height": { "value": 72, "unit": "dp" },
+    "tile-size": { "value": 72, "unit": "dp" },
+    "key-width": { "value": 36, "unit": "dp" },
+    "key-height": { "value": 44, "unit": "dp" },
+    "touch-min": { "value": 44, "unit": "dp" }
+  }
+}
