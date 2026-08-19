@@ -1,36 +1,30 @@
-# Build APK Release — Sodoku nuevo V3.3
+# Build APK Release — Sodoku nuevo V3.5
 
-> Entregable WIKA: **APK Release instalable por sideload, SIN Metro.**  
-> `npx expo start` es solo desarrollo opcional. **No cierra Release.**
+> Entregable WIKA: **APK Release instalable por sideload, SIN Metro.**
 
-## Traer V3.3 a Windows (`C:\dev\sodoku nuevo v3.1`)
-
-### Opción A — Script automático (recomendado)
+## Windows — build rápido (si ya hiciste prebuild)
 
 ```powershell
-git clone --depth 1 --filter=blob:none --sparse https://github.com/wika-labss/proyectos.git "$env:TEMP\proyectos-sodoku-bootstrap"
-Set-Location "$env:TEMP\proyectos-sodoku-bootstrap"
-git sparse-checkout set "app/sodoku nuevo/iterations/v3.3"
-Set-Location "app\sodoku nuevo\iterations\v3.3"
-.\scripts\sync-to-windows.ps1
+cd "C:\dev\sodoku nuevo v3.1"
+npm run apk:release
 ```
 
-Destino por defecto: `C:\dev\sodoku nuevo v3.1`
-
-Otro destino:
+O directo:
 
 ```powershell
-.\scripts\sync-to-windows.ps1 -Destination "D:\mis-apps\sodoku-v3.3"
+cd android
+.\gradlew.bat assembleRelease
 ```
 
-### Opción B — Copia manual
+> **Nota:** `npm run build:apk` usa `scripts/run-gradle.js` (compatible Windows + Linux).
+
+## Traer V3.5 a Windows
 
 ```powershell
-git clone --depth 1 --filter=blob:none --sparse https://github.com/wika-labss/proyectos.git "$env:TEMP\proyectos-sodoku"
-Set-Location "$env:TEMP\proyectos-sodoku"
-git sparse-checkout set "app/sodoku nuevo/iterations/v3.3"
-New-Item -ItemType Directory -Force -Path "C:\dev\sodoku nuevo v3.1" | Out-Null
-Copy-Item -Path "app\sodoku nuevo\iterations\v3.3\*" -Destination "C:\dev\sodoku nuevo v3.1" -Recurse -Force
+git clone --depth 1 --filter=blob:none --sparse https://github.com/wika-labss/proyectos.git "$env:TEMP\proyectos-sodoku-v3.5"
+Set-Location "$env:TEMP\proyectos-sodoku-v3.5"
+git sparse-checkout set "app/sodoku nuevo/iterations/v3.5"
+Copy-Item -Path "app\sodoku nuevo\iterations\v3.5\*" -Destination "C:\dev\sodoku nuevo v3.1" -Recurse -Force
 Set-Location "C:\dev\sodoku nuevo v3.1"
 npm install
 .\scripts\verify-build.bat
@@ -39,22 +33,19 @@ npm install
 ## Requisitos (Windows)
 
 - Node.js 20 LTS
-- JDK **17** (Gradle)
+- JDK **17**
 - Android Studio + SDK API 35
-- Variables: `JAVA_HOME`, `ANDROID_HOME`
-- Git
+- `JAVA_HOME`, `ANDROID_HOME`
 
-## Comandos en la carpeta local
+## Comandos
 
 ```powershell
-cd "C:\dev\sodoku nuevo v3.1"
 npm run typecheck
 npm run smoke:v3
-npm run validate:levels
 npm run build:apk
 ```
 
-APK esperado:
+APK:
 
 ```text
 android\app\build\outputs\apk\release\app-release.apk
@@ -64,19 +55,4 @@ Instalar:
 
 ```powershell
 adb install -r .\android\app\build\outputs\apk\release\app-release.apk
-```
-
-## Delta V3.3 vs carpeta v3.1 anterior
-
-| | v3.1 local (nombre carpeta) | V3.3 (contenido nuevo) |
-|--|----------------------------|-------------------------|
-| Tokens | hex en app-theme | `src/tokens/cute-pink/` (Design System) |
-| Pistas | ∞ test | 3 por nivel |
-| Storage | v3.1:* | v3.3:* |
-| UI | btn_002 parcial | pack sodoku-ui-kit completo |
-
-## Qué NO usar para Release
-
-```powershell
-npx expo start   # Metro / DEV — no es el entregable
 ```

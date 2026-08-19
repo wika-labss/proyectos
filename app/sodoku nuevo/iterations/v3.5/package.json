@@ -7,8 +7,8 @@
     "validate:levels": "npx --yes tsx scripts/validate-levels.ts",
     "smoke:v3": "npx --yes tsx scripts/smoke-v3.ts",
     "prebuild:android": "expo prebuild --platform android --clean && node scripts/post-prebuild.js",
-    "apk:debug": "cd android && ./gradlew assembleDebug",
-    "apk:release": "cd android && ./gradlew assembleRelease",
+    "apk:debug": "node scripts/run-gradle.js assembleDebug",
+    "apk:release": "node scripts/run-gradle.js assembleRelease",
     "build:apk": "npm run validate:levels && npm run typecheck && npm run prebuild:android && npm run apk:release",
     "verify:build": "bash scripts/verify-build.sh",
     "start": "expo start"
