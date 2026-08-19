@@ -57,8 +57,15 @@
 ### Feature 21 — Pantallas LOSER y WIN (V2)
 
 - **LOSER** (`/lose`): derrota a 0 vidas. Título explícito, score, high score, Reintentar / Menú.
-- **WIN** (`/win`): victoria al derrotar al jefe. Título explícito, score, high score, Jugar de nuevo / Menú.
-- Ya no se resuelven como overlays sobre Game; son rutas propias.
+- **WIN** (`/win`): victoria. Título explícito, score, high score, Jugar de nuevo / Menú.
+- V3: fondos ilustrados desde `inspiration/arkanoid/lose.png` y `win.png`.
+
+### Feature 22 — Jefe en todos los niveles (V3)
+
+- Cada nivel incluye un jefe móvil (arte `inspiration/arkanoid/boss.png`).
+- Hits: nivel 1 = 4, nivel 2 = 6, nivel 3 = 8.
+- Para completar un nivel hay que **destruir el muro y derrotar al jefe**.
+- WIN solo al completar el último nivel con ambos objetivos.
 
 ### Feature 07 — Puntuación
 
