@@ -14,4 +14,4 @@ Estado:
 - Design System pack en `inspiration/arkanoid/`
 - final/ vacío
 
-Siguiente: APK local → sideload → final/
+Siguiente: sideload `iterations/v4/apk/arkanoid-v4-release.apk` → final/

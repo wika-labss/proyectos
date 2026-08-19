@@ -14,4 +14,4 @@
 - [x] `npm run smoke` PASSED
 - [x] TypeScript PASSED
 - [x] `expo export` PASSED (pack bundled)
-- [ ] APK Release local
+- [x] APK Release `apk/arkanoid-v4-release.apk`

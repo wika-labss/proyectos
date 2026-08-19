@@ -17,12 +17,12 @@ npm run typecheck
 npm run apk
 ```
 
-APK: `android/app/build/outputs/apk/release/app-release.apk`
+APK: `apk/arkanoid-v4-release.apk` (también en `android/app/build/outputs/apk/release/app-release.apk` tras `npm run apk`)
 
 Instalar:
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/app-release.apk
+adb install -r apk/arkanoid-v4-release.apk
 ```
 
 El APK Release es autónomo (bundle embebido) — **no requiere Metro**.

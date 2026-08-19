@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-echo "=== WIKA APK Release — Arkanoid v3 ==="
+echo "=== WIKA APK Release — Arkanoid v4 ==="
 echo "Genera un APK autonomo: el bundle JS va embebido, no necesita Metro."
 
 if ! command -v java >/dev/null 2>&1; then

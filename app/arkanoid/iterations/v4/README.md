@@ -26,4 +26,4 @@ Origen: `design-system/inspiration/arkanoid/`. Tokens: `src/design-system/tokens
 | `npm start` | Metro / Expo Go |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run smoke` | Gates del motor puro |
-| `npm run apk` | APK Release (JDK 17) |
+| `npm run apk` | APK Release (JDK 17) → `apk/arkanoid-v4-release.apk` |

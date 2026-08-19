@@ -10,7 +10,7 @@
 | `npm run smoke` | **PASSED** (boss on every level) |
 | `npm run typecheck` | **PASSED** |
 | `npx expo export --platform android` | **PASSED** (929 modules; pack boss/win/lose bundled) |
-| APK Release | Pendiente JDK 17 local |
+| APK Release | **PASSED** (`apk/arkanoid-v4-release.apk`, 65 MB) |
 
 ## Delta vs V3
 
