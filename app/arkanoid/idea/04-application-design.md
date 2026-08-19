@@ -27,8 +27,8 @@ Game
 ├── Controles: drag pala + launch
 ├── [Pausa] ──► Pause overlay ──► Reanudar | Menú
 ├── ballLost → (vidas>0 ? reset ball : Game Over)
-├── level cleared → Level Clear → next Game | Victory
-└── Game Over / Victory
+├── level cleared → Level Clear → next Game | Boss | WIN
+└── LOSER / WIN (rutas propias)
       ├── Score + High score
       ├── [Reintentar] → Game (nivel 1)
       └── [Menú] → Menu
@@ -43,8 +43,8 @@ Game
 3. Launch → bola en movimiento; arrastra pala; rebota y rompe ladrillos (reglas clásicas).
 4. Pierde bola → −1 vida; si quedan vidas, re-launch; si 0 → **Game Over**.
 5. Limpia ladrillos → **Level Clear** → siguiente nivel (vidas se conservan).
-6. Completa último nivel → **Victory**; actualiza high score si corresponde.
-7. Desde Game Over / Victory: Reintentar o volver al Menú.
+6. Completa el último muro → jefe → **WIN** al derrotarlo; actualiza high score si corresponde.
+7. Desde LOSER / WIN: Reintentar o volver al Menú.
 
 ---
 
@@ -86,9 +86,10 @@ type RunState = {
 
 // Constantes V1
 const INITIAL_LIVES = 3;
-const LEVEL_COUNT = 3;
+const LEVEL_COUNT = 4; // 3 muros + jefe
 const SCORE_NORMAL = 100;
 const SCORE_HARD = 200;
+const SCORE_BOSS = 1000;
 const BALL_SPEED_BASE = 280; // px/s aprox. en coords lógicas
 ```
 

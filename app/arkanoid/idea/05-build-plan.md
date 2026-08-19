@@ -147,9 +147,22 @@ Idea → Preparación (01–05) ✓
      → Auditoría Documentación ✓
      → Auditoría Módulos ✓
      → Auditoría Ensamblado ✓
-     → Construcción iterations/v1 ← SIGUIENTE
+     → Construcción iterations/v1 ✓
+     → Construcción iterations/v2 ← ACTUAL (jefe + LOSER/WIN)
      → Auditoría Release
 ```
 
-**Estado actual:** Documentación y auditorías pre-código APROBADAS.  
-**Siguiente:** construcción `iterations/v1`.
+**Estado actual:** V1 generada. V2 añade jefe, pantalla LOSER y pantalla WIN.  
+**Siguiente:** gates v2 + APK local.
+
+---
+
+## Delta V2
+
+| Incluido | Notas |
+|----------|-------|
+| Módulo `boss` | Jefe móvil, 8 hits, 1000 pts |
+| Nivel 4 | Guardianes + jefe |
+| `/lose` | Pantalla LOSER dedicada |
+| `/win` | Pantalla WIN dedicada |
+| High score | Clave `arkanoid:v2:highScore` |

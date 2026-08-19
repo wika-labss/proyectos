@@ -2,6 +2,35 @@
 
 ## Versión evaluada
 
+**v2** — `app/arkanoid/iterations/v2/` (sobre v1)
+
+## Evaluador
+
+Arquitecto WIKA / Cloud Agent
+
+## Fecha
+
+2026-08-19
+
+---
+
+## Delta V2
+
+| Entregable | Estado |
+|------------|--------|
+| Jefe móvil (8 hits, 1000 pts, nivel 4) | ✅ |
+| Pantalla LOSER `/lose` | ✅ |
+| Pantalla WIN `/win` | ✅ |
+| HUD barra de HP del jefe | ✅ |
+| High score `arkanoid:v2:highScore` | ✅ |
+| Design System carpetas v3 (prep, no activado) | ✅ en repo `design-system` |
+
+V1 permanece en `iterations/v1/` sin cambios de reglas.
+
+---
+
+## Versión evaluada (histórica)
+
 **v1** — `app/arkanoid/iterations/v1/`
 
 ## Evaluador
