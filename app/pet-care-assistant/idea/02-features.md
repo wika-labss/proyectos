@@ -1,13 +1,13 @@
 ---
 id: "FEAT-001"
 title: "Especificación de Requerimientos — Pet Care Assistant"
-status: "BORRADOR"
+status: "APROBADO"
 version: "1.0.0"
 owner: "Vissiuss / Equipo WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-08-21"
-audit_1_passed: false
-audit_2_passed: false
+audit_1_passed: true
+audit_2_passed: true
 ---
 
 # [02] Especificación de Características y Requerimientos Funcionales
@@ -19,7 +19,7 @@ audit_2_passed: false
 
 - **Nombre del Proyecto:** `Pet Care Assistant`
 - **Documento base:** `idea/01-problem.md` (ID: `PROB-001`)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDIT_1_APROBADO`
 
 ---
 
@@ -350,10 +350,10 @@ Si el tipo es solo `orina`, la consistencia no se pide.
 - [x] Escenarios BDD por feature obligatoria.
 - [x] NFRs con métricas verificables.
 - [x] Deseables y fuera de alcance diferenciados.
-- [ ] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
+- [x] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha:** `YYYY-MM-DD`
-- **audit_1_passed:** `false` → `true` al aprobar
+- **Aprobado por (Arquitecto):** `Cursor Agent (flujo WIKA)`
+- **Fecha:** `2026-08-21`
+- **audit_1_passed:** `true`

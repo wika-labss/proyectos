@@ -2,7 +2,7 @@ Pet Care Assistant — proyecto WIKA (cuidado de mascotas)
 
 Fuente: wika-fundaments @ wika-fundaments-v2
 
-Producto V1 (documentado, no construido):
+Producto V1:
 - Ficha: nombre, tipo, edad (desde nacimiento), sexo, peso
 - Registro de comidas, baño + consistencia de heces, paseos, notas
 - Estado de salud (sano / enfermo / recuperación)
@@ -12,9 +12,10 @@ Producto V1 (documentado, no construido):
 - Entregable: APK Release SIN Metro
 
 Estado:
-- idea/ documentado V1 (01–05), flags de gate en false
-- audits/ vacío (pendiente Auditoría de Documentación)
-- iterations/ vacío (pendiente Generación IA tras gates)
+- idea/ documentado V1 (01–05)
+- audits/ documentación + módulos + ensamblado → APROBADO
+- iterations/ vacío (listo para Generación IA)
 - final/ vacío
+- ready_for_construction: true
 
-Siguiente: Auditoría 1 (`audits/auditoria-documentacion.md`) → audit_1_passed
+Siguiente: construcción iterations/v1 → Auditoría Release → final/

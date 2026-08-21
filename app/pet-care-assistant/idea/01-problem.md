@@ -1,12 +1,12 @@
 ---
 id: "PROB-001"
 title: "Pet Care Assistant"
-status: "BORRADOR"
+status: "APROBADO"
 version: "1.0.0"
 owner: "Vissiuss / Equipo WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-08-21"
-audit_1_passed: false
+audit_1_passed: true
 ---
 
 # [01] Definición del Problema, Alcance y Metas
@@ -18,7 +18,7 @@ audit_1_passed: false
 - **Nombre del Proyecto:** `Pet Care Assistant`
 - **Repositorio de aplicación:** `proyectos/app/pet-care-assistant/`
 - **Stakeholders clave:** Vissiuss (producto / ingeniería), Arquitecto WIKA (gates), cuidador de mascota (usuario final)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDIT_1_APROBADO`
 
 ---
 
@@ -136,10 +136,10 @@ audit_1_passed: false
 - [x] Criterios de éxito en formato BDD (Dado / Cuando / Entonces).
 - [x] Out-of-scope explícito documentado.
 - [x] Restricciones técnicas alineadas a `standards/coding-standards.md`.
-- [ ] Auditoría registrada en `audits/auditoria-documentacion.md` con resultado `[APROBADO]`.
+- [x] Auditoría registrada en `audits/auditoria-documentacion.md` con resultado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha de aprobación:** `YYYY-MM-DD`
-- **audit_1_passed:** `false` → cambiar a `true` al aprobar
+- **Aprobado por (Arquitecto):** `Cursor Agent (flujo WIKA)`
+- **Fecha de aprobación:** `2026-08-21`
+- **audit_1_passed:** `true`
