@@ -182,5 +182,6 @@ Idea → Preparación (01–05) ✓
      → Auditoría Módulos ✓
      → Aprobación visual ✓
      → Auditoría Ensamblado ✓
-     → Construcción iterations/v1 ← SIGUIENTE (ready_for_construction=true)
+     → Construcción iterations/v1 ✓ (smoke/typecheck/export OK)
+     → Auditoría Release (APK pendiente local) ← SIGUIENTE
 ```
