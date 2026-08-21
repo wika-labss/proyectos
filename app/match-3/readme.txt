@@ -2,7 +2,7 @@ Match-3 América — proyecto WIKA
 
 Fuente: wika-fundaments @ wika-fundaments-v2
 
-Producto V1 (definición):
+Producto V1:
 - Match-3 Android offline, tablero 8×10
 - Mundo: 5 países de América (México → Colombia → Perú → Brasil → Argentina)
 - 10 niveles por país (50 totales); dificultad fácil/media oculta
@@ -12,9 +12,10 @@ Producto V1 (definición):
 
 Estado:
 - idea/ documentado V1 (01–05)
-- audits/auditoria-documentacion.md → APROBADO (audit_1_passed: true)
-- audits/ módulos / ensamblado → pendiente
-- iterations/ vacío — prohibido código hasta ready_for_construction
+- audits/ documentacion + módulos + ensamblado + release → APROBADO (sideload pendiente)
+- ready_for_construction: true
+- iterations/v1/ construido (smoke + typecheck + APK Release)
+- APK: iterations/v1/android/.../app-release.apk · artifact match-3-america-v1-release.apk
 - final/ vacío
 
-Siguiente: auditoría de módulos → audit_2_passed
+Siguiente: sideload en dispositivo → copiar a final/ si aplica

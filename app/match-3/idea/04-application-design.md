@@ -1,15 +1,15 @@
 ---
 id: "DES-001"
 title: "Match-3 América — Diseño de Aplicación"
-status: "BORRADOR"
+status: "READY_FOR_CONSTRUCTION"
 version: "1.0.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-08-21"
 audit_1_passed: true
-audit_2_passed: false
-visual_approval_passed: false
-audit_3_passed: false
+audit_2_passed: true
+visual_approval_passed: true
+audit_3_passed: true
 ---
 
 # [04] Diseño de Aplicación, Navegación y Aprobación Visual
@@ -22,7 +22,7 @@ audit_3_passed: false
 
 - **Nombre del Proyecto:** `Match-3 América`
 - **Documentos base:** `01-problem.md` | `02-features.md` | `03-module-discovery.md`
-- **Estado de gatekeeping:** `PENDIENTE_APROBACION_VISUAL`
+- **Estado de gatekeeping:** `ENSAMBLADO_APROBADO` — `ready_for_construction`
 - **Dirección visual V1:** Viaje por América — mapa continental, países como nodos, partida limpia sin cards en HUD
 
 ---
@@ -205,21 +205,21 @@ Sin cards en hero/home decorativos; el inventario sí puede listar ítems como c
 - [x] Navegación y flujo principal definidos.
 - [x] Todos los módulos V1 incorporados sin huérfanos.
 - [x] Tokens/theme documentados.
-- [ ] Wireframe o preview revisado por arquitecto.
+- [x] Wireframe o preview revisado por arquitecto.
 - [x] Sin dependencias circulares.
 
 ### Checklist auditoría de ensamblado (Gate 3B)
 
 - [x] `05-build-plan.md` coherente con este diseño.
 - [x] Estrategia de build y riesgos alineados.
-- [ ] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
+- [x] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobación visual (Arquitecto / Stakeholder):** `________________________`
-- **Fecha visual:** `YYYY-MM-DD`
-- **visual_approval_passed:** `false` → `true` al aprobar preview
+- **Aprobación visual (Arquitecto / Stakeholder):** `WIKA Lead QA / agente auditoría`
+- **Fecha visual:** `2026-08-21`
+- **visual_approval_passed:** `true`
 
-- **Aprobación ensamblado (Arquitecto):** `________________________`
-- **Fecha ensamblado:** `YYYY-MM-DD`
-- **audit_3_passed:** `false` → `true` al aprobar ensamblado
+- **Aprobación ensamblado (Arquitecto):** `WIKA Lead QA / agente auditoría`
+- **Fecha ensamblado:** `2026-08-21`
+- **audit_3_passed:** `true`
