@@ -1,4 +1,4 @@
-# BUILD-APK — Match-3 América Snake v1
+# BUILD-APK — Match-3 América v1
 
 ## Requisitos
 
@@ -10,10 +10,12 @@
 ## Pasos
 
 ```bash
-cd app/alvaro/iterations/v1
+cd app/match-3/iterations/v1
 npm install
 npm run smoke
 npm run typecheck
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64   # ejemplo Linux
+export ANDROID_HOME=$HOME/Android/Sdk
 npm run apk
 ```
 
@@ -26,3 +28,5 @@ adb install -r android/app/build/outputs/apk/release/app-release.apk
 ```
 
 El APK Release es autónomo (bundle embebido) — **no requiere Metro**.
+
+Package: `com.wika.match3`

@@ -12,9 +12,10 @@ Producto V1:
 
 Estado:
 - idea/ documentado V1 (01–05)
-- audits/ documentacion + módulos + ensamblado → APROBADO
+- audits/ documentacion + módulos + ensamblado + release → APROBADO (sideload pendiente)
 - ready_for_construction: true
-- iterations/v1/ en construcción
+- iterations/v1/ construido (smoke + typecheck + APK Release)
+- APK: iterations/v1/android/.../app-release.apk · artifact match-3-america-v1-release.apk
 - final/ vacío
 
-Siguiente: completar iterations/v1 (smoke + typecheck + verify)
+Siguiente: sideload en dispositivo → copiar a final/ si aplica

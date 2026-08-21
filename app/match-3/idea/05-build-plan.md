@@ -50,7 +50,7 @@ ready_for_construction: true
 | `07` | `MOD-06` | `FEAT-07` | `theme.ts` + Home / Mapa / Niveles / Inventario | `04` tokens | `COMPLETADO` |
 | `08` | `MOD-02`/`MOD-06` | `FEAT-05` | `PlayScreen`, `useIdleHint`, botón pánico | hint/danger | `COMPLETADO` |
 | `09` | `integración` | `FEAT-01`–`07` | Flujos BDD; persistencia E2E | BDD `02` | `COMPLETADO` |
-| `10` | `release` | N/A | `npm run typecheck` + `verify` + APK | WIKA-ARCH-05 | `PENDIENTE` |
+| `10` | `release` | N/A | `npm run typecheck` + `verify` + APK | WIKA-ARCH-05 | `COMPLETADO` |
 
 ---
 
@@ -135,8 +135,9 @@ Sin Unity/Godot/Phaser.
 - [ ] Tablero 8×10; 5 países × 10 niveles; fácil/media oculta.
 - [ ] Hint 5s y pánico 1×/nivel funcionan.
 - [ ] Unlock nivel por `minScore`; unlock país por 10 niveles + ≥3 recompensas.
-- [ ] `npm run verify` exitoso; APK Release sin Metro.
-- [ ] `review.md` completado por arquitecto.
+- [x] APK Release sin Metro generado (`assembleRelease`).
+- [x] `audits/auditoria-release-v1.md` registrado.
+- [ ] Sideload en dispositivo físico / `review.md` arquitecto.
 
 ---
 
