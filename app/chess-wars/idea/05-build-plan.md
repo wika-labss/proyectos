@@ -1,16 +1,16 @@
 ---
 id: "BUILD-001"
-title: "[Plan de Construcción V1 y Hoja de Ruta Técnica]"
-status: "BORRADOR"
+title: "Chess Wars — Plan de Construcción V1"
+status: "READY_FOR_CONSTRUCTION"
 version: "1.0.0"
-owner: "[Lead Developer / Arquitecto]"
-created_at: "YYYY-MM-DD"
-updated_at: "YYYY-MM-DD"
-audit_1_passed: false
-audit_2_passed: false
-visual_approval_passed: false
-audit_3_passed: false
-ready_for_construction: false
+owner: "VISSIUSS / WIKA"
+created_at: "2026-08-21"
+updated_at: "2026-08-21"
+audit_1_passed: true
+audit_2_passed: true
+visual_approval_passed: true
+audit_3_passed: true
+ready_for_construction: true
 ---
 
 # [05] Plan de Construcción V1 (Build Plan)
@@ -20,18 +20,20 @@ ready_for_construction: false
 
 ## 1. Verificación de Pre-requisitos
 
-- [ ] Auditoría de Documentación: `audit_1_passed == true` (`auditoria-documentacion.md`)
-- [ ] Auditoría de Módulos: `audit_2_passed == true` (`auditoria-modulos.md`)
-- [ ] Aprobación visual: `visual_approval_passed == true` (`04-application-design.md`)
-- [ ] Auditoría de Ensamblado: `audit_3_passed == true` (`auditoria-ensamblado.md`)
+- [x] Auditoría de Documentación: `audit_1_passed == true` (`auditoria-documentacion.md`)
+- [x] Auditoría de Módulos: `audit_2_passed == true` (`auditoria-modulos.md`)
+- [x] Aprobación visual: `visual_approval_passed == true` (`04-application-design.md`)
+- [x] Auditoría de Ensamblado: `audit_3_passed == true` (`auditoria-ensamblado.md`)
+
+**Estado actual:** Gates 1–3B aprobados; `ready_for_construction: true`.
 
 ---
 
 ## 2. Alcance de la V1
 
-**Features incluidas:** `[FEAT-01, FEAT-02, ...]`  
-**Features excluidas:** `[FEAT-03+, deseables]`  
-**Módulos incluidos:** `[MOD-01, MOD-02, ...]`
+**Features incluidas:** `FEAT-01` … `FEAT-07`  
+**Features excluidas:** `FEAT-08+` (tablas avanzadas, elegir bando, IA hard, resume mid-game)  
+**Módulos incluidos:** `MOD-01` … `MOD-05`
 
 ---
 
@@ -39,22 +41,27 @@ ready_for_construction: false
 
 | Paso | Módulo | ID Feature | Archivos a crear / modificar | Tokens / estándares | Estado |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `01` | `global` | N/A | `package.json`, `app.json`, `scripts/verify-build.sh` | WIKA-ARCH-02, 03 | `[PENDIENTE]` |
-| `02` | `MOD-01` | `FEAT-01` | `src/engine/[nombre].ts` | `coding-standards.md` | `[PENDIENTE]` |
-| `03` | `MOD-02` | `FEAT-01` | `app/index.tsx`, `src/components/` | `design-system.md`, `theme.ts` | `[PENDIENTE]` |
-| `04` | `MOD-01` | `FEAT-02` | `src/modules/[persistencia]/` | AsyncStorage | `[PENDIENTE]` |
-| `05` | `integración` | `FEAT-01/02` | `app/play.tsx`, hooks | BDD `02-features.md` | `[PENDIENTE]` |
+| `01` | `global` | N/A | `iterations/v1/` scaffold Expo (`package.json`, `app.json`, scripts verify) | WIKA-ARCH-02, 03 | `PENDIENTE` |
+| `02` | `MOD-01` | `FEAT-01` | `src/engine/chessEngine.ts`, `types.ts`, smoke reglas | `coding-standards.md` | `PENDIENTE` |
+| `03` | `MOD-02` | `FEAT-02` | `src/engine/chessAi.ts` Fácil/Media | engine puro | `PENDIENTE` |
+| `04` | `MOD-03` | `FEAT-03` | `src/data/battles.ts` (10 batallas) | contrato 01 | `PENDIENTE` |
+| `05` | `MOD-04` | `FEAT-06` | `src/modules/progress/` AsyncStorage | offline | `PENDIENTE` |
+| `06` | `MOD-05` | `FEAT-07` | `theme.ts` + Home / Campaña / Cómo jugar | `04` tokens | `PENDIENTE` |
+| `07` | `MOD-05` | `FEAT-04`, `FEAT-05` | `ChessBoard`, `GameScreen`, `ResultScreen` | board/legal/selected | `PENDIENTE` |
+| `08` | `integración` | `FEAT-01`–`07` | Flujos BDD; campaña + rápida | BDD `02` | `PENDIENTE` |
+| `09` | `release` | N/A | `npm run typecheck` + `verify` + APK | WIKA-ARCH-05 | `PENDIENTE` |
 
 ---
 
 ## 4. Orden de Implementación y Justificación
 
-1. **Setup y toolchain** — base reproducible (tower v1 como referencia).
-2. **Engine puro** — lógica testeable sin UI.
-3. **Theme y componentes** — según `04-application-design.md`.
-4. **Pantallas expo-router** — ensamblado con hooks/providers.
-5. **Persistencia e integración** — features secundarias.
-6. **Verify + APK** — cierre de iteración.
+1. **Setup y toolchain** — base reproducible (`tower/iterations/v1/` o `chupalo joako/iterations/v1/`).
+2. **Engine puro** — reglas FIDE básicas sin UI.
+3. **IA** — solo movimientos legales; profundidad acotada.
+4. **Data campaña + persistencia**.
+5. **Theme y pantallas** — según wireframes `04`.
+6. **Integración partida + resultados**.
+7. **Verify + APK** — cierre V1.
 
 ---
 
@@ -62,25 +69,25 @@ ready_for_construction: false
 
 ### Fase 1: Setup y Design Tokens
 
-- **Objetivo:** Proyecto Expo con scripts WIKA y `theme.ts` desde tokens documentados.
+- **Objetivo:** Proyecto Expo SDK 52 con scripts WIKA y `theme.ts` desde tokens de `04`.
 - **Referencia:** `proyectos/app/tower/iterations/v1/`
 - **Criterio de parada:** `npm run typecheck` sin errores.
 
-### Fase 2: Engine y Módulos de Lógica (`MOD-01`)
+### Fase 2: Engine y AI (`MOD-01`, `MOD-02`)
 
-- **Objetivo:** Implementar contratos de `03-module-discovery.md`.
+- **Objetivo:** Contratos de `03-module-discovery.md`; smoke de movimientos, jaque, mate, enroque, al paso, promoción.
 - **Regla:** Sin imports de React en `src/engine/`.
-- **Criterio:** Smoke tests en `scripts/smoke-*.ts` pasan.
+- **Criterio:** Smoke tests pasan; IA solo elige legales.
 
-### Fase 3: UI y Navegación (`MOD-02`)
+### Fase 3: Campaña y Persistencia (`MOD-03`, `MOD-04`)
 
-- **Objetivo:** Pantallas según wireframe aprobado en `04-application-design.md`.
-- **Regla:** Estilos vía theme/tokens; 0% hex sueltos en componentes.
+- **Objetivo:** 10 batallas; unlock secuencial; restore offline.
+- **Criterio:** Reinicio de app restaura `maxUnlockedBattle`.
 
-### Fase 4: Integración, Verify y APK
+### Fase 4: UI, Integración, Verify (`MOD-05`)
 
-- **Objetivo:** Flujos BDD de `02-features.md` verificables manualmente.
-- **Regla:** `npm run verify` y APK release exitoso (WIKA-ARCH-05).
+- **Objetivo:** Pantallas wireframe; partida táctil; APK release.
+- **Regla:** 0% hex fuera de `theme.ts`; `npm run verify` OK.
 
 ---
 
@@ -91,7 +98,10 @@ ready_for_construction: false
 | `expo` | `~52.x` | Framework |
 | `react-native` | `~0.76.x` | Runtime |
 | `expo-router` | `~4.x` | Navegación |
-| `[otras]` | `~x.x` | `[Propósito]` |
+| `typescript` | `~5.x` | Tipado |
+| `@react-native-async-storage/async-storage` | `~2.x` | Persistencia |
+
+Sin Stockfish nativo, Unity/Godot/Phaser.
 
 ---
 
@@ -99,10 +109,11 @@ ready_for_construction: false
 
 | Tipo | Alcance | Comando / método |
 | :--- | :--- | :--- |
-| Smoke engine | Lógica pura | `npm run smoke` |
+| Smoke engine | Movimientos, mate, ahogado, IA legal | `npm run smoke` |
 | Typecheck | Proyecto completo | `npm run typecheck` |
 | Build gate | Export + prebuild + APK | `npm run verify` |
 | BDD manual | Escenarios `02-features.md` | Checklist QA |
+| Campaña | Unlock 1→10 tras victorias | Smoke progreso |
 
 ---
 
@@ -110,24 +121,27 @@ ready_for_construction: false
 
 | Riesgo | Probabilidad | Mitigación |
 | :--- | :--- | :--- |
-| `[Prebuild Android falla]` | `Media` | `post-prebuild.js` Kotlin pin |
-| `[Scope creep]` | `Alta` | Respetar out-of-scope de `01-problem.md` |
+| Prebuild Android falla | `Media` | Scripts verify de tower; Kotlin pin |
+| Scope creep (variantes/IA hard) | `Alta` | Respetar out-of-scope `01` |
+| Bugs de reglas especiales | `Alta` | Smoke posiciones canónicas |
+| IA bloquea UI | `Media` | Profundidad acotada; yield en turno |
 
 ---
 
 ## 9. Criterios de Aprobación V1
 
-- [ ] Todas las features obligatorias implementadas.
-- [ ] `npm run verify` exitoso.
-- [ ] APK release generado en `iterations/v1/`.
+- [ ] Features `FEAT-01`–`FEAT-07` implementadas.
+- [ ] Motor FIDE básico + IA Fácil/Media.
+- [ ] Campaña 10 batallas con unlock secuencial.
+- [ ] Partida rápida y resultados.
+- [ ] `npm run verify` exitoso; APK Release sin Metro.
 - [ ] `review.md` completado por arquitecto.
-- [ ] Listo para `auditoria-release-v1.md`.
 
 ---
 
 ## 10. Checklist por Incremento (Quality Gate)
 
-Antes de marcar un paso como `[COMPLETADO]`:
+Antes de marcar un paso como `COMPLETADO`:
 
 - [ ] 0% estilos hardcoded fuera de theme/tokens.
 - [ ] Trazabilidad RTM respetada (feature → módulo → archivo).
@@ -140,4 +154,16 @@ Antes de marcar un paso como `[COMPLETADO]`:
 
 - **Revisado por (Arquitecto):** `________________________`
 - **Fecha de finalización:** `YYYY-MM-DD`
-- **ready_for_construction:** activar solo al inicio; al cerrar V1 → `[LISTO_PARA_AUDITORIA_RELEASE]`
+- **ready_for_construction:** `true` (activado al pasar Gates 1–3B); al cerrar V1 → `LISTO_PARA_AUDITORIA_RELEASE`
+
+### Trazabilidad RTM resumen
+
+```text
+ERR-01 → FEAT-01 → MOD-01 → VIEW-03 → Paso 02
+ERR-02 → FEAT-02 → MOD-02 → VIEW-03 → Paso 03
+ERR-03 → FEAT-03 → MOD-03 → VIEW-02 → Paso 04
+ERR-04 → FEAT-04 → MOD-05 → VIEW-03 → Paso 07
+ERR-05 → FEAT-05 → MOD-05 → VIEW-01/04/05 → Pasos 06–07
+ERR-06 → FEAT-06 → MOD-04 → VIEW-02 → Paso 05
+ERR-07 → FEAT-07 → MOD-05 → VIEW-01..05 → Paso 06
+```

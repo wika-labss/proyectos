@@ -1,13 +1,13 @@
 ---
 id: "MOD-001"
-title: "[Descubrimiento y Arquitectura de Módulos]"
-status: "BORRADOR"
+title: "Chess Wars — Arquitectura de Módulos"
+status: "AUDIT_2_APROBADO"
 version: "1.0.0"
-owner: "[Nombre del Responsable / Arquitecto]"
-created_at: "YYYY-MM-DD"
-updated_at: "YYYY-MM-DD"
-audit_1_passed: false
-audit_2_passed: false
+owner: "VISSIUSS / WIKA"
+created_at: "2026-08-21"
+updated_at: "2026-08-21"
+audit_1_passed: true
+audit_2_passed: true
 ---
 
 # [03] Descubrimiento y Especificación de Arquitectura Modular
@@ -17,9 +17,9 @@ audit_2_passed: false
 
 ## 1. Identificación y Documentos Base
 
-- **Nombre del Proyecto:** `[Ej. Tower Defense - WIKA]`
+- **Nombre del Proyecto:** `Chess Wars`
 - **Especificaciones base:** `01-problem.md` (`PROB-001`) | `02-features.md` (`FEAT-001`)
-- **Estado de gatekeeping:** `[PENDIENTE_AUDITORIA_MODULOS]`
+- **Estado de gatekeeping:** `AUDIT_2_APROBADO` — listo para diseño de aplicación
 
 ---
 
@@ -27,63 +27,137 @@ audit_2_passed: false
 
 | ID Módulo | ID Feature (`02-features.md`) | ID Problema (`01-problem.md`) | Nombre del Módulo | Tipo | Responsabilidad Principal |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `MOD-01` | `FEAT-01` | `ERR-01` | `mod-[nombre]` | `engine / lógica` | `[Capacidad principal]` |
-| `MOD-02` | `FEAT-02` | `ERR-02` | `mod-[nombre]` | `UI / presentación` | `[Renderizado y navegación]` |
+| `MOD-01` | `FEAT-01` | `ERR-01` | `mod-chess-engine` | `engine / lógica` | Reglas FIDE básicas, estado, legalidad |
+| `MOD-02` | `FEAT-02` | `ERR-02` | `mod-chess-ai` | `engine / lógica` | Elección de jugada Negras Fácil/Media |
+| `MOD-03` | `FEAT-03` | `ERR-03` | `mod-campaign-wars` | `data` | 10 batallas + config IA por batalla |
+| `MOD-04` | `FEAT-06` | `ERR-06` | `mod-progress-store` | `persistencia` | Unlock campaña + victorias offline |
+| `MOD-05` | `FEAT-04`, `FEAT-05`, `FEAT-07` | `ERR-04`, `ERR-05`, `ERR-07` | `mod-screens` | `UI / presentación` | Home, Campaña, Partida, Cómo jugar, Resultado |
 
 ---
 
 ## 3. Desglose de Arquitectura Modular
 
-### Módulo `MOD-01`: [Nombre]
+### Módulo `MOD-01`: `mod-chess-engine`
 
-**Patrón:** `[Ej. Pure engine / Repository / Feature module]`  
-**Ruta en repositorio:** `src/engine/` o `src/modules/[nombre]/`
+**Patrón:** Pure engine  
+**Ruta en repositorio:** `src/engine/chessEngine.ts` (+ `types.ts`, helpers de movimiento)
 
 #### Contrato
 
-- **Entradas:** `[Tipos / eventos que recibe]`
-- **Salidas:** `[Estado / eventos que emite]`
-- **Dependencias:** `[AsyncStorage, otros módulos, permisos Android]`
-- **Reutilizable:** `Sí / No`
+- **Entradas:** `createInitialState()`, `getLegalMoves(state, from)`, `applyMove(state, move)`, `inCheck(state, side)`, `getGameResult(state)`
+- **Salidas:** `GameState` `{ board, sideToMove, castling, enPassant, halfmove, fullmove, status }`
+- **Dependencias:** Ninguna de React; RNG no requerido en engine base
+- **Reutilizable:** Sí (futuros títulos de ajedrez WIKA)
 
 #### Reglas de aislamiento
 
-- `[Ej. No importa React ni componentes de MOD-02]`
-- `[Ej. Expone funciones puras testeables]`
+- No importa React ni componentes de `MOD-05`
+- Expone funciones puras testeables
+- Promoción V1: siempre a Dama
+
+#### API mínima esperada
+
+```text
+Piece = { type: K|Q|R|B|N|P, color: w|b }
+Square = 0..63 o {file,rank}
+Move = { from, to, promotion? }
+createInitialState() -> GameState
+getLegalMoves(state, from?) -> Move[]
+applyMove(state, move) -> GameState
+isCheckmate / isStalemate / isInsufficientMaterial
+```
 
 ---
 
-### Módulo `MOD-02`: [Nombre]
+### Módulo `MOD-02`: `mod-chess-ai`
 
-**Patrón:** `[Ej. Feature folder / UI kit]`  
-**Ruta:** `src/modules/[nombre]/` o `src/components/`
+**Patrón:** Pure engine (depende de MOD-01)  
+**Ruta:** `src/engine/chessAi.ts`
 
 #### Contrato
 
-- **Componentes exportados:** `[Ej. GameScreen, HudPanel]`
-- **Props y tokens:** mapeo a `standards/design-system.md` o `theme.ts`
-- **Eventos:** `onPress`, `onComplete`, etc.
+- **Entradas:** `GameState`, `difficulty: 'easy' | 'medium'`
+- **Salidas:** `Move` legal para el bando activo (Negras en V1)
+- **Dependencias:** `MOD-01` únicamente
+- **Reutilizable:** Sí
+
+#### Reglas
+
+- Fácil: profundidad 1–2 + evaluación material + ruido
+- Media: profundidad 2–3 + material + movilidad
+- Debe devolver solo movimientos legales de `getLegalMoves`
+- Sin Stockfish / nativos
+
+---
+
+### Módulo `MOD-03`: `mod-campaign-wars`
+
+**Patrón:** Data module  
+**Ruta:** `src/data/battles.ts`
+
+#### Contrato
+
+- **Entradas:** `battleId` (1..10)
+- **Salidas:** `{ battleId, title, difficulty: 'easy'|'medium' }`
+- **Tabla V1:**
+
+| Batalla | Dificultad |
+| :---: | :--- |
+| 1–4 | `easy` |
+| 5–10 | `medium` |
+
+- **Reutilizable:** No (contenido del producto)
+
+---
+
+### Módulo `MOD-04`: `mod-progress-store`
+
+**Patrón:** Repository / AsyncStorage  
+**Ruta:** `src/modules/progress/`
+
+#### Contrato
+
+- **Entradas:** `markBattleWon(battleId)`, `load()`, `reset()`
+- **Salidas:** `{ maxUnlockedBattle: 1..10, wins: number }`
+- **Dependencias:** `@react-native-async-storage/async-storage`
+- **Reglas:** Batalla 1 siempre desbloqueada al primer launch
+
+---
+
+### Módulo `MOD-05`: `mod-screens`
+
+**Patrón:** Feature screens (expo-router)  
+**Ruta:** `app/`, `src/components/`
+
+#### Contrato
+
+- **Componentes exportados:** `HomeScreen`, `CampaignScreen`, `GameScreen`, `HowToScreen`, `ResultScreen`
+- **Props y tokens:** mapeo a `theme.ts` (`04-application-design.md`)
+- **Eventos:** `onQuickPlay`, `onSelectBattle`, `onSelectSquare`, `onRetry`
 
 #### Dependencias
 
-- **Internas:** `MOD-01` (estado/lógica), `constants/theme`
-- **Prohibidas:** llamadas directas inversas desde `MOD-01`
+- **Internas:** `MOD-01` … `MOD-04`, `constants/theme`
+- **Prohibidas:** lógica de reglas dentro de pantallas (delegar a engine)
 
 ---
 
 ## 4. Grafo de Dependencias y Reglas de Importación
 
 ```text
-[app/ screens — expo-router]
+[app/ screens — expo-router]  MOD-05
        │
-       ▼ consume
-[MOD-02 UI / components]
+       ├──► MOD-02 chess-ai
+       │         │
+       │         ▼
+       ├──► MOD-01 chess-engine
        │
-       ▼ consume
-[MOD-01 engine / services]
+       ├──► MOD-03 campaign-wars
        │
-       ▼ alineación
-[standards/ + theme.ts]
+       └───────► MOD-04 progress-store
+                       │
+                       ▼
+              AsyncStorage (local)
 ```
 
 **Reglas:**
@@ -91,6 +165,7 @@ audit_2_passed: false
 - Prohibidas importaciones circulares.
 - `src/engine/` sin imports de React.
 - Estilos solo vía tokens/theme documentados.
+- `MOD-03` es data estática; no depende de UI.
 
 ---
 
@@ -98,8 +173,11 @@ audit_2_passed: false
 
 | ID Módulo | Riesgo | Impacto | Mitigación |
 | :--- | :--- | :--- | :--- |
-| `MOD-01` | `[Ej. Estado inconsistente]` | `Alto` | Smoke tests en `scripts/` |
-| `MOD-02` | `[Ej. Acoplamiento UI-lógica]` | `Medio` | Hooks/providers como frontera |
+| `MOD-01` | Bugs de enroque / al paso / jaque | `Alto` | Smoke de reglas + suite de posiciones |
+| `MOD-02` | IA lenta o ilegal | `Alto` | Profundidad acotada; solo `getLegalMoves` |
+| `MOD-03` | Desbalance campaña | `Medio` | Fácil→Media por tramos fijos |
+| `MOD-04` | Corrupción de save | `Medio` | Schema versionado + defaults |
+| `MOD-05` | Hex hardcoded / tablero ilegible | `Alto` | Checklist 0% hex; casillas táctiles grandes |
 
 ---
 
@@ -107,8 +185,11 @@ audit_2_passed: false
 
 | Módulo | ¿Existe equivalente WIKA? | Decisión |
 | :--- | :--- | :--- |
-| `MOD-01` | `[Ej. offline-progress en sodoku]` | `Reutilizar / Crear nuevo` |
-| `MOD-02` | `[Ej. sodoku-ui-kit en design-system V3+]` | `Diferir a V3+ / Theme local V1` |
+| `MOD-01` | No (engines Tetris/TD/Match-3 distintos) | Crear nuevo |
+| `MOD-02` | No | Crear nuevo |
+| `MOD-04` | Patrón progreso en Tower / Match-3 / Sudoku | Reutilizar patrón, no código compartido |
+| `MOD-05` | Home + campaña en Tower | Reutilizar UX pattern |
+| UI kit | `sodoku-ui-kit` (V3+) | Diferir; theme local V1 |
 
 ---
 
@@ -116,15 +197,15 @@ audit_2_passed: false
 
 ### Checklist
 
-- [ ] Toda feature obligatoria tiene al menos un módulo.
-- [ ] Sin módulos duplicados ni responsabilidades superpuestas.
-- [ ] Dependencias y riesgos documentados.
-- [ ] Reutilización WIKA evaluada.
-- [ ] Grafo sin ciclos.
-- [ ] `audits/auditoria-modulos.md` en estado `[APROBADO]`.
+- [x] Toda feature obligatoria tiene al menos un módulo.
+- [x] Sin módulos duplicados ni responsabilidades superpuestas.
+- [x] Dependencias y riesgos documentados.
+- [x] Reutilización WIKA evaluada.
+- [x] Grafo sin ciclos.
+- [x] `audits/auditoria-modulos.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha:** `YYYY-MM-DD`
-- **audit_2_passed:** `false` → `true` al aprobar
+- **Aprobado por (Arquitecto):** `WIKA Lead QA / agente auditoría`
+- **Fecha:** `2026-08-21`
+- **audit_2_passed:** `true`
