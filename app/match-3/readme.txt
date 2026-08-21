@@ -16,6 +16,6 @@ Estado:
 - ready_for_construction: true
 - iterations/v1/ construido (smoke + typecheck + APK Release)
 - APK: iterations/v1/android/.../app-release.apk · artifact match-3-america-v1-release.apk
-- final/ vacío
+- final/ APK V1 (match-3-america-v1-release.apk)
 
-Siguiente: sideload en dispositivo → copiar a final/ si aplica
+Siguiente: sideload en dispositivo desde final/

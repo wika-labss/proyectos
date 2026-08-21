@@ -48,6 +48,7 @@ Agente WIKA (Arquitecto)
 - [x] APK Release autónomo (bundle embebido, sin Metro)
 - [x] Ruta de build: `iterations/v1/android/app/build/outputs/apk/release/app-release.apk`
 - [x] Artefacto agente: `/opt/cursor/artifacts/match-3-america-v1-release.apk` (~61 MB)
+- [x] GitHub V1: `iterations/v1/match-3-america-v1-release.apk` + `final/match-3-america-v1-release.apk` (Git LFS)
 - [ ] Sideload verificado en dispositivo físico (`adb install -r …`) — pendiente hardware
 
 ---
