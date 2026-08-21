@@ -1,0 +1,16 @@
+# Match-3 América — final / V1
+
+## APK Release
+
+- **Archivo:** [`match-3-america-v1-release.apk`](./match-3-america-v1-release.apk)
+- **Package:** `com.wika.match3`
+- **Tamaño:** ~61 MB
+- **Modo:** Release autónomo (sin Metro)
+
+### Instalar
+
+```bash
+adb install -r match-3-america-v1-release.apk
+```
+
+Fuente de build: `iterations/v1/` (Expo SDK 52, JDK 17, assembleRelease).
