@@ -42,15 +42,15 @@ ready_for_construction: true
 
 | Paso | Módulo | Feature | Archivos | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| 01 | global | N/A | Scaffold Expo en `iterations/v2/` (desde v1/tower) | `PENDIENTE` |
-| 02 | MOD-01 | FEAT-01,03 | `chessEngine` + smoke Clásico | `PENDIENTE` |
-| 03 | MOD-02 | FEAT-02 | `chessAi` | `PENDIENTE` |
-| 04 | MOD-03 | FEAT-04 | evolution layer + smoke nodos/evo/habilidades | `PENDIENTE` |
-| 05 | MOD-04 | FEAT-05 | loadout A/B | `PENDIENTE` |
-| 06 | MOD-05 | FEAT-07 | meta-progress AsyncStorage | `PENDIENTE` |
-| 07 | MOD-06 | FEAT-06,08 | theme + Home/Lobby/Prematch/Game/Result/Tutorial | `PENDIENTE` |
-| 08 | integración | all | Flujos BDD Clásico vs Evolutive | `PENDIENTE` |
-| 09 | release | N/A | typecheck + verify + APK | `PENDIENTE` |
+| 01 | global | N/A | Scaffold Expo en `iterations/v2/` (desde v1/tower) | `COMPLETADO` |
+| 02 | MOD-01 | FEAT-01,03 | `chessEngine` + smoke Clásico | `COMPLETADO` |
+| 03 | MOD-02 | FEAT-02 | `chessAi` | `COMPLETADO` |
+| 04 | MOD-03 | FEAT-04 | evolution layer + smoke nodos/evo/habilidades | `COMPLETADO` |
+| 05 | MOD-04 | FEAT-05 | loadout A/B | `COMPLETADO` |
+| 06 | MOD-05 | FEAT-07 | meta-progress AsyncStorage | `COMPLETADO` |
+| 07 | MOD-06 | FEAT-06,08 | theme + Home/Lobby/Prematch/Game/Result/Tutorial | `COMPLETADO` |
+| 08 | integración | all | Flujos BDD Clásico vs Evolutive | `COMPLETADO` |
+| 09 | release | N/A | typecheck + verify + APK | `PARCIAL` (smoke+typecheck+export OK; APK pendiente SDK) |
 
 ---
 
