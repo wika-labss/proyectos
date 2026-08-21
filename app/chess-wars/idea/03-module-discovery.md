@@ -1,130 +1,130 @@
 ---
 id: "MOD-001"
-title: "[Descubrimiento y Arquitectura de Módulos]"
-status: "BORRADOR"
-version: "1.0.0"
-owner: "[Nombre del Responsable / Arquitecto]"
-created_at: "YYYY-MM-DD"
-updated_at: "YYYY-MM-DD"
-audit_1_passed: false
-audit_2_passed: false
+title: "AI Chess Wars — Arquitectura de Módulos"
+status: "AUDIT_2_APROBADO"
+version: "1.1.0"
+owner: "VISSIUSS / WIKA"
+created_at: "2026-08-21"
+updated_at: "2026-08-21"
+audit_1_passed: true
+audit_2_passed: true
 ---
 
 # [03] Descubrimiento y Especificación de Arquitectura Modular
 
-> **Pre-requisito:** `audit_1_passed: true` en `01-problem.md` y `02-features.md`.  
-> **Equivalencia:** Auditoría de Módulos → `docs/auditoria-modulos.md`.
+> **Pre-requisito:** `audit_1_passed: true`.  
+> **Equivalencia:** `docs/auditoria-modulos.md`.
 
 ## 1. Identificación y Documentos Base
 
-- **Nombre del Proyecto:** `[Ej. Tower Defense - WIKA]`
-- **Especificaciones base:** `01-problem.md` (`PROB-001`) | `02-features.md` (`FEAT-001`)
-- **Estado de gatekeeping:** `[PENDIENTE_AUDITORIA_MODULOS]`
+- **Nombre del Proyecto:** `AI Chess Wars`
+- **Base:** `01-problem.md` | `02-features.md`
+- **Estado de gatekeeping:** `AUDIT_2_APROBADO`
 
 ---
 
 ## 2. Matriz de Trazabilidad Modular (RTM 1:1)
 
-| ID Módulo | ID Feature (`02-features.md`) | ID Problema (`01-problem.md`) | Nombre del Módulo | Tipo | Responsabilidad Principal |
+| ID Módulo | ID Feature | ID Problema | Nombre | Tipo | Responsabilidad |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `MOD-01` | `FEAT-01` | `ERR-01` | `mod-[nombre]` | `engine / lógica` | `[Capacidad principal]` |
-| `MOD-02` | `FEAT-02` | `ERR-02` | `mod-[nombre]` | `UI / presentación` | `[Renderizado y navegación]` |
+| `MOD-01` | `FEAT-01`, `FEAT-03` | `ERR-01`, `ERR-03` | `mod-chess-engine` | engine | Reglas FIDE / estado base |
+| `MOD-02` | `FEAT-02` | `ERR-02` | `mod-chess-ai` | engine | IA Fácil/Media (+ uso evolutivo básico) |
+| `MOD-03` | `FEAT-04` | `ERR-04` | `mod-evolution-layer` | engine | Nodos, Energía, XP, evoluciones, habilidades |
+| `MOD-04` | `FEAT-05` | `ERR-05` | `mod-loadout` | lógica | Pasivas A/B prepartida |
+| `MOD-05` | `FEAT-07` | `ERR-07` | `mod-meta-progress` | persistencia | gamesPlayed, wins, tutorialDone |
+| `MOD-06` | `FEAT-06`, `FEAT-08`, `FEAT-03` | `ERR-06`, `ERR-08`, `ERR-03` | `mod-screens` | UI | Flujo pantallas + tutorial |
 
 ---
 
 ## 3. Desglose de Arquitectura Modular
 
-### Módulo `MOD-01`: [Nombre]
+### `MOD-01` `mod-chess-engine`
 
-**Patrón:** `[Ej. Pure engine / Repository / Feature module]`  
-**Ruta en repositorio:** `src/engine/` o `src/modules/[nombre]/`
+**Ruta:** `src/engine/chessEngine.ts`  
+**Contrato:** `createInitialState`, `getLegalMoves`, `applyMove`, `inCheck`, resultados mate/ahogado.  
+**Aislamiento:** Sin React; sin conocer evoluciones (el tablero base no interpreta habilidades).
 
-#### Contrato
+### `MOD-02` `mod-chess-ai`
 
-- **Entradas:** `[Tipos / eventos que recibe]`
-- **Salidas:** `[Estado / eventos que emite]`
-- **Dependencias:** `[AsyncStorage, otros módulos, permisos Android]`
-- **Reutilizable:** `Sí / No`
+**Ruta:** `src/engine/chessAi.ts`  
+**Contrato:** `chooseAiMove(state, difficulty, evolutiveContext?)` → movimiento legal; en Evolutive puede proponer `evolve`/`ability` vía API de `MOD-03` si es ventajoso y simple.  
+**Deps:** `MOD-01`, opcional `MOD-03`.
 
-#### Reglas de aislamiento
+### `MOD-03` `mod-evolution-layer`
 
-- `[Ej. No importa React ni componentes de MOD-02]`
-- `[Ej. Expone funciones puras testeables]`
+**Ruta:** `src/engine/evolution/` (`nodes.ts`, `xp.ts`, `evolve.ts`, `abilities.ts`)  
+**Contrato:**
+- Nodos fijos `c3,f3,c6,f6`
+- `onMoveResolved(baseState, move) -> EvolutiveState` (energía, xp, flags)
+- `canEvolve(pieceId)`, `evolve(pieceId, branch)`, `canUseAbility`, `useAbility`
+- Integración: genera movimientos extra legales solo cuando habilidad activa lo requiere (Dron teleport / Interceptor segundo salto / Fortaleza inmunidad)
+
+**Aislamiento:** No importa UI. Puede envolver o decorar `GameState` en `EvolutiveGameState`.
+
+### `MOD-04` `mod-loadout`
+
+**Ruta:** `src/modules/loadout/`  
+**Contrato:** `LoadoutId = 'A' | 'B'`; `applyLoadout(initialEvolutiveState, id)`.
+
+### `MOD-05` `mod-meta-progress`
+
+**Ruta:** `src/modules/progress/`  
+**Contrato:** load/save `{ gamesPlayed, wins, tutorialDone }` AsyncStorage.
+
+### `MOD-06` `mod-screens`
+
+**Ruta:** `app/`, `src/components/`  
+**Pantallas:** Home, Lobby, Prepartida, Game (classic|evolutive), Postpartida, Tutorial overlay.  
+**Deps:** todos los anteriores + `theme.ts`.  
+**Prohibido:** reglas de ajedrez/evolución inline en pantallas.
 
 ---
 
-### Módulo `MOD-02`: [Nombre]
-
-**Patrón:** `[Ej. Feature folder / UI kit]`  
-**Ruta:** `src/modules/[nombre]/` o `src/components/`
-
-#### Contrato
-
-- **Componentes exportados:** `[Ej. GameScreen, HudPanel]`
-- **Props y tokens:** mapeo a `standards/design-system.md` o `theme.ts`
-- **Eventos:** `onPress`, `onComplete`, etc.
-
-#### Dependencias
-
-- **Internas:** `MOD-01` (estado/lógica), `constants/theme`
-- **Prohibidas:** llamadas directas inversas desde `MOD-01`
-
----
-
-## 4. Grafo de Dependencias y Reglas de Importación
+## 4. Grafo de Dependencias
 
 ```text
-[app/ screens — expo-router]
-       │
-       ▼ consume
-[MOD-02 UI / components]
-       │
-       ▼ consume
-[MOD-01 engine / services]
-       │
-       ▼ alineación
-[standards/ + theme.ts]
+MOD-06 screens
+  ├── MOD-04 loadout
+  ├── MOD-05 progress
+  ├── MOD-02 AI
+  │     ├── MOD-01 engine
+  │     └── MOD-03 evolution
+  └── MOD-03 evolution ──► MOD-01 engine
 ```
 
-**Reglas:**
-
-- Prohibidas importaciones circulares.
-- `src/engine/` sin imports de React.
-- Estilos solo vía tokens/theme documentados.
+Sin ciclos. `MOD-01` no importa `MOD-03`.
 
 ---
 
-## 5. Matriz de Riesgos Arquitectónicos
+## 5. Matriz de Riesgos
 
-| ID Módulo | Riesgo | Impacto | Mitigación |
+| Módulo | Riesgo | Impacto | Mitigación |
 | :--- | :--- | :--- | :--- |
-| `MOD-01` | `[Ej. Estado inconsistente]` | `Alto` | Smoke tests en `scripts/` |
-| `MOD-02` | `[Ej. Acoplamiento UI-lógica]` | `Medio` | Hooks/providers como frontera |
+| `MOD-01` | Bugs FIDE | Alto | Smoke posiciones |
+| `MOD-03` | Habilidades rotas / fugas a Clásico | Alto | Flag `mode`; tests Clásico sin nodos |
+| `MOD-02` | IA ignora o abusa evolución | Medio | Heurística acotada |
+| `MOD-06` | HUD sobrecargado | Medio | Wireframe `04`; una acción primaria |
 
 ---
 
-## 6. Evaluación de Reutilización WIKA
+## 6. Reutilización WIKA
 
-| Módulo | ¿Existe equivalente WIKA? | Decisión |
+| Módulo | Equivalente | Decisión |
 | :--- | :--- | :--- |
-| `MOD-01` | `[Ej. offline-progress en sodoku]` | `Reutilizar / Crear nuevo` |
-| `MOD-02` | `[Ej. sodoku-ui-kit en design-system V3+]` | `Diferir a V3+ / Theme local V1` |
+| `MOD-01`/`02` | Prototipo `iterations/v1` engine | Reutilizar/adaptar código engine; no campaña Wars |
+| `MOD-03` | Ninguno | Crear nuevo |
+| `MOD-05` | Patrón progress Match-3/Tower | Reutilizar patrón |
+| UI kit V3+ | design-system | Diferir |
 
 ---
 
-## 7. Puerta de Enlace y Firma de Auditoría de Módulos
+## 7. Puerta de Enlace
 
-### Checklist
+- [x] Features obligatorias cubiertas
+- [x] Sin duplicidad / sin ciclos
+- [x] Riesgos y reutilización documentados
+- [x] `audits/auditoria-modulos.md` APROBADO
 
-- [ ] Toda feature obligatoria tiene al menos un módulo.
-- [ ] Sin módulos duplicados ni responsabilidades superpuestas.
-- [ ] Dependencias y riesgos documentados.
-- [ ] Reutilización WIKA evaluada.
-- [ ] Grafo sin ciclos.
-- [ ] `audits/auditoria-modulos.md` en estado `[APROBADO]`.
-
-### Registro de visto bueno
-
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha:** `YYYY-MM-DD`
-- **audit_2_passed:** `false` → `true` al aprobar
+- **Aprobado por:** `WIKA Lead QA / agente auditoría`
+- **Fecha:** `2026-08-21`
+- **audit_2_passed:** `true`

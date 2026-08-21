@@ -1,143 +1,154 @@
 ---
 id: "BUILD-001"
-title: "[Plan de Construcción V1 y Hoja de Ruta Técnica]"
-status: "BORRADOR"
-version: "1.0.0"
-owner: "[Lead Developer / Arquitecto]"
-created_at: "YYYY-MM-DD"
-updated_at: "YYYY-MM-DD"
-audit_1_passed: false
-audit_2_passed: false
-visual_approval_passed: false
-audit_3_passed: false
-ready_for_construction: false
+title: "AI Chess Wars — Plan de Construcción V2 (contrato V1.1)"
+status: "READY_FOR_CONSTRUCTION"
+version: "1.1.0"
+owner: "VISSIUSS / WIKA"
+created_at: "2026-08-21"
+updated_at: "2026-08-21"
+audit_1_passed: true
+audit_2_passed: true
+visual_approval_passed: true
+audit_3_passed: true
+ready_for_construction: true
 ---
 
-# [05] Plan de Construcción V1 (Build Plan)
+# [05] Plan de Construcción (Build Plan)
 
-> **Bloqueo:** Si `ready_for_construction: false`, queda prohibido crear o modificar código en `iterations/v1/src/` y `iterations/v1/app/`.  
-> **Activación:** `ready_for_construction: true` solo cuando los cuatro flags anteriores sean `true`.
+> **Importante:** El contrato de producto V1.1 **no** coincide con `iterations/v1/` (prototipo clásico + campaña).  
+> La implementación del contrato actual va en **`iterations/v2/`**.  
+> `ready_for_construction: true` habilita código en `iterations/v2/src/` y `iterations/v2/app/`.
 
-## 1. Verificación de Pre-requisitos
+## 1. Pre-requisitos
 
-- [ ] Auditoría de Documentación: `audit_1_passed == true` (`auditoria-documentacion.md`)
-- [ ] Auditoría de Módulos: `audit_2_passed == true` (`auditoria-modulos.md`)
-- [ ] Aprobación visual: `visual_approval_passed == true` (`04-application-design.md`)
-- [ ] Auditoría de Ensamblado: `audit_3_passed == true` (`auditoria-ensamblado.md`)
-
----
-
-## 2. Alcance de la V1
-
-**Features incluidas:** `[FEAT-01, FEAT-02, ...]`  
-**Features excluidas:** `[FEAT-03+, deseables]`  
-**Módulos incluidos:** `[MOD-01, MOD-02, ...]`
+- [x] `audit_1_passed`
+- [x] `audit_2_passed`
+- [x] `visual_approval_passed`
+- [x] `audit_3_passed`
 
 ---
 
-## 3. Cronograma de Ejecución (Build Schedule)
+## 2. Alcance
 
-| Paso | Módulo | ID Feature | Archivos a crear / modificar | Tokens / estándares | Estado |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `01` | `global` | N/A | `package.json`, `app.json`, `scripts/verify-build.sh` | WIKA-ARCH-02, 03 | `[PENDIENTE]` |
-| `02` | `MOD-01` | `FEAT-01` | `src/engine/[nombre].ts` | `coding-standards.md` | `[PENDIENTE]` |
-| `03` | `MOD-02` | `FEAT-01` | `app/index.tsx`, `src/components/` | `design-system.md`, `theme.ts` | `[PENDIENTE]` |
-| `04` | `MOD-01` | `FEAT-02` | `src/modules/[persistencia]/` | AsyncStorage | `[PENDIENTE]` |
-| `05` | `integración` | `FEAT-01/02` | `app/play.tsx`, hooks | BDD `02-features.md` | `[PENDIENTE]` |
+**Incluye:** `FEAT-01`–`FEAT-08`  
+**Excluye:** `FEAT-09`+ (ranked, economía, eventos, zonas dinámicas, más ramas)  
+**Módulos:** `MOD-01`–`MOD-06`  
+**Carpeta destino:** `iterations/v2/`  
+**Reuso:** Portar/adaptar engine de `iterations/v1` como base de `MOD-01`/`MOD-02`.
 
 ---
 
-## 4. Orden de Implementación y Justificación
+## 3. Cronograma
 
-1. **Setup y toolchain** — base reproducible (tower v1 como referencia).
-2. **Engine puro** — lógica testeable sin UI.
-3. **Theme y componentes** — según `04-application-design.md`.
-4. **Pantallas expo-router** — ensamblado con hooks/providers.
-5. **Persistencia e integración** — features secundarias.
-6. **Verify + APK** — cierre de iteración.
-
----
-
-## 5. Desglose por Fases
-
-### Fase 1: Setup y Design Tokens
-
-- **Objetivo:** Proyecto Expo con scripts WIKA y `theme.ts` desde tokens documentados.
-- **Referencia:** `proyectos/app/tower/iterations/v1/`
-- **Criterio de parada:** `npm run typecheck` sin errores.
-
-### Fase 2: Engine y Módulos de Lógica (`MOD-01`)
-
-- **Objetivo:** Implementar contratos de `03-module-discovery.md`.
-- **Regla:** Sin imports de React en `src/engine/`.
-- **Criterio:** Smoke tests en `scripts/smoke-*.ts` pasan.
-
-### Fase 3: UI y Navegación (`MOD-02`)
-
-- **Objetivo:** Pantallas según wireframe aprobado en `04-application-design.md`.
-- **Regla:** Estilos vía theme/tokens; 0% hex sueltos en componentes.
-
-### Fase 4: Integración, Verify y APK
-
-- **Objetivo:** Flujos BDD de `02-features.md` verificables manualmente.
-- **Regla:** `npm run verify` y APK release exitoso (WIKA-ARCH-05).
+| Paso | Módulo | Feature | Archivos | Estado |
+| :--- | :--- | :--- | :--- | :--- |
+| 01 | global | N/A | Scaffold Expo en `iterations/v2/` (desde v1/tower) | `COMPLETADO` |
+| 02 | MOD-01 | FEAT-01,03 | `chessEngine` + smoke Clásico | `COMPLETADO` |
+| 03 | MOD-02 | FEAT-02 | `chessAi` | `COMPLETADO` |
+| 04 | MOD-03 | FEAT-04 | evolution layer + smoke nodos/evo/habilidades | `COMPLETADO` |
+| 05 | MOD-04 | FEAT-05 | loadout A/B | `COMPLETADO` |
+| 06 | MOD-05 | FEAT-07 | meta-progress AsyncStorage | `COMPLETADO` |
+| 07 | MOD-06 | FEAT-06,08 | theme + Home/Lobby/Prematch/Game/Result/Tutorial | `COMPLETADO` |
+| 08 | integración | all | Flujos BDD Clásico vs Evolutive | `COMPLETADO` |
+| 09 | release | N/A | typecheck + verify + APK | `PARCIAL` (smoke+typecheck+export OK; APK pendiente SDK) |
 
 ---
 
-## 6. Dependencias Externas
+## 4. Orden
 
-| Dependencia | Versión | Propósito |
+1. Scaffold v2  
+2. Engine + AI (reuso v1)  
+3. Evolution layer (nuevo)  
+4. Loadout + meta  
+5. UI flujo completo  
+6. Verify / APK  
+
+---
+
+## 5. Fases
+
+### Fase 1 — Setup + tokens (`04`)
+Criterio: `typecheck` OK.
+
+### Fase 2 — Engine + AI
+Criterio: smoke Clásico; 0 fugas Wars.
+
+### Fase 3 — Evolution + loadout
+Criterio: smoke nodos, evolve, Dron/Fortaleza/Interceptor.
+
+### Fase 4 — UI + verify
+Criterio: BDD manual; `npm run verify` (APK si SDK disponible).
+
+---
+
+## 6. Dependencias
+
+| Dep | Versión | Uso |
 | :--- | :--- | :--- |
-| `expo` | `~52.x` | Framework |
-| `react-native` | `~0.76.x` | Runtime |
-| `expo-router` | `~4.x` | Navegación |
-| `[otras]` | `~x.x` | `[Propósito]` |
+| expo | ~52.x | Framework |
+| react-native | ~0.76.x | Runtime |
+| expo-router | ~4.x | Nav |
+| async-storage | ~1.23 / pin WIKA | Meta |
+
+Sin Stockfish, sin IAP SDKs en V1.1.
 
 ---
 
-## 7. Estrategia de Pruebas
+## 7. Pruebas
 
-| Tipo | Alcance | Comando / método |
-| :--- | :--- | :--- |
-| Smoke engine | Lógica pura | `npm run smoke` |
-| Typecheck | Proyecto completo | `npm run typecheck` |
-| Build gate | Export + prebuild + APK | `npm run verify` |
-| BDD manual | Escenarios `02-features.md` | Checklist QA |
-
----
-
-## 8. Riesgos Técnicos
-
-| Riesgo | Probabilidad | Mitigación |
-| :--- | :--- | :--- |
-| `[Prebuild Android falla]` | `Media` | `post-prebuild.js` Kotlin pin |
-| `[Scope creep]` | `Alta` | Respetar out-of-scope de `01-problem.md` |
+| Tipo | Método |
+| :--- | :--- |
+| Smoke engine | `npm run smoke` |
+| Smoke evolution | casos nodos/evo/habilidad |
+| Typecheck | `tsc` |
+| Clásico integrity | assert sin nodos en mode classic |
+| Build | verify / apk |
 
 ---
 
-## 9. Criterios de Aprobación V1
+## 8. Riesgos
 
-- [ ] Todas las features obligatorias implementadas.
-- [ ] `npm run verify` exitoso.
-- [ ] APK release generado en `iterations/v1/`.
-- [ ] `review.md` completado por arquitecto.
-- [ ] Listo para `auditoria-release-v1.md`.
-
----
-
-## 10. Checklist por Incremento (Quality Gate)
-
-Antes de marcar un paso como `[COMPLETADO]`:
-
-- [ ] 0% estilos hardcoded fuera de theme/tokens.
-- [ ] Trazabilidad RTM respetada (feature → módulo → archivo).
-- [ ] Escenario BDD asociado verificado.
-- [ ] Sin errores TypeScript ni linter bloqueante.
+| Riesgo | Mitigación |
+| :--- | :--- |
+| Scope creep visión completa | Respetar out-of-scope 01/02 |
+| Acoplar evolución al engine base | MOD-03 decorador |
+| Balance habilidades | 1 uso + coste 2 Energía |
 
 ---
 
-## 11. Cierre de Fase de Construcción
+## 9. Criterios de aprobación construcción
 
-- **Revisado por (Arquitecto):** `________________________`
-- **Fecha de finalización:** `YYYY-MM-DD`
-- **ready_for_construction:** activar solo al inicio; al cerrar V1 → `[LISTO_PARA_AUDITORIA_RELEASE]`
+- [ ] Clásico jugable vs IA sin Wars
+- [ ] Evolutive: nodos, XP, 3 evoluciones, loadout, tutorial
+- [ ] Meta progress persistente
+- [ ] smoke + typecheck + export OK
+- [ ] APK Release (local) cuando SDK disponible
+
+---
+
+## 10. Checklist por incremento
+
+- [ ] 0% hex fuera de theme  
+- [ ] RTM feature→módulo→archivo  
+- [ ] BDD asociado  
+- [ ] Sin TS errors  
+
+---
+
+## 11. Cierre
+
+- **ready_for_construction:** `true` (para `iterations/v2/`)
+- **Al cerrar build:** `LISTO_PARA_AUDITORIA_RELEASE`
+
+### RTM resumen
+
+```text
+ERR-01 → FEAT-01 → MOD-01 → VIEW-04 → Paso 02
+ERR-02 → FEAT-02 → MOD-02 → VIEW-04 → Paso 03
+ERR-03 → FEAT-03 → MOD-01/06 → play/classic → Pasos 02,07
+ERR-04 → FEAT-04 → MOD-03 → VIEW-04 → Paso 04
+ERR-05 → FEAT-05 → MOD-04 → VIEW-03 → Paso 05
+ERR-06 → FEAT-06 → MOD-06 → VIEW-01..05 → Paso 07
+ERR-07 → FEAT-07 → MOD-05 → meta → Paso 06
+ERR-08 → FEAT-08 → MOD-06 → tutorial → Paso 07
+```

@@ -1,14 +1,18 @@
-Chess Wars — proyecto WIKA
+AI Chess Wars — proyecto WIKA
 
 Fuente: wika-fundaments @ wika-fundaments-v2
 
-Producto V1:
-- (pendiente: completar idea/01–05)
+Producto V1.1:
+- Clásico: FIDE puro vs IA
+- Evolutive Quick: 4 nodos, XP, Dron/Fortaleza/Interceptor, loadout A/B
+- Tutorial + meta local
+- Package: com.wika.aichesswars
+- Entregable: APK Release SIN Metro
 
 Estado:
-- idea/ plantillas oficiales copiadas (sin rellenar)
-- audits/ vacío
-- iterations/ vacío — prohibido código hasta ready_for_construction
+- idea/ v1.1 + audits Gates 1–3B APROBADOS
+- iterations/v1/ histórico (prototipo clásico+campaña)
+- iterations/v2/ construido (smoke + typecheck + export OK)
 - final/ vacío
 
-Siguiente: completar 01-problem.md y 02-features.md → auditoría de documentación (Gate 1)
+Siguiente: npm run apk → sideload → auditoría release → final/

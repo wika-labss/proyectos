@@ -1,59 +1,77 @@
 ---
 id: "DES-001"
-title: "[Diseño de Aplicación y Mapeo Visual]"
-status: "BORRADOR"
-version: "1.0.0"
-owner: "[Nombre del Diseñador / Arquitecto]"
-created_at: "YYYY-MM-DD"
-updated_at: "YYYY-MM-DD"
-audit_1_passed: false
-audit_2_passed: false
-visual_approval_passed: false
-audit_3_passed: false
+title: "AI Chess Wars — Diseño de Aplicación"
+status: "AUDIT_3_APROBADO"
+version: "1.1.0"
+owner: "VISSIUSS / WIKA"
+created_at: "2026-08-21"
+updated_at: "2026-08-21"
+audit_1_passed: true
+audit_2_passed: true
+visual_approval_passed: true
+audit_3_passed: true
 ---
 
 # [04] Diseño de Aplicación, Navegación y Aprobación Visual
 
-> **Pre-requisito:** `audit_2_passed: true` en `03-module-discovery.md`.  
-> **Gate visual:** `visual_approval_passed: true` requiere visto bueno del arquitecto/stakeholder.  
-> **Equivalencia:** Auditoría de Ensamblado (parte visual) → `docs/auditoria-ensamblado.md`.
+> **Pre-requisito:** `audit_2_passed: true`.  
+> **Dirección visual V1:** Futurista sobrio — marca **AI Chess Wars** hero, tablero dominante, nodos con glow contenido, sin cards en hero.
 
-## 1. Identificación y Antecedentes
+## 1. Identificación
 
-- **Nombre del Proyecto:** `[Ej. Tower Defense - WIKA]`
-- **Documentos base:** `01-problem.md` | `02-features.md` | `03-module-discovery.md`
-- **Estado de gatekeeping:** `[PENDIENTE_APROBACION_VISUAL]`
+- **Proyecto:** `AI Chess Wars`
+- **Estado:** Gates visual + ensamblado aprobados
+- **Docs base:** 01 | 02 | 03
 
 ---
 
 ## 2. Arquitectura General
 
-`[Describir capas: expo-router, engine, modules, theme. Cómo se ensamblan para V1.]`
+1. expo-router pantallas  
+2. UI components + theme  
+3. loadout + meta-progress  
+4. evolution layer + chess AI  
+5. chess engine puro  
 
 ---
 
-## 3. Módulos Utilizados en V1
+## 3. Módulos en V1
 
-| ID Módulo | Nombre | Rol en V1 |
+| ID | Nombre | Rol |
 | :--- | :--- | :--- |
-| `MOD-01` | `mod-[nombre]` | `[Lógica / engine]` |
-| `MOD-02` | `mod-[nombre]` | `[UI / navegación]` |
+| MOD-01 | chess-engine | Base FIDE |
+| MOD-02 | chess-ai | Rival |
+| MOD-03 | evolution-layer | Wars |
+| MOD-04 | loadout | Prepartida |
+| MOD-05 | meta-progress | Persistencia |
+| MOD-06 | screens | UX |
 
 ---
 
-## 4. Relaciones entre Módulos
-
-`[Describir flujo de datos: pantalla → hook/provider → engine → persistencia.]`
-
----
-
-## 5. Flujo Principal de Usuario
+## 4. Relaciones
 
 ```text
-[Home] → [Acción principal] → [Resultado] → [Persistencia / replay]
+PreMatch → loadout(A|B) → createEvolutiveState
+GameScreen
+  → applyMove(engine)
+  → evolution.onMoveResolved
+  → AI.choose (puede evolve/ability)
+  → HUD: Energy, Evolve, Ability
+PostMatch → meta-progress++
 ```
 
-Estados a documentar: loading, success, error, empty (si aplica).
+Clásico: omite loadout y evolution-layer.
+
+---
+
+## 5. Flujo principal
+
+```text
+Home → Lobby → Prepartida → Tablero → Postpartida → Home/Rematch
+                 ↘ Tutorial (primera Evolutive)
+```
+
+Estados tablero Evolutive: `selecting`, `awaitingAi`, `evolvePrompt`, `abilityTargeting`, `check`, `ended`.
 
 ---
 
@@ -61,84 +79,116 @@ Estados a documentar: loading, success, error, empty (si aplica).
 
 | Ruta | Pantalla | Módulos | Feature |
 | :--- | :--- | :--- | :--- |
-| `/` | `[Home]` | `MOD-02` | `FEAT-01` |
-| `/play` | `[Juego]` | `MOD-01`, `MOD-02` | `FEAT-01` |
+| `/` | Home | MOD-06,05 | FEAT-06,07 |
+| `/lobby` | Lobby modos | MOD-06 | FEAT-03,04,06 |
+| `/prematch` | Dificultad + loadout | MOD-04,06 | FEAT-05 |
+| `/play/classic` | Tablero clásico | MOD-01,02,06 | FEAT-01–03 |
+| `/play/evolutive` | Tablero Wars | MOD-01–04,06 | FEAT-04–06 |
+| `/result` | Postpartida | MOD-05,06 | FEAT-06,07 |
 
 ---
 
-## 7. Consumo de Tokens y Theme
+## 7. Tokens V1 (futurista)
 
-> **Regla:** Estilos derivados de `standards/design-system.md` o `theme.ts` documentado aquí. Profesionalización V3+ vía repo `design-system/`.
-
-### Tokens clave V1
-
-| Token semántico | Uso en app | Valor / referencia |
+| Token | Uso | Valor |
 | :--- | :--- | :--- |
-| `background` | Fondo app | `[theme.colors.background]` |
-| `accent` | CTA primario | `[theme.colors.accent]` |
-| `text` | Texto principal | `[theme.colors.text]` |
-| `spacing.md` | Padding estándar | `16 dp` |
+| `background` | Fondo | `#0B1020` |
+| `backgroundAlt` | Atmósfera | `#121A33` → `#1A1430` |
+| `surface` | HUD | `#1C2744` |
+| `accent` | CTA / marca | `#5CE1E6` |
+| `accentSecondary` | Evolución | `#A78BFA` |
+| `text` | Principal | `#E8EEF8` |
+| `textMuted` | Secundario | `#8B97B0` |
+| `success` | Victoria | `#3DDC97` |
+| `danger` | Derrota / alerta | `#FF5C7A` |
+| `board.light` | Casilla | `#2A3555` |
+| `board.dark` | Casilla | `#161D33` |
+| `node` | Nodo energía | `#F5C542` |
+| `legal` | Highlight | `#5CE1E688` |
+| `selected` | Selección | `#F5C542` |
+| `spacing.md` | 16 | |
+| `font.brand` | Display (no Inter/Roboto/system) | en `theme.ts` |
+
+0% hex fuera de `theme.ts`.
 
 ---
 
-## 8. Matriz Preview Visual vs Componentes de Código
+## 8. Matriz vistas
 
-| ID Vista | ID Módulo | Componente / Pantalla | Tokens | Referencia wireframe |
-| :--- | :--- | :--- | :--- | :--- |
-| `VIEW-01` | `MOD-02` | `[HomeScreen]` | `background`, `accent` | `[assets/previews/home.png o N/A]` |
-| `VIEW-02` | `MOD-01/02` | `[PlayScreen]` | `surface`, `border` | `[N/A para V1 mínimo]` |
-
-> Si no hay mockups formales, documentar layout ASCII y marcar `visual_approval_passed` tras revisión arquitectónica del wireframe textual.
+| ID | Pantalla | Tokens | Wireframe |
+| :--- | :--- | :--- | :--- |
+| VIEW-01 | Home | brand, accent | §9 |
+| VIEW-02 | Lobby | surface, accent | §9 |
+| VIEW-03 | Prepartida | accentSecondary | §9 |
+| VIEW-04 | Tablero Evolutive | board, node, HUD | §9 |
+| VIEW-05 | Postpartida | success/danger | §9 |
 
 ---
 
-## 9. Layout Visual (wireframe / ASCII)
+## 9. Wireframes ASCII
+
+### VIEW-01 Home
 
 ```text
 ┌─────────────────────────────────────┐
-│ [Header / HUD]          MOD-02      │
-├─────────────────────────────────────┤
+│         AI CHESS WARS               │  brand hero
+│   Evoluciona. Domina. Offline.      │
 │                                     │
-│   [Área principal — engine MOD-01]  │
-│                                     │
-├─────────────────────────────────────┤
-│ [Controles / CTA]       MOD-02      │
+│            [  Jugar  ]              │
+│         Victorias: N                │
 └─────────────────────────────────────┘
+```
+
+### VIEW-02 Lobby
+
+```text
+│  Clásico          │  Evolutive Quick │
+│  Ajedrez puro     │  Nodos + evo     │
+```
+
+### VIEW-03 Prepartida
+
+```text
+IA: (Fácil | Media)
+Loadout: (A +1 Energía) (B +1 XP captura)   ← solo Evolutive
+[ Empezar ]
+```
+
+### VIEW-04 Tablero
+
+```text
+Energía ◆◆◇◇◇   │  [Evolucionar] [Habilidad]
+┌───────────────────────────────┐
+│  tablero 8×8 · nodos ★        │
+└───────────────────────────────┘
+Pieza sel: XP 2/3 · tipo
+```
+
+### VIEW-05 Postpartida
+
+```text
+Victoria / Derrota / Tablas
++stats meta
+[ Rematch ] [ Lobby ] [ Home ]
 ```
 
 ---
 
-## 10. Riesgos de Diseño
+## 10. Riesgos de diseño
 
-| Riesgo | Impacto | Mitigación |
-| :--- | :--- | :--- |
-| `[Ej. Performance con muchos sprites]` | `Alto` | `[Pool de objetos, tests]` |
-| `[Ej. Theme local vs design-system V3+]` | `Medio` | `[Migrar tokens en V3+ pipeline]` |
+| Riesgo | Mitigación |
+| :--- | :--- |
+| HUD clutter | Máx. 2 acciones contextuales |
+| Nodos poco visibles | Token `node` + icono ★ |
+| Confusión Clásico vs Evolutive | Lobby con copy claro |
 
 ---
 
-## 11. Puerta de Enlace — Aprobación Visual y Ensamblado
+## 11. Firmas
 
-### Checklist aprobación visual (Gate 3A)
-
-- [ ] Navegación y flujo principal definidos.
-- [ ] Todos los módulos V1 incorporados sin huérfanos.
-- [ ] Tokens/theme documentados o N/A justificado.
-- [ ] Wireframe o preview revisado por arquitecto.
-- [ ] Sin dependencias circulares.
-
-### Checklist auditoría de ensamblado (Gate 3B)
-
-- [ ] `05-build-plan.md` coherente con este diseño.
-- [ ] Estrategia de build y riesgos alineados.
-- [ ] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
-
-### Registro de visto bueno
-
-- **Aprobación visual (Arquitecto / Stakeholder):** `________________________`
-- **Fecha visual:** `YYYY-MM-DD`
-- **visual_approval_passed:** `false` → `true` al aprobar preview
-
-- **Aprobación ensamblado (Arquitecto):** `________________________`
-- **Fecha ensamblado:** `YYYY-MM-DD`
-- **audit_3_passed:** `false` → `true` al aprobar ensamblado
+- [x] Gate 3A visual — wireframe aprobado
+- [x] Gate 3B ensamblado — coherente con `05`
+- **visual_approval_passed:** `true`
+- **audit_3_passed:** `true`
+- **Fecha:** `2026-08-21`
+- **Arquitecto:** `WIKA Lead QA / agente auditoría`
