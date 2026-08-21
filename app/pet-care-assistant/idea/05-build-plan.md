@@ -1,11 +1,11 @@
 ---
 id: "BUILD-001"
-title: "[Plan de Construcción V1 y Hoja de Ruta Técnica]"
+title: "Plan de Construcción V1 — Pet Care Assistant"
 status: "BORRADOR"
 version: "1.0.0"
-owner: "[Lead Developer / Arquitecto]"
-created_at: "YYYY-MM-DD"
-updated_at: "YYYY-MM-DD"
+owner: "Vissiuss / Arquitecto WIKA"
+created_at: "2026-08-21"
+updated_at: "2026-08-21"
 audit_1_passed: false
 audit_2_passed: false
 visual_approval_passed: false
@@ -29,31 +29,44 @@ ready_for_construction: false
 
 ## 2. Alcance de la V1
 
-**Features incluidas:** `[FEAT-01, FEAT-02, ...]`  
-**Features excluidas:** `[FEAT-03+, deseables]`  
-**Módulos incluidos:** `[MOD-01, MOD-02, ...]`
+**Features incluidas:** `FEAT-01` … `FEAT-12`  
+**Features excluidas:** `FEAT-13+` (push, medicación horaria, fotos, GPS, sync, export PDF)  
+**Módulos incluidos:** `MOD-01` … `MOD-10`
+
+Package: `com.wika.petcareassistant`. Portrait. Offline. Sin permisos sensibles.
 
 ---
 
 ## 3. Cronograma de Ejecución (Build Schedule)
 
-| Paso | Módulo | ID Feature | Archivos a crear / modificar | Tokens / estándares | Estado |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `01` | `global` | N/A | `package.json`, `app.json`, `scripts/verify-build.sh` | WIKA-ARCH-02, 03 | `[PENDIENTE]` |
-| `02` | `MOD-01` | `FEAT-01` | `src/engine/[nombre].ts` | `coding-standards.md` | `[PENDIENTE]` |
-| `03` | `MOD-02` | `FEAT-01` | `app/index.tsx`, `src/components/` | `design-system.md`, `theme.ts` | `[PENDIENTE]` |
-| `04` | `MOD-01` | `FEAT-02` | `src/modules/[persistencia]/` | AsyncStorage | `[PENDIENTE]` |
-| `05` | `integración` | `FEAT-01/02` | `app/play.tsx`, hooks | BDD `02-features.md` | `[PENDIENTE]` |
+| Paso | Módulo | ID Feature | Archivos a crear / modificar | Tokens / estándares | Estado | Vista |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `01` | `global` / `MOD-10` | `FEAT-12` | `package.json`, `app.json`, `scripts/verify-build.sh`, `scripts/build-apk.sh` | WIKA-ARCH-02, 03, 06 (starter tower) | `PENDIENTE` | — |
+| `02` | `MOD-09` | N/A | `src/constants/theme.ts` | `04` warm-care | `PENDIENTE` | — |
+| `03` | `MOD-01` | `FEAT-01`, `FEAT-09` | `src/engine/petProfile.ts`, `types.ts` | coding-standards | `PENDIENTE` | — |
+| `04` | `MOD-03` | `FEAT-03` | `src/engine/stoolScale.ts` | catálogo 6 códigos | `PENDIENTE` | — |
+| `05` | `MOD-02` | `FEAT-02`, `03`, `04`, `11` | `src/engine/careEvents.ts` | validaciones BDD | `PENDIENTE` | — |
+| `06` | `MOD-04` | `FEAT-05` | `src/engine/healthStatus.ts` | síntomas catálogo | `PENDIENTE` | — |
+| `07` | `MOD-06` | `FEAT-07` | `src/engine/preventiveCalendar.ts` | dueStatus 14 días | `PENDIENTE` | — |
+| `08` | `MOD-05` | `FEAT-06`, `FEAT-10` | `src/engine/dayHistory.ts` | día local YYYY-MM-DD | `PENDIENTE` | — |
+| `09` | `MOD-07` | todas | `src/engine/index.ts` | orquestación + cascade delete | `PENDIENTE` | — |
+| `10` | `MOD-08` | `FEAT-08` | `src/modules/offline-store/` | AsyncStorage `petcare:v1:state` | `PENDIENTE` | — |
+| `11` | `integración` | `FEAT-08` | `src/hooks/CareProvider.tsx` | frontera UI↔engine | `PENDIENTE` | — |
+| `12` | `MOD-09` | `FEAT-01`, `09`, `10` | `app/index.tsx`, `app/pets/*`, `src/components/` | VIEW-01, 02, 03, 10 | `PENDIENTE` | `VIEW-01`–`10` |
+| `13` | `MOD-09` | `FEAT-02`–`05`, `11` | `app/log/*.tsx` | VIEW-04–07, 11 | `PENDIENTE` | `VIEW-04`–`07`, `11` |
+| `14` | `MOD-09` | `FEAT-06`, `07` | `app/history.tsx`, `app/preventive.tsx` | VIEW-08, 09 | `PENDIENTE` | `VIEW-08`, `VIEW-09` |
+| `15` | `integración` | BDD | `scripts/smoke-v1.ts` | NFR-01, NFR-05 | `PENDIENTE` | — |
+| `16` | `MOD-10` | `FEAT-12` | verify + APK | WIKA-ARCH-05 | `PENDIENTE` | — |
 
 ---
 
 ## 4. Orden de Implementación y Justificación
 
-1. **Setup y toolchain** — base reproducible (tower v1 como referencia).
-2. **Engine puro** — lógica testeable sin UI.
-3. **Theme y componentes** — según `04-application-design.md`.
-4. **Pantallas expo-router** — ensamblado con hooks/providers.
-5. **Persistencia e integración** — features secundarias.
+1. **Setup y toolchain** — clonar estructura de `proyectos/app/tower/iterations/v1/` (WIKA-ARCH-06).
+2. **Theme** — tokens warm-care antes de cualquier pantalla.
+3. **Engine puro** — perfil → heces → eventos → salud → preventivos → histórico → orquestador; smoke sin UI.
+4. **Store + provider** — persistencia y rehidratación.
+5. **Pantallas expo-router** — home, logs, histórico, ficha, preventivos según wireframe 04.
 6. **Verify + APK** — cierre de iteración.
 
 ---
@@ -62,25 +75,34 @@ ready_for_construction: false
 
 ### Fase 1: Setup y Design Tokens
 
-- **Objetivo:** Proyecto Expo con scripts WIKA y `theme.ts` desde tokens documentados.
+- **Objetivo:** Expo SDK 52 + Router + TypeScript + scripts WIKA + `theme.ts`.
 - **Referencia:** `proyectos/app/tower/iterations/v1/`
 - **Criterio de parada:** `npm run typecheck` sin errores.
 
-### Fase 2: Engine y Módulos de Lógica (`MOD-01`)
+### Fase 2: Engine y Módulos de Lógica (`MOD-01`–`MOD-07`)
 
-- **Objetivo:** Implementar contratos de `03-module-discovery.md`.
+- **Objetivo:** Contratos de `03-module-discovery.md`.
 - **Regla:** Sin imports de React en `src/engine/`.
-- **Criterio:** Smoke tests en `scripts/smoke-*.ts` pasan.
+- **Criterio:** Smoke tests:
+  - edad desde `birthDate`
+  - comida/baño/paseo/nota con `petId`
+  - baño heces sin consistencia → error
+  - aislamiento multi-mascota
+  - `getDay(petId, date)` ordena por hora
+  - enfermo sin síntomas → error
+  - vacuna `soon` / `overdue`
+  - delete mascota cascade
 
-### Fase 3: UI y Navegación (`MOD-02`)
+### Fase 3: UI y Navegación (`MOD-09`)
 
-- **Objetivo:** Pantallas según wireframe aprobado en `04-application-design.md`.
+- **Objetivo:** Pantallas según wireframe de `04-application-design.md`.
 - **Regla:** Estilos vía theme/tokens; 0% hex sueltos en componentes.
+- **Disclaimer** visible en salud.
 
 ### Fase 4: Integración, Verify y APK
 
-- **Objetivo:** Flujos BDD de `02-features.md` verificables manualmente.
-- **Regla:** `npm run verify` y APK release exitoso (WIKA-ARCH-05).
+- **Objetivo:** Flujos BDD de `02-features.md` verificables.
+- **Regla:** `npm run verify` y APK release (WIKA-ARCH-05).
 
 ---
 
@@ -91,7 +113,13 @@ ready_for_construction: false
 | `expo` | `~52.x` | Framework |
 | `react-native` | `~0.76.x` | Runtime |
 | `expo-router` | `~4.x` | Navegación |
-| `[otras]` | `~x.x` | `[Propósito]` |
+| `typescript` | `~5.x` | Tipos |
+| `@react-native-async-storage/async-storage` | `~2.x` (vía `npx expo install`) | Persistencia `MOD-08` |
+| `expo-build-properties` | `~0.13.x` | Kotlin 1.9.25, minSdk 24 |
+
+**Toolchain nativo (WIKA-ARCH-04):** Node 20 LTS, JDK **17**, Android minSdk 24 / compileSdk 35 / targetSdk 34, Kotlin 1.9.25.
+
+Prohibido: `expo-notifications`, `expo-location`, cámara, clientes HTTP de analytics.
 
 ---
 
@@ -99,10 +127,11 @@ ready_for_construction: false
 
 | Tipo | Alcance | Comando / método |
 | :--- | :--- | :--- |
-| Smoke engine | Lógica pura | `npm run smoke` |
+| Smoke engine | Perfil, eventos, heces, salud, día, preventivos, isolation | `npm run smoke` |
 | Typecheck | Proyecto completo | `npm run typecheck` |
 | Build gate | Export + prebuild + APK | `npm run verify` |
-| BDD manual | Escenarios `02-features.md` | Checklist QA |
+| BDD manual | Escenarios `02-features.md` FEAT-01–11 | Checklist QA |
+| Persistencia | Kill app → reopen sin red | Manual + smoke load/save |
 
 ---
 
@@ -110,14 +139,17 @@ ready_for_construction: false
 
 | Riesgo | Probabilidad | Mitigación |
 | :--- | :--- | :--- |
-| `[Prebuild Android falla]` | `Media` | `post-prebuild.js` Kotlin pin |
-| `[Scope creep]` | `Alta` | Respetar out-of-scope de `01-problem.md` |
+| Prebuild Android falla | `Media` | `post-prebuild.js` Kotlin pin (tower) |
+| Scope creep (push, GPS, fotos) | `Alta` | Respetar out-of-scope de `01-problem.md` |
+| Fechas timezone | `Alta` | Día local; tests con reloj inyectable |
+| Storage lleno / JSON roto | `Baja` | Fallback empty + reset confirmado |
+| Formularios con lógica duplicada | `Media` | Un comando engine por acción |
 
 ---
 
 ## 9. Criterios de Aprobación V1
 
-- [ ] Todas las features obligatorias implementadas.
+- [ ] Todas las features obligatorias (`FEAT-01`–`FEAT-12`) implementadas.
 - [ ] `npm run verify` exitoso.
 - [ ] APK release generado en `iterations/v1/`.
 - [ ] `review.md` completado por arquitecto.
@@ -141,3 +173,14 @@ Antes de marcar un paso como `[COMPLETADO]`:
 - **Revisado por (Arquitecto):** `________________________`
 - **Fecha de finalización:** `YYYY-MM-DD`
 - **ready_for_construction:** activar solo al inicio; al cerrar V1 → `[LISTO_PARA_AUDITORIA_RELEASE]`
+
+### Orden WIKA (estado)
+
+```
+Idea → Preparación (01–05) ← AQUÍ
+     → Auditoría Documentación (pendiente)
+     → Auditoría Módulos (pendiente)
+     → Aprobación visual (pendiente)
+     → Auditoría Ensamblado (pendiente)
+     → Construcción iterations/v1 (bloqueada: ready_for_construction=false)
+```
