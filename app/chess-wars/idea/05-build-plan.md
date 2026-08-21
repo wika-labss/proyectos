@@ -41,15 +41,15 @@ ready_for_construction: true
 
 | Paso | Módulo | ID Feature | Archivos a crear / modificar | Tokens / estándares | Estado |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `01` | `global` | N/A | `iterations/v1/` scaffold Expo (`package.json`, `app.json`, scripts verify) | WIKA-ARCH-02, 03 | `PENDIENTE` |
-| `02` | `MOD-01` | `FEAT-01` | `src/engine/chessEngine.ts`, `types.ts`, smoke reglas | `coding-standards.md` | `PENDIENTE` |
-| `03` | `MOD-02` | `FEAT-02` | `src/engine/chessAi.ts` Fácil/Media | engine puro | `PENDIENTE` |
-| `04` | `MOD-03` | `FEAT-03` | `src/data/battles.ts` (10 batallas) | contrato 01 | `PENDIENTE` |
-| `05` | `MOD-04` | `FEAT-06` | `src/modules/progress/` AsyncStorage | offline | `PENDIENTE` |
-| `06` | `MOD-05` | `FEAT-07` | `theme.ts` + Home / Campaña / Cómo jugar | `04` tokens | `PENDIENTE` |
-| `07` | `MOD-05` | `FEAT-04`, `FEAT-05` | `ChessBoard`, `GameScreen`, `ResultScreen` | board/legal/selected | `PENDIENTE` |
-| `08` | `integración` | `FEAT-01`–`07` | Flujos BDD; campaña + rápida | BDD `02` | `PENDIENTE` |
-| `09` | `release` | N/A | `npm run typecheck` + `verify` + APK | WIKA-ARCH-05 | `PENDIENTE` |
+| `01` | `global` | N/A | `iterations/v1/` scaffold Expo (`package.json`, `app.json`, scripts verify) | WIKA-ARCH-02, 03 | `COMPLETADO` |
+| `02` | `MOD-01` | `FEAT-01` | `src/engine/chessEngine.ts`, `types.ts`, smoke reglas | `coding-standards.md` | `COMPLETADO` |
+| `03` | `MOD-02` | `FEAT-02` | `src/engine/chessAi.ts` Fácil/Media | engine puro | `COMPLETADO` |
+| `04` | `MOD-03` | `FEAT-03` | `src/data/battles.ts` (10 batallas) | contrato 01 | `COMPLETADO` |
+| `05` | `MOD-04` | `FEAT-06` | `src/modules/progress/` AsyncStorage | offline | `COMPLETADO` |
+| `06` | `MOD-05` | `FEAT-07` | `theme.ts` + Home / Campaña / Cómo jugar | `04` tokens | `COMPLETADO` |
+| `07` | `MOD-05` | `FEAT-04`, `FEAT-05` | `ChessBoard`, `GameScreen`, `ResultScreen` | board/legal/selected | `COMPLETADO` |
+| `08` | `integración` | `FEAT-01`–`07` | Flujos BDD; campaña + rápida | BDD `02` | `COMPLETADO` |
+| `09` | `release` | N/A | `npm run typecheck` + `verify` + APK | WIKA-ARCH-05 | `PARCIAL` (smoke+typecheck+export OK; APK pendiente SDK local) |
 
 ---
 
