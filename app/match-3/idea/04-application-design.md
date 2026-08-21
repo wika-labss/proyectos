@@ -6,7 +6,7 @@ version: "1.0.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-08-21"
-audit_1_passed: false
+audit_1_passed: true
 audit_2_passed: false
 visual_approval_passed: false
 audit_3_passed: false

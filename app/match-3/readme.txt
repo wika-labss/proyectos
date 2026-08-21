@@ -11,9 +11,10 @@ Producto V1 (definición):
 - Motor: TypeScript puro src/engine/match3Engine.ts (Expo SDK 52)
 
 Estado:
-- idea/ documentado V1 (01–05) — pendiente Gate 1
-- audits/ vacío (listo para auditoria-documentacion)
+- idea/ documentado V1 (01–05)
+- audits/auditoria-documentacion.md → APROBADO (audit_1_passed: true)
+- audits/ módulos / ensamblado → pendiente
 - iterations/ vacío — prohibido código hasta ready_for_construction
 - final/ vacío
 
-Siguiente: auditoría de documentación → audit_1_passed
+Siguiente: auditoría de módulos → audit_2_passed

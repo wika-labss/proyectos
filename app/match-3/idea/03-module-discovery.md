@@ -6,7 +6,7 @@ version: "1.0.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-08-21"
-audit_1_passed: false
+audit_1_passed: true
 audit_2_passed: false
 ---
 
@@ -19,7 +19,7 @@ audit_2_passed: false
 
 - **Nombre del Proyecto:** `Match-3 América`
 - **Especificaciones base:** `01-problem.md` (`PROB-001`) | `02-features.md` (`FEAT-001`)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_MODULOS`
+- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_MODULOS` (pre-requisito `audit_1_passed: true` cumplido)
 
 ---
 

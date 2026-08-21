@@ -1,12 +1,12 @@
 ---
 id: "FEAT-001"
 title: "Match-3 América — Características V1"
-status: "BORRADOR"
+status: "AUDIT_1_APROBADO"
 version: "1.0.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-08-21"
-audit_1_passed: false
+audit_1_passed: true
 audit_2_passed: false
 ---
 
@@ -19,7 +19,7 @@ audit_2_passed: false
 
 - **Nombre del Proyecto:** `Match-3 América`
 - **Documento base:** `idea/01-problem.md` (ID: `PROB-001`)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDIT_1_APROBADO` — listo para auditoría de módulos
 
 ---
 
@@ -208,10 +208,10 @@ audit_2_passed: false
 - [x] Escenarios BDD por feature obligatoria.
 - [x] NFRs con métricas verificables.
 - [x] Deseables y fuera de alcance diferenciados.
-- [ ] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
+- [x] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha:** `YYYY-MM-DD`
-- **audit_1_passed:** `false` → `true` al aprobar
+- **Aprobado por (Arquitecto):** `WIKA Lead QA / agente auditoría`
+- **Fecha:** `2026-08-21`
+- **audit_1_passed:** `true`

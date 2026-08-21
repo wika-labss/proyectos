@@ -6,7 +6,7 @@ version: "1.0.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-08-21"
-audit_1_passed: false
+audit_1_passed: true
 audit_2_passed: false
 visual_approval_passed: false
 audit_3_passed: false
@@ -20,12 +20,12 @@ ready_for_construction: false
 
 ## 1. Verificación de Pre-requisitos
 
-- [ ] Auditoría de Documentación: `audit_1_passed == true` (`auditoria-documentacion.md`)
+- [x] Auditoría de Documentación: `audit_1_passed == true` (`auditoria-documentacion.md`)
 - [ ] Auditoría de Módulos: `audit_2_passed == true` (`auditoria-modulos.md`)
 - [ ] Aprobación visual: `visual_approval_passed == true` (`04-application-design.md`)
 - [ ] Auditoría de Ensamblado: `audit_3_passed == true` (`auditoria-ensamblado.md`)
 
-**Estado actual:** todos los flags en `false` — solo documentación en `idea/`.
+**Estado actual:** Gate 1 aprobado; pendientes Gates 2 / 3A / 3B. Sin código en `iterations/v1/`.
 
 ---
 
