@@ -1,13 +1,10 @@
-# Auditoría de Módulos — V1
+# Auditoría de Módulos — V1.1
 
 ## Proyecto
-Chess Wars
+AI Chess Wars
 
 ## Fecha
 2026-08-21
-
-## Objetivo
-Validar que la aplicación fue correctamente descompuesta en módulos reutilizables.
 
 ## Entradas
 - `idea/01-problem.md`
@@ -15,43 +12,29 @@ Validar que la aplicación fue correctamente descompuesta en módulos reutilizab
 - `idea/03-module-discovery.md`
 
 ## Referencia
-`wika-fundaments` @ `wika-fundaments-v2` → `docs/auditoria-modulos.md`
+`wika-fundaments` → `docs/auditoria-modulos.md`
 
 ---
 
 ## Validaciones
 
 ### Cobertura
-- [x] Toda funcionalidad obligatoria (`FEAT-01`–`FEAT-07`) tiene módulo asociado
-- [x] No existen features sin representación
+- [x] `FEAT-01`–`FEAT-08` → `MOD-01`–`MOD-06`
 
 ### Responsabilidad
-- [x] `MOD-01` engine reglas; `MOD-02` IA; `MOD-03` data campaña; `MOD-04` persistencia; `MOD-05` UI
-- [x] Límites funcionales definidos y sin solapamiento
+- [x] Engine FIDE separado de evolution-layer
+- [x] Loadout y meta-progress acotados
+- [x] Screens sin lógica de reglas
 
-### Duplicidad
-- [x] Sin módulos que resuelvan el mismo problema
-- [x] IA separada del engine de reglas (dependencia unidireccional)
-
-### Dependencias
-- [x] Grafo documentado sin ciclos
-- [x] Riesgos identificados (reglas especiales, IA lenta, hex)
+### Duplicidad / deps
+- [x] Sin solapamiento
+- [x] Grafo sin ciclos; MOD-01 no depende de MOD-03
 
 ### Reutilización
-- [x] Evaluada: crear engine/AI nuevos; reutilizar patrón progreso/campaña WIKA; diferir UI kit V3+
+- [x] Reusar engine de `iterations/v1` como base; campaña Wars descartada
 
-### Metadatos y trazabilidad (v2.1)
-- [x] Frontmatter YAML con `audit_1_passed: true`
-- [x] RTM `MOD-XX` ↔ `FEAT-XX` ↔ `ERR-XX`
-- [x] Contratos (entradas/salidas/aislamiento) documentados
-- [x] Grafo sin ciclos
-- [x] Matriz de riesgos presente
-- [x] Evaluación de reutilización completada
-
----
-
-## Hallazgos
-Ninguno bloqueante.
+### Metadatos
+- [x] YAML + RTM + contratos + riesgos
 
 ---
 
@@ -59,8 +42,4 @@ Ninguno bloqueante.
 
 ## APROBADO
 
-Los módulos pueden avanzar al diseño de aplicación.
-
-### Activación de gate
-- [x] Resultado registrado en `audits/auditoria-modulos.md`
-- [x] `audit_2_passed: true` en frontmatter de `03-module-discovery.md` (y propagado a 02/04/05)
+- [x] `audit_2_passed: true` en `03-module-discovery.md`

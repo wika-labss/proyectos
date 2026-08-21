@@ -1,17 +1,17 @@
-# Auditoría de Documentación — V1
+# Auditoría de Documentación — V1.1 (AI Chess Wars)
 
 ## Proyecto
-Chess Wars
+AI Chess Wars (`proyectos/app/chess-wars/`)
 
 ## Fecha
 2026-08-21
 
 ## Objetivo
-Validar que la documentación V1 contiene la información necesaria para el descubrimiento de módulos.
+Validar que la documentación V1.1 (visión evolutiva acotada) permite el descubrimiento de módulos.
 
 ## Entradas
-- `idea/01-problem.md`
-- `idea/02-features.md`
+- `idea/01-problem.md` (v1.1.0)
+- `idea/02-features.md` (v1.1.0)
 
 ## Referencia
 `wika-fundaments` @ `wika-fundaments-v2` → `docs/auditoria-documentacion.md`
@@ -21,50 +21,48 @@ Validar que la documentación V1 contiene la información necesaria para el desc
 ## Validaciones
 
 ### Problema
-- [x] Problema claramente definido (ajedrez Android offline; partida rápida vs IA; campaña Wars 10 batallas)
-- [x] Necesidad real: no existe título de ajedrez/estrategia por turnos en el portafolio WIKA
-- [x] Alcance documentado (solo Android, APK Release, offline, FIDE básico, sin multiplayer/Stockfish)
+- [x] Problema definido: ajedrez estático vs necesidad de progresión/evoluciones en partidas cortas
+- [x] Visión completa documentada como contexto; V1 acotada offline
+- [x] Alcance y out-of-scope explícitos (ranked/IAP/eventos/zonas dinámicas fuera)
 
 ### Usuarios
-- [x] Usuarios identificados (casual Android, progresión campaña, aprendiz de reglas)
-- [x] Uso esperado: Home → Partida rápida / Campaña / Cómo jugar → tablero → resultado
+- [x] Casual, estrategia/RPG, purista, sesiones cortas
+- [x] Uso: Home → Lobby → Prepartida → Tablero → Postpartida
 
 ### Objetivo
-- [x] Objetivo claro V1
-- [x] Resultado esperado: app documentada y construible con motor TS, IA Fácil/Media, 10 batallas, persistencia
+- [x] Objetivo V1 medible: Clásico + Evolutive Quick vs IA
+- [x] Contrato: 4 nodos, XP, 3 evoluciones, loadout 1 de 2
 
 ### Funcionalidades
-- [x] Obligatorias definidas (`FEAT-01`–`FEAT-07`)
-- [x] Deseables diferenciadas (`FEAT-08`–`FEAT-11`)
-- [x] Fuera de alcance explícito (multiplayer, reloj, Stockfish, iOS, ads, IAP, variantes)
+- [x] Obligatorias `FEAT-01`–`FEAT-08`
+- [x] Deseables/visión `FEAT-09`–`FEAT-15` diferenciadas
+- [x] Fuera de alcance claro
 
 ### Restricciones
-- [x] Técnicas: Expo SDK 52, RN 0.76.x, TypeScript, motor puro en `src/engine/`, versiones `~`
-- [x] Operativas: offline; jugador=Blancas; 10 batallas; IA Fácil/Media; promoción solo a dama
-- [x] Seguridad: offline-first; sin datos sensibles; sin red / sin cuentas
+- [x] Expo 52 / RN / TypeScript / APK sin Metro / offline
+- [x] Anti-P2W: sin compras en V1
+- [x] `iterations/v1/` histórico; próxima construcción `v2/`
 
-### Metadatos y trazabilidad (v2.1)
-- [x] Frontmatter YAML en 01 y 02 (`id`, `status`, `owner`, fechas)
-- [x] RTM `ERR-01`–`ERR-07` → `FEAT-01`–`FEAT-07` → módulos destino
-- [x] BDD Dado/Cuando/Entonces (problema + features)
-- [x] Out-of-scope explícito
-- [x] Alineación a `standards/coding-standards.md` (WIKA-ARCH, Expo, sin Metro en release)
+### Metadatos y trazabilidad
+- [x] YAML frontmatter
+- [x] RTM ERR-01..08 → FEAT-01..08
+- [x] BDD
+- [x] Alineación coding-standards
 
 ---
 
 ## Hallazgos
-Ninguno bloqueante. Contrato de producto explícito:
+Ninguno bloqueante. Contrato V1 consolidado:
 
-| Contrato | Valor V1 |
+| Ítem | Valor |
 | :--- | :--- |
-| Tablero | 8×8; jugador Blancas |
-| Reglas | FIDE básico (mate, ahogado, enroque, al paso, promoción→dama) |
-| IA | Fácil / Media (sin Stockfish) |
-| Campaña Wars | 10 batallas; B1–4 Fácil; B5–10 Media |
-| Persistencia | Batalla máxima desbloqueada + victorias |
-| Entregable | APK Release Android sin Metro |
+| Modos | classic, evolutive_quick |
+| Nodos | c3, f3, c6, f6 |
+| Evoluciones | Dron, Fortaleza, Interceptor |
+| Loadout | A o B (1) |
+| Online/IAP/Ranked | Fuera |
 
-Nota: esta auditoría **solo** habilita Gate 1. Gate 2 (módulos) requiere `audits/auditoria-modulos.md` aparte.
+La implementación en `iterations/v1/` (ajedrez clásico + campaña Wars) **no** cumple este contrato; queda como prototipo histórico hasta `iterations/v2/`.
 
 ---
 
@@ -72,8 +70,6 @@ Nota: esta auditoría **solo** habilita Gate 1. Gate 2 (módulos) requiere `audi
 
 ## APROBADO
 
-La documentación permite continuar a descubrimiento / auditoría de módulos.
-
 ### Activación de gate
-- [x] Resultado registrado en `audits/auditoria-documentacion.md`
-- [x] `audit_1_passed: true` en frontmatter de `01-problem.md` y `02-features.md`
+- [x] Registrado en `audits/auditoria-documentacion.md`
+- [x] `audit_1_passed: true` en 01 y 02

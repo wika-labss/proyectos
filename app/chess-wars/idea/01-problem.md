@@ -1,8 +1,8 @@
 ---
 id: "PROB-001"
-title: "Chess Wars"
+title: "AI Chess Wars"
 status: "AUDIT_1_APROBADO"
-version: "1.0.0"
+version: "1.1.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-08-21"
@@ -11,28 +11,33 @@ audit_1_passed: true
 
 # [01] Definición del Problema, Alcance y Metas
 
-> **Equivalencia de auditoría:** `audit_1_passed: true` requiere aprobación formal en `docs/auditoria-documentacion.md` (copia en `audits/auditoria-documentacion.md`).
+> **Equivalencia de auditoría:** `audit_1_passed: true` requiere aprobación formal en `docs/auditoria-documentacion.md` (copia en `audits/auditoria-documentacion.md`).  
+> **Nota de versión:** v1.1 redefine el producto respecto al borrador clásico-only; la fuente de verdad es este `idea/`.
 
 ## 1. Identificación y Control de Cambios
 
-- **Nombre del Proyecto:** `Chess Wars`
+- **Nombre del Proyecto:** `AI Chess Wars`
 - **Repositorio de aplicación:** `proyectos/app/chess-wars/`
 - **Stakeholders clave:** Producto VISSIUSS; Arquitecto WIKA; Agente IA documentación
-- **Estado de gatekeeping:** `READY_FOR_CONSTRUCTION` — Gates 1–3B aprobados
+- **Estado de gatekeeping:** `READY_FOR_CONSTRUCTION` — contrato V1.1; implementación en `iterations/v2/`
 
 ---
 
 ## 2. Definición del Problema y Justificación
 
 - **¿Qué problema se intenta resolver?**  
-  No existe en el portafolio WIKA un juego de **ajedrez Android offline** con identidad propia (“Wars”): partida rápida vs IA y **campaña de batallas** secuenciales. Los jugadores casuales necesitan ajedrez jugable sin red, con reglas claras y progresión de dificultad.
+  El ajedrez móvil clásico es profundo pero **estático**: pocas decisiones fuera del tablero y poca progresión entre partidas. Los jugadores casuales y de estrategia en móvil buscan **partidas cortas** con profundidad táctica **y** capas de personalización (evoluciones, loadouts) sin perder la base del ajedrez. No existe en el portafolio WIKA un título que combine ajedrez + progresión RPG ligera offline.
 
 - **Impacto actual / costo de oportunidad:**  
-  Sin este título no hay producto de estrategia por turnos clásico en el portafolio; se pierde reutilización del patrón engine puro + campaña (Tower, Match-3, Tetris) y del stack Expo/APK.
+  Sin este producto se pierde un diferencial (“ajedrez evolutivo”) frente a clones de ajedrez puro; la visión completa (ranked, economía, eventos) no cabe en V1, pero la **mecánica central** sí debe validarse ya.
 
 - **Análisis de brecha (Gap Analysis):**
-  - **Estado actual (hoy):** App inexistente; plantillas WIKA vacías en `idea/`.
-  - **Estado deseado (mañana):** V1 documentada y construible: motor de ajedrez FIDE básico, IA fácil/media, campaña Wars de 10 batallas, persistencia offline, APK Release sin Metro.
+  - **Estado actual (hoy):** Iteración clásica-only en `iterations/v1/` (superseded por esta definición); docs previas no reflejaban evoluciones/nodos/loadout.
+  - **Estado deseado (mañana):** V1 offline instalable con **modo Clásico** (puristas) + **Evolutive Quick** (nodos de energía, XP de piezas, evoluciones limitadas, 1 loadout pasivo) vs IA.
+
+### Visión de producto (contexto; no todo es V1)
+
+Ajedrez reinventado en universo futurista: piezas que evolucionan, habilidades, zonas/nodos, loadouts, torneos y monetización **sin romper integridad competitiva**. V1 valida el núcleo jugable offline; ranked/IAP/eventos quedan fuera.
 
 ---
 
@@ -40,71 +45,80 @@ audit_1_passed: true
 
 | ID Problema | Descripción del Dolor | Impacto | ID Feature (`02-features.md`) | Módulo Destino (`03-module-discovery.md`) |
 | :--- | :--- | :--- | :--- | :--- |
-| `ERR-01` | No hay motor de ajedrez (movimientos legales, jaque, mate, tablas) | `Alto` | `FEAT-01` | `MOD-01` |
-| `ERR-02` | Sin rival jugable offline no hay partida | `Alto` | `FEAT-02` | `MOD-02` |
-| `ERR-03` | Sin campaña “Wars” no hay progresión de batallas | `Alto` | `FEAT-03` | `MOD-03` |
-| `ERR-04` | Sin UI de tablero/selección el jugador no puede mover | `Alto` | `FEAT-04` | `MOD-05` |
-| `ERR-05` | Sin home/cómo jugar/resultados la UX está incompleta | `Medio` | `FEAT-05` | `MOD-05` |
-| `ERR-06` | Sin persistencia el progreso de campaña se pierde | `Alto` | `FEAT-06` | `MOD-04` |
-| `ERR-07` | Sin identidad visual “Wars” el producto no se diferencia | `Medio` | `FEAT-07` | `MOD-05` |
+| `ERR-01` | Sin motor de ajedrez legal no hay base jugable | `Alto` | `FEAT-01` | `MOD-01` |
+| `ERR-02` | Sin rival offline no hay partida corta | `Alto` | `FEAT-02` | `MOD-02` |
+| `ERR-03` | Puristas necesitan modo sin evoluciones | `Alto` | `FEAT-03` | `MOD-01` / `MOD-05` |
+| `ERR-04` | Sin nodos/XP/evolución el diferencial “Wars” no existe | `Alto` | `FEAT-04` | `MOD-03` |
+| `ERR-05` | Sin loadout prepartida no hay decisión fuera del tablero | `Medio` | `FEAT-05` | `MOD-04` |
+| `ERR-06` | Sin UI de tablero/HUD/habilidades no se juega | `Alto` | `FEAT-06` | `MOD-06` |
+| `ERR-07` | Sin progresión local entre partidas no hay retención V1 | `Medio` | `FEAT-07` | `MOD-05` |
+| `ERR-08` | Sin tutorial el jugador no entiende nodos/evoluciones | `Medio` | `FEAT-08` | `MOD-06` |
 
 ---
 
 ## 4. Audiencia y Casos de Uso Core
 
 - **Usuarios principales:**
-  - **Jugador casual Android:** Partida rápida vs IA en minutos, offline.
-  - **Jugador de progresión:** Completar las 10 batallas de la campaña Wars.
-  - **Jugador que aprende:** Consulta “Cómo jugar” y ve casillas legales resaltadas.
+  - **Casual de ajedrez:** Partida rápida Clásica o Evolutive vs IA.
+  - **Fan de estrategia/RPG ligero:** Captura nodos, sube XP de pieza, elige evolución y usa habilidad.
+  - **Purista:** Modo Clásico sin nodos ni evoluciones.
+  - **Jugador de sesiones cortas móviles:** Partida &lt; 15 min, offline.
 
-- **Fuera de alcance (Out of Scope explícito):**
-  - Multijugador online / local hotseat
-  - Reloj de tiempo competitivo (blitz/bullet)
-  - Aperturas / libros de apertura / análisis post-partida profundo
-  - IA “hard” / motor tipo Stockfish nativo
-  - iOS, ads, IAP, login, backend
-  - Variantes (Chess960, 3-check, etc.)
+- **Fuera de alcance (Out of Scope explícito V1):**
+  - Arena Ranked / ELO / matchmaking online
+  - Multijugador online o hotseat
+  - Moneda premium (Núcleos), IAP, pase de temporada, tienda de packs, anuncios recompensados
+  - Eventos temporales y tableros temáticos rotativos
+  - Zonas de poder dinámicas por ronda (solo **nodos de energía estáticos** en V1)
+  - Árbol completo 2–4 ramas por cada tipo de pieza
+  - Evoluciones funcionales desbloqueables por moneda de tiempo largo (solo set V1 fijo)
+  - iOS, backend, cuentas cloud
   - Pipeline `design-system/` V3+
 
 ---
 
 ## 5. Objetivo y Beneficios Esperados
 
-- **Objetivo:** Definir y (tras gates) entregar V1 instalable: ajedrez con reglas FIDE básicas, jugador siempre Blancas, IA Fácil/Media, campaña Wars (10 batallas), partida rápida, persistencia local, theme estratégico documentado.
+- **Objetivo V1:** Entregar APK Android offline que demuestre el diferencial: **Clásico** + **Evolutive Quick** vs IA (Fácil/Media), con nodos de energía, XP de combate, evoluciones limitadas con cooldown/uso único, 1 loadout pasivo, progresión local mínima y tutorial corto.
 
 - **Beneficios esperados:**
-  - Título de estrategia clásico en el portafolio WIKA.
-  - Motor de ajedrez puro reutilizable (`src/engine/`).
-  - Progresión clara vía campaña Wars.
-  - Sesiones offline sin dependencias de red.
+  - Validar fun de evoluciones sin romper reglas base.
+  - Separar claramente Clásico vs Evolutive (integridad para puristas).
+  - Base técnica (engine + capa evolutiva) reutilizable hacia V2 (ranked/economía).
 
 ---
 
 ## 6. Criterios de Éxito en Formato BDD (Gherkin)
 
-### Escenario 1: Partida rápida vs IA
+### Escenario 1: Modo Clásico
 
-- **Dado que** el jugador elige Partida rápida y dificultad Fácil o Media
-- **Cuando** mueve piezas legales hasta jaque mate o tablas
-- **Entonces** la partida termina con resultado victoria / derrota / tablas y puede volver al Home
+- **Dado que** el jugador elige Clásico
+- **Cuando** juega una partida vs IA
+- **Entonces** aplican reglas FIDE básicas **sin** nodos, XP ni evoluciones
 
-### Escenario 2: Campaña Wars — avanzar batalla
+### Escenario 2: Nodo y evolución en Evolutive Quick
 
-- **Dado que** la batalla N está desbloqueada (N=1 al inicio)
-- **Cuando** el jugador gana esa batalla contra la IA configurada
-- **Entonces** se desbloquea la batalla N+1 (hasta 10) y el progreso se persiste
+- **Dado que** el jugador está en Evolutive Quick y tiene ≥2 Energía y una pieza con XP umbral
+- **Cuando** elige evolucionar esa pieza a una rama V1 disponible
+- **Entonces** la pieza cambia de tipo evolucionado, gasta Energía y obtiene su habilidad (uso limitado)
 
-### Escenario 3: Movimientos legales y jaque
+### Escenario 3: Habilidad con límite
 
-- **Dado que** es el turno del jugador
-- **Cuando** selecciona una pieza propia
-- **Entonces** solo se permiten casillas legales; no puede dejar al rey en jaque; la IA responde con un movimiento legal
+- **Dado que** un peón evolucionó a Dron
+- **Cuando** activa teletransporte corto
+- **Entonces** se mueve según reglas de la habilidad y no puede reutilizarla en esa partida (V1: 1 uso)
 
-### Escenario 4: Estándares visuales
+### Escenario 4: Loadout prepartida
 
-- **Dado que** se renderizan Home, Campaña, Partida y Cómo jugar
-- **Cuando** el agente compile la interfaz
-- **Entonces** los estilos consumen tokens del theme documentado en `04-application-design.md` (0% hex sueltos en componentes)
+- **Dado que** el jugador abre prepartida Evolutive
+- **Cuando** selecciona exactamente 1 pasiva de las 2 disponibles
+- **Entonces** esa pasiva aplica durante la partida
+
+### Escenario 5: Estándares visuales
+
+- **Dado que** se renderizan Home, Lobby, Prepartida, Tablero y Postpartida
+- **Cuando** el agente compile la UI
+- **Entonces** los estilos consumen tokens de `04-application-design.md` (0% hex sueltos)
 
 ---
 
@@ -112,38 +126,38 @@ audit_1_passed: true
 
 | Categoría | Restricción / Límite | Impacto | Estándar asociado |
 | :--- | :--- | :--- | :--- |
-| **Tecnología** | Expo SDK 52, RN 0.76.x, TypeScript; versiones `~` | `Alto` | `standards/coding-standards.md` |
+| **Tecnología** | Expo SDK 52, RN 0.76.x, TypeScript; `~` | `Alto` | `standards/coding-standards.md` |
 | **Plataforma V1** | Android APK release sin Metro | `Alto` | WIKA-ARCH-03 |
-| **Reglas** | FIDE básicas: movimientos, captura, jaque, mate, ahogado, enroque, doble paso, al paso, promoción a dama | `Bloqueante` | idea/ |
-| **Bando** | Jugador = Blancas siempre en V1 | `Alto` | idea/ |
-| **IA** | Solo Fácil / Media (profundidad/heurística acotada) | `Alto` | idea/ |
-| **Campaña** | Exactamente 10 batallas secuenciales | `Bloqueante` | idea/ |
-| **Diseño / UX** | Theme local “Wars / estrategia” en `04` | `Alto` | `standards/design-system.md` |
-| **Seguridad** | Offline-first; sin datos sensibles | `Medio` | `standards/coding-standards.md` |
-| **Librerías prohibidas** | Stockfish nativo; Unity/Godot; `^` en expo/RN | `Bloqueante` | WIKA-ARCH-02 |
-| **Código producción** | Prohibido hasta `ready_for_construction: true` | `Bloqueante` | `.cursorrules` |
+| **Conectividad** | 100% offline | `Bloqueante` | idea/ |
+| **Bando** | Jugador = Blancas siempre | `Alto` | idea/ |
+| **IA** | Solo Fácil / Media (sin Stockfish nativo) | `Alto` | idea/ |
+| **Evoluciones V1** | Set cerrado (ver contrato abajo) | `Bloqueante` | idea/ |
+| **Anti P2W** | Sin compras; sin ventajas de pago | `Alto` | visión producto |
+| **Código** | `iterations/v1/` clásico queda histórico; nueva construcción en `iterations/v2/` tras gates | `Alto` | `.cursorrules` |
 
 ### Contrato de producto V1 (fuente de verdad)
 
-| Regla | Valor |
+| Regla | Valor V1 |
 | :--- | :--- |
-| Tablero | 8×8 estándar |
-| Jugador | Siempre Blancas |
-| IA Fácil | Profundidad 1–2 / heurística material + aleatoriedad leve |
-| IA Media | Profundidad 2–3 / material + movilidad |
-| Campaña Wars | 10 batallas; B1–B4 Fácil; B5–B10 Media |
-| Victoria batalla | Jaque mate al rey negro **o** rendición IA N/A — solo mate/tablas/derrota |
-| Tablas | Ahogado, insuficiencia material básica (K vs K, K+B vs K, K+N vs K), repetición 3× opcional V1.1 |
-| Promoción | Solo a Dama en V1 |
-| Persistencia | Batalla máxima desbloqueada + victorias campaña |
+| Tablero | 8×8 |
+| Modos | `classic` \| `evolutive_quick` |
+| Nodos de energía | Exactamente **4** casillas fijas (c3, f3, c6, f6); al mover/capturar en el nodo: +1 Energía (máx. 5) |
+| XP de combate | +2 al capturar; +1 al ocupar nodo; umbral evolución = **3 XP** por pieza |
+| Coste evolución | **2 Energía**; **máx. 1 evolución por pieza por partida** |
+| Evoluciones jugables V1 | Peón→Dron (teleport ≤2 casillas ortogonales, 1 uso); Torre→Fortaleza (inmune a captura durante el siguiente turno rival, 1 uso); Caballo→Interceptor (salto de caballo extra inmediato, 1 uso) |
+| Sin evolución V1 | Alfil, Dama, Rey (pueden ganar XP pero no evolucionan) |
+| Loadouts (elegir 1) | `A`: +1 Energía inicial · `B`: +1 XP extra por captura |
+| IA Clásico/Evolutive | Fácil / Media |
+| Progresión meta | Contador local: partidas jugadas, victorias, flag tutorial visto |
+| Reloj | Sin reloj competitivo |
 
 ---
 
 ## 8. Supuestos y Riesgos
 
-- **Supuestos clave:** Dispositivo Android 7+ (API 24+); sin red; jugador conoce o aprende reglas básicas vía “Cómo jugar”.
-- **Riesgos identificados:** Complejidad del motor (enroque / al paso / jaque); IA lenta en JS; UX de selección táctil en tablero pequeño.
-- **Plan de mitigación:** Engine puro + smoke tests de reglas; profundidad IA acotada; casillas táctiles grandes + highlights; referencia starter `tower` / `chupalo joako` para toolchain.
+- **Supuestos:** Android 7+; el jugador acepta Blancas; tutorial basta para nodos/evolución.
+- **Riesgos:** Balance de habilidades rotas; complejidad UI en tablero pequeño; motor clásico + capa evolutiva acoplados.
+- **Mitigación:** Habilidades 1 uso + coste Energía; smoke de reglas + evoluciones; engine base puro + módulo evolutivo separado; V2 para ranked/economía.
 
 ---
 
@@ -151,12 +165,12 @@ audit_1_passed: true
 
 ### Checklist de criterios de aceptación
 
-- [x] YAML frontmatter completado (`id`, `status`, `owner`, fechas).
-- [x] Problemas `ERR-XX` mapeados a `FEAT-XX` y módulos sugeridos en RTM.
-- [x] Criterios de éxito en formato BDD (Dado / Cuando / Entonces).
-- [x] Out-of-scope explícito documentado.
-- [x] Restricciones técnicas alineadas a `standards/coding-standards.md`.
-- [x] Auditoría registrada en `audits/auditoria-documentacion.md` con resultado `[APROBADO]`.
+- [x] YAML frontmatter completado.
+- [x] `ERR-XX` mapeados a `FEAT-XX` y módulos.
+- [x] BDD de éxito.
+- [x] Out-of-scope explícito (visión completa vs V1).
+- [x] Restricciones alineadas a coding-standards.
+- [x] Auditoría en `audits/auditoria-documentacion.md` → APROBADO.
 
 ### Registro de visto bueno
 

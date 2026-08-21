@@ -1,8 +1,8 @@
 ---
 id: "FEAT-001"
-title: "Chess Wars — Características V1"
+title: "AI Chess Wars — Características V1"
 status: "AUDIT_1_APROBADO"
-version: "1.0.0"
+version: "1.1.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-08-21"
@@ -13,13 +13,14 @@ audit_2_passed: true
 # [02] Especificación de Características y Requerimientos Funcionales
 
 > **Pre-requisito:** `audit_1_passed: true` en `01-problem.md` y este documento.  
-> **Equivalencia:** Auditoría de Documentación → `docs/auditoria-documentacion.md`.
+> **Equivalencia:** Auditoría de Documentación → `docs/auditoria-documentacion.md`.  
+> **Visión completa (contexto):** Ranked, economía Núcleos/Créditos, eventos, zonas dinámicas → **V2+** (ver fuera de alcance).
 
 ## 1. Identificación y Control de Cambios
 
-- **Nombre del Proyecto:** `Chess Wars`
+- **Nombre del Proyecto:** `AI Chess Wars`
 - **Documento base:** `idea/01-problem.md` (ID: `PROB-001`)
-- **Estado de gatekeeping:** `READY_FOR_CONSTRUCTION` — Gates 1–3B aprobados
+- **Estado de gatekeeping:** `READY_FOR_CONSTRUCTION` — contrato V1.1; código en `iterations/v2/`
 
 ---
 
@@ -27,156 +28,172 @@ audit_2_passed: true
 
 | ID Feature | ID Problema (`01-problem.md`) | Nombre de la Característica | Prioridad | Módulo Destino (`03-module-discovery.md`) |
 | :--- | :--- | :--- | :--- | :--- |
-| `FEAT-01` | `ERR-01` | Motor de ajedrez FIDE básico | `Crítica` | `MOD-01` |
+| `FEAT-01` | `ERR-01` | Motor ajedrez FIDE básico | `Crítica` | `MOD-01` |
 | `FEAT-02` | `ERR-02` | IA rival Fácil / Media | `Crítica` | `MOD-02` |
-| `FEAT-03` | `ERR-03` | Campaña Wars (10 batallas) | `Crítica` | `MOD-03` |
-| `FEAT-04` | `ERR-04` | Tablero interactivo y jugada táctil | `Crítica` | `MOD-05` |
-| `FEAT-05` | `ERR-05` | Home, Cómo jugar, resultados | `Crítica` | `MOD-05` |
-| `FEAT-06` | `ERR-06` | Persistencia offline de campaña | `Crítica` | `MOD-04` |
-| `FEAT-07` | `ERR-07` | Theme Wars + UI coherente | `Alta` | `MOD-05` |
+| `FEAT-03` | `ERR-03` | Modo Clásico (sin evoluciones) | `Crítica` | `MOD-01`, `MOD-06` |
+| `FEAT-04` | `ERR-04` | Evolutive Quick: nodos, XP, evoluciones, habilidades | `Crítica` | `MOD-03` |
+| `FEAT-05` | `ERR-05` | Loadout prepartida (1 pasiva) | `Alta` | `MOD-04` |
+| `FEAT-06` | `ERR-06` | UI Home/Lobby/Prepartida/Tablero/Postpartida | `Crítica` | `MOD-06` |
+| `FEAT-07` | `ERR-07` | Progresión local mínima | `Alta` | `MOD-05` |
+| `FEAT-08` | `ERR-08` | Tutorial interactivo corto | `Alta` | `MOD-06` |
 
 ---
 
 ## 3. Funcionalidades Obligatorias
 
-### Feature `FEAT-01`: Motor de ajedrez FIDE básico
+### Feature `FEAT-01`: Motor ajedrez FIDE básico
 
-**Descripción:** Lógica pura en `src/engine/`: posición 8×8, generación de movimientos legales, aplicación de jugadas, detección de jaque, jaque mate, ahogado, enroque, peón doble paso, captura al paso, promoción a dama. Sin React.
+**Descripción:** Lógica pura: movimientos legales, jaque/mate/ahogado, enroque, al paso, promoción a dama. Base compartida por Clásico y Evolutive.
 
 #### Escenario 1.1: Movimiento legal
 
-- **Dado que** es turno de Blancas y hay un peón en e2 con e3/e4 libres
-- **Cuando** se aplica el movimiento e2→e4
-- **Entonces** el peón queda en e4, el turno pasa a Negras y el estado es válido
+- **Dado que** es turno de Blancas
+- **Cuando** aplica un movimiento legal
+- **Entonces** el estado se actualiza y el turno pasa a Negras
 
-#### Escenario 1.2: Movimiento ilegal / deja rey en jaque
+#### Escenario 1.2: Ilegal / auto-jaque
 
-- **Dado que** un movimiento dejaría al rey propio en jaque o viola reglas de pieza
-- **Cuando** se intenta aplicar
-- **Entonces** el motor lo rechaza y el tablero no cambia
-
-#### Escenario 1.3: Jaque mate y ahogado
-
-- **Dado que** el bando activo no tiene movimientos legales
-- **Cuando** se evalúa el estado
-- **Entonces** si está en jaque → mate (derrota de ese bando); si no → ahogado (tablas)
+- **Dado que** un movimiento dejaría al rey en jaque
+- **Cuando** se intenta
+- **Entonces** el motor lo rechaza
 
 ---
 
 ### Feature `FEAT-02`: IA rival Fácil / Media
 
-**Descripción:** Rival negro offline. Fácil: profundidad baja + ruido. Media: profundidad mayor + evaluación material/movilidad. Tiempo de respuesta acotado para no congelar UI.
+**Descripción:** Rival negro offline. En Evolutive, la IA también puede usar nodos/evoluciones con heurística simple (V1: prioriza capturas y evolucionar si puede).
 
-#### Escenario 2.1: Respuesta legal de la IA
+#### Escenario 2.1: Respuesta legal
 
-- **Dado que** el jugador acaba de mover
-- **Cuando** es turno de Negras
-- **Entonces** la IA elige un movimiento legal y lo aplica; nunca deja al rey negro en jaque ilegal
-
-#### Escenario 2.2: Selección de dificultad
-
-- **Dado que** el jugador inicia partida rápida
-- **Cuando** elige Fácil o Media
-- **Entonces** la partida usa esa configuración de IA hasta el final
+- **Dado que** el jugador movió
+- **Cuando** es turno de la IA
+- **Entonces** juega un movimiento legal (y opcionalmente evoluciona/habilidad si reglas Evolutive lo permiten)
 
 ---
 
-### Feature `FEAT-03`: Campaña Wars (10 batallas)
+### Feature `FEAT-03`: Modo Clásico
 
-**Descripción:** Campaña secuencial de 10 batallas. Batallas 1–4 IA Fácil; 5–10 IA Media. Solo la batalla desbloqueada es jugable; ganar desbloquea la siguiente.
+**Descripción:** Ajedrez puro. Sin nodos en tablero, sin XP, sin botón evolucionar/habilidad, sin loadout.
 
-#### Escenario 3.1: Desbloqueo
+#### Escenario 3.1: Sin capa Wars
 
-- **Dado que** la batalla N está desbloqueada y el jugador gana (mate al rey negro)
-- **Cuando** termina la partida
-- **Entonces** se desbloquea N+1 (si N &lt; 10) y se registra victoria
-
-#### Escenario 3.2: Batalla bloqueada
-
-- **Dado que** la batalla K &gt; máxima desbloqueada
-- **Cuando** el jugador intenta abrirla
-- **Entonces** permanece bloqueada con feedback claro
+- **Dado que** el modo es Clásico
+- **Cuando** se renderiza el tablero
+- **Entonces** no hay nodos ni HUD de Energía/XP de evolución
 
 ---
 
-### Feature `FEAT-04`: Tablero interactivo y jugada táctil
+### Feature `FEAT-04`: Evolutive Quick (núcleo diferencial)
 
-**Descripción:** UI de tablero 8×8: tap pieza → highlight casillas legales → tap destino → mover. Indicador de turno, piezas capturadas (opcional HUD), bloqueo de input durante turno IA.
+**Descripción:** Partida rápida con:
+- 4 nodos de energía fijos (`c3`,`f3`,`c6`,`f6`)
+- Energía del jugador (0–5)
+- XP por pieza; umbral 3 → elegible a evolucionar (coste 2 Energía; 1 vez/pieza/partida)
+- Evoluciones V1: Peón→Dron, Torre→Fortaleza, Caballo→Interceptor (habilidad 1 uso)
+- Alfil/Dama/Rey no evolucionan en V1
 
-#### Escenario 4.1: Selección y movimiento
+#### Escenario 4.1: Controlar nodo
 
-- **Dado que** es turno del jugador
-- **Cuando** toca una pieza blanca y luego una casilla legal
-- **Entonces** se ejecuta el movimiento y se dispara el turno de la IA
+- **Dado que** el jugador mueve una pieza a un nodo vacío o captura en nodo
+- **Cuando** se resuelve el movimiento
+- **Entonces** Energía += 1 (cap 5) y la pieza gana +1 XP
 
-#### Escenario 4.2: Cancelar selección
+#### Escenario 4.2: Evolucionar
 
-- **Dado que** hay una pieza seleccionada
-- **Cuando** toca la misma pieza u otra casilla ilegal no destino
-- **Entonces** la selección se limpia o se cambia según reglas UX documentadas en `04`
+- **Dado que** una torre propia tiene XP ≥ 3 y Energía ≥ 2 y aún no evolucionó
+- **Cuando** el jugador confirma evolución → Fortaleza
+- **Entonces** gasta 2 Energía, la pieza queda marcada evolucionada y habilita habilidad Fortaleza (1 uso)
 
----
+#### Escenario 4.3: Habilidad Dron
 
-### Feature `FEAT-05`: Home, Cómo jugar, resultados
+- **Dado que** un peón es Dron con habilidad disponible
+- **Cuando** activa teleport a casilla ortogonal ≤2 vacía/legal según reglas V1
+- **Entonces** se mueve ahí sin captura (V1: solo casillas vacías) y consume el uso
 
-**Descripción:** Home con CTAs: Partida rápida, Campaña Wars, Cómo jugar. Pantallas de victoria / derrota / tablas con volver a Home o reintentar. Cómo jugar resume reglas básicas V1.
+#### Escenario 4.4: Fortaleza
 
-#### Escenario 5.1: Navegación Home
+- **Dado que** Fortaleza activa su habilidad
+- **Cuando** el rival intentaría capturarla en su siguiente turno
+- **Entonces** la captura es ilegal / bloqueada hasta que expire el buff (1 turno rival)
 
-- **Dado que** el usuario abre la app
-- **Cuando** pulsa Campaña Wars
-- **Entonces** ve la lista/mapa de 10 batallas con estado bloqueado/desbloqueado
+#### Escenario 4.5: Interceptor
 
-#### Escenario 5.2: Fin de partida
+- **Dado que** Caballo→Interceptor usa habilidad tras un movimiento de caballo normal **o** como acción especial (V1: acción en su turno: un salto de caballo extra a casilla legal)
+- **Cuando** confirma el salto
+- **Entonces** se aplica y el uso queda consumido; luego termina el turno salvo que la regla documente “extra after move” — **V1 fija:** habilidad = movimiento extra de caballo que **consume el turno** si se usa sola, o si se usa justo después de mover el interceptor en el mismo turno (doble salto), el segundo salto cierra el turno
 
-- **Dado que** hay mate o tablas
-- **Cuando** el motor emite estado terminal
-- **Entonces** se muestra pantalla de resultado con acciones claras
-
----
-
-### Feature `FEAT-06`: Persistencia offline de campaña
-
-**Descripción:** AsyncStorage guarda batalla máxima desbloqueada y contador de victorias. Partida rápida no requiere persistir tablero mid-game en V1 (opcional abandonar = perder progreso de esa partida).
-
-#### Escenario 6.1: Restaurar progreso
-
-- **Dado que** el jugador ganó la batalla 3
-- **Cuando** cierra y reabre la app sin red
-- **Entonces** la batalla 4 está desbloqueada
+> **Aclaración V1 Interceptor:** En el turno del jugador, puede (a) mover como caballo normal, o (b) si habilidad disponible, realizar **hasta dos** saltos de caballo en el mismo turno (el segundo consume la habilidad). No puede capturar dos veces si el primero ya capturó — segundo salto solo a vacías o captura única en el segundo (máx. una captura en la secuencia).
 
 ---
 
-### Feature `FEAT-07`: Theme Wars + UI coherente
+### Feature `FEAT-05`: Loadout prepartida
 
-**Descripción:** Identidad visual estratégica (tablero oscuro, acentos belicosos sobrios). Tokens en `theme.ts` según `04-application-design.md`. Sin hex sueltos en componentes.
+**Descripción:** Solo en Evolutive. Elegir exactamente 1 pasiva: `A` +1 Energía inicial · `B` +1 XP extra por captura.
 
-#### Escenario 7.1: Tokens
+#### Escenario 5.1: Aplicar loadout
 
-- **Dado que** se renderizan pantallas principales
-- **Cuando** se inspeccionan estilos
-- **Entonces** colores/spacing vienen de tokens documentados
+- **Dado que** eligió `A`
+- **Cuando** inicia la partida
+- **Entonces** Energía inicial = 1 (en lugar de 0)
 
 ---
 
-## 4. Funcionalidades Deseables (V1.1+)
+### Feature `FEAT-06`: UI flujo de pantallas V1
+
+**Descripción:** Home (marca AI Chess Wars + Jugar) → Lobby de modos (Clásico / Evolutive Quick) → Prepartida (dificultad IA + loadout si Evolutive) → Tablero (HUD Energía, XP pieza seleccionada, Evolucionar, Habilidad) → Postpartida (resultado, XP meta, rematch/home).
+
+#### Escenario 6.1: Navegación
+
+- **Dado que** el usuario está en Home
+- **Cuando** pulsa Jugar → Evolutive Quick
+- **Entonces** llega a prepartida y luego al tablero con nodos visibles
+
+---
+
+### Feature `FEAT-07`: Progresión local mínima
+
+**Descripción:** AsyncStorage: `gamesPlayed`, `wins`, `tutorialDone`. Sin monedas ni árbol de desbloqueo de pago. (El árbol completo de la visión = V2+.)
+
+#### Escenario 7.1: Persistir
+
+- **Dado que** el jugador gana una partida
+- **Cuando** cierra y reabre
+- **Entonces** `wins` y `gamesPlayed` se conservan
+
+---
+
+### Feature `FEAT-08`: Tutorial corto
+
+**Descripción:** Overlay/pantalla única la primera vez: nodos dan Energía; XP → evolucionar; habilidades 1 uso. Se puede saltar.
+
+#### Escenario 8.1: Primera vez
+
+- **Dado que** `tutorialDone = false`
+- **Cuando** entra a Evolutive por primera vez
+- **Entonces** se muestra tutorial; al cerrar, `tutorialDone = true`
+
+---
+
+## 4. Funcionalidades Deseables (V1.1 / Visión)
 
 | ID Feature | Nombre | Prioridad | Notas |
 | :--- | :--- | :--- | :--- |
-| `FEAT-08` | Repetición triple / 50 movimientos | `Media` | Tablas avanzadas |
-| `FEAT-09` | Jugar Negras / elegir bando | `Media` | V1 fijo Blancas |
-| `FEAT-10` | IA Hard / hints de jugada | `Baja` | Fuera de V1 |
-| `FEAT-11` | Guardar partida en curso | `Media` | Resume mid-game |
+| `FEAT-09` | Zonas de poder dinámicas por ronda | `Media` | Visión; fuera V1 |
+| `FEAT-10` | Más ramas (2–4) por tipo de pieza | `Media` | Visión |
+| `FEAT-11` | Arena Ranked + ELO | `Alta` | Requiere online V2+ |
+| `FEAT-12` | Economía Créditos/Núcleos + pase | `Alta` | V2+; anti-P2W |
+| `FEAT-13` | Eventos temporales | `Media` | V2+ |
+| `FEAT-14` | Colección skins (solo estética) | `Media` | V1.1+ |
+| `FEAT-15` | Matchmaking por poder efectivo | `Media` | Con Ranked |
 
 ---
 
 ## 5. Fuera de Alcance
 
-- Multijugador, reloj competitivo, Stockfish nativo
-- iOS, ads, IAP, backend, cuentas
-- Variantes de ajedrez
-- Análisis de apertura / PGN completo
-- Pipeline `design-system/` (V3+)
+- Ranked, ELO, online, IAP, anuncios, monedas premium
+- Eventos, zonas dinámicas, árbol de desbloqueo largo
+- Stockfish nativo, iOS, backend
+- Ventajas competitivas de pago
 
 ---
 
@@ -184,23 +201,25 @@ audit_2_passed: true
 
 | ID NFR | Categoría | Criterio aceptable | Método de validación |
 | :--- | :--- | :--- | :--- |
-| `NFR-01` | **Rendimiento** | Smoke engine &lt; 30s; IA Media &lt; 2s tipico por jugada | `npm run smoke` / manual |
+| `NFR-01` | **Rendimiento** | Smoke engine+evolución &lt; 30s; IA Media &lt; 2s/jugada típica | `npm run smoke` |
 | `NFR-02` | **Build** | APK release sin Metro | `scripts/build-apk.sh` |
-| `NFR-03` | **Fidelidad visual** | 100% tokens documentados | Revisión `04-application-design.md` |
-| `NFR-04` | **Offline** | Flujo completo sin red | Prueba manual |
-| `NFR-05` | **Aislamiento** | `src/engine/` sin React | typecheck + review |
+| `NFR-03` | **Fidelidad visual** | 100% tokens documentados | `04` |
+| `NFR-04` | **Offline** | Flujo completo sin red | Manual |
+| `NFR-05` | **Aislamiento** | `src/engine/` sin React; evolución en módulo dedicado | review |
+| `NFR-06` | **Integridad Clásico** | 0 fugas de mecánicas Wars en modo Clásico | smoke + QA |
 
 ---
 
-## 7. Mapeo de UI y Componentes (si aplica)
+## 7. Mapeo de UI y Componentes
 
-| Componente UI | Pantalla / Vista | Tokens | Estado mockup |
+| Componente UI | Pantalla | Tokens | Estado |
 | :--- | :--- | :--- | :--- |
-| `PrimaryButton` | Home | `accent`, `spacing.md` | Wireframe en `04` |
-| `BattleList` | Campaña | `surface`, `accent` | Wireframe en `04` |
-| `ChessBoard` | Partida | `board.light`, `board.dark`, `piece.*` | Wireframe en `04` |
-| `SquareHighlight` | Partida | `legal`, `selected` | Wireframe en `04` |
-| `ResultBanner` | Victoria/Derrota | `success`, `danger` | Wireframe en `04` |
+| `PrimaryButton` | Home / Lobby | `accent` | Wireframe `04` |
+| `ModeCard` | Lobby | `surface` | Wireframe `04` |
+| `LoadoutPicker` | Prepartida | `accentSecondary` | Wireframe `04` |
+| `ChessBoard` + nodos | Tablero | `board.*`, `node` | Wireframe `04` |
+| `EvolveBar` / `AbilityButton` | Tablero HUD | `accent`, `danger` | Wireframe `04` |
+| `PostMatchSummary` | Postpartida | `success`/`danger` | Wireframe `04` |
 
 ---
 
@@ -208,12 +227,12 @@ audit_2_passed: true
 
 ### Checklist
 
-- [x] Frontmatter YAML vinculado a `PROB-001`.
-- [x] RTM 1:1 con IDs `ERR-XX` de `01-problem.md`.
-- [x] Escenarios BDD por feature obligatoria.
-- [x] NFRs con métricas verificables.
-- [x] Deseables y fuera de alcance diferenciados.
-- [x] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
+- [x] Frontmatter vinculado a `PROB-001`
+- [x] RTM 1:1 `ERR`→`FEAT`
+- [x] BDD por feature obligatoria
+- [x] NFRs medibles
+- [x] Deseables/visión vs V1 diferenciados
+- [x] `audits/auditoria-documentacion.md` APROBADO
 
 ### Registro de visto bueno
 
