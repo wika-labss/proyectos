@@ -1,11 +1,11 @@
 ---
 id: "BUILD-001"
-title: "[Plan de Construcción V1 y Hoja de Ruta Técnica]"
+title: "Plan de Construcción V1 — Murdoku"
 status: "BORRADOR"
 version: "1.0.0"
-owner: "[Lead Developer / Arquitecto]"
-created_at: "YYYY-MM-DD"
-updated_at: "YYYY-MM-DD"
+owner: "Vissiuss / Arquitecto WIKA"
+created_at: "2026-08-24"
+updated_at: "2026-08-24"
 audit_1_passed: false
 audit_2_passed: false
 visual_approval_passed: false
@@ -29,9 +29,10 @@ ready_for_construction: false
 
 ## 2. Alcance de la V1
 
-**Features incluidas:** `[FEAT-01, FEAT-02, ...]`  
-**Features excluidas:** `[FEAT-03+, deseables]`  
-**Módulos incluidos:** `[MOD-01, MOD-02, ...]`
+**Features incluidas:** `FEAT-01` … `FEAT-09`  
+**Features excluidas:** `FEAT-10`+ (coartadas, hint, notes, procedural, audio, dossier)  
+**Módulos incluidos:** `MOD-01` … `MOD-08`  
+**Contenido mínimo:** 4 habitaciones (Biblioteca, Cocina, Sótano, Jardín); tamaños 4×4, 6×6, 9×9.
 
 ---
 
@@ -39,21 +40,29 @@ ready_for_construction: false
 
 | Paso | Módulo | ID Feature | Archivos a crear / modificar | Tokens / estándares | Estado |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `01` | `global` | N/A | `package.json`, `app.json`, `scripts/verify-build.sh` | WIKA-ARCH-02, 03 | `[PENDIENTE]` |
-| `02` | `MOD-01` | `FEAT-01` | `src/engine/[nombre].ts` | `coding-standards.md` | `[PENDIENTE]` |
-| `03` | `MOD-02` | `FEAT-01` | `app/index.tsx`, `src/components/` | `design-system.md`, `theme.ts` | `[PENDIENTE]` |
-| `04` | `MOD-01` | `FEAT-02` | `src/modules/[persistencia]/` | AsyncStorage | `[PENDIENTE]` |
-| `05` | `integración` | `FEAT-01/02` | `app/play.tsx`, hooks | BDD `02-features.md` | `[PENDIENTE]` |
+| `01` | `global` / `MOD-08` | `FEAT-09` | `package.json`, `app.json`, `scripts/verify-build.sh`, `scripts/build-apk.sh`, `scripts/smoke-v1.ts` | WIKA-ARCH-02, 03 | `PENDIENTE` |
+| `02` | `MOD-03` | `FEAT-03` | `src/engine/boardSizes.ts` | coding-standards | `PENDIENTE` |
+| `03` | `MOD-02` | `FEAT-02` | `src/engine/crimePieces.ts` | coding-standards | `PENDIENTE` |
+| `04` | `MOD-01` | `FEAT-01`, `FEAT-06` | `src/engine/murdokuEngine.ts`, `types.ts`, `validate.ts` | coding-standards | `PENDIENTE` |
+| `05` | `MOD-05` | `FEAT-05` | `src/engine/roomFlavor.ts` / `src/content/rooms.ts` | content | `PENDIENTE` |
+| `06` | `MOD-04` | `FEAT-04` | `src/engine/roomCampaign.ts` + puzzles givens/solution | coding-standards | `PENDIENTE` |
+| `07` | `MOD-06` | `FEAT-07` | `src/storage/offlineProgress.ts` | AsyncStorage | `PENDIENTE` |
+| `08` | `theme` | `FEAT-08` | `src/constants/theme.ts` | `04-application-design.md` | `PENDIENTE` |
+| `09` | `MOD-07` | `FEAT-08` | `app/index.tsx`, `app/map.tsx`, `app/case/[roomId].tsx` | theme tokens | `PENDIENTE` |
+| `10` | `MOD-07` | `FEAT-01`–`06` | `app/play/[roomId].tsx`, `CrimeBoard`, `PieceTray` | theme + BDD | `PENDIENTE` |
+| `11` | `MOD-07` | `FEAT-04` | `app/victory/[roomId].tsx` | theme | `PENDIENTE` |
+| `12` | `integración` | todas | hooks/provider, smoke puzzles únicos | BDD `02-features.md` | `PENDIENTE` |
+| `13` | `MOD-08` | `FEAT-09` | `npm run typecheck` + `verify` + APK | WIKA-ARCH-05 | `PENDIENTE` |
 
 ---
 
 ## 4. Orden de Implementación y Justificación
 
-1. **Setup y toolchain** — base reproducible (tower v1 como referencia).
-2. **Engine puro** — lógica testeable sin UI.
-3. **Theme y componentes** — según `04-application-design.md`.
-4. **Pantallas expo-router** — ensamblado con hooks/providers.
-5. **Persistencia e integración** — features secundarias.
+1. **Setup y toolchain** — base reproducible (`tower` / `match-3` v1).
+2. **Geometría + piezas + engine** — lógica testeable sin UI.
+3. **Campaña + flavor + puzzles** — contenido V1 con `validatePuzzle`.
+4. **Persistencia** — unlock entre sesiones.
+5. **Theme + pantallas** — según wireframes de `04`.
 6. **Verify + APK** — cierre de iteración.
 
 ---
@@ -62,25 +71,25 @@ ready_for_construction: false
 
 ### Fase 1: Setup y Design Tokens
 
-- **Objetivo:** Proyecto Expo con scripts WIKA y `theme.ts` desde tokens documentados.
-- **Referencia:** `proyectos/app/tower/iterations/v1/`
+- **Objetivo:** Expo SDK 52, scripts WIKA, `theme.ts` noir mansion, package `com.wika.murdoku`.
+- **Referencia:** `proyectos/app/tower/iterations/v1/` y `match-3/iterations/v1/`
 - **Criterio de parada:** `npm run typecheck` sin errores.
 
-### Fase 2: Engine y Módulos de Lógica (`MOD-01`)
+### Fase 2: Engine y contenido (`MOD-01`–`05`)
 
-- **Objetivo:** Implementar contratos de `03-module-discovery.md`.
-- **Regla:** Sin imports de React en `src/engine/`.
-- **Criterio:** Smoke tests en `scripts/smoke-*.ts` pasan.
+- **Objetivo:** Contratos de `03-module-discovery.md`; 4 puzzles con solución única.
+- **Regla:** Sin React en `src/engine/`.
+- **Criterio:** Smoke engine + `validatePuzzle` por room pasan.
 
-### Fase 3: UI y Navegación (`MOD-02`)
+### Fase 3: UI y navegación (`MOD-07`) + persistencia (`MOD-06`)
 
-- **Objetivo:** Pantallas según wireframe aprobado en `04-application-design.md`.
-- **Regla:** Estilos vía theme/tokens; 0% hex sueltos en componentes.
+- **Objetivo:** Home → mapa → intro → play → victory; unlock persistente.
+- **Regla:** Estilos vía theme; 0% hex sueltos; celdas ≥ 44 dp.
 
-### Fase 4: Integración, Verify y APK
+### Fase 4: Verify y APK (`MOD-08`)
 
-- **Objetivo:** Flujos BDD de `02-features.md` verificables manualmente.
-- **Regla:** `npm run verify` y APK release exitoso (WIKA-ARCH-05).
+- **Objetivo:** BDD de `02-features.md` verificables; APK release.
+- **Regla:** `npm run verify` exitoso.
 
 ---
 
@@ -91,7 +100,10 @@ ready_for_construction: false
 | `expo` | `~52.x` | Framework |
 | `react-native` | `~0.76.x` | Runtime |
 | `expo-router` | `~4.x` | Navegación |
-| `[otras]` | `~x.x` | `[Propósito]` |
+| `@react-native-async-storage/async-storage` | `~1.x` / pin WIKA | Progreso offline |
+| `typescript` | `~5.x` | Tipado |
+
+Sin otras SDKs de red, ads o analytics.
 
 ---
 
@@ -99,10 +111,11 @@ ready_for_construction: false
 
 | Tipo | Alcance | Comando / método |
 | :--- | :--- | :--- |
-| Smoke engine | Lógica pura | `npm run smoke` |
-| Typecheck | Proyecto completo | `npm run typecheck` |
-| Build gate | Export + prebuild + APK | `npm run verify` |
-| BDD manual | Escenarios `02-features.md` | Checklist QA |
+| Smoke engine | conflictos, solve, tamaños, sets | `npm run smoke` |
+| Validate puzzles | solución única por room | smoke / script |
+| Typecheck | proyecto | `npm run typecheck` |
+| Build gate | export + prebuild + APK | `npm run verify` |
+| BDD manual | escenarios `02-features.md` | Checklist QA |
 
 ---
 
@@ -110,27 +123,31 @@ ready_for_construction: false
 
 | Riesgo | Probabilidad | Mitigación |
 | :--- | :--- | :--- |
-| `[Prebuild Android falla]` | `Media` | `post-prebuild.js` Kotlin pin |
-| `[Scope creep]` | `Alta` | Respetar out-of-scope de `01-problem.md` |
+| Prebuild Android falla | `Media` | `post-prebuild.js` / scripts tower |
+| Scope creep (coartadas, novela) | `Alta` | Out-of-scope 01/02; FEAT-10+ diferidas |
+| Puzzle inválido en catálogo | `Media` | Gate smoke antes de UI |
+| 9×9 UX en móvil | `Media` | Layout + touch targets en 04 |
 
 ---
 
 ## 9. Criterios de Aprobación V1
 
-- [ ] Todas las features obligatorias implementadas.
+- [ ] Features `FEAT-01`–`FEAT-09` implementadas.
+- [ ] ≥ 4 habitaciones jugables con unlock secuencial.
+- [ ] Tableros 4×4, 6×6 y 9×9 presentes en la campaña.
 - [ ] `npm run verify` exitoso.
-- [ ] APK release generado en `iterations/v1/`.
-- [ ] `review.md` completado por arquitecto.
+- [ ] APK release en `iterations/v1/`.
+- [ ] `review.md` por arquitecto.
 - [ ] Listo para `auditoria-release-v1.md`.
 
 ---
 
 ## 10. Checklist por Incremento (Quality Gate)
 
-Antes de marcar un paso como `[COMPLETADO]`:
+Antes de marcar un paso como `COMPLETADO`:
 
 - [ ] 0% estilos hardcoded fuera de theme/tokens.
-- [ ] Trazabilidad RTM respetada (feature → módulo → archivo).
+- [ ] Trazabilidad RTM (feature → módulo → archivo).
 - [ ] Escenario BDD asociado verificado.
 - [ ] Sin errores TypeScript ni linter bloqueante.
 
@@ -140,4 +157,4 @@ Antes de marcar un paso como `[COMPLETADO]`:
 
 - **Revisado por (Arquitecto):** `________________________`
 - **Fecha de finalización:** `YYYY-MM-DD`
-- **ready_for_construction:** activar solo al inicio; al cerrar V1 → `[LISTO_PARA_AUDITORIA_RELEASE]`
+- **ready_for_construction:** activar solo al inicio de build tras gates; al cerrar V1 → `LISTO_PARA_AUDITORIA_RELEASE`
