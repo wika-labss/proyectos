@@ -1,12 +1,12 @@
 ---
 id: "FEAT-001"
 title: "Especificación de Requerimientos — Murdoku"
-status: "BORRADOR"
+status: "APROBADO"
 version: "1.0.0"
 owner: "Vissiuss / Equipo WIKA"
 created_at: "2026-08-24"
 updated_at: "2026-08-24"
-audit_1_passed: false
+audit_1_passed: true
 audit_2_passed: false
 ---
 
@@ -19,7 +19,7 @@ audit_2_passed: false
 
 - **Nombre del Proyecto:** `Murdoku`
 - **Documento base:** `idea/01-problem.md` (ID: `PROB-001`)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDIT_1_APROBADO`
 
 ---
 
@@ -301,10 +301,10 @@ Al resolver un escenario se desbloquea el siguiente. Habitaciones bloqueadas no 
 - [x] Escenarios BDD por feature obligatoria.
 - [x] NFRs con métricas verificables.
 - [x] Deseables y fuera de alcance diferenciados.
-- [ ] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
+- [x] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha:** `YYYY-MM-DD`
-- **audit_1_passed:** `false` → `true` al aprobar
+- **Aprobado por (Arquitecto):** `Cursor Agent (flujo WIKA)`
+- **Fecha:** `2026-08-24`
+- **audit_1_passed:** `true`

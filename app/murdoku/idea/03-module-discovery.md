@@ -1,13 +1,13 @@
 ---
 id: "MOD-001"
 title: "Descubrimiento y Arquitectura de Módulos — Murdoku"
-status: "BORRADOR"
+status: "APROBADO"
 version: "1.0.0"
 owner: "Vissiuss / Arquitecto WIKA"
 created_at: "2026-08-24"
 updated_at: "2026-08-24"
-audit_1_passed: false
-audit_2_passed: false
+audit_1_passed: true
+audit_2_passed: true
 ---
 
 # [03] Descubrimiento y Especificación de Arquitectura Modular
@@ -19,7 +19,7 @@ audit_2_passed: false
 
 - **Nombre del Proyecto:** `Murdoku`
 - **Especificaciones base:** `01-problem.md` (`PROB-001`) | `02-features.md` (`FEAT-001`)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_MODULOS` (tras Gate 1)
+- **Estado de gatekeeping:** `AUDIT_2_APROBADO`
 
 ---
 
@@ -250,10 +250,10 @@ audit_2_passed: false
 - [x] Dependencias y riesgos documentados.
 - [x] Reutilización WIKA evaluada.
 - [x] Grafo sin ciclos.
-- [ ] `audits/auditoria-modulos.md` en estado `[APROBADO]`.
+- [x] `audits/auditoria-modulos.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha:** `YYYY-MM-DD`
-- **audit_2_passed:** `false` → `true` al aprobar
+- **Aprobado por (Arquitecto):** `Cursor Agent (flujo WIKA)`
+- **Fecha:** `2026-08-24`
+- **audit_2_passed:** `true`
