@@ -10,10 +10,10 @@ Producto V1:
 - Package: com.wika.murdoku
 
 Estado:
-- idea/ 01–05 documentados y Gates 1–3B APROBADOS
+- idea/ 01–05 + Gates 1–3B APROBADOS
 - audits/ documentacion + módulos + ensamblado → APROBADO
 - ready_for_construction: true
-- iterations/ vacío — siguiente: Generación IA V1
+- iterations/v1/ construido (smoke + typecheck OK)
 - final/ vacío
 
-Siguiente: construir iterations/v1/ (Expo SDK 52) → verify → APK
+Siguiente: npm run apk → sideload → auditoría release → final/
