@@ -6,41 +6,35 @@ Tower
 
 ## Descripción
 
-Crear un juego **Tower Defense** para Android, 100% offline: el jugador coloca **4 tipos de torres** en zonas del mapa para detener oleadas. **V2** corrige alcances de V1 (todas las torres deben poder golpear desde cualquier pad), añade fase de **preparación** antes de la 1ª oleada, permite colocar torres **antes / entre / durante** oleadas, mejora la distinción visual de torres, y amplía la campaña a **25 niveles** (mapas distintos) con dificultad escalada.
+Tower Defense Android offline. **V3** rebalancea la economía/combate (V2 se volvía injusto ~N10) y añade **evolución de torres por fusión**: juntar 2 torres de la misma clase y mismo nivel crea 1 torre del nivel siguiente (máx. nivel 4), mejorando daño y velocidad de ataque. El nivel 4 muestra un **nombre de evolución** distintivo.
 
 ## Usuarios
 
 | Perfil | Necesidad |
 |--------|-----------|
-| Jugador casual Android | Preparar defensa antes de empezar; UI clara de torres |
-| Fan de tower defense | Colocar en prep, entre oleadas y durante combate |
-| Jugador de progresión | 25 mapas distintos con dificultad creciente |
-| Usuario offline | Sin red / anuncios / login |
+| Casual | Niveles pasables con progresión justa |
+| Estratégico | Fusionar torres para potenciar DPS |
+| Progresión | 25 mapas, dificultad creciente pero jugable |
 
 ## Objetivo
 
-Entregar V2 instalable (APK Release) con: 25 mapas distintos, 4 torres siempre con alcance útil a path, colocación en preparación + entre oleadas + durante oleada, identidad visual clara por torre, oleadas escaladas, campaña local.
+Entregar V3 (APK Release) con: balance jugable hasta N25, fusión 2→1 hasta L4 en las 4 clases, nombres de evolución visibles, colocación prep/entre/durante oleadas.
 
 ## Beneficios esperados
 
-- Ningún pad “muerto” (todas las torres alcanzan el camino).
-- Estrategia previa a la oleada (fase preparación).
-- Refuerzos tácticos mid-wave y entre waves.
-- Campaña más larga (25 niveles).
+- Curva de dificultad justa (oro inicial vs HP enemigo).
+- Progresión táctica de torres sin tienda de upgrades.
+- Identidad clara por nivel de torre (L1–L4 / nombre).
 
 ## Restricciones
 
-- **Plataforma:** Android only (API 24+).
-- **Offline** 100%; Expo SDK 52; JDK 17 BUILD.
-- **25** niveles; **4** torres; mapas con diseño distinto.
-- Contrato de alcance: `dist(pad, path) ≤ rango mínimo de torre` (Cañón).
-- Entregable: APK Release **sin Metro**.
+- Android only · Expo SDK 52 · offline · 25 niveles · 4 clases · max evolución L4.
+- Fusión: misma `kind` + mismo `tier` · consume 2 pads · deja 1 torre en el pad destino.
+- Entregable APK Release sin Metro.
 
 ## Criterios de éxito
 
-- [ ] 25 niveles jugables, mapas distintos.
-- [ ] Desde cualquier pad, las 4 torres pueden alcanzar el path.
-- [ ] Colocación en preparación, entre oleadas y durante oleada.
-- [ ] Torres visualmente distinguibles (forma/color/etiqueta).
-- [ ] Dificultad/oleadas escalan con el nivel.
-- [ ] APK Release sideloadable sin Metro.
+- [ ] N10 pasable con estrategia razonable (no soft-lock por oro/DPS).
+- [ ] Fusión L1→L2→L3→L4 en las 4 torres.
+- [ ] L4 muestra nombre de evolución.
+- [ ] 25 mapas · smoke/typecheck/export OK.

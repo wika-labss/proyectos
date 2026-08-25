@@ -1,14 +1,12 @@
-# 03 — Descubrimiento de módulos (V2)
+# 03 — Módulos V3
 
-## Cambios respecto a V1
-| Módulo | Cambio V2 |
-|--------|-----------|
-| `map-catalog` | **25** mapas; pads con dist≤rango mínimo |
-| `tower-types` | Rangos revisados; Cañón = mínimo |
-| `td-engine` | Estado `preparing` + `startWaves()` |
-| `tower-placement-ui` | Activo en prep / break / playing |
-| `battlefield-view` | Formas/etiquetas por tipo de torre |
-| `level-campaign` | Unlock hasta 25; key `tower:v2:campaign` |
-| `wave-system` | Escalado extendido a niveles 0..24 |
+| Módulo | Cambio |
+|--------|--------|
+| `tower-types` | Stats L1–L4 + nombres evolución |
+| `tower-merge` | **Nuevo** — reglas fusión 2→1 |
+| `td-engine` | `mergeTowers(src, dst)` |
+| `wave-system` | Multipliers rebalanceados |
+| `battlefield-view` / UI | Mostrar tier + nombre L4 |
+| `tower-placement-ui` | Modo fusión / tap torre→torre |
 
-Resto de módulos V1 se mantienen.
+Resto igual que V2.

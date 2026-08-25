@@ -1,26 +1,20 @@
-# 04 — Diseño de aplicación (V2)
+# 04 — Diseño V3
 
-## Estados de partida
+## Fusión
 ```
-preparing → playing ⇄ paused
-          → waveBreak → playing
-          → levelVictory | defeat | campaignVictory
+Tap torre A (selección merge) → Tap torre B
+  si kind A==B y tier A==B y tier<4:
+    remove A, B → place tier+1 en pad B
+  else: feedback rechazo
 ```
 
-## Flujo
-1. LevelSelect → Game en **preparing** (oro inicial, sin spawns).
-2. Coloca torres → **Iniciar oleadas**.
-3. Durante oleada: combate + puede seguir colocando.
-4. Wave clear → waveBreak (coloca) → siguiente oleada.
-5. Última oleada → victoria / unlock.
+## Escalado por tier (contrato)
+| Tier | Daño × | Cooldown × |
+|------|--------|------------|
+| 1 | 1.00 | 1.00 |
+| 2 | 1.55 | 0.85 |
+| 3 | 2.25 | 0.72 |
+| 4 | 3.40 | 0.58 |
 
-## Contrato alcance
-`∀ pad: minDist(pad, path) ≤ range(cannon)`.
-
-## UI torres
-| Torre | Color | Forma | Tag |
-|-------|-------|-------|-----|
-| Arquera | verde | ▲ | Arq |
-| Cañón | naranja | ■ | Cañ |
-| Hielo | cyan | ● | Hie |
-| Franco | violeta | ◆ | Fra |
+## Balance oleadas (resumen)
+Oro inicial más alto; hpMult/countMult más suaves que V2.

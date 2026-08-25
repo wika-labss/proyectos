@@ -1,23 +1,16 @@
-# 05 — Plan de construcción (V2)
+# 05 — Plan construcción V3
 
 ## Alcance
-- Partir de `iterations/v1` → `iterations/v2`
-- Fix alcance pads/rangos
-- 25 mapas
-- Fase `preparing` + colocación continua
-- UI torres distinguibles
-- Smoke + typecheck + export; APK local
+`iterations/v2` → `iterations/v3`: rebalance + merge L1–L4 + UI nombres.
 
-## DoD V2
-- [x] Docs idea actualizadas V2
-- [x] `iterations/v2` construido
-- [x] Smoke: 25 mapas, alcance pads, preparing, combat
-- [x] Typecheck + export OK
-- [ ] Auditoría release V2 (APK local)
+## DoD
+- [x] Docs V3
+- [x] iterations/v3
+- [x] Smoke: balance N10, merge L1→L4, 25 mapas
+- [x] typecheck + export
+- [ ] Auditoría release (APK local)
 
 ## Orden WIKA
 ```
-V1 → Refinamiento V2 ✓
-   → Auditoría Release V2 (APK pendiente) ← SIGUIENTE
-   → final/
+V2 → Refinamiento V3 ✓ → Release V3 (APK pendiente) → final/
 ```
