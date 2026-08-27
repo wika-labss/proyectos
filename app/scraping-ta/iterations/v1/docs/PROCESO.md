@@ -1,4 +1,4 @@
-# Proceso: auditoría de menú (vista cliente)
+# Proceso: Scraping TA — auditoría de menú (vista cliente)
 
 Esto extrae lo que ve el cliente en cada canal. **No** usa Partner Catalog / APIs de carga: eso es lo que el local publica, no lo que el marketplace muestra.
 

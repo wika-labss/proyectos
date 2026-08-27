@@ -1,3 +1,5 @@
 # Tarragona — auditoría de menú
 
-Demo localhost (sin APK): [iterations/v1](iterations/v1).
+Este trabajo quedó como proyecto WIKA **Scraping TA**:
+
+[`../scraping-ta/`](../scraping-ta/)

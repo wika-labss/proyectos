@@ -26,7 +26,7 @@ RUNS_DIR = ROOT / "runs"
 STATIC_DIR = ROOT / "static"
 CREDITS_PER_BEE = 75
 
-app = FastAPI(title="Tarragona auditoría de menú", version="1.0.0")
+app = FastAPI(title="Scraping TA", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
