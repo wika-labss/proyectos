@@ -170,7 +170,7 @@ Uber: JSON-LD es fallback sin tachado. Deduplicar por `uuid`.
 | `FEAT-09` | Forzar mismo local (validar mall) | `Media` | Fuera de V1 |
 | `FEAT-10` | Histórico de runs en UI | `Baja` | Hoy `runs/` en disco |
 | `FEAT-11` | Auth / multi-usuario | `Baja` | V1 localhost |
-| `FEAT-12` | Hosting fijo (no trycloudflare) | `Media` | Operación, no producto V1 |
+| `FEAT-12` | Hosting fijo (no trycloudflare) | `Media` | Carpeta `deploy/` (Docker + Caddy + `vissiuss.com`). No está en producción hasta DNS/VPS. |
 
 ---
 

@@ -36,3 +36,16 @@ Abrir http://127.0.0.1:8000 — pegar token ScrapingBee (Justo no lo necesita).
 | Auditorías | `audits/` |
 
 Fuera de alcance: APK, login en apps, Partner API, retry loop, bypass Cloudflare.
+
+## Hosting estable (dominio Vissiuss)
+
+Cuando haya VPS + DNS `vissiuss.com`, no uses trycloudflare. Carpeta lista:
+
+[`deploy/`](deploy/) — Docker, Caddy (HTTPS), `.env.example`.
+
+```bash
+cd app/scraping-ta/deploy
+./prepare.sh
+cp .env.example .env   # DOMAIN=vissiuss.com y el token Bee
+docker compose up -d --build
+```
