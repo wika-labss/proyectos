@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import threading
 import traceback
 import uuid
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 
@@ -25,6 +27,15 @@ STATIC_DIR = ROOT / "static"
 CREDITS_PER_BEE = 75
 
 app = FastAPI(title="Tarragona auditoría de menú", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+JOBS: dict[str, dict[str, Any]] = {}
+JOBS_LOCK = threading.Lock()
 
 
 class TokenBody(BaseModel):
@@ -181,69 +192,120 @@ def estimate(body: AuditBody) -> dict[str, Any]:
     }
 
 
-@app.post("/api/audit")
-def audit(body: AuditBody) -> dict[str, Any]:
+def _channel_dict(result: ChannelResult) -> dict[str, Any]:
+    return {
+        "platform": result.platform,
+        "store": result.store,
+        "source_url": result.source_url,
+        "native_source": result.native_source,
+        "item_count": 0 if result.skipped else result.item_count,
+        "credits_used": result.credits_used,
+        "error": result.error,
+        "skipped": result.skipped,
+        "items": [row.as_dict() for row in result.items[:8]],
+    }
+
+
+def _prepare_jobs(body: AuditBody) -> list[tuple[str, str, Any]]:
     jobs: list[tuple[str, str, Any]] = []
     for field, (platform, fn) in AUDITORS.items():
         url = _clean_url(getattr(body, field))
         if url:
             jobs.append((platform, url, fn))
-
     if not jobs:
         raise HTTPException(status_code=400, detail="Pega al menos una URL.")
-
     needs_bee = any(
         platform != "justo" or not justo_parser.is_tarragona_justo(url)
         for platform, url, _fn in jobs
     )
     if needs_bee:
         _require_token()
+    return jobs
 
-    RUNS_DIR.mkdir(exist_ok=True)
+
+def _run_audit_job(run_id: str, body: AuditBody) -> None:
+    jobs = []
+    for field, (platform, fn) in AUDITORS.items():
+        url = _clean_url(getattr(body, field))
+        if url:
+            jobs.append((platform, url, fn))
     results: list[ChannelResult] = []
-    for platform, url, fn in jobs:
-        try:
-            results.append(fn(url))
-        except HTTPException:
-            raise
-        except (BeeError, peya_parser.ParseError, uber_parser.ParseError, rappi_parser.ParseError, justo_parser.ParseError) as exc:
-            results.append(_failed(platform, url, CREDITS_PER_BEE if platform != "justo" else 0, str(exc)))
-        except Exception as exc:
-            traceback.print_exc()
-            results.append(_failed(platform, url, 0, f"Error inesperado: {exc}"))
+    try:
+        for platform, url, fn in jobs:
+            with JOBS_LOCK:
+                JOBS[run_id]["step"] = f"Consultando {platform}…"
+                JOBS[run_id]["status"] = "running"
+            try:
+                results.append(fn(url))
+            except HTTPException as exc:
+                detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+                results.append(_failed(platform, url, 0, detail))
+            except (BeeError, peya_parser.ParseError, uber_parser.ParseError, rappi_parser.ParseError, justo_parser.ParseError) as exc:
+                results.append(_failed(platform, url, CREDITS_PER_BEE if platform != "justo" else 0, str(exc)))
+            except Exception as exc:
+                traceback.print_exc()
+                results.append(_failed(platform, url, 0, f"Error inesperado: {exc}"))
+            with JOBS_LOCK:
+                JOBS[run_id]["channels"] = [_channel_dict(r) for r in results]
+                JOBS[run_id]["credits_used"] = sum(r.credits_used for r in results)
 
-    present = {r.platform for r in results}
-    for field, (platform, _fn) in AUDITORS.items():
-        if platform not in present:
-            results.append(_skipped(platform))
+        present = {r.platform for r in results}
+        for _field, (platform, _fn) in AUDITORS.items():
+            if platform not in present:
+                results.append(_skipped(platform))
 
+        RUNS_DIR.mkdir(exist_ok=True)
+        xlsx_path = RUNS_DIR / f"{run_id}.xlsx"
+        meta_path = RUNS_DIR / f"{run_id}.json"
+        xlsx_path.write_bytes(build_workbook(results))
+        payload = {
+            "run_id": run_id,
+            "status": "done",
+            "step": "Listo",
+            "credits_estimated": _estimate_credits(body),
+            "credits_used": sum(r.credits_used for r in results),
+            "channels": [_channel_dict(r) for r in results],
+        }
+        meta_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        with JOBS_LOCK:
+            JOBS[run_id] = payload
+    except Exception as exc:
+        traceback.print_exc()
+        with JOBS_LOCK:
+            JOBS[run_id]["status"] = "error"
+            JOBS[run_id]["step"] = "Error"
+            JOBS[run_id]["error"] = str(exc)
+
+
+@app.post("/api/audit")
+def audit(body: AuditBody) -> dict[str, Any]:
+    _prepare_jobs(body)
     run_id = uuid.uuid4().hex[:12]
-    xlsx = build_workbook(results)
-    xlsx_path = RUNS_DIR / f"{run_id}.xlsx"
-    meta_path = RUNS_DIR / f"{run_id}.json"
-    xlsx_path.write_bytes(xlsx)
-
-    payload = {
+    snapshot = {
         "run_id": run_id,
+        "status": "queued",
+        "step": "En cola",
         "credits_estimated": _estimate_credits(body),
-        "credits_used": sum(r.credits_used for r in results),
-        "channels": [
-            {
-                "platform": r.platform,
-                "store": r.store,
-                "source_url": r.source_url,
-                "native_source": r.native_source,
-                "item_count": 0 if r.skipped else r.item_count,
-                "credits_used": r.credits_used,
-                "error": r.error,
-                "skipped": r.skipped,
-                "items": [row.as_dict() for row in r.items[:8]],
-            }
-            for r in results
-        ],
+        "credits_used": 0,
+        "channels": [],
+        "error": None,
     }
-    meta_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return payload
+    with JOBS_LOCK:
+        JOBS[run_id] = snapshot
+    threading.Thread(target=_run_audit_job, args=(run_id, body), daemon=True).start()
+    return snapshot
+
+
+@app.get("/api/audit/{run_id}")
+def audit_status(run_id: str) -> dict[str, Any]:
+    with JOBS_LOCK:
+        job = JOBS.get(run_id)
+    if job:
+        return job
+    meta_path = RUNS_DIR / f"{run_id}.json"
+    if meta_path.exists():
+        return json.loads(meta_path.read_text(encoding="utf-8"))
+    raise HTTPException(status_code=404, detail="Auditoría no encontrada.")
 
 
 @app.get("/api/report/{run_id}.xlsx")

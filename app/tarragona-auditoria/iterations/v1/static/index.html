@@ -118,25 +118,53 @@
     const $ = (id) => document.getElementById(id);
     let runId = null;
 
+    function errDetail(data, fallback) {
+      if (!data) return fallback;
+      const d = data.detail;
+      if (typeof d === "string") return d;
+      if (Array.isArray(d)) return d.map((x) => x.msg || JSON.stringify(x)).join("; ");
+      if (data.error) return data.error;
+      return fallback;
+    }
+
+    async function readJson(res) {
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        throw new Error(
+          "El túnel devolvió HTML en vez de JSON (timeout). Recarga y vuelve a auditar; la consulta ahora corre en segundo plano."
+        );
+      }
+    }
+
     async function refreshToken() {
-      const res = await fetch("/api/token");
-      const data = await res.json();
-      $("token-status").textContent = data.configured
-        ? "Token configurado en este equipo."
-        : "No hay token. Pega uno para Peya / Uber / Rappi.";
-      $("token-status").className = "status " + (data.configured ? "ok" : "err");
+      try {
+        const res = await fetch("/api/token");
+        const data = await readJson(res);
+        $("token-status").textContent = data.configured
+          ? "Token configurado en este equipo."
+          : "No hay token. Pega uno para Peya / Uber / Rappi.";
+        $("token-status").className = "status " + (data.configured ? "ok" : "err");
+      } catch (err) {
+        $("token-status").textContent = String(err.message || err);
+        $("token-status").className = "status err";
+      }
     }
 
     async function refreshEstimate() {
-      const body = payload();
-      const res = await fetch("/api/audit/estimate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      const extra = data.justo_cdn ? " · Justo por CDN (0 créditos)" : "";
-      $("estimate").textContent = "Créditos estimados: " + data.credits_estimated + extra;
+      try {
+        const res = await fetch("/api/audit/estimate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload()),
+        });
+        const data = await readJson(res);
+        const extra = data.justo_cdn ? " · Justo por CDN (0 créditos)" : "";
+        $("estimate").textContent = "Créditos estimados: " + data.credits_estimated + extra;
+      } catch (err) {
+        $("estimate").textContent = "No se pudo estimar créditos.";
+      }
     }
 
     function payload() {
@@ -148,21 +176,44 @@
       };
     }
 
+    function renderChannels(channels) {
+      if (!channels || !channels.length) return;
+      const rows = channels.map((ch) => {
+        const state = ch.skipped ? "omitido" : (ch.error ? ch.error : (ch.item_count + " productos"));
+        return `<tr>
+          <td>${ch.platform}</td>
+          <td>${ch.store || "—"}</td>
+          <td>${ch.credits_used}</td>
+          <td>${state}</td>
+        </tr>`;
+      }).join("");
+      $("results").innerHTML = `<table>
+        <thead><tr><th>Canal</th><th>Local</th><th>Créditos</th><th>Resultado</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
     $("save-token").onclick = async () => {
       const token = $("token").value.trim();
       if (!token) return;
-      const res = await fetch("/api/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      });
-      if (!res.ok) {
-        $("token-status").textContent = "No se pudo guardar el token.";
+      try {
+        const res = await fetch("/api/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        const data = await readJson(res);
+        if (!res.ok) throw new Error(errDetail(data, "No se pudo guardar el token."));
+        $("token").value = "";
+        refreshToken();
+      } catch (err) {
+        $("token-status").textContent = String(err.message || err);
         $("token-status").className = "status err";
-        return;
       }
-      $("token").value = "";
-      refreshToken();
     };
 
     ["peya", "uber", "rappi", "justo"].forEach((id) => {
@@ -172,39 +223,33 @@
     $("audit").onclick = async () => {
       $("audit").disabled = true;
       $("download").disabled = true;
-      $("audit-status").textContent = "Auditando en serie. Puede tardar 1–3 minutos. No recargues.";
+      $("audit-status").textContent = "Encolando auditoría…";
       $("audit-status").className = "status";
       $("results").innerHTML = "";
       try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 240000);
-        const res = await fetch("/api/audit", {
+        const start = await fetch("/api/audit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload()),
-          signal: controller.signal,
         });
-        clearTimeout(timer);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || "Error de auditoría");
-        runId = data.run_id;
+        const started = await readJson(start);
+        if (!start.ok) throw new Error(errDetail(started, "No se pudo iniciar."));
+        runId = started.run_id;
+        let data = started;
+        while (data.status === "queued" || data.status === "running") {
+          $("audit-status").textContent = data.step || "Auditando…";
+          renderChannels(data.channels);
+          await sleep(1000);
+          const st = await fetch("/api/audit/" + runId);
+          data = await readJson(st);
+          if (!st.ok) throw new Error(errDetail(data, "No se pudo leer el estado."));
+        }
+        if (data.status === "error") throw new Error(data.error || "Falló la auditoría.");
         $("download").disabled = false;
         $("audit-status").textContent =
           "Listo. Créditos usados: " + data.credits_used + " (estimados " + data.credits_estimated + ").";
         $("audit-status").className = "status ok";
-        const rows = data.channels.map((ch) => {
-          const state = ch.skipped ? "omitido" : (ch.error ? ch.error : ch.item_count + " productos");
-          return `<tr>
-            <td>${ch.platform}</td>
-            <td>${ch.store || "—"}</td>
-            <td>${ch.credits_used}</td>
-            <td>${state}</td>
-          </tr>`;
-        }).join("");
-        $("results").innerHTML = `<table>
-          <thead><tr><th>Canal</th><th>Local</th><th>Créditos</th><th>Resultado</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>`;
+        renderChannels(data.channels);
       } catch (err) {
         $("audit-status").textContent = String(err.message || err);
         $("audit-status").className = "status err";

@@ -124,3 +124,28 @@ def test_excel_has_three_sheets():
 def test_tarragona_url_detection():
     assert justo_parser.is_tarragona_justo("https://www.tarragona.cl/pedir")
     assert not justo_parser.is_tarragona_justo("https://otro.getjusto.com/pedir")
+
+
+def test_audit_job_polls_to_done():
+    import time
+    from fastapi.testclient import TestClient
+    from app import app
+
+    client = TestClient(app)
+    started = client.post("/api/audit", json={"justo": "https://www.tarragona.cl/pedir"})
+    assert started.status_code == 200
+    body = started.json()
+    assert body["status"] in {"queued", "running", "done"}
+    run_id = body["run_id"]
+    data = body
+    for _ in range(30):
+        if data.get("status") in {"done", "error"}:
+            break
+        time.sleep(0.3)
+        data = client.get(f"/api/audit/{run_id}").json()
+    assert data["status"] == "done"
+    justo = next(ch for ch in data["channels"] if ch["platform"] == "justo")
+    assert justo["item_count"] >= 50
+    xlsx = client.get(f"/api/report/{run_id}.xlsx")
+    assert xlsx.status_code == 200
+    assert xlsx.content[:2] == b"PK"
