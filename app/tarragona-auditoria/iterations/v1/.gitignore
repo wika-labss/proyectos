@@ -1,0 +1,10 @@
+.venv/
+venv/
+.scrapingbee_key
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+runs/
+*.xlsx
+.DS_Store
