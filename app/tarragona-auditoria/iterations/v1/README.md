@@ -36,7 +36,7 @@ Abrir [http://127.0.0.1:8000](http://127.0.0.1:8000).
 1. Pegar token ScrapingBee y **Guardar** (una vez por máquina, o cuando rotes la key).
 2. Pegar las 4 URLs del **mismo local**. Vacío = se salta.
 3. Revisar créditos estimados (75 × Peya/Uber/Rappi). Justo `tarragona.cl` = 0.
-4. **Auditar** (serie, 1–3 min). Si falla, no reintentes en loop.
+4. **Auditar** (serie, 1–3 min). Si un canal falla, **Reintentar** solo esa app (1 request; Bee ~75 créditos). No reintentes en loop.
 5. **Descargar .xlsx** — hojas `resumen`, `productos`, `comparacion`.
 
 Costo típico 1 local × 3 apps Bee: **225 créditos/día**, **1.125/semana** (lun–vie).

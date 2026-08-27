@@ -31,7 +31,7 @@ Auditoría lun–vie, 1 local × 3 apps Bee: **225 créditos/día**, **1.125/sem
 
 ## Reglas operativas
 
-1. **1 request por URL.** Sin retry loop. Si Cloudflare/captcha/timeout, se corta y se muestra el error.
+1. **1 request por URL.** Sin retry loop automático. Si Cloudflare/captcha/timeout, se corta y se muestra el error. Reintento manual por canal (un click = un request).
 2. Bee en **serie**, no en paralelo (créditos + IP).
 3. Token ScrapingBee se pega en la UI y se guarda en `.scrapingbee_key` (gitignored). Nunca en git ni en logs completos.
 4. Campos de URL vacíos se saltan.

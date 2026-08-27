@@ -59,6 +59,7 @@
     }
     button:hover { background: var(--accent-dark); }
     button.secondary { background: var(--ink); }
+    button.retry { padding: 10px 12px; font-size: 13px; white-space: nowrap; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
     .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
     .status { font-size: 13px; margin-top: 8px; }
@@ -90,14 +91,26 @@
     <section>
       <h2>2. URLs del local</h2>
       <label>PedidosYa</label>
-      <input id="peya" type="url" placeholder="https://www.pedidosya.cl/restaurantes/santiago/tarragona-…-menu" />
+      <div class="row">
+        <input id="peya" type="url" placeholder="https://www.pedidosya.cl/restaurantes/santiago/tarragona-…-menu" />
+        <button type="button" class="secondary retry" data-field="peya">Reintentar</button>
+      </div>
       <label>Uber Eats</label>
-      <input id="uber" type="url" placeholder="https://www.ubereats.com/cl/store/tarragona-…" />
+      <div class="row">
+        <input id="uber" type="url" placeholder="https://www.ubereats.com/cl/store/tarragona-…" />
+        <button type="button" class="secondary retry" data-field="uber">Reintentar</button>
+      </div>
       <label>Rappi</label>
-      <input id="rappi" type="url" placeholder="https://www.rappi.cl/restaurantes/…-tarragona" />
+      <div class="row">
+        <input id="rappi" type="url" placeholder="https://www.rappi.cl/restaurantes/…-tarragona" />
+        <button type="button" class="secondary retry" data-field="rappi">Reintentar</button>
+      </div>
       <label>Justo / tarragona.cl</label>
-      <input id="justo" type="url" placeholder="https://www.tarragona.cl/pedir" />
-      <p class="hint">Campos vacíos se saltan. Las 3 apps Bee van en serie (~75 créditos c/u). Justo CDN = 0.</p>
+      <div class="row">
+        <input id="justo" type="url" placeholder="https://www.tarragona.cl/pedir" />
+        <button type="button" class="secondary retry" data-field="justo">Reintentar</button>
+      </div>
+      <p class="hint">Campos vacíos se saltan. Reintentar solo esa app (Bee ~75 créditos; Justo CDN = 0). Un click = un request, sin loop.</p>
       <p class="credits" id="estimate">Créditos estimados: 0</p>
       <div class="actions">
         <button type="button" id="audit">Auditar</button>
@@ -176,25 +189,103 @@
       };
     }
 
+    const FIELD_OF = {
+      pedidosya: "peya",
+      ubereats: "uber",
+      rappi: "rappi",
+      justo: "justo",
+      peya: "peya",
+      uber: "uber",
+    };
+
+    let busy = false;
+
+    function syncBusy() {
+      $("audit").disabled = busy;
+      document.querySelectorAll("button.retry").forEach((b) => {
+        b.disabled = busy;
+      });
+    }
+
+    function setBusy(on) {
+      busy = on;
+      syncBusy();
+    }
+
     function renderChannels(channels) {
       if (!channels || !channels.length) return;
       const rows = channels.map((ch) => {
         const state = ch.skipped ? "omitido" : (ch.error ? ch.error : (ch.item_count + " productos"));
+        const field = FIELD_OF[ch.platform] || "";
+        const retry = field
+          ? `<button type="button" class="secondary retry" data-field="${field}">Reintentar</button>`
+          : "";
         return `<tr>
           <td>${ch.platform}</td>
           <td>${ch.store || "—"}</td>
           <td>${ch.credits_used}</td>
           <td>${state}</td>
+          <td>${retry}</td>
         </tr>`;
       }).join("");
       $("results").innerHTML = `<table>
-        <thead><tr><th>Canal</th><th>Local</th><th>Créditos</th><th>Resultado</th></tr></thead>
+        <thead><tr><th>Canal</th><th>Local</th><th>Créditos</th><th>Resultado</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
+      syncBusy();
     }
 
     function sleep(ms) {
       return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function pollUntilDone(started) {
+      runId = started.run_id;
+      let data = started;
+      while (data.status === "queued" || data.status === "running") {
+        $("audit-status").textContent = data.step || "Auditando…";
+        renderChannels(data.channels);
+        await sleep(1000);
+        const st = await fetch("/api/audit/" + runId);
+        data = await readJson(st);
+        if (!st.ok) throw new Error(errDetail(data, "No se pudo leer el estado."));
+      }
+      if (data.status === "error") throw new Error(data.error || "Falló la auditoría.");
+      $("download").disabled = false;
+      $("audit-status").textContent =
+        "Listo. Créditos usados: " + data.credits_used + " (estimados " + data.credits_estimated + ").";
+      $("audit-status").className = "status ok";
+      renderChannels(data.channels);
+      return data;
+    }
+
+    async function retryField(field) {
+      if (!field) return;
+      const url = $(field).value.trim();
+      if (!url && !runId) {
+        $("audit-status").textContent = "Pega la URL de ese canal antes de reintentar.";
+        $("audit-status").className = "status err";
+        return;
+      }
+      $("download").disabled = true;
+      $("audit-status").textContent = "Reintentando " + field + " (1 request)…";
+      $("audit-status").className = "status";
+      setBusy(true);
+      try {
+        const res = await fetch("/api/audit/retry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ platform: field, url, run_id: runId }),
+        });
+        const started = await readJson(res);
+        if (!res.ok) throw new Error(errDetail(started, "No se pudo reintentar."));
+        await pollUntilDone(started);
+      } catch (err) {
+        $("audit-status").textContent = String(err.message || err);
+        $("audit-status").className = "status err";
+      } finally {
+        setBusy(false);
+      }
     }
 
     $("save-token").onclick = async () => {
@@ -221,11 +312,11 @@
     });
 
     $("audit").onclick = async () => {
-      $("audit").disabled = true;
       $("download").disabled = true;
       $("audit-status").textContent = "Encolando auditoría…";
       $("audit-status").className = "status";
       $("results").innerHTML = "";
+      setBusy(true);
       try {
         const start = await fetch("/api/audit", {
           method: "POST",
@@ -234,29 +325,20 @@
         });
         const started = await readJson(start);
         if (!start.ok) throw new Error(errDetail(started, "No se pudo iniciar."));
-        runId = started.run_id;
-        let data = started;
-        while (data.status === "queued" || data.status === "running") {
-          $("audit-status").textContent = data.step || "Auditando…";
-          renderChannels(data.channels);
-          await sleep(1000);
-          const st = await fetch("/api/audit/" + runId);
-          data = await readJson(st);
-          if (!st.ok) throw new Error(errDetail(data, "No se pudo leer el estado."));
-        }
-        if (data.status === "error") throw new Error(data.error || "Falló la auditoría.");
-        $("download").disabled = false;
-        $("audit-status").textContent =
-          "Listo. Créditos usados: " + data.credits_used + " (estimados " + data.credits_estimated + ").";
-        $("audit-status").className = "status ok";
-        renderChannels(data.channels);
+        await pollUntilDone(started);
       } catch (err) {
         $("audit-status").textContent = String(err.message || err);
         $("audit-status").className = "status err";
       } finally {
-        $("audit").disabled = false;
+        setBusy(false);
       }
     };
+
+    document.body.addEventListener("click", (ev) => {
+      const btn = ev.target.closest("button.retry");
+      if (!btn || !btn.dataset.field || btn.disabled) return;
+      retryField(btn.dataset.field);
+    });
 
     $("download").onclick = () => {
       if (!runId) return;
