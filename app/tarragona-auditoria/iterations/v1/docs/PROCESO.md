@@ -46,8 +46,9 @@ Auditoría lun–vie, 1 local × 3 apps Bee: **225 créditos/día**, **1.125/sem
 ## Uber Eats
 
 - Bee sobre la URL del store (`ubereats.com/store/…`).
-- El XHR capturado es analítica; el catálogo está en SSR JSON-LD `Restaurant.hasMenu.hasMenuSection.hasMenuItem`.
-- Precio cliente = `offers.price`. No hay tachado nativo en ese JSON-LD.
+- Catálogo nativo: script `__REACT_QUERY_STATE__` → query `getStoreV1` → `catalogItems[]`.
+- Precio cliente = `price / 100`. Lista = `priceTagline.accessibilityText` (`discounted from CLP …`).
+- JSON-LD `hasMenu.offers.price` es fallback y **no** trae tachado. Deduplicar por `uuid` (Uber repite SKUs en “Save on Select Items”).
 
 ## Rappi
 

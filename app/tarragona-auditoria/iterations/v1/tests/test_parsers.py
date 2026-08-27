@@ -43,15 +43,23 @@ def test_peya_from_bee_xhr():
     assert result.item_count >= 60
 
 
-def test_uber_jsonld():
+def test_uber_catalog_includes_list_price():
     if not UBER_HTML.exists():
         pytest.skip("dump Uber no disponible")
     bee = json.loads(UBER_HTML.read_text())
     result = uber_parser.from_html(bee["body"], "https://www.ubereats.com/store/example")
     assert result.store.startswith("Tarragona")
-    assert result.item_count >= 70
+    assert result.native_source.startswith("__REACT_QUERY_STATE__")
+    assert result.item_count >= 60
+    dupla = next(p for p in result.items if p.name == "Dupla Box Sandwich Clasicos")
+    assert dupla.price_clp == 11990
+    assert dupla.price_original_clp == 18590
     box = next(p for p in result.items if p.name == "Promo Box Recargado")
     assert box.price_clp == 5000
+    assert box.price_original_clp is not None
+    assert box.price_original_clp > box.price_clp
+    discounted = [p for p in result.items if p.price_original_clp]
+    assert len(discounted) >= 10
 
 
 def test_rappi_store_and_discount():
