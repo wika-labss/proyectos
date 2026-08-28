@@ -1,0 +1,15 @@
+package com.wika.geoempresa
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+
+class GeoBootReceiver : BroadcastReceiver() {
+  override fun onReceive(context: Context, intent: Intent?) {
+    if (intent?.action != Intent.ACTION_BOOT_COMPLETED) {
+      return
+    }
+    Log.i("GeoEmpresa", "BOOT_COMPLETED — reiniciar monitoreo desde la app al abrirse")
+  }
+}
