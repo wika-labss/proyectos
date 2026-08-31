@@ -1,35 +1,29 @@
-# Funcionalidades
-
-## Versión
-V3 (refina V2)
+# Funcionalidades — V4
 
 ## Obligatorias
 
-### Feature 01 — Rebalance
-- Más oro inicial en niveles medios/altos.
-- Menor crecimiento de HP/cantidad enemiga.
-- Daño base de torres L1 ligeramente alzado.
-Meta: N10 exigente pero pasable.
+### Feature 01 — Dificultad ↑ (leve)
+Mantener fusión L1–L4 y costos de torres. Ajustar multipliers: +HP/count leve, oro inicial ligeramente menor que V3 pero mayor que V2.
 
-### Feature 02 — Evolución por fusión
-1. Seleccionar torre colocada (o modo “Fusionar”).
-2. Tocar otra torre **misma clase + mismo tier** (1–3).
-3. Se consumen ambas; queda **1 torre tier+1** en el pad de la segunda (destino).
-4. Tier máximo = **4**.
-5. Cada tier sube **daño** y **velocidad de ataque** (baja cooldown).
+### Feature 02 — Venta de torres
+- Acción: seleccionar torre → **Vender**.
+- Reembolso = `floor(investedGold * 0.7)`.
+- L1 arquera (50) → 35. Evoluciones acumulan `investedGold` de las fusionadas.
+- Libera el pad.
 
-### Feature 03 — Nombres por tier
-| Clase | L1 | L2 | L3 | L4 (evolución) |
-|-------|----|----|----|----------------|
-| Arquera | Arquera | Arquera II | Arquera III | **Ballesta Élite** |
-| Cañón | Cañón | Cañón II | Cañón III | **Mortero Infernal** |
-| Hielo | Hielo | Hielo II | Hielo III | **Ventisca Absolute** |
-| Franco | Francotirador | Franco II | Franco III | **Águila de Ébano** |
+### Feature 03 — Modo infinito
+- Acceso desde menú / tienda.
+- Oleadas sin fin; dificultad escala por oleada (HP/count).
+- Misma colocación/fusión/venta.
 
-UI muestra nombre + “Lv.N”.
+### Feature 04 — Tienda visual (sin IAP)
+Productos:
+1. **Modo Infinito** — compra visual.
+2. **Pack de Contenido** — 10 mapas nuevos, torres nuevas, hardcore de niveles existentes — compra visual.
+Botón Comprar → toast/alert “Las compras se habilitarán pronto”. Flags `owned=false`.
 
-### Feature 04 — Hereda V2
-25 mapas, pads en rango, preparación, colocación continua, 4 clases.
+### Feature 05 — Hereda V3
+25 mapas campaña, prep, fusión, 4 clases, evolución L4 con nombres.
 
-## Fuera de alcance V3
-Venta con reembolso, path dual, más de 4 tiers, iOS, online.
+## Fuera de alcance V4
+IAP real, billing Play Store, anuncios, cuentas.
