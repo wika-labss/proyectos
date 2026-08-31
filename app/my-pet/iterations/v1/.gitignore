@@ -11,3 +11,4 @@ dist/
 *.orig.*
 web-build/
 web/data/store.json
+apk/*.apk

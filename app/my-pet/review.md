@@ -7,7 +7,7 @@
 Registro de mascota, QR imprimible, landing pública de prueba, alerta con coordenadas, app dueño.
 
 ## Estado
-Construcción V1 entregada. APK release pendiente de toolchain local (JDK 17 + SDK).
+Construcción V1 entregada. APK release generado (`com.wika.mypet`, sideload). Web de prueba: `npm run web` en :8787.
 
 ## Cómo probar sin APK
 1. `cd iterations/v1 && npm install && npm run web`

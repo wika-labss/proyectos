@@ -21,7 +21,7 @@
 | `npm run smoke:web` | OK |
 | `npm run typecheck` | OK |
 | `npm run verify` | OK |
-| `npm run apk` | Pendiente local (JDK 17 + Android SDK) |
+| `npm run apk` | OK — `com.wika.mypet` 1.0.0, 61 MB, minSdk 24 |
 
 ## Notas
 - La landing no renderiza `address` ni coords de casa.
