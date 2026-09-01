@@ -4,4 +4,4 @@ export { PixelPanel } from './PixelPanel';
 export { SheetSprite } from './SheetSprite';
 export { DiamondRule } from './DiamondRule';
 export { CoinMark } from './CoinMark';
-export { formatCoins } from './formatCoins';
+export { nativeDriver } from './nativeDriver';

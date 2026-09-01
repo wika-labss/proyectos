@@ -19,6 +19,11 @@
       },
       "package": "com.wika.match3"
     },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/icon.png"
+    },
     "plugins": [
       "expo-router",
       "expo-asset",

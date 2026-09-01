@@ -23,6 +23,7 @@ import { useProgress } from '../src/hooks/ProgressProvider';
 import { CoinMark } from '../src/modules/match3-visual/CoinMark';
 import { DiamondRule } from '../src/modules/match3-visual/DiamondRule';
 import { formatCoins } from '../src/modules/match3-visual/formatCoins';
+import { nativeDriver } from '../src/modules/match3-visual/nativeDriver';
 import { NightScreen } from '../src/modules/match3-visual/NightScreen';
 import { PixelPanel } from '../src/modules/match3-visual/PixelPanel';
 
@@ -41,13 +42,13 @@ function useSlide(delay: number) {
         toValue: 1,
         duration: 420,
         delay,
-        useNativeDriver: true,
+        useNativeDriver: nativeDriver,
       }),
       Animated.timing(translateY, {
         toValue: 0,
         duration: 420,
         delay,
-        useNativeDriver: true,
+        useNativeDriver: nativeDriver,
       }),
     ]).start();
   }, [delay, opacity, translateY]);

@@ -4,6 +4,7 @@ import { COLS, ROWS } from '../constants/game';
 import { colors, gemColors, radius } from '../constants/theme';
 import type { Board, Cell, HintMove } from '../engine/match3Engine';
 import { VisualAssets } from '../modules/match3-visual/assets';
+import { nativeDriver } from '../modules/match3-visual/nativeDriver';
 import { SheetSprite } from '../modules/match3-visual/SheetSprite';
 
 type Props = {
@@ -55,12 +56,12 @@ function GemCell({
         Animated.timing(scale, {
           toValue: 0.2,
           duration: 160,
-          useNativeDriver: true,
+          useNativeDriver: nativeDriver,
         }),
         Animated.timing(opacity, {
           toValue: 0.15,
           duration: 160,
-          useNativeDriver: true,
+          useNativeDriver: nativeDriver,
         }),
       ]).start();
     } else {
@@ -69,7 +70,7 @@ function GemCell({
       translateY.setValue(-cellSize * 0.35);
       Animated.spring(translateY, {
         toValue: 0,
-        useNativeDriver: true,
+        useNativeDriver: nativeDriver,
         friction: 7,
         tension: 80,
       }).start();

@@ -25,7 +25,7 @@ No modifica `iterations/v1/`, `v2/` ni `v3/`.
 
 ## Scripts
 
-- `npm run smoke` — engine + economía + viaje (sin RN)
+- `npm run web` — preview tipo emulador en el navegador (marco de teléfono)
 - `npm run typecheck` — `tsc --noEmit`
 - `npm run verify` — gate de build WIKA
 - `npm run apk` / `apk:win` — APK Release sin Metro

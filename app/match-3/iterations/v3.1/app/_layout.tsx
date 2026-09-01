@@ -5,6 +5,7 @@ import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { colors } from '../src/constants/theme';
 import { ProgressProvider } from '../src/hooks/ProgressProvider';
+import { PhoneShell } from '../src/modules/match3-visual/PhoneShell';
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -27,22 +28,24 @@ export default function RootLayout() {
   }
 
   return (
-    <ProgressProvider>
-      <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-          animation: 'fade',
-        }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="map" />
-        <Stack.Screen name="inventory" />
-        <Stack.Screen name="suitors" />
-        <Stack.Screen name="country/[id]" />
-        <Stack.Screen name="play/[countryId]/[level]" />
-      </Stack>
-    </ProgressProvider>
+    <PhoneShell>
+      <ProgressProvider>
+        <StatusBar style="light" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+            animation: 'fade',
+          }}
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="map" />
+          <Stack.Screen name="inventory" />
+          <Stack.Screen name="suitors" />
+          <Stack.Screen name="country/[id]" />
+          <Stack.Screen name="play/[countryId]/[level]" />
+        </Stack>
+      </ProgressProvider>
+    </PhoneShell>
   );
 }
