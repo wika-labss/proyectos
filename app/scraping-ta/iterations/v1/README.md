@@ -17,13 +17,15 @@ Abrir [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 ## Uso lun–vie
 
-1. Pegar token ScrapingBee y **Guardar** (`.scrapingbee_key`, gitignored). Justo no lo necesita.
+1. Default Scrapling: no hace falta token. (`SCRAPING_TA_FETCHER=bee` sí).
 2. Pegar las 4 URLs del **mismo local**. Vacío = se salta.
-3. Créditos estimados: 75 × Peya/Uber/Rappi. Justo `tarragona.cl` = 0.
-4. **Auditar**. Si un canal falla: **Reintentar** solo esa app (1 request). Sin loop.
+3. Créditos: 0 en Scrapling. Modo Bee: 75 × Peya/Uber/Rappi. Justo `tarragona.cl` = 0.
+4. **Auditar**. Si un canal falla: **Reintentar** solo esa app (1 fetch). Sin loop.
 5. **Descargar .xlsx** — `resumen`, `productos`, `comparacion`.
 
-Costo típico 1 local × 3 Bee: **225 créditos/día**, **1.125/semana** (lun–vie).
+Tras instalar deps: `scrapling install` (Chromium/Camoufox).
+
+Costo Bee (si lo usas) 1 local × 3: **225 créditos/día**. Scrapling no gasta Bee.
 
 ## Tests (sin gastar Bee en parsers)
 

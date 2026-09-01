@@ -85,7 +85,7 @@
         <button type="button" id="save-token">Guardar</button>
       </div>
       <p class="status" id="token-status">Comprobando…</p>
-      <p class="hint">Se guarda en <code>.scrapingbee_key</code> (no va a git). Justo/tarragona.cl no lo necesita.</p>
+      <p class="hint" id="token-hint">Fetcher por defecto: Scrapling (0 créditos Bee). El token solo hace falta si cambias a ScrapingBee.</p>
     </section>
 
     <section>
@@ -110,7 +110,7 @@
         <input id="justo" type="url" placeholder="https://www.tarragona.cl/pedir" />
         <button type="button" class="secondary retry" data-field="justo">Reintentar</button>
       </div>
-      <p class="hint">Campos vacíos se saltan. Reintentar solo esa app (Bee ~75 créditos; Justo CDN = 0). Un click = un request, sin loop.</p>
+      <p class="hint">Campos vacíos se saltan. Reintentar solo esa app (un click = un fetch). Justo CDN = 0. Scrapling no gasta Bee; modo Bee ~75 créditos/canal.</p>
       <p class="credits" id="estimate">Créditos estimados: 0</p>
       <div class="actions">
         <button type="button" id="audit">Auditar</button>
@@ -155,10 +155,16 @@
       try {
         const res = await fetch("/api/token");
         const data = await readJson(res);
-        $("token-status").textContent = data.configured
-          ? "Token configurado en este equipo."
-          : "No hay token. Pega uno para Peya / Uber / Rappi.";
-        $("token-status").className = "status " + (data.configured ? "ok" : "err");
+        $("token-status").textContent = data.needs_bee_token
+          ? (data.configured
+            ? "Token configurado en este equipo."
+            : "No hay token. Pega uno para Peya / Uber / Rappi (modo ScrapingBee).")
+          : (data.configured
+            ? "Fetcher Scrapling (0 créditos Bee). Token Bee opcional de respaldo."
+            : "Fetcher Scrapling (0 créditos Bee). No hace falta token.");
+        $("token-status").className = "status " + (
+          data.needs_bee_token && !data.configured ? "err" : "ok"
+        );
       } catch (err) {
         $("token-status").textContent = String(err.message || err);
         $("token-status").className = "status err";
@@ -173,8 +179,9 @@
           body: JSON.stringify(payload()),
         });
         const data = await readJson(res);
-        const extra = data.justo_cdn ? " · Justo por CDN (0 créditos)" : "";
-        $("estimate").textContent = "Créditos estimados: " + data.credits_estimated + extra;
+        const extra = data.justo_cdn ? " · Justo por CDN (0)" : "";
+        const mode = data.fetcher === "scrapling" ? " · Scrapling" : " · ScrapingBee";
+        $("estimate").textContent = "Créditos estimados: " + data.credits_estimated + extra + mode;
       } catch (err) {
         $("estimate").textContent = "No se pudo estimar créditos.";
       }

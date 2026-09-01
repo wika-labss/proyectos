@@ -12,8 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 
-from bee import BeeError, credits_of, scrape_once
+from bee import BeeError
 from excel_report import build_workbook
+from fetchers import credits_of, fetcher_name, needs_bee_token, scrape_once
 from parsers import justo as justo_parser
 from parsers import peya as peya_parser
 from parsers import rappi as rappi_parser
@@ -79,6 +80,8 @@ def _clean_url(value: str) -> str:
 
 
 def _estimate_credits(body: AuditBody) -> int:
+    if not needs_bee_token():
+        return 0
     n = 0
     if _clean_url(body.peya):
         n += 1
@@ -123,9 +126,13 @@ def _require_token() -> str:
     return token
 
 
+def _scrape(url: str) -> dict[str, Any]:
+    token = _require_token() if needs_bee_token() else load_token()
+    return scrape_once(url, token)
+
+
 def _audit_peya(url: str) -> ChannelResult:
-    token = _require_token()
-    bee = scrape_once(url, token)
+    bee = _scrape(url)
     try:
         result = peya_parser.from_bee(bee, url)
     except peya_parser.ParseError as exc:
@@ -135,8 +142,7 @@ def _audit_peya(url: str) -> ChannelResult:
 
 
 def _audit_uber(url: str) -> ChannelResult:
-    token = _require_token()
-    bee = scrape_once(url, token)
+    bee = _scrape(url)
     try:
         result = uber_parser.from_html(bee.get("body") or "", url)
     except uber_parser.ParseError as exc:
@@ -146,8 +152,7 @@ def _audit_uber(url: str) -> ChannelResult:
 
 
 def _audit_rappi(url: str) -> ChannelResult:
-    token = _require_token()
-    bee = scrape_once(url, token)
+    bee = _scrape(url)
     try:
         result = rappi_parser.from_bee(bee, url)
     except rappi_parser.ParseError as exc:
@@ -159,8 +164,7 @@ def _audit_rappi(url: str) -> ChannelResult:
 def _audit_justo(url: str) -> ChannelResult:
     if justo_parser.is_tarragona_justo(url):
         return justo_parser.from_tarragona_cdn(url)
-    token = _require_token()
-    bee = scrape_once(url, token)
+    bee = _scrape(url)
     try:
         website_id = justo_parser.website_id_from_bee(bee)
         if not website_id:
@@ -194,12 +198,21 @@ def index() -> HTMLResponse:
 
 @app.get("/api/health")
 def health() -> dict[str, Any]:
-    return {"ok": True, "token_configured": token_configured()}
+    return {
+        "ok": True,
+        "token_configured": token_configured(),
+        "fetcher": fetcher_name(),
+        "needs_bee_token": needs_bee_token(),
+    }
 
 
 @app.get("/api/token")
 def get_token_status() -> dict[str, Any]:
-    return {"configured": token_configured()}
+    return {
+        "configured": token_configured(),
+        "fetcher": fetcher_name(),
+        "needs_bee_token": needs_bee_token(),
+    }
 
 
 @app.post("/api/token")
@@ -212,8 +225,9 @@ def post_token(body: TokenBody) -> dict[str, Any]:
 def estimate(body: AuditBody) -> dict[str, Any]:
     return {
         "credits_estimated": _estimate_credits(body),
-        "bee_calls": _estimate_credits(body) // CREDITS_PER_BEE,
+        "bee_calls": 0 if not needs_bee_token() else _estimate_credits(body) // CREDITS_PER_BEE,
         "justo_cdn": bool(_clean_url(body.justo) and justo_parser.is_tarragona_justo(_clean_url(body.justo))),
+        "fetcher": fetcher_name(),
     }
 
 
@@ -339,7 +353,8 @@ def _run_one_channel(platform: str, url: str) -> ChannelResult:
         detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
         return _failed(platform, url, 0, detail)
     except (BeeError, peya_parser.ParseError, uber_parser.ParseError, rappi_parser.ParseError, justo_parser.ParseError) as exc:
-        return _failed(platform, url, CREDITS_PER_BEE if platform != "justo" else 0, str(exc))
+        fee = CREDITS_PER_BEE if needs_bee_token() and platform != "justo" else 0
+        return _failed(platform, url, fee, str(exc))
     except Exception as exc:
         traceback.print_exc()
         return _failed(platform, url, 0, f"Error inesperado: {exc}")
@@ -353,11 +368,11 @@ def _prepare_jobs(body: AuditBody) -> list[tuple[str, str, Any]]:
             jobs.append((platform, url, fn))
     if not jobs:
         raise HTTPException(status_code=400, detail="Pega al menos una URL.")
-    needs_bee = any(
+    needs_remote = any(
         platform != "justo" or not justo_parser.is_tarragona_justo(url)
         for platform, url, _fn in jobs
     )
-    if needs_bee:
+    if needs_remote and needs_bee_token():
         _require_token()
     return jobs
 
@@ -477,7 +492,7 @@ def retry_channel(body: RetryBody) -> dict[str, Any]:
                         break
     if not url:
         raise HTTPException(status_code=400, detail="Pega la URL de ese canal para reintentar.")
-    if platform != "justo" or not justo_parser.is_tarragona_justo(url):
+    if (platform != "justo" or not justo_parser.is_tarragona_justo(url)) and needs_bee_token():
         _require_token()
     if not run_id:
         only = AuditBody()

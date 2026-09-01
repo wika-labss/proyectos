@@ -8,13 +8,26 @@ Demo: web en `http://127.0.0.1:8000`. Sin APK.
 
 ```
 URLs pegadas
-  ├─ PedidosYa  → ScrapingBee stealth CL → XHR GET /v2/niles/partners/{id}/menus
-  ├─ Uber Eats  → ScrapingBee stealth CL → JSON-LD hasMenu (SSR)
-  ├─ Rappi      → ScrapingBee stealth CL → XHR POST restaurants-bus/store/id/{id}
-  └─ Justo      → GET webdatacdn.getjusto.com (0 créditos Bee)
+  ├─ PedidosYa  → Scrapling StealthyFetcher (1 fetch) → XHR GET /v2/niles/partners/{id}/menus
+  ├─ Uber Eats  → Scrapling StealthyFetcher → `__REACT_QUERY_STATE__` / catalogItems
+  ├─ Rappi      → Scrapling StealthyFetcher → XHR POST restaurants-bus/store/id/{id}
+  └─ Justo      → GET webdatacdn.getjusto.com (sin browser)
         ↓
   filas unificadas → Excel (resumen / productos / comparacion)
 ```
+
+Fallback: `SCRAPING_TA_FETCHER=bee` usa ScrapingBee stealth CL (~75 créditos / URL).
+
+## Fetchers
+
+| `SCRAPING_TA_FETCHER` | Peya / Uber / Rappi | Créditos Bee |
+|---|---|---:|
+| `scrapling` (default) | Browser local, `capture_xhr` | **0** |
+| `bee` | ScrapingBee stealth CL | 75 |
+
+Proxy residencial Chile opcional: `SCRAPLING_PROXY=http://user:pass@host:port`. Sin proxy, PedidosYa en esta prueba devolvió Cloudflare **403** (`Just a moment...`) y 0 XHR. Uber Eats `/cl` sí cargó HTML con `__REACT_QUERY_STATE__`. Justo CDN no cambia.
+
+`SCRAPLING_SOLVE_CF=0` desactiva el solver de Cloudflare de Scrapling. `retries=1` evita el loop interno de 3 fetches de Scrapling.
 
 ## Costos ScrapingBee
 

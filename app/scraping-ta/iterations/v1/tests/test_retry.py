@@ -36,7 +36,9 @@ def _row(platform: str, url: str, name: str, price: int) -> ProductRow:
 def test_retry_peya_without_token_returns_400(monkeypatch):
     import app as appmod
 
+    monkeypatch.setenv("SCRAPING_TA_FETCHER", "bee")
     monkeypatch.setattr(appmod, "load_token", lambda: "")
+    monkeypatch.setattr(appmod, "needs_bee_token", lambda: True)
     client = TestClient(appmod.app)
     res = client.post(
         "/api/audit/retry",
