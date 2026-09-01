@@ -1,0 +1,48 @@
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { colors } from '../src/constants/theme';
+import { ProgressProvider } from '../src/hooks/ProgressProvider';
+
+export default function RootLayout() {
+  const [loaded] = useFonts({
+    PressStart2P: require('../assets/fonts/PressStart2P-Regular.ttf'),
+  });
+
+  if (!loaded) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.night,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <ActivityIndicator color={colors.cyan} />
+      </View>
+    );
+  }
+
+  return (
+    <ProgressProvider>
+      <StatusBar style="light" />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+          animation: 'fade',
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="map" />
+        <Stack.Screen name="inventory" />
+        <Stack.Screen name="suitors" />
+        <Stack.Screen name="country/[id]" />
+        <Stack.Screen name="play/[countryId]/[level]" />
+      </Stack>
+    </ProgressProvider>
+  );
+}

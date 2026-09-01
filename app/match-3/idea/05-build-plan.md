@@ -40,3 +40,10 @@ FEAT-01–14. Excluye FEAT-15–17 (arte). Módulos MOD-01–11.
 - `npm run smoke` y `typecheck`
 
 `ready_for_construction: true` — 2026-09-01
+
+## V3.1 (Design System)
+
+Salida visual Gate 1: `iterations/v3.1/` (night-cyan, kit 8-bit, assets WIKA).  
+No modifica `iterations/v3/`. Storage sigue `match3:v3:progress`.  
+Gate 2 (APK / release DS) lo firma el arquitecto.
+
