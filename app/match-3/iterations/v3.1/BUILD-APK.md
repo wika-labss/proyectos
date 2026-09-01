@@ -21,6 +21,8 @@ npm run apk
 
 APK: `android/app/build/outputs/apk/release/app-release.apk`
 
+Copia publicada: `final/match-3-america-v3.1-release.apk` y `iterations/v3.1/match-3-america-v3.1-release.apk`
+
 El APK Release es autónomo (bundle embebido) — **no requiere Metro**.
 
-Package: `com.wika.match3`
+Package: `com.wika.match3` · versionName `3.1.0`

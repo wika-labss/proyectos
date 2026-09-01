@@ -26,10 +26,14 @@ No modifica `iterations/v1/`, `v2/` ni `v3/`.
 ## Scripts
 
 - `npm run web` — preview tipo emulador en el navegador (marco de teléfono)
+- `npm run smoke` — engine + economía + viaje (sin RN)
 - `npm run typecheck` — `tsc --noEmit`
 - `npm run verify` — gate de build WIKA
 - `npm run apk` / `apk:win` — APK Release sin Metro
 - `bash scripts/sync-design-system.sh` — tokens/assets desde el repo design-system
+
+APK publicado: `match-3-america-v3.1-release.apk` (~70 MB, Git LFS)
+
 
 ## Reglas
 

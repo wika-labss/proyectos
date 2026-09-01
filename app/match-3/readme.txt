@@ -15,4 +15,5 @@ V1/V2 preservadas
 
 V3.1 (Design System, Gate 1): iterations/v3.1/ — misma economía/engine; UI night-cyan + assets.
 Storage compartido match3:v3:progress. Gate 2 pendiente del arquitecto.
+APK: final/match-3-america-v3.1-release.apk (Git LFS)
 
