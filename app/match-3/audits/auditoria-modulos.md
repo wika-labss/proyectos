@@ -1,13 +1,13 @@
-# Auditoría de Módulos — V1
+# Auditoría de Módulos — V2
 
 ## Proyecto
 Match-3 América
 
 ## Fecha
-2026-08-21
+2026-09-01
 
 ## Objetivo
-Validar que la aplicación fue correctamente descompuesta en módulos reutilizables.
+Validar descomposición modular del contrato V2.
 
 ## Entradas
 - `idea/01-problem.md`
@@ -15,53 +15,51 @@ Validar que la aplicación fue correctamente descompuesta en módulos reutilizab
 - `idea/03-module-discovery.md`
 
 ## Referencia
-`wika-fundaments` @ `wika-fundaments-v2` → `docs/auditoria-modulos.md`
+`wika-fundaments` → `docs/auditoria-modulos.md`
 
 ---
 
 ## Validaciones
 
 ### Cobertura
-- [x] Toda funcionalidad obligatoria tiene módulo (`FEAT-01`–`07` → `MOD-01`–`06`)
-- [x] No hay features huérfanas en el inventario V1
+- [x] `FEAT-01`–`11` → `MOD-01`–`10`
+- [x] Sin features huérfanas V2
 
 ### Responsabilidad
-- [x] Cada módulo tiene una responsabilidad principal
-- [x] Motor puro separado de UI (`mod-match3-engine` vs `mod-screens` / `mod-hint-timer`)
-- [x] Límites claros (data América en `MOD-03`; progreso en `MOD-05`; inventario en `MOD-04`)
+- [x] `match3Engine` vs `affinity` engines separados, ambos puros
+- [x] Data: países/niveles, suitors, avatars
+- [x] Inventario cadencia + lifetime vs stock
 
 ### Duplicidad
-- [x] Sin módulos que resuelvan el mismo problema
-- [x] Hint timer (UI bridge) no duplica lógica de `findHintMove` del engine
+- [x] Hint no duplica `findHintMove`
+- [x] Perfil no duplica persistencia (vive en progress store)
 
 ### Dependencias
-- [x] Dependencias identificadas en `03` (grafo screens → hint → engine; screens → data/inventory/progress)
-- [x] Integraciones documentadas (swap, panic, win → grant/unlock)
-- [x] Riesgos arquitectónicos con mitigación (tablero sin jugadas, idle durante animación, save corrupto)
+- [x] Grafo screens → engines/data/progress; affinity sin React
+- [x] Key de save `match3:v2:progress` evita colisión V1
+- [x] Riesgos: unlock por lifetime, partnerId sticky
 
 ### Reutilización
-- [x] Se evaluó patrón inventario/progreso de Sodoku nuevo → reutilizar patrón, no código compartido
-- [x] `mod-match3-engine` nuevo justificado (no hay Match-3 previo en portafolio)
-- [x] UI kit V3+ diferido; theme local V1
+- [x] Portar `MOD-01` desde V1
+- [x] `MOD-09` nuevo justificado
+- [x] Theme local; DS V3+ diferido
 
-### Metadatos y trazabilidad (v2.1)
-- [x] Frontmatter YAML en `03` con pre-requisito `audit_1_passed: true`
-- [x] RTM modular `MOD-XX` ↔ `FEAT-XX` ↔ `ERR-XX`
-- [x] Contratos (entradas/salidas/aislamiento) documentados
-- [x] Grafo sin ciclos; `src/engine/` sin React
-- [x] Matriz de riesgos y evaluación de reutilización WIKA presentes
+### Metadatos
+- [x] YAML `audit_2_passed: true`
+- [x] RTM modular
+- [x] Contratos affinity `giftDelta` / `applyGift` / `relationshipStatus`
 
 ---
 
 ## Hallazgos
-Ninguno bloqueante. Contratos explícitos: tablero 8×10, 5 gemas, `findHintMove` / `reshuffle`, 5 países × 10 niveles, unlock país con `count() >= 3`.
+Ninguno bloqueante.
 
 ## Resultado
 
 ## APROBADO
 
-Los módulos pueden avanzar al diseño / auditoría de ensamblado.
+Los módulos pueden avanzar al diseño / ensamblado / `iterations/v2/`.
 
 ### Activación de gate
-- [x] Resultado en `audits/auditoria-modulos.md`
-- [x] `audit_2_passed: true` en `03-module-discovery.md` (y docs dependientes)
+- [x] `audits/auditoria-modulos.md`
+- [x] `audit_2_passed: true`

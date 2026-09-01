@@ -2,20 +2,19 @@ Match-3 América — proyecto WIKA
 
 Fuente: wika-fundaments @ wika-fundaments-v2
 
-Producto V1:
-- Match-3 Android offline, tablero 8×10
-- Mundo: 5 países de América (México → Colombia → Perú → Brasil → Argentina)
-- 10 niveles por país (50 totales); dificultad fácil/media oculta
-- Inventario de recompensas; hint idle 5s; botón pánico (reshuffle)
-- Umbral de puntos por nivel; umbral de recompensas para desbloquear país
-- Motor: TypeScript puro src/engine/match3Engine.ts (Expo SDK 52)
+Producto V2 (contrato idea/ 2.0.0):
+- Match-3 Android offline, tablero 8×10 (motor V1)
+- Mundo: 5 países de América × 10 niveles
+- Perfil una vez en Home: nombre, preferencia (hombre/mujer/ambos), avatar 8-bit (3H+3M)
+- Pretendientes: 2 hombres + 2 mujeres por país; unlock = país unlock
+- Regalos solo en niveles pares; dar a pretendientes (+10 slot / +2 otro)
+- Afinidad: 50 amigos / 69 ligue / 120 pareja / 200 matrimonio; espejo amorio / infidelidad culposa
+- Unlock país: 10 niveles + ≥3 regalos ganados (lifetime)
+- Arte diferido: sprites de regalos, mapa ilustrado, retratos de elenco (FEAT-12–14)
 
 Estado:
-- idea/ documentado V1 (01–05)
-- audits/ documentacion + módulos + ensamblado + release → APROBADO (sideload pendiente)
-- ready_for_construction: true
-- iterations/v1/ construido (smoke + typecheck + APK Release)
-- APK: iterations/v1/android/.../app-release.apk · artifact match-3-america-v1-release.apk
-- final/ APK V1 (match-3-america-v1-release.apk)
+- idea/ documentado V2 (01–05) · audits documentación + módulos + ensamblado APROBADO
+- ready_for_construction: true → iterations/v2/
+- iterations/v1/ preservada (APK V1 en final/)
 
-Siguiente: sideload en dispositivo desde final/
+Siguiente: sideload V2 cuando haya APK release
