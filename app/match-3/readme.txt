@@ -1,20 +1,13 @@
 Match-3 América — proyecto WIKA
 
-Fuente: wika-fundaments @ wika-fundaments-v2
+Producto V3 (contrato idea/ 3.0.0):
+- Timer 2:30 + dificultad visible; minScore para ganar
+- Monedas: seed test 1 000 000; payout 3–200 por tiempo
+- Viaje: 10 niveles + 500 (1000 si pareja)
+- Home: avatar, nombre, país, monedas, 3 CTAs en bloques animados
+- VFX tablero: swap / pop / caída
+- Perfil, pretendientes y afinidad de V2
+- Arte diferido: FEAT-15–17 (regalos, mapa, elenco)
 
-Producto V2 (contrato idea/ 2.0.0):
-- Match-3 Android offline, tablero 8×10 (motor V1)
-- Mundo: 5 países de América × 10 niveles
-- Perfil una vez en Home: nombre, preferencia (hombre/mujer/ambos), avatar 8-bit (3H+3M)
-- Pretendientes: 2 hombres + 2 mujeres por país; unlock = país unlock
-- Regalos solo en niveles pares; dar a pretendientes (+10 slot / +2 otro)
-- Afinidad: 50 amigos / 69 ligue / 120 pareja / 200 matrimonio; espejo amorio / infidelidad culposa
-- Unlock país: 10 niveles + ≥3 regalos ganados (lifetime)
-- Arte diferido: sprites de regalos, mapa ilustrado, retratos de elenco (FEAT-12–14)
-
-Estado:
-- idea/ documentado V2 (01–05) · audits documentación + módulos + ensamblado APROBADO
-- ready_for_construction: true → iterations/v2/
-- iterations/v1/ preservada (APK V1 en final/)
-
-Siguiente: sideload V2 cuando haya APK release
+Código: iterations/v3/ · Storage match3:v3:progress
+V1/V2 preservadas
