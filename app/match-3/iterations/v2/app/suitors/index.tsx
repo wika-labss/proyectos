@@ -2,20 +2,20 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PrimaryButton } from '../src/components/PrimaryButton';
-import { SuitorGlyph } from '../src/components/SuitorGlyph';
-import { colors, fonts, radius, relationColors, spacing } from '../src/constants/theme';
-import { COUNTRIES } from '../src/data/countries';
+import { PrimaryButton } from '../../src/components/PrimaryButton';
+import { SuitorGlyph } from '../../src/components/SuitorGlyph';
+import { colors, fonts, radius, relationColors, spacing } from '../../src/constants/theme';
+import { COUNTRIES } from '../../src/data/countries';
 import {
   matchesPreference,
   suitorsForCountry,
-} from '../src/data/suitors';
+} from '../../src/data/suitors';
 import {
   relationshipStatus,
   statusLabel,
-} from '../src/engine/affinity';
-import { useProgress } from '../src/hooks/ProgressProvider';
-import { isCountryUnlocked } from '../src/modules/progress/progressStore';
+} from '../../src/engine/affinity';
+import { useProgress } from '../../src/hooks/ProgressProvider';
+import { isCountryUnlocked } from '../../src/modules/progress/progressStore';
 
 export default function SuitorsScreen() {
   const { progress } = useProgress();

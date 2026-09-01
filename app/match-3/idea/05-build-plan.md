@@ -44,15 +44,15 @@ ready_for_construction: true
 
 | Paso | Módulo | ID Feature | Archivos | Tokens / estándares | Estado |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `01` | `global` | N/A | Scaffold `iterations/v2/` desde v1 (sin APK) | WIKA-ARCH-02 | `PENDIENTE` |
-| `02` | `MOD-01` | `FEAT-01`, `FEAT-03`, `FEAT-05` | Portar `match3Engine.ts` | engine puro | `PENDIENTE` |
-| `03` | `MOD-10` | `FEAT-08` | 6 PNG 8-bit + `avatars.ts` | theme | `PENDIENTE` |
-| `04` | `MOD-08`/`MOD-09` | `FEAT-09`, `FEAT-11` | `suitors.ts`, `affinity.ts`, smoke | umbrales 01 | `PENDIENTE` |
-| `05` | `MOD-04`/`MOD-05`/`MOD-07` | `FEAT-04`, `FEAT-08`, `FEAT-10` | progress v2: perfil, cadencia, lifetime | storage key v2 | `PENDIENTE` |
-| `06` | `MOD-06` | `FEAT-07`, `FEAT-08` | Home onboarding + avatar grid | `04` VIEW-06 | `PENDIENTE` |
-| `07` | `MOD-06` | `FEAT-09`, `FEAT-11` | `/suitors`, `/suitors/[id]` | `relation.*` | `PENDIENTE` |
-| `08` | `integración` | `FEAT-01`–`11` | Play mensaje de regalo par; mapa lifetime | BDD `02` | `PENDIENTE` |
-| `09` | `verify` | N/A | `npm run typecheck` + `smoke` | WIKA-ARCH-05 | `PENDIENTE` |
+| `01` | `global` | N/A | Scaffold `iterations/v2/` desde v1 (sin APK) | WIKA-ARCH-02 | `COMPLETADO` |
+| `02` | `MOD-01` | `FEAT-01`, `FEAT-03`, `FEAT-05` | Portar `match3Engine.ts` | engine puro | `COMPLETADO` |
+| `03` | `MOD-10` | `FEAT-08` | 6 PNG 8-bit + `avatars.ts` | theme | `COMPLETADO` |
+| `04` | `MOD-08`/`MOD-09` | `FEAT-09`, `FEAT-11` | `suitors.ts`, `affinity.ts`, smoke | umbrales 01 | `COMPLETADO` |
+| `05` | `MOD-04`/`MOD-05`/`MOD-07` | `FEAT-04`, `FEAT-08`, `FEAT-10` | progress v2: perfil, cadencia, lifetime | storage key v2 | `COMPLETADO` |
+| `06` | `MOD-06` | `FEAT-07`, `FEAT-08` | Home onboarding + avatar grid | `04` VIEW-06 | `COMPLETADO` |
+| `07` | `MOD-06` | `FEAT-09`, `FEAT-11` | `/suitors`, `/suitors/[id]` | `relation.*` | `COMPLETADO` |
+| `08` | `integración` | `FEAT-01`–`11` | Play mensaje de regalo par; mapa lifetime | BDD `02` | `COMPLETADO` |
+| `09` | `verify` | N/A | `npm run typecheck` + `smoke` | WIKA-ARCH-05 | `COMPLETADO` |
 
 ---
 
@@ -127,12 +127,12 @@ Sin Unity/Godot/Phaser.
 
 ## 9. Criterios de Aprobación V2
 
-- [ ] Features `FEAT-01`–`FEAT-11` implementadas en `iterations/v2/`.
-- [ ] Onboarding nombre + preferencia + 6 avatares 8-bit.
-- [ ] 20 pretendientes; filtro preferencia; unlock por país.
-- [ ] Regalos solo niveles pares; +10/+2; pareja única y espejo.
-- [ ] Unlock país por `rewardsGranted >= 3`.
-- [ ] `npm run typecheck` y `npm run smoke` OK.
+- [x] Features `FEAT-01`–`FEAT-11` implementadas en `iterations/v2/`.
+- [x] Onboarding nombre + preferencia + 6 avatares 8-bit.
+- [x] 20 pretendientes; filtro preferencia; unlock por país.
+- [x] Regalos solo niveles pares; +10/+2; pareja única y espejo.
+- [x] Unlock país por `rewardsGranted >= 3`.
+- [x] `npm run typecheck` y `npm run smoke` OK.
 - [ ] Sideload / APK no bloquean el cierre de código si verify APK no está disponible en el entorno.
 
 ---
