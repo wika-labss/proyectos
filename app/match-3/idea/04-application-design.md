@@ -1,11 +1,11 @@
 ---
 id: "DES-001"
-title: "Match-3 América — Diseño de Aplicación"
+title: "Match-3 América — Diseño de Aplicación V2"
 status: "READY_FOR_CONSTRUCTION"
-version: "1.0.0"
+version: "2.0.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
-updated_at: "2026-08-21"
+updated_at: "2026-09-01"
 audit_1_passed: true
 audit_2_passed: true
 visual_approval_passed: true
@@ -15,53 +15,46 @@ audit_3_passed: true
 # [04] Diseño de Aplicación, Navegación y Aprobación Visual
 
 > **Pre-requisito:** `audit_2_passed: true` en `03-module-discovery.md`.  
-> **Gate visual:** `visual_approval_passed: true` requiere visto bueno del arquitecto/stakeholder.  
-> **Equivalencia:** Auditoría de Ensamblado (parte visual) → `docs/auditoria-ensamblado.md`.
+> **Gate visual:** `visual_approval_passed: true`.  
+> **Código:** `iterations/v2/`.
 
 ## 1. Identificación y Antecedentes
 
 - **Nombre del Proyecto:** `Match-3 América`
 - **Documentos base:** `01-problem.md` | `02-features.md` | `03-module-discovery.md`
-- **Estado de gatekeeping:** `ENSAMBLADO_APROBADO` — `ready_for_construction`
-- **Dirección visual V1:** Viaje por América — mapa continental, países como nodos, partida limpia sin cards en HUD
+- **Estado de gatekeeping:** `ENSAMBLADO_APROBADO` — `ready_for_construction` para V2
+- **Dirección visual V2:** Viaje por América + capa relacional; avatares jugador 8-bit; placeholders de regalos, mapa y elenco (arte diferido FEAT-12–14)
 
 ---
 
 ## 2. Arquitectura General
 
-Capas V1:
-
-1. **expo-router** (`app/`) — rutas Home, Mapa, Niveles, Play, Inventario
-2. **UI** (`src/components/`) — tablero, HUD, botones; consume `theme.ts`
-3. **Modules** — hint-timer, inventory, progress
-4. **Engine** (`src/engine/`) — lógica Match-3 pura
-5. **Data** — países y niveles América
-6. **Persistencia** — AsyncStorage
+1. **expo-router** (`app/`) — Home, Mapa, Niveles, Play, Inventario, Pretendientes
+2. **UI** (`src/components/`) — tablero, botones, avatar; consume `theme.ts`
+3. **Modules** — hint, inventory/progress, profile
+4. **Engine** — `match3Engine` + `affinity`
+5. **Data** — países, niveles, suitors, avatars
+6. **Assets** — `assets/avatars/*.png` (6 retratos 8-bit)
+7. **Persistencia** — AsyncStorage `match3:v2:progress`
 
 ---
 
-## 3. Módulos Utilizados en V1
+## 3. Módulos Utilizados en V2
 
-| ID Módulo | Nombre | Rol en V1 |
-| :--- | :--- | :--- |
-| `MOD-01` | `mod-match3-engine` | Lógica de partida |
-| `MOD-02` | `mod-hint-timer` | Sugerencia a los 5s |
-| `MOD-03` | `mod-levels-america` | Contenido 50 niveles |
-| `MOD-04` | `mod-inventory` | Recompensas |
-| `MOD-05` | `mod-progress-store` | Progreso offline |
-| `MOD-06` | `mod-screens` | Navegación y UI |
+`MOD-01` … `MOD-10` según `03-module-discovery.md`.
 
 ---
 
 ## 4. Relaciones entre Módulos
 
 ```text
+HomeScreen
+  → saveProfile / updateAvatar (MOD-07/05/10)
 PlayScreen
-  → useIdleHint (MOD-02) → findHintMove (MOD-01)
-  → onSwap → match3Engine (MOD-01)
-  → onPanic → reshuffle (MOD-01) + consume panicUses
-  → onWin → inventory.grant + progress.unlock (MOD-04/05)
-  → levelConfig desde MOD-03
+  → useIdleHint → match3Engine
+  → onWin → grant si nivel par (MOD-04/05)
+SuitorDetail
+  → applyGift (MOD-09) + consumeReward (MOD-04)
 ```
 
 ---
@@ -69,14 +62,11 @@ PlayScreen
 ## 5. Flujo Principal de Usuario
 
 ```text
-Home → Mapa (5 países) → Niveles del país → Partida 8×10
-                         ↘ Inventario
-Partida → (idle 5s) Hint
-Partida → Pánico → Reshuffle
-Partida → Victoria (score≥minScore) → Recompensa → Unlock nivel/país
+Home (onboarding si sin perfil) → Mapa → Niveles → Partida
+Home → Pretendientes → Ficha → Dar regalo
+Home → Inventario
+Partida victoria nivel par → +1 recompensa
 ```
-
-Estados: `idle`, `swapping`, `resolving`, `hint`, `won`, `lost`, `empty-inventory` (solo inventario vacío).
 
 ---
 
@@ -84,106 +74,116 @@ Estados: `idle`, `swapping`, `resolving`, `hint`, `won`, `lost`, `empty-inventor
 
 | Ruta | Pantalla | Módulos | Feature |
 | :--- | :--- | :--- | :--- |
-| `/` | Home VISSIUSS | `MOD-06`, `MOD-05` | `FEAT-06`, `FEAT-07` |
-| `/map` | Mapa 5 países | `MOD-06`, `MOD-03`, `MOD-05` | `FEAT-02` |
-| `/country/[id]` | Lista 10 niveles | `MOD-06`, `MOD-03`, `MOD-05` | `FEAT-02` |
+| `/` | Home / onboarding | `MOD-06`, `MOD-07`, `MOD-10` | `FEAT-06`, `FEAT-08` |
+| `/map` | Mapa 5 países (lista placeholder) | `MOD-06`, `MOD-03`, `MOD-05` | `FEAT-02` |
+| `/country/[id]` | Lista 10 niveles | `MOD-06`, `MOD-03` | `FEAT-02` |
 | `/play/[countryId]/[level]` | Partida | `MOD-01`–`MOD-06` | `FEAT-01`–`05` |
-| `/inventory` | Inventario | `MOD-04`, `MOD-06` | `FEAT-04` |
+| `/inventory` | Inventario (texto) | `MOD-04`, `MOD-06` | `FEAT-04` |
+| `/suitors` | Lista pretendientes | `MOD-08`, `MOD-06` | `FEAT-09` |
+| `/suitors/[id]` | Ficha + dar regalo | `MOD-08`, `MOD-09`, `MOD-04` | `FEAT-11` |
 
 ---
 
 ## 7. Consumo de Tokens y Theme
 
-> Estilos derivados de `theme.ts` local V1. Profesionalización V3+ vía `design-system/` si aplica.
+> Estilos derivados de `theme.ts` local. 0% hex en componentes.
 
-### Tokens clave V1 (América / viaje)
+### Tokens V1 reutilizados
 
-| Token semántico | Uso en app | Valor |
+`background` `#0B3D2E`, `backgroundAlt` `#145A32`, `backgroundDeep` `#1A5276`, `surface` `#F4F7F5`, `accent` `#E67E22`, `accentSecondary` `#2980B9`, `text` `#1C2833`, `textOnDark` `#F8F9F9`, `danger` `#C0392B`, `hint` `#F1C40F`, `gem.*`, `spacing.md` 16, `spacing.lg` 24, `radius.md` 12, `font.brand`, `font.body`.
+
+### Tokens V2 — relaciones y slots
+
+| Token | Uso | Valor |
 | :--- | :--- | :--- |
-| `background` | Fondo app | `#0B3D2E` (verde profundo continente) |
-| `backgroundAlt` | Gradiente / atmósfera | `#145A32` → `#1A5276` |
-| `surface` | Paneles HUD | `#F4F7F5` |
-| `accent` | CTA primario / país activo | `#E67E22` |
-| `accentSecondary` | Secundario mapa | `#2980B9` |
-| `text` | Texto principal | `#1C2833` |
-| `textOnDark` | Texto sobre fondo | `#F8F9F9` |
-| `danger` | Botón pánico | `#C0392B` |
-| `hint` | Resalte swap sugerido | `#F1C40F` |
-| `gem.red` | Gema 0 | `#E74C3C` |
-| `gem.blue` | Gema 1 | `#3498DB` |
-| `gem.green` | Gema 2 | `#27AE60` |
-| `gem.yellow` | Gema 3 | `#F4D03F` |
-| `gem.purple` | Gema 4 | `#8E44AD` |
-| `spacing.md` | Padding estándar | `16` |
-| `spacing.lg` | Separación secciones | `24` |
-| `radius.md` | Controles interactivos | `12` |
-| `font.brand` | Marca VISSIUSS | familia display documentada en `theme.ts` (no Inter/Roboto/system) |
-| `font.body` | UI body | familia sans documentada en `theme.ts` |
-
-**Regla:** 0% hex en componentes; solo en `theme.ts` / tokens.
+| `relation.none` | Sin umbral | `#566573` |
+| `relation.amigos` | ≥50 | `#27AE60` |
+| `relation.ligue` | ≥69 | `#F4D03F` |
+| `relation.pareja` | ≥120 primario | `#E67E22` |
+| `relation.matrimonio` | ≥200 primario | `#8E44AD` |
+| `relation.amorio` | ≥120 espejo | `#E74C3C` |
+| `relation.infidelidad` | ≥200 espejo | `#C0392B` |
+| `slot.h1` / `slot.h2` | Iniciales hombre | `#2980B9` / `#1A5276` |
+| `slot.m1` / `slot.m2` | Iniciales mujer | `#E67E22` / `#C0392B` |
 
 ---
 
-## 8. Matriz Preview Visual vs Componentes de Código
+## 8. Matriz Preview Visual vs Componentes
 
-| ID Vista | ID Módulo | Componente / Pantalla | Tokens | Referencia wireframe |
+| ID Vista | ID Módulo | Componente / Pantalla | Tokens | Referencia |
 | :--- | :--- | :--- | :--- | :--- |
-| `VIEW-01` | `MOD-06` | `HomeScreen` | `background`, `accent`, `font.brand` | ASCII §9 |
-| `VIEW-02` | `MOD-06` | `MapScreen` | `accentSecondary`, `surface` | ASCII §9 |
-| `VIEW-03` | `MOD-06` | `CountryLevelsScreen` | `surface`, `text` | ASCII §9 |
-| `VIEW-04` | `MOD-01/06` | `PlayScreen` + `GameBoard` | `gem.*`, `hint`, `danger` | ASCII §9 |
-| `VIEW-05` | `MOD-04/06` | `InventoryScreen` | `surface`, `text` | ASCII §9 |
+| `VIEW-01` | `MOD-06` | Home con perfil | `accent`, `font.brand` | ASCII §9 |
+| `VIEW-02` | `MOD-06` | MapScreen (placeholder lista) | `accentSecondary` | V1 |
+| `VIEW-03` | `MOD-06` | CountryLevelsScreen | `surface` | V1 |
+| `VIEW-04` | `MOD-01/06` | PlayScreen | `gem.*` | V1 |
+| `VIEW-05` | `MOD-04/06` | InventoryScreen | `surface` | Placeholder ítem |
+| `VIEW-06` | `MOD-07/10` | Onboarding + AvatarGrid | `surface`, `accent` | ASCII §9 |
+| `VIEW-07` | `MOD-08/06` | SuitorList | `slot.*`, `locked` | ASCII §9 |
+| `VIEW-08` | `MOD-09/06` | SuitorDetail | `relation.*` | ASCII §9 |
 
 ---
 
 ## 9. Layout Visual (wireframe / ASCII)
 
-### VIEW-01 Home
+### VIEW-06 Home onboarding
 
 ```text
 ┌─────────────────────────────────────┐
-│           VISSIUSS                  │  ← brand hero
+│           VISSIUSS                  │
 │        Match-3 América              │
-│                                     │
-│     [  Jugar  ]   [ Inventario ]    │  ← CTAs
-│                                     │
-│  Puntaje    Histórico   Recompensas │  ← info
+│  Nombre: [______________]           │
+│  Preferencia: [H] [M] [Ambos]       │
+│  Avatar:                            │
+│   [m1] [m2] [m3]                    │
+│   [w1] [w2] [w3]                    │
+│         [ Continuar ]               │
 └─────────────────────────────────────┘
 ```
 
-### VIEW-02 Mapa países
+### VIEW-01 Home con perfil
 
 ```text
 ┌─────────────────────────────────────┐
-│  América — tu viaje                 │
-│                                     │
-│  ● México        (desbloqueado)     │
-│  ○ Colombia      (lock: 10 lvl+3rw) │
-│  ○ Perú                             │
-│  ○ Brasil                           │
-│  ○ Argentina                        │
-│                                     │
-│  Recompensas: n/3 para siguiente    │
+│  [8bit]  Hola, {username}           │
+│           VISSIUSS                  │
+│     [ Jugar ] [ Pretendientes ]     │
+│     [ Inventario ]                  │
+│  Puntaje  Histórico  Regalos        │
 └─────────────────────────────────────┘
 ```
 
-### VIEW-04 Partida
+### VIEW-07 Pretendientes
 
 ```text
 ┌─────────────────────────────────────┐
-│ País · Nivel k/10   Score/minScore  │
-│ Movimientos: n      Pánico: 1       │
-├─────────────────────────────────────┤
-│                                     │
-│         Tablero 8 × 10              │
-│         (gemas / hint glow)         │
-│                                     │
-├─────────────────────────────────────┤
-│ [ Pánico ]              [ Salir ]   │
+│  Pretendientes                      │
+│  México (unlock)                    │
+│   [D] Diego  amigos  50             │
+│   [M] Mateo  —                      │
+│  Colombia (lock)                    │
+│   ○ Santiago · ○ Andrés …           │
 └─────────────────────────────────────┘
 ```
 
-Sin cards en hero/home decorativos; el inventario sí puede listar ítems como contenedores de interacción.
+### VIEW-08 Ficha
+
+```text
+┌─────────────────────────────────────┐
+│  Camila · México                    │
+│  Afinidad  50  [====    ] amigos    │
+│  Inventario:                        │
+│   recompensa 3  (+10)  [Dar]        │
+│   recompensa 1  (+2)   [Dar]        │
+└─────────────────────────────────────┘
+```
+
+### Placeholders vs arte diferido
+
+| Superficie | V2 | Post-V2 (FEAT-12–14) |
+| :--- | :--- | :--- |
+| Regalos | etiqueta `recompensa N` | sprite 8 ítems |
+| Mapa | lista de 5 países | ilustración América |
+| Pretendientes | iniciales + `slot.*` | 20 retratos |
 
 ---
 
@@ -191,10 +191,9 @@ Sin cards en hero/home decorativos; el inventario sí puede listar ítems como c
 
 | Riesgo | Impacto | Mitigación |
 | :--- | :--- | :--- |
-| Tablero 8×10 apretado en móviles chicos | `Alto` | Celdas flex; safe area; HUD compacto |
-| Hint molesto | `Medio` | Solo tras 5s idle; se cancela al tocar |
-| Mapa de países genérico | `Medio` | Nombres reales + orden fijo; accent por país en V1.1+ |
-| Theme local vs DS V3+ | `Medio` | Migrar tokens en pipeline V3+ |
+| Grid 6 avatares apretado | `Medio` | 3×2; celdas ≥ 44 dp |
+| Placeholders percibidos como incompletos | `Medio` | Documentar FEAT-12–14 en Home/Inventario no; en idea/ |
+| Hint molesto | `Medio` | Solo 5s idle |
 
 ---
 
@@ -202,24 +201,22 @@ Sin cards en hero/home decorativos; el inventario sí puede listar ítems como c
 
 ### Checklist aprobación visual (Gate 3A)
 
-- [x] Navegación y flujo principal definidos.
-- [x] Todos los módulos V1 incorporados sin huérfanos.
+- [x] Navegación y flujo definidos.
+- [x] Módulos V2 sin huérfanos.
 - [x] Tokens/theme documentados.
-- [x] Wireframe o preview revisado por arquitecto.
+- [x] Wireframe revisado.
 - [x] Sin dependencias circulares.
 
 ### Checklist auditoría de ensamblado (Gate 3B)
 
-- [x] `05-build-plan.md` coherente con este diseño.
-- [x] Estrategia de build y riesgos alineados.
-- [x] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
+- [x] `05-build-plan.md` coherente.
+- [x] `audits/auditoria-ensamblado.md` `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobación visual (Arquitecto / Stakeholder):** `WIKA Lead QA / agente auditoría`
-- **Fecha visual:** `2026-08-21`
+- **Aprobación visual:** `WIKA Lead QA / agente auditoría`
+- **Fecha visual:** `2026-09-01`
 - **visual_approval_passed:** `true`
-
-- **Aprobación ensamblado (Arquitecto):** `WIKA Lead QA / agente auditoría`
-- **Fecha ensamblado:** `2026-08-21`
+- **Aprobación ensamblado:** `WIKA Lead QA / agente auditoría`
+- **Fecha ensamblado:** `2026-09-01`
 - **audit_3_passed:** `true`

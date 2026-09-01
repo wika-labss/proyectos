@@ -1,11 +1,11 @@
 ---
 id: "MOD-001"
-title: "Match-3 América — Arquitectura de Módulos"
+title: "Match-3 América — Arquitectura de Módulos V2"
 status: "AUDIT_2_APROBADO"
-version: "1.0.0"
+version: "2.0.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
-updated_at: "2026-08-21"
+updated_at: "2026-09-01"
 audit_1_passed: true
 audit_2_passed: true
 ---
@@ -13,13 +13,14 @@ audit_2_passed: true
 # [03] Descubrimiento y Especificación de Arquitectura Modular
 
 > **Pre-requisito:** `audit_1_passed: true` en `01-problem.md` y `02-features.md`.  
-> **Equivalencia:** Auditoría de Módulos → `docs/auditoria-modulos.md`.
+> **Equivalencia:** Auditoría de Módulos → `docs/auditoria-modulos.md`.  
+> **Código:** `iterations/v2/`.
 
 ## 1. Identificación y Documentos Base
 
 - **Nombre del Proyecto:** `Match-3 América`
 - **Especificaciones base:** `01-problem.md` (`PROB-001`) | `02-features.md` (`FEAT-001`)
-- **Estado de gatekeeping:** `AUDIT_2_APROBADO` — listo para diseño / ensamblado
+- **Estado de gatekeeping:** `AUDIT_2_APROBADO`
 
 ---
 
@@ -29,10 +30,14 @@ audit_2_passed: true
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `MOD-01` | `FEAT-01`, `FEAT-03`, `FEAT-05` | `ERR-01`, `ERR-03`, `ERR-05` | `mod-match3-engine` | `engine / lógica` | Tablero 8×10, match, score, hint, reshuffle |
 | `MOD-02` | `FEAT-05` | `ERR-05` | `mod-hint-timer` | `lógica / UI bridge` | Idle 5s → solicitar hint al engine |
-| `MOD-03` | `FEAT-02` | `ERR-02` | `mod-levels-america` | `data` | 5 países × 10 niveles (moves, minScore, difficulty) |
-| `MOD-04` | `FEAT-04` | `ERR-04` | `mod-inventory` | `lógica + persist` | Pool recompensas 1–8; conteo para unlock país |
-| `MOD-05` | `FEAT-06` | `ERR-06` | `mod-progress-store` | `persistencia` | País/nivel unlock, scores, histórico |
-| `MOD-06` | `FEAT-07`, `FEAT-06` | `ERR-07`, `ERR-06` | `mod-screens` | `UI / presentación` | Home, Mapa, Niveles, Partida, Inventario |
+| `MOD-03` | `FEAT-02` | `ERR-02` | `mod-levels-america` | `data` | 5 países × 10 niveles |
+| `MOD-04` | `FEAT-04`, `FEAT-10` | `ERR-04`, `ERR-10` | `mod-inventory` | `lógica + persist` | Cadencia pares; consume al regalar; unlock por lifetime |
+| `MOD-05` | `FEAT-06`, `FEAT-08` | `ERR-06`, `ERR-08` | `mod-progress-store` | `persistencia` | Progreso, perfil, afinidad, partnerId |
+| `MOD-06` | `FEAT-07`, `FEAT-06` | `ERR-07`, `ERR-06` | `mod-screens` | `UI / presentación` | Home, Mapa, Niveles, Partida, Inventario, Pretendientes |
+| `MOD-07` | `FEAT-08` | `ERR-08` | `mod-profile` | `lógica` | Validar/guardar nombre, preferencia, avatarId |
+| `MOD-08` | `FEAT-09` | `ERR-09` | `mod-suitors` | `data` | 20 pretendientes; filtro por país y preferencia |
+| `MOD-09` | `FEAT-11` | `ERR-11` | `mod-affinity-engine` | `engine / lógica` | Delta regalos, umbrales, pareja única, espejo |
+| `MOD-10` | `FEAT-08` | `ERR-08` | `mod-avatars` | `data + assets` | Catálogo 6 retratos 8-bit |
 
 ---
 
@@ -41,64 +46,21 @@ audit_2_passed: true
 ### Módulo `MOD-01`: `mod-match3-engine`
 
 **Patrón:** Pure engine  
-**Ruta en repositorio:** `src/engine/match3Engine.ts` (+ tipos en `src/engine/types.ts`)
+**Ruta:** `src/engine/match3Engine.ts`
 
-#### Contrato
-
-- **Entradas:** `createBoard()`, `swap(board, a, b)`, `tickResolve(state)`, `findHintMove(board)`, `hasValidMoves(board)`, `reshuffle(board)`, `applyScore(matches, combo)`
-- **Salidas:** `GameState` `{ board, score, movesLeft, minScore, panicUsesLeft, status }`
-- **Dependencias:** Ninguna de React; RNG inyectable para tests
-- **Reutilizable:** Sí (otros Match-3 WIKA)
-
-#### Reglas de aislamiento
-
-- No importa React ni componentes de `MOD-06`
-- Expone funciones puras testeables
-- Tablero fijo: `COLS=8`, `ROWS=10`, `GEM_TYPES=5`
-
-#### API mínima esperada
-
-```text
-GemType = 0..4
-Board = GemType[10][8]   // rows × cols
-findMatches(board) -> Match[]
-resolveMatches(state) -> state
-applyGravity / refill
-swap / findHintMove / hasValidMoves / reshuffle
-isWon(state) <=> score >= minScore && status === 'won'
-isLost(state) <=> movesLeft === 0 && score < minScore
-```
+Contrato V1 intacto: `createBoard`, `swap`, `findHintMove`, `hasValidMoves`, `reshuffle`. Sin imports de React. Tablero `COLS=8`, `ROWS=10`, `GEM_TYPES=5`.
 
 ---
 
 ### Módulo `MOD-02`: `mod-hint-timer`
 
-**Patrón:** Hook / controller en frontera UI  
-**Ruta:** `src/modules/hint/useIdleHint.ts`
-
-#### Contrato
-
-- **Entradas:** `idleMs=5000`, eventos `onUserInput`, `onAnimating`
-- **Salidas:** `hintMove | null`; llama `findHintMove` de `MOD-01`
-- **Dependencias:** `MOD-01`; React solo en el hook (no en engine)
-
-#### Reglas
-
-- Timer se reinicia en input, swap, cascada o pánico
-- Hint se limpia al tocar el tablero
+**Ruta:** `src/modules/hint/useIdleHint.ts` — idle 5s → `findHintMove`.
 
 ---
 
 ### Módulo `MOD-03`: `mod-levels-america`
 
-**Patrón:** Data module  
 **Ruta:** `src/data/countries.ts`, `src/data/levels.ts`
-
-#### Contrato
-
-- **Entradas:** `countryId`, `levelIndex` (0..9)
-- **Salidas:** `{ countryId, levelId, difficulty, moves, minScore, rewardOnClear: true }`
-- **Países (orden fijo):**
 
 | Orden | countryId | Nombre |
 | :---: | :--- | :--- |
@@ -108,62 +70,89 @@ isLost(state) <=> movesLeft === 0 && score < minScore
 | 4 | `br` | Brasil |
 | 5 | `ar` | Argentina |
 
-- **Dificultad:** índice impar local = `easy` (25 moves, minScore `800+i*50`); par = `medium` (20 moves, `1200+i*75`)
-- **Reutilizable:** No (contenido del producto)
+`rewardOnClear` efectivo: `levelNumber % 2 === 0`.
 
 ---
 
 ### Módulo `MOD-04`: `mod-inventory`
 
-**Patrón:** Service + store  
-**Ruta:** `src/modules/inventory/`
+**Ruta:** `src/modules/progress/progressStore.ts` (grant/consume)
 
-#### Contrato
-
-- **Entradas:** `grantRandomReward()`, `listRewards()`, `count()`
-- **Salidas:** lista de `{ id: 'recompensa N', grantedAt }`
-- **Dependencias:** AsyncStorage vía `MOD-05` o store propio
-- **Regla unlock país:** `count() >= 3` además de 10 niveles del país previo
-
-#### Pool V1
-
-```text
-recompensa 1 … recompensa 8
-```
-
-Sin tienda ni canje en V1.
+- `grantRandomReward` solo en victoria de nivel par
+- `rewardsGranted` incrementa en grant, no decrementa al entregar
+- `consumeReward(id)` quita un ítem para `applyGift`
+- Unlock país: 10 niveles + `rewardsGranted >= 3`
 
 ---
 
 ### Módulo `MOD-05`: `mod-progress-store`
 
-**Patrón:** Repository / AsyncStorage  
-**Ruta:** `src/modules/progress/`
+**Ruta:** `src/modules/progress/`  
+**Key:** `match3:v2:progress`
 
-#### Contrato
+Salidas: `{ profile, unlockedCountryIndex, unlockedLevelByCountry, totalScore, inventory, history, affinityBySuitor, partnerId, rewardsGranted }`
 
-- **Entradas:** eventos de victoria/derrota, unlock país
-- **Salidas:** `{ unlockedCountryIndex, unlockedLevelByCountry, totalScore, history[] }`
-- **Dependencias:** `@react-native-async-storage/async-storage`
-- **Reglas:** México nivel 1 siempre desbloqueado al primer launch
+México nivel 1 siempre desbloqueado. `profile` null hasta onboarding.
 
 ---
 
 ### Módulo `MOD-06`: `mod-screens`
 
-**Patrón:** Feature screens (expo-router)  
 **Ruta:** `app/`, `src/components/`
 
-#### Contrato
+Pantallas: Home (onboarding o saludo), Mapa, Niveles, Play, Inventario, SuitorList, SuitorDetail.
 
-- **Componentes exportados:** `HomeScreen`, `MapScreen`, `CountryLevelsScreen`, `PlayScreen`, `InventoryScreen`
-- **Props y tokens:** mapeo a `theme.ts` (`04-application-design.md`)
-- **Eventos:** `onPlay`, `onPanic`, `onSelectCountry`, `onSelectLevel`
+Prohibido: lógica de match o afinidad dentro de pantallas (delegar a engines).
 
-#### Dependencias
+---
 
-- **Internas:** `MOD-01` … `MOD-05`, `constants/theme`
-- **Prohibidas:** lógica de match dentro de pantallas (delegar a engine)
+### Módulo `MOD-07`: `mod-profile`
+
+**Ruta:** funciones en `progressStore` / helpers `src/modules/profile/`
+
+Entradas: `username` trim no vacío, `preference`, `avatarId` del catálogo.  
+Salidas: `saveProfile`, `updateAvatar`. Nombre/preferencia no se reescriben.
+
+---
+
+### Módulo `MOD-08`: `mod-suitors`
+
+**Ruta:** `src/data/suitors.ts`
+
+IDs `{countryId}-{slot}` slot `h1|h2|m1|m2`.
+
+- México: Diego, Mateo, Camila, Valentina
+- Colombia: Santiago, Andrés, Isabella, Sofía
+- Perú: Joaquín, Lucas, Lucía, Emilia
+- Brasil: Thiago, Gabriel, Beatriz, Ana
+- Argentina: Facundo, Nicolás, Martina, Julieta
+
+`visibleSuitors(preference, unlockedCountryIndex)` filtra género y país.
+
+---
+
+### Módulo `MOD-09`: `mod-affinity-engine`
+
+**Patrón:** Pure engine  
+**Ruta:** `src/engine/affinity.ts`
+
+```text
+giftDelta(giftN, slot) -> 10 | 2
+applyGift(affinityState, suitorId, giftN, slot) -> affinityState
+relationshipStatus(affinity, isPartner, hasPartner) -> Status
+```
+
+`partnerId` se asigna la primera vez que alguien cruza 120; no se reemplaza.
+
+Aislamiento: sin React.
+
+---
+
+### Módulo `MOD-10`: `mod-avatars`
+
+**Ruta:** `src/data/avatars.ts`, `assets/avatars/*.png`
+
+IDs: `avatar-m1`, `avatar-m2`, `avatar-m3`, `avatar-w1`, `avatar-w2`, `avatar-w3`.
 
 ---
 
@@ -172,27 +161,20 @@ Sin tienda ni canje en V1.
 ```text
 [app/ screens — expo-router]  MOD-06
        │
-       ├──► MOD-02 hint-timer
-       │         │
-       │         ▼
-       ├──► MOD-01 match3-engine
-       │
+       ├──► MOD-02 hint-timer ──► MOD-01 match3-engine
        ├──► MOD-03 levels-america
-       │
+       ├──► MOD-08 suitors
+       ├──► MOD-10 avatars
+       ├──► MOD-07 profile
        ├──► MOD-04 inventory
-       │         │
        └───────► MOD-05 progress-store
                        │
+                       ├──► MOD-09 affinity-engine
                        ▼
               AsyncStorage (local)
 ```
 
-**Reglas:**
-
-- Prohibidas importaciones circulares.
-- `src/engine/` sin imports de React.
-- Estilos solo vía tokens/theme documentados.
-- `MOD-03` es data estática; no depende de UI.
+**Reglas:** prohibidas circulares; `src/engine/` sin React; estilos solo tokens; `MOD-03`/`MOD-08`/`MOD-10` data estática.
 
 ---
 
@@ -200,12 +182,12 @@ Sin tienda ni canje en V1.
 
 | ID Módulo | Riesgo | Impacto | Mitigación |
 | :--- | :--- | :--- | :--- |
-| `MOD-01` | Tablero sin jugadas / reshuffle lento | `Alto` | Smoke `hasValidMoves` + reshuffle acotado |
-| `MOD-02` | Hint se dispara durante animación | `Medio` | Pausar idle mientras `animating` |
-| `MOD-03` | minScore desbalanceado | `Medio` | Fórmulas fijas + tunear en data |
-| `MOD-04` | Unlock país confuso | `Medio` | UI muestra faltantes (niveles + count) |
-| `MOD-05` | Corrupción de save | `Medio` | Schema versionado + defaults |
+| `MOD-01` | Tablero sin jugadas | `Alto` | Smoke `hasValidMoves` + reshuffle |
+| `MOD-04` | Unlock bloqueado por regalar | `Alto` | `rewardsGranted` lifetime |
+| `MOD-05` | Save V1 incompatible | `Medio` | Key `match3:v2:progress` + defaults |
+| `MOD-09` | Dos personajes a 120 el mismo tick | `Medio` | Un solo `applyGift` a la vez; primer 120 gana |
 | `MOD-06` | Hex hardcoded | `Alto` | Checklist 0% hex; theme único |
+| `MOD-10` | Assets faltantes | `Medio` | Catálogo con require local; smoke lista 6 IDs |
 
 ---
 
@@ -213,10 +195,10 @@ Sin tienda ni canje en V1.
 
 | Módulo | ¿Existe equivalente WIKA? | Decisión |
 | :--- | :--- | :--- |
-| `MOD-01` | No (engines Snake/Tetris/TD distintos) | Crear nuevo |
-| `MOD-04`/`MOD-05` | Patrón inventario/progreso en Sodoku nuevo | Reutilizar patrón, no código compartido |
-| `MOD-06` | Home Jugar/Inventario Sodoku | Reutilizar UX pattern |
-| UI kit | `sodoku-ui-kit` (V3+) | Diferir; theme local V1 |
+| `MOD-01` | V1 match-3 | Portar a v2 sin cambiar reglas |
+| `MOD-09` | No | Crear nuevo engine puro |
+| `MOD-08`/`MOD-10` | No | Data de producto |
+| UI kit | sodoku V3+ | Diferir; theme local V2 |
 
 ---
 
@@ -234,5 +216,5 @@ Sin tienda ni canje en V1.
 ### Registro de visto bueno
 
 - **Aprobado por (Arquitecto):** `WIKA Lead QA / agente auditoría`
-- **Fecha:** `2026-08-21`
+- **Fecha:** `2026-09-01`
 - **audit_2_passed:** `true`

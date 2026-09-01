@@ -1,11 +1,11 @@
 ---
 id: "FEAT-001"
-title: "Match-3 América — Características V1"
+title: "Match-3 América — Características V2"
 status: "AUDIT_1_APROBADO"
-version: "1.0.0"
+version: "2.0.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
-updated_at: "2026-08-21"
+updated_at: "2026-09-01"
 audit_1_passed: true
 audit_2_passed: true
 ---
@@ -13,13 +13,14 @@ audit_2_passed: true
 # [02] Especificación de Características y Requerimientos Funcionales
 
 > **Pre-requisito:** `audit_1_passed: true` en `01-problem.md` y este documento.  
-> **Equivalencia:** Auditoría de Documentación → `docs/auditoria-documentacion.md`.
+> **Equivalencia:** Auditoría de Documentación → `docs/auditoria-documentacion.md`.  
+> **Destino de código:** `iterations/v2/`.
 
 ## 1. Identificación y Control de Cambios
 
 - **Nombre del Proyecto:** `Match-3 América`
 - **Documento base:** `idea/01-problem.md` (ID: `PROB-001`)
-- **Estado de gatekeeping:** `AUDIT_1_APROBADO` — listo para auditoría de módulos
+- **Estado de gatekeeping:** `AUDIT_1_APROBADO` — contrato V2
 
 ---
 
@@ -30,10 +31,14 @@ audit_2_passed: true
 | `FEAT-01` | `ERR-01` | Motor Match-3 tablero 8×10 | `Crítica` | `MOD-01` |
 | `FEAT-02` | `ERR-02` | Campaña 5 países × 10 niveles | `Crítica` | `MOD-03` |
 | `FEAT-03` | `ERR-03` | Umbral de puntos y desbloqueo de nivel | `Crítica` | `MOD-01` |
-| `FEAT-04` | `ERR-04` | Recompensas e inventario; unlock país | `Crítica` | `MOD-04` |
+| `FEAT-04` | `ERR-04` | Inventario de regalos; unlock país por lifetime | `Crítica` | `MOD-04` |
 | `FEAT-05` | `ERR-05` | Hint idle 5s + botón pánico | `Crítica` | `MOD-01` |
 | `FEAT-06` | `ERR-06` | Home, mapa, persistencia offline | `Crítica` | `MOD-05` |
 | `FEAT-07` | `ERR-07` | Theme América / viaje + UI pantallas | `Alta` | `MOD-06` |
+| `FEAT-08` | `ERR-08` | Perfil: nombre, preferencia, avatar 8-bit | `Crítica` | `MOD-07`, `MOD-10` |
+| `FEAT-09` | `ERR-09` | Pretendientes 2H+2M por país | `Crítica` | `MOD-08` |
+| `FEAT-10` | `ERR-04`, `ERR-10` | Regalos solo en niveles pares | `Crítica` | `MOD-04` |
+| `FEAT-11` | `ERR-11` | Afinidad, pareja única, etiquetas espejo | `Crítica` | `MOD-09` |
 
 ---
 
@@ -41,19 +46,13 @@ audit_2_passed: true
 
 ### Feature `FEAT-01`: Motor Match-3 tablero 8×10
 
-**Descripción:** Lógica pura: grilla 8 columnas × 10 filas, 5 tipos de gema, swap adyacente, match ≥3, gravedad, refill, puntuación y detección de movimientos válidos.
+**Descripción:** Lógica pura: grilla 8 columnas × 10 filas, 5 tipos de gema, swap adyacente, match ≥3, gravedad, refill, puntuación y detección de movimientos válidos. Sin cambios de reglas respecto a V1.
 
 #### Escenario 1.1: Swap válido genera match
 
 - **Dado que** el tablero tiene dos gemas adyacentes cuyo intercambio crea un match ≥3
 - **Cuando** el jugador hace swap
-- **Entonces** se resuelven matches, aplica gravedad/refill y se suman puntos según fórmula V1
-
-#### Escenario 1.2: Swap inválido
-
-- **Dado que** el intercambio no produce match
-- **Cuando** el jugador intenta el swap
-- **Entonces** las gemas vuelven a su posición y no se consume movimiento
+- **Entonces** se resuelven matches, aplica gravedad/refill y se suman puntos según fórmula
 
 ---
 
@@ -61,15 +60,9 @@ audit_2_passed: true
 
 **Descripción:** Mapa de América con exactamente 5 países en orden: México → Colombia → Perú → Brasil → Argentina. Cada país tiene 10 niveles secuenciales. Dificultad interna fácil/media oculta (impares fácil, pares media).
 
-#### Escenario 2.1: Avance dentro del país
+#### Escenario 2.1: País bloqueado
 
-- **Dado que** el nivel 1 del país actual está desbloqueado
-- **Cuando** el jugador completa niveles con umbral de puntos
-- **Entonces** se desbloquean hasta el nivel 10 del mismo país en orden
-
-#### Escenario 2.2: País bloqueado
-
-- **Dado que** el jugador no cumplió 10 niveles del país anterior o tiene &lt; 3 recompensas
+- **Dado que** el jugador no cumplió 10 niveles del país anterior o tiene &lt; 3 regalos ganados
 - **Cuando** intenta abrir el siguiente país
 - **Entonces** permanece bloqueado con feedback claro
 
@@ -79,87 +72,115 @@ audit_2_passed: true
 
 **Descripción:** Cada nivel define `minScore`. Victoria y unlock del siguiente nivel solo si `score >= minScore`. Fórmulas: fácil `800 + i×50`, media `1200 + i×75` (i = 0..9). Movimientos: fácil 25 / media 20.
 
-#### Escenario 3.1: Victoria con umbral
-
-- **Dado que** el jugador alcanza `minScore` antes de agotar movimientos
-- **Cuando** se evalúa fin de nivel
-- **Entonces** el nivel cuenta como completado y se habilita N+1
-
-#### Escenario 3.2: Derrota por movimientos
-
-- **Dado que** `movesLeft = 0` y `score < minScore`
-- **Cuando** termina la resolución de cascadas
-- **Entonces** se muestra derrota; el siguiente nivel no se desbloquea
-
 ---
 
-### Feature `FEAT-04`: Recompensas e inventario; unlock país
+### Feature `FEAT-04`: Inventario de regalos; unlock país
 
-**Descripción:** Al completar un nivel (con umbral) se otorga exactamente 1 recompensa aleatoria del pool `recompensa 1` … `recompensa 8` al inventario local (solo visualización). Desbloquear el siguiente país requiere completar los 10 niveles del actual **y** tener ≥ 3 ítems en inventario.
+**Descripción:** El inventario lista ítems `recompensa 1`–`8` (placeholder visual V2). Desbloquear el siguiente país requiere completar los 10 niveles del actual **y** `rewardsGranted >= 3` (conteo lifetime, no stock actual). Entregar un regalo **consume** un ítem.
 
-#### Escenario 4.1: Otorgar recompensa
+#### Escenario 4.1: Unlock país no depende del stock
 
-- **Dado que** el jugador gana un nivel
-- **Cuando** se cierra la victoria
-- **Entonces** el inventario aumenta en 1 ítem aleatorio (1–8)
-
-#### Escenario 4.2: Unlock país
-
-- **Dado que** los 10 niveles del país están completados y `inventoryCount >= 3`
-- **Cuando** el jugador abre el mapa
-- **Entonces** el siguiente país del orden queda desbloqueado
+- **Dado que** el jugador ganó ≥3 regalos y ya entregó algunos
+- **Cuando** completa el nivel 10 del país actual
+- **Entonces** el siguiente país se desbloquea aunque el inventario actual sea &lt; 3
 
 ---
 
 ### Feature `FEAT-05`: Hint idle 5s + botón pánico
 
-**Descripción:** Tras 5 segundos sin input/animación de jugada, se destaca un movimiento válido (`findHintMove`). Botón pánico: reshuffle del tablero preservando score, movimientos restantes y objetivos; 1 uso por nivel; también usable/auto cuando `!hasValidMoves`.
-
-#### Escenario 5.1: Hint por idle
-
-- **Dado que** hay movimientos válidos y no hay interacción por 5 s
-- **Cuando** vence el timer
-- **Entonces** se resalta un par de celdas intercambiables; al tocar se limpia el hint
-
-#### Escenario 5.2: Pánico
-
-- **Dado que** el jugador tiene 1 uso de pánico restante en el nivel
-- **Cuando** pulsa el botón pánico (o el motor detecta 0 jugadas)
-- **Entonces** el tablero se reshufflea con ≥1 jugada válida y el uso queda consumido
+**Descripción:** Tras 5 segundos sin input, se destaca un movimiento válido. Pánico: reshuffle; 1 uso por nivel.
 
 ---
 
 ### Feature `FEAT-06`: Home, mapa y persistencia offline
 
-**Descripción:** Home VISSIUSS con acciones Jugar / Inventario e info Puntaje / Histórico / Recompensas. Persistencia local: país/nivel desbloqueados, scores, inventario, histórico de victorias. 100% offline.
-
-#### Escenario 6.1: Persistir progreso
-
-- **Dado que** el jugador completó un nivel
-- **Cuando** cierra y reabre la app sin red
-- **Entonces** el progreso, puntaje e inventario se restauran
+**Descripción:** Home VISSIUSS con Jugar / Inventario / Pretendientes. Persistencia local: perfil, país/nivel, scores, inventario, afinidad, `partnerId`, `rewardsGranted`. 100% offline. Storage key `match3:v2:progress`.
 
 ---
 
 ### Feature `FEAT-07`: Theme América / viaje + UI
 
-**Descripción:** Pantallas Home, Mapa de países, Selector de niveles, Partida (HUD + tablero + pánico), Inventario. Estilos vía `theme.ts` documentado en `04-application-design.md`.
-
-#### Escenario 7.1: Navegación principal
-
-- **Dado que** el usuario está en Home
-- **Cuando** pulsa Jugar
-- **Entonces** ve el mapa de 5 países y puede entrar al país desbloqueado
+**Descripción:** Pantallas Home, Mapa, Selector de niveles, Partida, Inventario, Pretendientes. Estilos vía `theme.ts` documentado en `04-application-design.md`.
 
 ---
 
-## 4. Funcionalidades Deseables (V1.1+)
+### Feature `FEAT-08`: Perfil — nombre, preferencia, avatar 8-bit
+
+**Descripción:** Primera visita a Home: formulario obligatorio. Nombre no vacío; preferencia `hombre` | `mujer` | `ambos`; avatar uno de 6 retratos pixel art (3 hombres `avatar-m1..m3`, 3 mujeres `avatar-w1..w3`). Nombre y preferencia inmutables. Avatar visible en Home; se puede cambiar tocando el retrato. Preferencia filtra pretendientes visibles, **no** el grid de avatares del jugador.
+
+#### Escenario 8.1: Onboarding una vez
+
+- **Dado que** `profile` es `null`
+- **Cuando** el jugador confirma nombre, preferencia y avatar
+- **Entonces** se persiste el perfil y Home pasa a saludo + retrato + CTAs
+
+#### Escenario 8.2: Cambiar solo el avatar
+
+- **Dado que** ya hay perfil
+- **Cuando** el jugador toca el retrato en Home y elige otro de los 6
+- **Entonces** se actualiza `avatarId` sin pedir de nuevo nombre ni preferencia
+
+---
+
+### Feature `FEAT-09`: Pretendientes 2H+2M por país
+
+**Descripción:** 20 personajes (IDs `{countryId}-{h1|h2|m1|m2}`). Visible/interactuable solo si el país está desbloqueado. Preferencia `hombre` muestra `h1/h2`; `mujer` muestra `m1/m2`; `ambos` muestra los 4. V2 usa iniciales + color de slot (retratos de elenco diferidos).
+
+#### Escenario 9.1: País bloqueado
+
+- **Dado que** Colombia no está desbloqueado
+- **Cuando** el jugador abre Pretendientes
+- **Entonces** el grupo Colombia aparece bloqueado y no se puede regalar
+
+---
+
+### Feature `FEAT-10`: Regalos solo en niveles pares
+
+**Descripción:** Al ganar un nivel, `grantRandomReward` solo si `levelNumber` ∈ {2,4,6,8,10}. Niveles impares no otorgan ítem. Pool aleatorio 1–8.
+
+#### Escenario 10.1: Nivel impar sin regalo
+
+- **Dado que** el jugador gana el nivel 1 (índice 0)
+- **Cuando** se cierra la victoria
+- **Entonces** el inventario no crece y `rewardsGranted` no incrementa
+
+#### Escenario 10.2: Nivel par con regalo
+
+- **Dado que** el jugador gana el nivel 2
+- **Cuando** se cierra la victoria
+- **Entonces** el inventario aumenta 1 ítem aleatorio y `rewardsGranted += 1`
+
+---
+
+### Feature `FEAT-11`: Afinidad, pareja única, etiquetas espejo
+
+**Descripción:** Motor puro. Entregar regalo: slot coincidente +10, otro +2. Umbrales del personaje pareja (`partnerId` o aún sin pareja): 50 amigos, 69 ligue, 120 pareja, 200 matrimonio. El primero en cruzar 120 fija `partnerId`. Los demás: 50 amigos, 69 ligue, 120 amorio, 200 infidelidad culposa. No hay segunda pareja ni matrimonio.
+
+#### Escenario 11.1: Primer 120
+
+- **Dado que** `partnerId` es null y un pretendiente pasa de 110 a 120
+- **Cuando** se aplica el regalo
+- **Entonces** ese ID queda como `partnerId` con estado pareja
+
+#### Escenario 11.2: Espejo
+
+- **Dado que** ya hay pareja
+- **Cuando** otro pretendiente alcanza 120 / 200
+- **Entonces** los estados son amorio / infidelidad culposa, no pareja / matrimonio
+
+---
+
+## 4. Funcionalidades Deseables (diseño visual diferido — post-V2)
 
 | ID Feature | Nombre | Prioridad | Notas |
 | :--- | :--- | :--- | :--- |
-| `FEAT-08` | Más países de América | `Media` | Fuera de V1 |
-| `FEAT-09` | Boosters / obstáculos | `Media` | Hielo, cadenas, etc. |
-| `FEAT-10` | Usos extra de pánico | `Baja` | Solo 1 en V1 |
+| `FEAT-12` | Sprites de los 8 regalos | `Media` | Sustituir placeholder texto/color; mismos IDs `recompensa N` |
+| `FEAT-13` | Mapa ilustrado de América | `Media` | Sustituir lista de países V1; mismos `countryId` |
+| `FEAT-14` | Retratos de 20 pretendientes | `Media` | Sustituir iniciales+color; mismos suitor IDs |
+| `FEAT-15` | Más países de América | `Baja` | Fuera de V2 |
+| `FEAT-16` | Boosters / obstáculos | `Baja` | Hielo, cadenas |
+
+Los IDs de país, suitor y regalo **no cambian** cuando se haga el pase de arte.
 
 ---
 
@@ -168,9 +189,10 @@ audit_2_passed: true
 - Unity/Godot/Phaser
 - Backend, cuentas, ads, IAP
 - iOS / multijugador
-- Boosters permanentes y obstáculos avanzados
-- Más de 5 países o más de 10 niveles por país en V1
+- Cambiar nombre o preferencia post-onboarding
+- Ruptura / segunda pareja
 - Pipeline `design-system/` (reservado V3+)
+- Modificar `iterations/v1/`
 
 ---
 
@@ -178,24 +200,25 @@ audit_2_passed: true
 
 | ID NFR | Categoría | Criterio aceptable | Método de validación |
 | :--- | :--- | :--- | :--- |
-| `NFR-01` | **Rendimiento** | Smoke engine &lt; 30s | `npm run verify` / smoke |
-| `NFR-02` | **Build** | APK release sin Metro | `scripts/build-apk.sh` |
-| `NFR-03` | **Fidelidad visual** | 100% tokens documentados | Revisión `04-application-design.md` |
+| `NFR-01` | **Rendimiento** | Smoke engine + afinidad | `npm run smoke` |
+| `NFR-02` | **Build** | Typecheck limpio V2 | `npm run typecheck` |
+| `NFR-03` | **Fidelidad visual** | 100% tokens documentados | Revisión `04` |
 | `NFR-04` | **Offline** | Flujo completo sin red | Prueba manual |
 | `NFR-05` | **Aislamiento** | `src/engine/` sin React | typecheck + review |
 
 ---
 
-## 7. Mapeo de UI y Componentes (si aplica)
+## 7. Mapeo de UI y Componentes
 
 | Componente UI | Pantalla / Vista | Tokens | Estado mockup |
 | :--- | :--- | :--- | :--- |
 | `PrimaryButton` | Home | `accent`, `spacing.md` | Wireframe en `04` |
-| `CountryMap` | Mapa | `surface`, `accent` | Wireframe en `04` |
+| `AvatarGrid` | Home onboarding | `surface`, `accent` | VIEW-06 |
+| `CountryMap` | Mapa | `surface`, `accent` | Placeholder lista |
 | `GameBoard` | Partida | `gem.*`, `board` | Wireframe en `04` |
-| `PanicButton` | Partida | `danger`, `accent` | Wireframe en `04` |
-| `HintHighlight` | Partida | `hint` | Wireframe en `04` |
-| `InventoryList` | Inventario | `surface`, `text` | Wireframe en `04` |
+| `InventoryList` | Inventario | `surface`, `text` | Placeholder ítem |
+| `SuitorList` | Pretendientes | `relation.*` | VIEW-07 |
+| `SuitorDetail` | Ficha | `relation.*` | VIEW-08 |
 
 ---
 
@@ -205,13 +228,13 @@ audit_2_passed: true
 
 - [x] Frontmatter YAML vinculado a `PROB-001`.
 - [x] RTM 1:1 con IDs `ERR-XX` de `01-problem.md`.
-- [x] Escenarios BDD por feature obligatoria.
+- [x] Escenarios BDD por feature nueva V2.
 - [x] NFRs con métricas verificables.
-- [x] Deseables y fuera de alcance diferenciados.
+- [x] Deseables (arte diferido) y fuera de alcance diferenciados.
 - [x] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
 - **Aprobado por (Arquitecto):** `WIKA Lead QA / agente auditoría`
-- **Fecha:** `2026-08-21`
+- **Fecha:** `2026-09-01`
 - **audit_1_passed:** `true`
