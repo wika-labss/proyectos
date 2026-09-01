@@ -27,3 +27,12 @@ Arte diferido (placeholders): sprites de regalos, mapa ilustrado, retratos de el
 - Estilos vía `src/constants/theme.ts` (0% hex en componentes)
 - Package: `com.wika.match3`
 - Storage: `match3:v2:progress`
+
+## APK Release
+
+- [`match-3-america-v2-release.apk`](./match-3-america-v2-release.apk) (~61 MB, Git LFS)
+- Mirror: [`../../final/match-3-america-v2-release.apk`](../../final/match-3-america-v2-release.apk)
+
+```bash
+adb install -r match-3-america-v2-release.apk
+```
