@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, Pressable, StyleSheet, Text, View, type DimensionValue } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../src/components/PrimaryButton';
 import { colors, fonts, spacing, typography } from '../src/constants/theme';
@@ -18,7 +18,7 @@ import {
 } from '../src/modules/progress/progressStore';
 
 /** Labels RN sobre pines ya dibujados en map-americas.png (sin diamante extra). */
-const PIN: Record<CountryId, { top: string; left: string }> = {
+const PIN: Record<CountryId, { top: DimensionValue; left: DimensionValue }> = {
   mx: { top: '32%', left: '22%' },
   co: { top: '48%', left: '34%' },
   pe: { top: '58%', left: '32%' },
