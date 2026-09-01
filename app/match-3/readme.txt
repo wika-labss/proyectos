@@ -16,5 +16,6 @@ Estado:
 - idea/ documentado V2 (01–05) · audits documentación + módulos + ensamblado APROBADO
 - ready_for_construction: true → iterations/v2/
 - iterations/v1/ preservada (APK V1 en final/)
+- APK V2: iterations/v2/match-3-america-v2-release.apk · final/match-3-america-v2-release.apk
 
-Siguiente: sideload V2 cuando haya APK release
+Siguiente: sideload V2 desde final/
