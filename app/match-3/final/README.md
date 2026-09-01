@@ -4,7 +4,7 @@
 
 - **Archivo:** [`match-3-america-v3.1-release.apk`](./match-3-america-v3.1-release.apk)
 - **Package:** `com.wika.match3`
-- **Version:** 3.1.0
+- **Version:** 3.1.1 (versionCode 2)
 - **Tamaño:** ~70 MB
 - **Modo:** Release autónomo (sin Metro)
 

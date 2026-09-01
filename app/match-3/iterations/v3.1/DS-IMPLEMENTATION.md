@@ -69,4 +69,4 @@ No se copian refs con watermark de `inspiration/match-3/`.
 
 Pendiente de firma del arquitecto en `design-system/delivery/match-3-v3-to-v3.1/delivery-approval.md`.
 
-APK Release generado: `final/match-3-america-v3.1-release.apk` (`com.wika.match3` 3.1.0, ~70 MB).
+APK Release generado: `final/match-3-america-v3.1-release.apk` (`com.wika.match3` 3.1.1, ~70 MB).

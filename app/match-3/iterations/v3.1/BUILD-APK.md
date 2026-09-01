@@ -25,4 +25,4 @@ Copia publicada: `final/match-3-america-v3.1-release.apk` y `iterations/v3.1/mat
 
 El APK Release es autónomo (bundle embebido) — **no requiere Metro**.
 
-Package: `com.wika.match3` · versionName `3.1.0`
+Package: `com.wika.match3` · versionName `3.1.1`

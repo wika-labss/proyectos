@@ -9,6 +9,6 @@
 - Fuente pixel: Press Start 2P OFL (`assets/fonts/`)
 - Engine / economía / afinidad: sin cambios de contrato vs V3
 - Storage: `match3:v3:progress` (carry-over)
-- Package: `com.wika.match3` version 3.1.0
+- Package: `com.wika.match3` version 3.1.1
 - Tablero producción: 8×10 (el mockup hero-play es 8×8 de composición)
 - APK: `match-3-america-v3.1-release.apk` (~70 MB, Git LFS)
