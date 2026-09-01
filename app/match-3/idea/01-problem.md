@@ -2,7 +2,7 @@
 id: "PROB-001"
 title: "Match-3 América"
 status: "AUDIT_1_APROBADO"
-version: "2.0.0"
+version: "3.0.0"
 owner: "VISSIUSS / WIKA"
 created_at: "2026-08-21"
 updated_at: "2026-09-01"
@@ -11,196 +11,110 @@ audit_1_passed: true
 
 # [01] Definición del Problema, Alcance y Metas
 
-> **Equivalencia de auditoría:** `audit_1_passed: true` requiere aprobación formal en `docs/auditoria-documentacion.md` (copia en `audits/auditoria-documentacion.md`).  
-> **Nota de versión:** V2 añade perfil, pretendientes y afinidad sobre el Match-3 V1. Implementación en `iterations/v2/`.
+> **Nota de versión:** V3 añade timer 2:30, dificultad visible, economía de monedas para viajar y Home en 3 bloques animados. Código en `iterations/v3/`.
 
 ## 1. Identificación y Control de Cambios
 
 - **Nombre del Proyecto:** `Match-3 América`
 - **Repositorio de aplicación:** `proyectos/app/match-3/`
-- **Stakeholders clave:** Producto VISSIUSS; Arquitecto WIKA; Agente IA documentación
-- **Estado de gatekeeping:** `READY_FOR_CONSTRUCTION` — contrato V2; implementación en `iterations/v2/`
+- **Stakeholders clave:** Producto VISSIUSS; Arquitecto WIKA
+- **Estado de gatekeeping:** `READY_FOR_CONSTRUCTION` — contrato V3; `iterations/v3/`
 
 ---
 
 ## 2. Definición del Problema y Justificación
 
 - **¿Qué problema se intenta resolver?**  
-  La V1 entrega Match-3 offline por países, pero el inventario es colección pasiva y no hay identidad del jugador ni meta social. Falta un perfil (nombre, preferencia, avatar), un elenco de pretendientes por país y un sistema de regalos/afinidad que motive a completar niveles pares.
+  V2 desbloquea países con regalos lifetime; no hay reloj, ni monedas de viaje, ni presión de tiempo. El Home no muestra país/monedas y el tablero teleporta gemas sin desplazamiento.
 
-- **Impacto actual / costo de oportunidad:**  
-  Sin V2 el viaje por América no tiene capa relacional; los regalos no tienen destino y no hay razón de colección más allá del unlock de país.
-
-- **Análisis de brecha (Gap Analysis):**
-  - **Estado actual (hoy):** `iterations/v1/` jugable: tablero 8×10, 5 países × 10 niveles, 1 recompensa por cada victoria, inventario visual, sin perfil ni pretendientes.
-  - **Estado deseado (mañana):** V2 instalable: onboarding en Home (nombre + preferencia + avatar 8-bit), 4 pretendientes/país, regalos cada 2 niveles, dar regalos con afinidad y estados de relación.
+- **Estado actual:** `iterations/v2/` con perfil, pretendientes, afinidad, unlock por 10 niveles + ≥3 regalos ganados.
+- **Estado deseado:** V3: timer 2:30, payout 3–200 monedas, viaje 10 niveles + 500/1000, Home 3 bloques, VFX de tablero.
 
 ---
 
-## 3. Matriz de Trazabilidad de Requerimientos (RTM Inicial)
+## 3. Matriz RTM
 
-| ID Problema | Descripción del Dolor | Impacto | ID Feature (`02-features.md`) | Módulo Destino (`03-module-discovery.md`) |
+| ID Problema | Descripción | Impacto | Feature | Módulo |
 | :--- | :--- | :--- | :--- | :--- |
-| `ERR-01` | No hay motor Match-3 jugable offline (swap, match, cascada) | `Alto` | `FEAT-01` | `MOD-01` |
-| `ERR-02` | No hay campaña por países de América con 10 niveles cada uno | `Alto` | `FEAT-02` | `MOD-03` |
-| `ERR-03` | Sin umbral de puntos el avance de nivel es arbitrario | `Alto` | `FEAT-03` | `MOD-01` |
-| `ERR-04` | Recompensas en cada nivel diluyen inventario y no alimentan relaciones | `Alto` | `FEAT-04`, `FEAT-10` | `MOD-04` |
-| `ERR-05` | Jugador se queda bloqueado sin movimientos o sin idea de jugada | `Alto` | `FEAT-05` | `MOD-01` |
-| `ERR-06` | Sin home/mapa/persistencia el progreso se pierde entre sesiones | `Alto` | `FEAT-06` | `MOD-05` |
-| `ERR-07` | Sin identidad visual de viaje por América la app no tiene mundo | `Medio` | `FEAT-07` | `MOD-06` |
-| `ERR-08` | Sin perfil el jugador no tiene nombre, preferencia ni retrato | `Alto` | `FEAT-08` | `MOD-07`, `MOD-10` |
-| `ERR-09` | Sin pretendientes por país no hay destino social del viaje | `Alto` | `FEAT-09` | `MOD-08` |
-| `ERR-10` | Regalos en cada nivel no marcan cadencia de colección | `Alto` | `FEAT-10` | `MOD-04` |
-| `ERR-11` | Sin afinidad/estados de relación los regalos no tienen consecuencia | `Alto` | `FEAT-11` | `MOD-09` |
+| `ERR-01` | Motor Match-3 | `Alto` | `FEAT-01` | `MOD-01` |
+| `ERR-02` | Campaña 5 países | `Alto` | `FEAT-02` | `MOD-03` |
+| `ERR-03` | Umbral de puntos | `Alto` | `FEAT-03` | `MOD-01` |
+| `ERR-04` | Inventario de regalos | `Alto` | `FEAT-04`, `FEAT-10` | `MOD-04` |
+| `ERR-05` | Tablero muerto | `Alto` | `FEAT-05` | `MOD-01` |
+| `ERR-06` | Persistencia | `Alto` | `FEAT-06` | `MOD-05` |
+| `ERR-07` | Identidad visual | `Medio` | `FEAT-07` | `MOD-06` |
+| `ERR-08` | Perfil | `Alto` | `FEAT-08` | `MOD-07`, `MOD-10` |
+| `ERR-09` | Pretendientes | `Alto` | `FEAT-09` | `MOD-08` |
+| `ERR-10` | Cadencia regalos | `Alto` | `FEAT-10` | `MOD-04` |
+| `ERR-11` | Afinidad | `Alto` | `FEAT-11` | `MOD-09` |
+| `ERR-12` | Sin timer ni dificultad visible | `Alto` | `FEAT-12` | `MOD-01`, `MOD-06` |
+| `ERR-13` | Viaje no usa monedas | `Alto` | `FEAT-13` | `MOD-11`, `MOD-05` |
+| `ERR-14` | Home/tablero sin bloques ni VFX | `Medio` | `FEAT-14` | `MOD-06` |
 
 ---
 
-## 4. Audiencia y Casos de Uso Core
+## 4. Audiencia y fuera de alcance
 
-- **Usuarios principales:**
-  - **Jugador casual Android:** Partidas cortas offline; hint si duda 5s; onboarding breve en Home.
-  - **Jugador de progresión:** Completar 5 países (50 niveles) y coleccionar regalos para pretendientes.
-  - **Jugador relacional:** Elige preferencia, regala a 2 hombres y/o 2 mujeres por país, sube afinidad.
-  - **Jugador bloqueado:** Usa botón pánico para reshuffle cuando no hay jugadas.
-
-- **Fuera de alcance (Out of Scope explícito):**
-  - Más de 5 países; boosters permanentes; obstáculos (hielo/cadena); IAP; ads; login/backend; iOS; multijugador; design-system V3+ formal.
-  - Cambiar nombre o preferencia después del primer guardado.
-  - Ruptura de pareja / segunda pareja o matrimonio simultáneo.
-  - Arte de regalos, mapa ilustrado y retratos de los 20 pretendientes (diferido V2.1).
+Mismos usuarios V2. Fuera de alcance: IAP reales (1e6 es seed de test); pipeline DS arte regalos/mapa/elenco; ruptura de pareja; modificar `v1/` o `v2/`.
 
 ---
 
-## 5. Objetivo y Beneficios Esperados
+## 5. Objetivo
 
-- **Objetivo:** Entregar V2 en `iterations/v2/`: Match-3 8×10, campaña América, perfil (nombre + preferencia + avatar 8-bit), 20 pretendientes, regalos en niveles pares, afinidad con pareja única y etiquetas espejo.
-
-- **Beneficios esperados:**
-  - Identidad del jugador en Home.
-  - Meta relacional por país desbloqueado.
-  - Cadencia clara de regalos (cada 2 niveles).
-  - Motor de afinidad testeable y reutilizable.
+Entregar V3 en `iterations/v3/`: Home (avatar, nombre, país, monedas, 3 CTAs), timer 2:30, dificultad visible, viaje por monedas (10 niveles + 500/1000), payout 3–200, VFX de gemas.
 
 ---
 
-## 6. Criterios de Éxito en Formato BDD (Gherkin)
+## 6. BDD
 
-### Escenario 1: Completar nivel y desbloquear el siguiente
+### Escenario: Timer
 
-- **Dado que** el jugador está en el nivel N de un país desbloqueado
-- **Cuando** alcanza `score >= minScore` del nivel y completa el objetivo
-- **Entonces** se desbloquea el nivel N+1 (si existe) y, si N es par (2/4/6/8/10), se otorga 1 recompensa aleatoria al inventario
+- **Dado que** el jugador está en partida
+- **Cuando** el countdown llega a 0 y `score < minScore`
+- **Entonces** el nivel se pierde
 
-### Escenario 2: Desbloquear país siguiente
+### Escenario: Payout
 
-- **Dado que** el jugador completó los 10 niveles del país actual y tiene ≥ 3 regalos **ganados** (lifetime)
-- **Cuando** vuelve al mapa de países
-- **Entonces** el siguiente país en orden queda jugable (independiente de cuántos regalos haya entregado)
+- **Dado que** gana con `remainingSec` en [0, 150]
+- **Cuando** se aplica victoria
+- **Entonces** recibe `clamp(round(3 + 197 * remainingSec / 150), 3, 200)` monedas
 
-### Escenario 3: Hint idle y pánico
+### Escenario: Viaje
 
-- **Dado que** hay al menos un movimiento válido y no hay input durante 5 segundos
-- **Cuando** vence el idle timer
-- **Entonces** se destaca un swap sugerido; si no hay movimientos válidos o se pulsa pánico (1 uso/nivel), el tablero se reshufflea con ≥1 jugada válida
+- **Dado que** completó 10 niveles del país actual
+- **Cuando** pulsa Viajar con saldo ≥ 500 (o ≥ 1000 si hay `partnerId`)
+- **Entonces** se descuenta el costo y se desbloquea el siguiente país; si faltan niveles o saldo, no viaja
 
-### Escenario 4: Onboarding de perfil
+### Escenario: Home
 
-- **Dado que** no hay perfil persistido
-- **Cuando** el jugador abre Home, escribe un nombre, elige preferencia y un avatar 8-bit
-- **Entonces** el perfil se guarda una vez y Home muestra saludo + retrato; no se vuelve a pedir nombre ni preferencia
-
-### Escenario 5: Dar regalo y afinidad
-
-- **Dado que** el jugador tiene un ítem en inventario y un pretendiente de un país desbloqueado
-- **Cuando** entrega un regalo cuyo slot coincide (p. ej. recompensa 1 → Hombre 1)
-- **Entonces** se consumen el ítem y se suman +10 de afinidad; si el slot no coincide, +2
-
-### Escenario 6: Pareja única
-
-- **Dado que** un pretendiente alcanza 120 de afinidad y no hay `partnerId`
-- **Cuando** se aplica ese regalo
-- **Entonces** queda como pareja única; otro personaje a 120 se etiqueta amorio y a 200 infidelidad culposa
-
-### Escenario 7: Estándares visuales
-
-- **Dado que** se renderizan pantallas Home, Mapa, Partida, Inventario y Pretendientes
-- **Cuando** el agente compile la interfaz
-- **Entonces** los estilos consumen tokens del theme documentado en `04-application-design.md` (0% hex sueltos en componentes)
+- **Dado que** hay perfil
+- **Cuando** abre Home
+- **Entonces** ve avatar, nombre, país actual, monedas y botones Jugar / Pretendientes / Inventario en 3 bloques
 
 ---
 
-## 7. Matriz de Restricciones Técnicas y Operativas
-
-| Categoría | Restricción / Límite | Impacto | Estándar asociado |
-| :--- | :--- | :--- | :--- |
-| **Tecnología** | Expo SDK 52, RN 0.76.x, TypeScript; versiones `~` | `Alto` | `standards/coding-standards.md` |
-| **Plataforma V2** | Android APK release sin Metro | `Alto` | WIKA-ARCH-03 |
-| **Tablero** | Exactamente 8 columnas × 10 filas; 5 gemas | `Bloqueante` | idea/ |
-| **Campañas** | Exactamente 5 países × 10 niveles = 50 | `Bloqueante` | idea/ |
-| **Dificultad** | Solo fácil/media, oculta al jugador | `Alto` | idea/ |
-| **Diseño / UX** | Theme local “América / viaje” en `04` | `Alto` | `standards/design-system.md` |
-| **Seguridad** | Offline-first; perfil local sin backend | `Medio` | `standards/coding-standards.md` |
-| **Librerías prohibidas** | Unity/Godot/Phaser; `^` en expo/RN | `Bloqueante` | WIKA-ARCH-02 |
-| **Código producción** | Destino `iterations/v2/` | `Bloqueante` | `.cursorrules` |
-| **Iteración** | Prohibido modificar `iterations/v1/` | `Bloqueante` | versión superior |
-
-### Umbrales V2 (fuente de verdad)
+## 7. Umbrales V3
 
 | Regla | Valor |
 | :--- | :--- |
-| Puntos mínimos nivel fácil | `minScore = 800 + (índiceLocal × 50)` índiceLocal 0..9 |
-| Puntos mínimos nivel media | `minScore = 1200 + (índiceLocal × 75)` |
-| Movimientos | Fácil 25 / Media 20 |
-| Recompensas para nuevo país | ≥ 3 regalos **ganados** (lifetime `rewardsGranted`) |
-| Cadencia de regalos | Solo al ganar niveles pares 2, 4, 6, 8, 10 |
-| Hint idle | 5 s sin jugada |
-| Pánico | Reshuffle; 1 uso por nivel |
-| Países (orden) | México → Colombia → Perú → Brasil → Argentina |
-| Dificultad interna | Por país: niveles impares = fácil, pares = media |
-| Pretendientes | 2 hombres + 2 mujeres por país; unlock = país unlock |
-| Afinidad | 50 amigos / 69 ligue / 120 pareja / 200 matrimonio |
-| Espejo post-pareja | 50 amigos / 69 ligue / 120 amorio / 200 infidelidad culposa |
-| Delta regalo | Slot coincidente +10; otro slot +2 |
-| Avatares jugador | 6 retratos 8-bit (3 hombres, 3 mujeres) |
+| Timer | 150 s (2:30) |
+| minScore fácil | `800 + i×50` |
+| minScore media | `1200 + i×75` |
+| Movimientos | 25 fácil / 20 media |
+| Dificultad | visible; impar fácil, par media |
+| Payout | 3–200 según tiempo restante |
+| Viaje | 10/10 + 500; 1000 si pareja |
+| Seed test | `coins = 1_000_000` |
+| Storage | `match3:v3:progress` |
+| Regalos | azar 1–8 en niveles pares |
+| Afinidad | umbrales V2 intactos |
 
-### Fórmula de puntos
-
-- Match3 = 10×n; Match4 = 20×n; Match5+ = 50×n
-- Combo cascada ×1.5 por cadena consecutiva
-- Victoria de nivel solo si `score >= minScore` (y movimientos no agotados en derrota)
-
-### Mapa de regalos → slot (por país al que se entrega)
-
-| Recompensa | Slot preferido |
-| :--- | :--- |
-| 1, 5 | `h1` Hombre 1 |
-| 2, 6 | `h2` Hombre 2 |
-| 3, 7 | `m1` Mujer 1 |
-| 4, 8 | `m2` Mujer 2 |
+Victoria: `score >= minScore` y tiempo > 0. Derrota: tiempo 0 o movimientos 0 sin umbral.
 
 ---
 
-## 8. Supuestos y Riesgos
+## 8. Puerta de Enlace
 
-- **Supuestos clave:** Dispositivo Android 7+ (API 24+); sin red; 5 gemas bastan; el jugador elige avatar entre 6 PNG locales.
-- **Riesgos identificados:** Entregar todos los regalos antes de unlock; arte de elenco pendiente; pareja sticky sin ruptura.
-- **Plan de mitigación:** Unlock por `rewardsGranted` no inventario; placeholders de elenco documentados; `partnerId` inmutable en V2.
+- [x] YAML, RTM, BDD, out-of-scope, auditoría `audits/auditoria-documentacion.md` APROBADO.
 
----
-
-## 9. Puerta de Enlace y Firma de Auditoría de Documentación
-
-### Checklist de criterios de aceptación
-
-- [x] YAML frontmatter completado (`id`, `status`, `owner`, fechas).
-- [x] Problemas `ERR-XX` mapeados a `FEAT-XX` y módulos sugeridos en RTM.
-- [x] Criterios de éxito en formato BDD (Dado / Cuando / Entonces).
-- [x] Out-of-scope explícito documentado.
-- [x] Restricciones técnicas alineadas a `standards/coding-standards.md`.
-- [x] Auditoría registrada en `audits/auditoria-documentacion.md` con resultado `[APROBADO]`.
-
-### Registro de visto bueno
-
-- **Aprobado por (Arquitecto):** `WIKA Lead QA / agente auditoría`
-- **Fecha de aprobación:** `2026-09-01`
-- **audit_1_passed:** `true`
+- **Aprobado por:** `WIKA Lead QA / agente auditoría` · `2026-09-01` · `audit_1_passed: true`
