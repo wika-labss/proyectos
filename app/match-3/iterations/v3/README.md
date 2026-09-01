@@ -29,3 +29,11 @@ Arte diferido (FEAT-15–17): sprites de regalos, mapa ilustrado, retratos de el
 - Estilos vía `src/constants/theme.ts` (0% hex en componentes)
 - Package: `com.wika.match3`
 - Storage: `match3:v3:progress`
+
+## APK Release
+
+[`match-3-america-v3-release.apk`](./match-3-america-v3-release.apk) (~61 MB, Git LFS). Autónomo, sin Metro.
+
+```bash
+adb install -r match-3-america-v3-release.apk
+```

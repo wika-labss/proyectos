@@ -8,3 +8,5 @@
 - UI: Home 3 bloques, HUD timer 2:30 + dificultad, mapa Viajar, GameBoard VFX
 - Package: com.wika.match3
 - Storage: match3:v3:progress
+- APK: `match-3-america-v3-release.apk` (~61 MB, Git LFS)
+- Toolchain: JDK 17, Android SDK 35, Expo SDK 52, `assembleRelease`
