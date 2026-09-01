@@ -2,30 +2,15 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import { colors } from '../src/constants/theme';
 import { ProgressProvider } from '../src/hooks/ProgressProvider';
 import { PhoneShell } from '../src/modules/match3-visual/PhoneShell';
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
+  // Cargar en paralelo: no bloquear el arranque si la TTF falla en Release.
+  useFonts({
     PressStart2P: require('../assets/fonts/PressStart2P-Regular.ttf'),
   });
-
-  if (!loaded) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: colors.night,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <ActivityIndicator color={colors.cyan} />
-      </View>
-    );
-  }
 
   return (
     <PhoneShell>

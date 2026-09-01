@@ -2,7 +2,7 @@
   "expo": {
     "name": "Match-3 América",
     "slug": "match-3-america",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,7 +17,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#001B2E"
       },
-      "package": "com.wika.match3"
+      "package": "com.wika.match3",
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",
@@ -27,6 +28,7 @@
     "plugins": [
       "expo-router",
       "expo-asset",
+      "expo-font",
       [
         "expo-build-properties",
         {

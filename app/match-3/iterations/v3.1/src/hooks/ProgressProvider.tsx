@@ -54,9 +54,14 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refresh = useCallback(async () => {
-    const p = await loadProgress();
-    setProgress(p);
-    setReady(true);
+    try {
+      const p = await loadProgress();
+      setProgress(p);
+    } catch {
+      setProgress(defaultProgress());
+    } finally {
+      setReady(true);
+    }
   }, []);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 # Match-3 América — iterations/v3.1
 
 Expo SDK 52 · React Native 0.76 · TypeScript · expo-router  
-Package: `com.wika.match3` · version **3.1.0**
+Package: `com.wika.match3` · version **3.1.1**
 
 Contrato visual: Design System WIKA Gate 1 (`visual-expectation/match-3-v3/approval.md`).  
 No modifica `iterations/v1/`, `v2/` ni `v3/`.
