@@ -1,0 +1,21 @@
+{
+  "$schema": "wika-tokens/v1",
+  "family": "night-cyan",
+  "source": "match-3-v3",
+  "status": "approved",
+  "approvedAt": "2026-09-01",
+  "approvalRef": "visual-expectation/match-3-v3/approval.md",
+  "spacing": {
+    "xs": { "value": 4, "unit": "px" },
+    "sm": { "value": 8, "unit": "px" },
+    "md": { "value": 16, "unit": "px" },
+    "lg": { "value": 24, "unit": "px" },
+    "xl": { "value": 32, "unit": "px" }
+  },
+  "layout": {
+    "cta-max-width": { "value": 340, "unit": "dp" },
+    "touch-min": { "value": 44, "unit": "dp" },
+    "board-cell-max": { "value": 42, "unit": "dp" },
+    "bust-size": { "value": 64, "unit": "dp" }
+  }
+}

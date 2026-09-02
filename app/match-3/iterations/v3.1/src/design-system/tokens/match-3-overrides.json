@@ -1,0 +1,19 @@
+{
+  "$schema": "wika-tokens/v1",
+  "project": "match-3",
+  "version": "v3",
+  "status": "approved",
+  "approvedAt": "2026-09-01",
+  "approvalRef": "visual-expectation/match-3-v3/approval.md",
+  "family": "night-cyan",
+  "componentHeights": {
+    "cta": 52,
+    "hud": 36,
+    "block": 120
+  },
+  "board": {
+    "cols": 8,
+    "rows": 10
+  },
+  "notes": "Grid de producción 8×10. Labels nativos. Dual layer: bg-night + 8-bit chrome."
+}
