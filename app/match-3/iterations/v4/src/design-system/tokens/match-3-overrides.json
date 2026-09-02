@@ -1,0 +1,24 @@
+{
+  "$schema": "wika-tokens/v1",
+  "project": "match-3",
+  "version": "v4",
+  "status": "approved",
+  "approvedAt": "2026-09-02",
+  "approvalRef": "visual-expectation/match-3-v4/approval.md",
+  "family": "night-cyan",
+  "componentHeights": {
+    "cta": 52,
+    "hud": 36,
+    "block": 120
+  },
+  "board": {
+    "cols": 8,
+    "rows": 10
+  },
+  "shop": {
+    "price": 20000,
+    "giftCap": 10
+  },
+  "playOverlayWidth": 92,
+  "notes": "Grid 8×10 pixel-snapped. Burbuja labels RN en español. Tienda 20000 / máx 10."
+}

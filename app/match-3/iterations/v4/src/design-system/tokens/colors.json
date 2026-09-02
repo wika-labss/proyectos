@@ -1,0 +1,32 @@
+{
+  "$schema": "wika-tokens/v1",
+  "family": "night-cyan",
+  "source": "match-3-v3",
+  "status": "approved",
+  "approvedAt": "2026-09-01",
+  "approvalRef": "visual-expectation/match-3-v3/approval.md",
+  "colors": {
+    "night": { "value": "#001B2E", "description": "App chrome / cards" },
+    "night-deep": { "value": "#000E18", "description": "Scrim over landscape" },
+    "cyan": { "value": "#00A8C6", "description": "Primary CTA, timer, map pins" },
+    "cyan-hi": { "value": "#7EE8F7", "description": "Bevel highlight" },
+    "cobalt": { "value": "#2980B9", "description": "Secondary CTA" },
+    "star": { "value": "#F8F9F9", "description": "Text on navy" },
+    "muted": { "value": "#7A93B0", "description": "Meta text" },
+    "coin": { "value": "#E67E22", "description": "Currency" },
+    "panic": { "value": "#C0392B", "description": "Danger / pánico" },
+    "gem-red": { "value": "#E74C3C" },
+    "gem-blue": { "value": "#3498DB" },
+    "gem-green": { "value": "#27AE60" },
+    "gem-yellow": { "value": "#F4D03F" },
+    "gem-purple": { "value": "#8E44AD" },
+    "locked": { "value": "#1A2740" },
+    "outline": { "value": "#000000", "description": "8-bit 2px outline" },
+    "amigos": { "value": "#27AE60" },
+    "ligue": { "value": "#E87AA8" },
+    "pareja": { "value": "#E67E22" },
+    "matrimonio": { "value": "#8E44AD" },
+    "amorio": { "value": "#E74C3C" },
+    "infidelidad": { "value": "#C0392B" }
+  }
+}
