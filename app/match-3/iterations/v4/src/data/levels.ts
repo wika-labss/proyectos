@@ -1,5 +1,6 @@
 import type { CountryId } from './countries';
 import { COUNTRIES } from './countries';
+import { SCORE_TO_WIN_MULT } from '../constants/game';
 
 export type Difficulty = 'easy' | 'medium';
 
@@ -23,8 +24,8 @@ export function buildLevel(
     levelNumber % 2 === 1 ? 'easy' : 'medium';
   const i = levelIndex;
   const moves = difficulty === 'easy' ? 25 : 20;
-  const minScore =
-    difficulty === 'easy' ? 800 + i * 50 : 1200 + i * 75;
+  const base = difficulty === 'easy' ? 800 + i * 50 : 1200 + i * 75;
+  const minScore = base * SCORE_TO_WIN_MULT;
   return {
     countryId,
     levelIndex,

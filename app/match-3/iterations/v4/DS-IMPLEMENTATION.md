@@ -13,7 +13,7 @@ Implementación a petición del arquitecto (v4 + APK). Paleta night-cyan reusada
 Runtime: `src/design-system/tokens.ts`. Familia **night-cyan**.
 
 Añadidos de layout: `boardCellMax` 52, `boardPanelChrome` 4.  
-Precio tienda `SHOP_PRICE` 20000 · tope `GIFT_STOCK_CAP` 10 · `CAMEO_MS` 7000.
+Precio tienda `SHOP_PRICE` 20000 · tope `GIFT_STOCK_CAP` 10 · `CAMEO_MS` 17000 · `SCORE_TO_WIN_MULT` 3.
 
 ## Kit
 

@@ -27,6 +27,8 @@ type Props = {
   disabled?: boolean;
   /** Fila HUD / mapa: comparte ancho sin maxWidth 340. */
   inline?: boolean;
+  /** Overlay fin de nivel. */
+  large?: boolean;
 };
 
 const FILL: Record<Variant, string> = {
@@ -44,6 +46,7 @@ export function Match3UiButton({
   style,
   disabled,
   inline,
+  large,
 }: Props) {
   const fill = FILL[variant];
   const labelColor = variant === 'ghost' ? colors.cyanHi : colors.star;
@@ -55,6 +58,7 @@ export function Match3UiButton({
       onPress={onPress}
       style={({ pressed }) => [
         inline ? styles.inline : styles.wrap,
+        large && styles.wrapLarge,
         style,
         { opacity: disabled ? 0.4 : pressed ? 0.85 : 1 },
       ]}
@@ -65,8 +69,8 @@ export function Match3UiButton({
           variant === 'ghost' && styles.ghostOutline,
         ]}
       >
-        <View style={[styles.face, { backgroundColor: fill }]}>
-          <Text style={[styles.label, { color: labelColor }]} numberOfLines={1}>
+        <View style={[styles.face, large && styles.faceLarge, { backgroundColor: fill }]}>
+          <Text style={[styles.label, large && styles.labelLarge, { color: labelColor }]} numberOfLines={1}>
             {label}
           </Text>
         </View>
@@ -116,5 +120,15 @@ const styles = StyleSheet.create({
     fontSize: typography.body,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  wrapLarge: {
+    minHeight: 72,
+  },
+  faceLarge: {
+    minHeight: 72,
+    paddingVertical: spacing.lg,
+  },
+  labelLarge: {
+    fontSize: typography.title,
   },
 });

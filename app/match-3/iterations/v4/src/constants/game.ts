@@ -15,9 +15,10 @@ export const TRAVEL_COST_PARTNER = 1000;
 export const STARTING_COINS = 1_000_000;
 export const SHOP_PRICE = 20_000;
 export const GIFT_STOCK_CAP = 10;
-export const CAMEO_MS = 7000;
-export const CAMEO_BEAT_MS = 2333;
+export const CAMEO_MS = 17_000;
+export const CAMEO_BEAT_MS = 5666;
 export const CAMEO_DELAY_MAX_MS = 4000;
+export const SCORE_TO_WIN_MULT = 3;
 
 export const SCORE = {
   match3: 10,

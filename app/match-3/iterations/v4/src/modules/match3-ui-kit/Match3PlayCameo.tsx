@@ -6,7 +6,7 @@ import type { Suitor } from '../../data/suitors';
 import { Match3DialogueBubble } from './Match3DialogueBubble';
 import { Match3SuitorBust } from './Match3SuitorBust';
 
-/** Cameo flotante: 3 beats en 7s, no resta ancho al tablero. */
+/** Cameo flotante: 3 beats en 17s, no resta ancho al tablero. */
 export function Match3PlayCameo({
   suitor,
   beats,

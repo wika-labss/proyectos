@@ -2,7 +2,7 @@
  * Smoke V4 — engine + economy + travel + affinity + shop + diálogos.
  */
 import assert from 'node:assert/strict';
-import { STARTING_COINS, CAMEO_MS, GIFT_STOCK_CAP, SHOP_PRICE } from '../src/constants/game';
+import { STARTING_COINS, CAMEO_MS, GIFT_STOCK_CAP, SCORE_TO_WIN_MULT, SHOP_PRICE } from '../src/constants/game';
 import { AVATAR_IDS } from '../src/data/avatarIds';
 import { COUNTRIES } from '../src/data/countries';
 import {
@@ -134,6 +134,9 @@ function testLevelsData() {
   assert.equal(allLevels().length, 50);
   assert.equal(getLevel('mx', 0).difficulty, 'easy');
   assert.equal(getLevel('mx', 1).difficulty, 'medium');
+  assert.equal(SCORE_TO_WIN_MULT, 3);
+  assert.equal(getLevel('mx', 0).minScore, 2400);
+  assert.equal(getLevel('mx', 1).minScore, 3825);
 }
 
 function testCoinsFormula() {
@@ -284,7 +287,7 @@ function testDialoguesSpanish() {
 }
 
 function testCameoBeats() {
-  assert.equal(CAMEO_MS, 7000);
+  assert.equal(CAMEO_MS, 17000);
   assert.deepEqual(preferredGiftTitles('h1'), ['Rosa', 'Libro']);
   assert.deepEqual(preferredGiftTitles('h2'), ['Chocolate', 'Collar']);
   assert.deepEqual(preferredGiftTitles('m1'), ['Guitarra', 'Balón']);

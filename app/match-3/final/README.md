@@ -4,7 +4,7 @@
 
 - **Archivo:** [`match-3-america-v4-release.apk`](./match-3-america-v4-release.apk)
 - **Package:** `com.wika.match3`
-- **Version:** 4.0.0 (versionCode 4)
+- **Version:** 4.0.0 (versionCode 5)
 - **Modo:** Release autónomo (sin Metro)
 
 ```bash

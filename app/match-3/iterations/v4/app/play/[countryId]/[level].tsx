@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GameBoard } from '../../../src/components/GameBoard';
+import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import {
   CAMEO_DELAY_MAX_MS,
   CAMEO_MS,
@@ -273,30 +274,39 @@ export default function PlayScreen() {
           </Pressable>
         </View>
 
-        {state.status === 'won' ? (
-          <View pointerEvents="none" style={styles.resultWrap}>
-            <Text style={styles.result}>
-              ¡Nivel superado! +{payout} monedas
-              {cfg.rewardOnClear ? ' · +1 regalo' : ''}
-            </Text>
-          </View>
-        ) : null}
-        {state.status === 'lost' ? (
-          <View pointerEvents="none" style={styles.resultWrap}>
-            <Text style={styles.result}>
-              {remainingMs <= 0
-                ? 'Se acabó el tiempo'
-                : 'Sin movimientos — inténtalo de nuevo'}
-            </Text>
-          </View>
-        ) : null}
-
         {cameo && state.status === 'playing' ? (
           <Match3PlayCameo
             suitor={cameo.suitor}
             beats={cameo.beats}
             side={cameo.side}
           />
+        ) : null}
+
+        {state.status !== 'playing' ? (
+          <View style={styles.endOverlay}>
+            <Text style={styles.result}>
+              {state.status === 'won'
+                ? `¡Nivel superado! +${payout} monedas${cfg.rewardOnClear ? ' · +1 regalo' : ''}`
+                : remainingMs <= 0
+                  ? 'Se acabó el tiempo'
+                  : 'Sin movimientos — inténtalo de nuevo'}
+            </Text>
+            <PrimaryButton
+              large
+              label="Siguiente nivel"
+              disabled={state.status !== 'won' || levelIndex >= 9}
+              onPress={() => {
+                if (state.status !== 'won' || levelIndex >= 9) return;
+                router.replace(`/play/${country.id}/${levelIndex + 1}`);
+              }}
+            />
+            <PrimaryButton
+              large
+              label="Salir al mapa"
+              variant="ghost"
+              onPress={() => router.replace('/map')}
+            />
+          </View>
         ) : null}
       </SafeAreaView>
     </NightScreen>
@@ -376,16 +386,19 @@ const styles = StyleSheet.create({
     fontSize: 7,
     color: colors.panic,
   },
-  resultWrap: {
-    position: 'absolute',
-    left: spacing.sm,
-    right: spacing.sm,
-    bottom: 88,
+  endOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.scrim,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md,
+    zIndex: 20,
   },
   result: {
     textAlign: 'center',
     color: colors.cyanHi,
     fontFamily: fonts.pixel,
-    fontSize: 8,
+    fontSize: typography.body,
+    marginBottom: spacing.sm,
   },
 });
