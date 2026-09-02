@@ -11,3 +11,5 @@ No modifica `v1`–`v4`.
 - Gemas `assets/recursos/ui/gems/0-4.png` (256×256), `contain`, sin tira 1536×1024
 - Sin `translateY` de caída
 - Engine, cameo 17s, overlay fin de nivel, tienda, storage `match3:v3:progress` iguales
+
+APK: `match-3-america-v4.1-release.apk` (Git LFS) · versionCode 6

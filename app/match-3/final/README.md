@@ -1,17 +1,26 @@
 # Match-3 América — final
 
-## APK Release V4 (actual)
+## APK Release V4.1 (actual)
+
+- **Archivo:** [`match-3-america-v4.1-release.apk`](./match-3-america-v4.1-release.apk)
+- **Package:** `com.wika.match3`
+- **Version:** 4.1.0 (versionCode 6)
+- **Modo:** Release autónomo (sin Metro)
+
+```bash
+adb install -r match-3-america-v4.1-release.apk
+```
+
+Fuente: `iterations/v4.1/` — celdas 8×10 cuadradas, gems 256×256, cameo 17s, tienda 20 000 / máx. 10.
+
+## APK Release V4 (histórico)
 
 - **Archivo:** [`match-3-america-v4-release.apk`](./match-3-america-v4-release.apk)
 - **Package:** `com.wika.match3`
 - **Version:** 4.0.0 (versionCode 5)
 - **Modo:** Release autónomo (sin Metro)
 
-```bash
-adb install -r match-3-america-v4-release.apk
-```
-
-Fuente: `iterations/v4/` — tablero grande, cameo 7s, tienda 20 000 / máx. 10.
+Fuente: `iterations/v4/` — tablero grande, cameo 17s, tienda 20 000 / máx. 10.
 
 ## APK Release V3.1 (histórico)
 
