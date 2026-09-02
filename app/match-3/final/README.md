@@ -4,14 +4,14 @@
 
 - **Archivo:** [`match-3-america-v4-release.apk`](./match-3-america-v4-release.apk)
 - **Package:** `com.wika.match3`
-- **Version:** 4.0.0 (versionCode 3)
+- **Version:** 4.0.0 (versionCode 4)
 - **Modo:** Release autónomo (sin Metro)
 
 ```bash
 adb install -r match-3-america-v4-release.apk
 ```
 
-Fuente: `iterations/v4/` — tablero 8×10 alineado, diálogos ES, tienda 20 000 / máx. 10.
+Fuente: `iterations/v4/` — tablero grande, cameo 7s, tienda 20 000 / máx. 10.
 
 ## APK Release V3.1 (histórico)
 
