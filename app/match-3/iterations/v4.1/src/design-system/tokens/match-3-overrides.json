@@ -1,0 +1,26 @@
+{
+  "$schema": "wika-tokens/v1",
+  "project": "match-3",
+  "version": "v4.1",
+  "status": "approved",
+  "approvedAt": "2026-09-02",
+  "approvalRef": "visual-expectation/match-3-v4.1/approval.md",
+  "family": "night-cyan",
+  "componentHeights": {
+    "cta": 52,
+    "hud": 36,
+    "block": 120
+  },
+  "board": {
+    "cols": 8,
+    "rows": 10,
+    "cellInteger": true,
+    "gemFramePx": 256
+  },
+  "shop": {
+    "price": 20000,
+    "giftCap": 10
+  },
+  "playOverlayWidth": 92,
+  "notes": "Celdas 1:1 enteras. Gemas gems/0-4.png 256px. Shop 20000 / máx 10. Diálogos ES."
+}

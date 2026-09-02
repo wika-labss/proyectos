@@ -1,0 +1,17 @@
+{
+  "$schema": "wika-tokens/v1",
+  "family": "night-cyan",
+  "source": "match-3-v3",
+  "status": "approved",
+  "approvedAt": "2026-09-01",
+  "approvalRef": "visual-expectation/match-3-v3/approval.md",
+  "radius": {
+    "none": { "value": 0, "unit": "px", "usage": "True 8-bit tiles" },
+    "sm": { "value": 4, "unit": "px", "usage": "HUD chips" },
+    "md": { "value": 8, "unit": "px", "usage": "Cards / buttons" }
+  },
+  "borderWidth": {
+    "outline": { "value": 2, "unit": "px", "usage": "8-bit chrome" },
+    "bevel": { "value": 3, "unit": "px" }
+  }
+}
