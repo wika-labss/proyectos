@@ -56,10 +56,10 @@ export const spacing = {
 export const layout = {
   ctaMaxWidth: 340,
   touchMin: 44,
-  boardCellMax: 42,
+  boardCellMax: 52,
   bustSize: 64,
   playOverlayWidth: 92,
-  boardPanelChrome: 8,
+  boardPanelChrome: 4,
 } as const;
 
 export const radius = {

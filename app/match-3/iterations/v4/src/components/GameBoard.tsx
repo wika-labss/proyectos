@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, PixelRatio, Pressable, StyleSheet, View } from 'react-native';
 import { COLS, ROWS } from '../constants/game';
-import { colors, gemColors, radius } from '../constants/theme';
+import { colors, gemColors } from '../constants/theme';
 import type { Board, Cell, HintMove } from '../engine/match3Engine';
 import { VisualAssets } from '../modules/match3-visual/assets';
 import { nativeDriver } from '../modules/match3-visual/nativeDriver';
@@ -52,7 +52,10 @@ function GemCell({
 }) {
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
-  const inset = snap(Math.max(2, Math.floor(cellSize * 0.08)));
+  const translateY = useRef(new Animated.Value(0)).current;
+  const first = useRef(true);
+  const prevGem = useRef(gem);
+  const inset = snap(Math.max(2, Math.floor(cellSize * 0.06)));
   const spriteSize = snap(Math.max(8, cellSize - inset * 2));
 
   useEffect(() => {
@@ -60,20 +63,35 @@ function GemCell({
       Animated.parallel([
         Animated.timing(scale, {
           toValue: 0.2,
-          duration: 160,
+          duration: 110,
           useNativeDriver: nativeDriver,
         }),
         Animated.timing(opacity, {
           toValue: 0.15,
-          duration: 160,
+          duration: 110,
           useNativeDriver: nativeDriver,
         }),
       ]).start();
-    } else {
-      scale.setValue(1);
-      opacity.setValue(1);
+      return;
     }
-  }, [popping, gem, opacity, scale]);
+    scale.setValue(1);
+    opacity.setValue(1);
+    if (first.current) {
+      first.current = false;
+      prevGem.current = gem;
+      translateY.setValue(0);
+      return;
+    }
+    if (prevGem.current !== gem) {
+      prevGem.current = gem;
+      translateY.setValue(-cellSize * 0.4);
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 110,
+        useNativeDriver: nativeDriver,
+      }).start();
+    }
+  }, [popping, gem, cellSize, opacity, scale, translateY]);
 
   const sprite = gem >= 0 && gem < 5;
 
@@ -94,7 +112,7 @@ function GemCell({
               : 'transparent',
           borderWidth: hinted || selected ? 2 : 0,
           opacity,
-          transform: [{ scale }],
+          transform: [{ scale }, { translateY }],
         },
       ]}
     >
@@ -157,7 +175,6 @@ const styles = StyleSheet.create({
   board: {
     position: 'relative',
     backgroundColor: colors.nightDeep,
-    borderRadius: radius.sm,
     overflow: 'hidden',
   },
   cell: {

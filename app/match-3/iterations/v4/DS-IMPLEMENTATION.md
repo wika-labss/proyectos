@@ -12,29 +12,29 @@ Implementación a petición del arquitecto (v4 + APK). Paleta night-cyan reusada
 
 Runtime: `src/design-system/tokens.ts`. Familia **night-cyan**.
 
-Añadidos de layout: `playOverlayWidth` 92, `boardPanelChrome` 8.  
-Precio tienda `SHOP_PRICE` 20000 · tope `GIFT_STOCK_CAP` 10 (`src/constants/game.ts`).
+Añadidos de layout: `boardCellMax` 52, `boardPanelChrome` 4.  
+Precio tienda `SHOP_PRICE` 20000 · tope `GIFT_STOCK_CAP` 10 · `CAMEO_MS` 7000.
 
 ## Kit
 
 | Spec | Runtime |
 |------|---------|
 | Match3DialogueBubble | `Match3DialogueBubble.tsx` (chrome PixelPanel + label RN) |
-| Overlay partida | `Match3PlayOverlay.tsx` (busto + burbuja, no tapa board) |
+| Overlay partida | `Match3PlayCameo.tsx` (flotante 7s; no resta ancho) |
 | Tienda | `app/shop.tsx` grid 8, qty 0–10, COMPRAR off a 10 |
 
 ## Vistas
 
 | Vista | Pantalla |
 |-------|----------|
-| Partida | overlay costado + grid 8×10 alineado |
+| Partida | tablero full + cameo 7s |
 | Tienda | 8 regalos, 20 000, máx. 10 |
 | Ficha | burbuja al DAR |
 | Home | CTA Tienda |
 
 ## Copy
 
-`src/data/dialogues.ts` — español (regalo, país, matrimonio). Chrome PNG vacío.
+`src/data/dialogues.ts` — español (regalo, cameo saludo/+10/despedida, matrimonio). Chrome PNG vacío.
 
 ## Preservado
 

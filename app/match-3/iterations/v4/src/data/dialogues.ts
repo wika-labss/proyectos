@@ -1,5 +1,6 @@
 import { AFFINITY } from '../engine/affinity';
 import type { CountryId } from './countries';
+import { preferredGiftTitles } from './gifts';
 import {
   matchesPreference,
   suitorsForCountry,
@@ -106,4 +107,28 @@ export function playLine(
   salt = 0,
 ): string {
   return married ? loveLine(salt) : countryLine(countryId, salt);
+}
+
+export function pickRandomPlaySuitor(
+  countryId: CountryId,
+  preference: Preference,
+  rng: () => number = Math.random,
+): Suitor | undefined {
+  const pool = suitorsForCountry(countryId).filter((s) =>
+    matchesPreference(s, preference),
+  );
+  if (pool.length === 0) return undefined;
+  const i = Math.floor(rng() * pool.length);
+  return pool[Math.min(i, pool.length - 1)];
+}
+
+export function cameoBeats(suitor: Suitor): [string, string, string] {
+  const gifts = preferredGiftTitles(suitor.slot);
+  const a = gifts[0] ?? 'Rosa';
+  const b = gifts[1] ?? a;
+  return [
+    `Hola, soy ${suitor.name}.`,
+    `Si me regalas ${a} o ${b}, +10 de afinidad.`,
+    'Suerte. Nos vemos.',
+  ];
 }

@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   PixelRatio,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -9,8 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GameBoard } from '../../../src/components/GameBoard';
-import { PrimaryButton } from '../../../src/components/PrimaryButton';
 import {
+  CAMEO_DELAY_MAX_MS,
+  CAMEO_MS,
   COLS,
   LEVEL_TIME_MS,
   PANIC_USES_PER_LEVEL,
@@ -18,12 +20,9 @@ import {
 } from '../../../src/constants/game';
 import { colors, fonts, layout, spacing, typography } from '../../../src/constants/theme';
 import { getCountry, type CountryId } from '../../../src/data/countries';
-import {
-  isMarriedTo,
-  pickPlaySuitor,
-  playLine,
-} from '../../../src/data/dialogues';
+import { cameoBeats, pickRandomPlaySuitor } from '../../../src/data/dialogues';
 import { getLevel } from '../../../src/data/levels';
+import type { Suitor } from '../../../src/data/suitors';
 import { coinsAwarded, formatTime } from '../../../src/engine/economy';
 import {
   applySwapIfMatch,
@@ -39,10 +38,8 @@ import {
 } from '../../../src/engine/match3Engine';
 import { useProgress } from '../../../src/hooks/ProgressProvider';
 import { useIdleHint } from '../../../src/modules/hint/useIdleHint';
-import { Match3HudChip } from '../../../src/modules/match3-ui-kit/Match3HudChip';
-import { Match3PlayOverlay } from '../../../src/modules/match3-ui-kit/Match3PlayOverlay';
+import { Match3PlayCameo } from '../../../src/modules/match3-ui-kit/Match3PlayCameo';
 import { NightScreen } from '../../../src/modules/match3-visual/NightScreen';
-import { PixelPanel } from '../../../src/modules/match3-visual/PixelPanel';
 
 function delay(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -74,28 +71,13 @@ export default function PlayScreen() {
   const [remainingMs, setRemainingMs] = useState(LEVEL_TIME_MS);
   const [payout, setPayout] = useState(0);
   const [boardBox, setBoardBox] = useState({ w: 0, h: 0 });
-  const [lineSalt, setLineSalt] = useState(0);
+  const [cameo, setCameo] = useState<{
+    suitor: Suitor;
+    beats: [string, string, string];
+    side: 'left' | 'right';
+  } | null>(null);
   const remainingRef = useRef(LEVEL_TIME_MS);
   const resolving = useRef(false);
-
-  const playSuitor = useMemo(() => {
-    if (!country) return undefined;
-    const pref = progress.profile?.preference ?? 'ambos';
-    return pickPlaySuitor(
-      country.id,
-      pref,
-      progress.partnerId,
-      progress.affinityBySuitor,
-    );
-  }, [country, progress.profile?.preference, progress.partnerId, progress.affinityBySuitor]);
-
-  const married = playSuitor
-    ? isMarriedTo(playSuitor, progress.partnerId, progress.affinityBySuitor)
-    : false;
-
-  const overlayLine = country
-    ? playLine(country.id, married, lineSalt)
-    : '';
 
   useEffect(() => {
     if (!cfg) return;
@@ -107,8 +89,28 @@ export default function PlayScreen() {
     setRemainingMs(LEVEL_TIME_MS);
     remainingRef.current = LEVEL_TIME_MS;
     setPayout(0);
-    setLineSalt(0);
+    setCameo(null);
   }, [cfg]);
+
+  useEffect(() => {
+    if (!state || state.status !== 'playing' || !country) return;
+    const pref = progress.profile?.preference ?? 'ambos';
+    const suitor = pickRandomPlaySuitor(country.id, pref);
+    if (!suitor) return;
+    const startIn = Math.floor(Math.random() * CAMEO_DELAY_MAX_MS);
+    const show = setTimeout(() => {
+      setCameo({
+        suitor,
+        beats: cameoBeats(suitor),
+        side: Math.random() < 0.5 ? 'left' : 'right',
+      });
+    }, startIn);
+    const hide = setTimeout(() => setCameo(null), startIn + CAMEO_MS);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
+  }, [cfg, country, progress.profile?.preference, state?.status]);
 
   useEffect(() => {
     if (!state || state.status !== 'playing') return;
@@ -119,14 +121,6 @@ export default function PlayScreen() {
         setState((s) => (s ? loseByTime(s) : s));
       }
     }, 250);
-    return () => clearInterval(id);
-  }, [state?.status]);
-
-  useEffect(() => {
-    if (!state || state.status !== 'playing') return;
-    const id = setInterval(() => {
-      setLineSalt((n) => n + 1);
-    }, 8000);
     return () => clearInterval(id);
   }, [state?.status]);
 
@@ -182,16 +176,16 @@ export default function PlayScreen() {
     resolving.current = true;
     setBusy(true);
     let s = start;
-    await delay(140);
+    await delay(90);
     for (let i = 0; i < 40; i++) {
       const matches = findMatches(s.board);
       if (matches.length === 0) break;
       setClearing(matches);
-      await delay(180);
+      await delay(120);
       s = resolveOnce(s);
       setClearing([]);
       setState(s);
-      await delay(160);
+      await delay(110);
     }
     let ended = evaluateEnd(s);
     if (remainingRef.current <= 0 && ended.status === 'playing') {
@@ -201,7 +195,6 @@ export default function PlayScreen() {
     setBusy(false);
     resolving.current = false;
     bumpActivity();
-    setLineSalt((n) => n + 1);
   };
 
   const onSelect = (cell: Cell) => {
@@ -230,101 +223,81 @@ export default function PlayScreen() {
     bumpActivity();
   };
 
-  const diffLabel = cfg.difficulty === 'easy' ? 'FÁCIL' : 'MEDIA';
+  const panicOff =
+    state.status !== 'playing' ||
+    busy ||
+    (state.panicUsesLeft <= 0 && hasValidMoves(state.board));
 
   return (
     <NightScreen>
       <SafeAreaView style={styles.root}>
-        <PixelPanel style={styles.header} padded={false}>
-          <View style={styles.headerInner}>
-            <Text style={styles.title}>
-              {country.name.toUpperCase()} · NIVEL {cfg.levelNumber}/10 ·{' '}
-              <Text
-                style={{
-                  color: cfg.difficulty === 'easy' ? colors.amigos : colors.coin,
-                }}
-              >
-                {diffLabel}
-              </Text>
+        <View style={styles.stage} onLayout={onBoardLayout}>
+          <View style={styles.boardChrome}>
+            {cellSize > 0 ? (
+              <GameBoard
+                board={state.board}
+                selected={selected}
+                hint={hint}
+                clearing={clearing}
+                cellSize={cellSize}
+                onSelect={onSelect}
+              />
+            ) : (
+              <View style={styles.boardPlaceholder} />
+            )}
+          </View>
+        </View>
+
+        <View pointerEvents="box-none" style={styles.hudLayer}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Salir"
+            onPress={() => router.back()}
+            style={styles.cornerBtn}
+          >
+            <Text style={styles.cornerLabel}>X</Text>
+          </Pressable>
+          <View pointerEvents="none" style={styles.hudTextWrap}>
+            <Text style={styles.hudText}>
+              {state.score}/{cfg.minScore} · {formatTime(remainingMs)}
             </Text>
           </View>
-        </PixelPanel>
-
-        <View style={styles.hud}>
-          <Match3HudChip
-            kind="score"
-            label="SCORE"
-            value={`${state.score}/${cfg.minScore}`}
-          />
-          <Match3HudChip kind="moves" label="MOVES" value={`${state.movesLeft}`} />
-          <Match3HudChip kind="timer" label="TIME" value={formatTime(remainingMs)} />
-          <Match3HudChip
-            kind="panic"
-            label="PÁNICO"
-            value={`${state.panicUsesLeft}`}
-          />
-        </View>
-
-        <View style={styles.playRow}>
-          <View style={styles.boardWrap} onLayout={onBoardLayout}>
-            <PixelPanel padded={false}>
-              {cellSize > 0 ? (
-                <GameBoard
-                  board={state.board}
-                  selected={selected}
-                  hint={hint}
-                  clearing={clearing}
-                  cellSize={cellSize}
-                  onSelect={onSelect}
-                />
-              ) : (
-                <View style={styles.boardPlaceholder} />
-              )}
-            </PixelPanel>
-          </View>
-          {playSuitor ? (
-            <Match3PlayOverlay
-              countryId={playSuitor.countryId}
-              slot={playSuitor.slot}
-              speaker={playSuitor.name}
-              line={overlayLine}
-            />
-          ) : null}
-        </View>
-
-        {state.status === 'won' && (
-          <Text style={styles.result}>
-            ¡Nivel superado! +{payout} monedas
-            {cfg.rewardOnClear ? ' · +1 regalo' : ''}
-          </Text>
-        )}
-        {state.status === 'lost' && (
-          <Text style={styles.result}>
-            {remainingMs <= 0
-              ? 'Se acabó el tiempo'
-              : 'Sin movimientos — inténtalo de nuevo'}
-          </Text>
-        )}
-
-        <View style={styles.actions}>
-          <PrimaryButton
-            inline
-            label="Pánico"
-            variant="danger"
-            disabled={
-              state.status !== 'playing' ||
-              busy ||
-              (state.panicUsesLeft <= 0 && hasValidMoves(state.board))
-            }
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Pánico"
+            disabled={panicOff}
             onPress={onPanic}
-          />
-          <PrimaryButton
-            inline
-            label="Salir"
-            variant="ghost"
-            onPress={() => router.back()}
-          />
+            style={[styles.cornerBtn, styles.panicBtn, panicOff && styles.cornerOff]}
+          >
+            <Text style={styles.panicLabel}>PÁNICO</Text>
+          </Pressable>
         </View>
+
+        {state.status === 'won' ? (
+          <View pointerEvents="none" style={styles.resultWrap}>
+            <Text style={styles.result}>
+              ¡Nivel superado! +{payout} monedas
+              {cfg.rewardOnClear ? ' · +1 regalo' : ''}
+            </Text>
+          </View>
+        ) : null}
+        {state.status === 'lost' ? (
+          <View pointerEvents="none" style={styles.resultWrap}>
+            <Text style={styles.result}>
+              {remainingMs <= 0
+                ? 'Se acabó el tiempo'
+                : 'Sin movimientos — inténtalo de nuevo'}
+            </Text>
+          </View>
+        ) : null}
+
+        {cameo && state.status === 'playing' ? (
+          <Match3PlayCameo
+            suitor={cameo.suitor}
+            beats={cameo.beats}
+            side={cameo.side}
+          />
+        ) : null}
       </SafeAreaView>
     </NightScreen>
   );
@@ -333,8 +306,7 @@ export default function PlayScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    padding: spacing.md,
-    gap: spacing.sm,
+    padding: spacing.sm,
   },
   center: {
     flex: 1,
@@ -346,50 +318,74 @@ const styles = StyleSheet.create({
     fontFamily: fonts.pixel,
     fontSize: typography.body,
   },
-  header: {
-    width: '100%',
-  },
-  headerInner: {
-    paddingVertical: 10,
-    paddingHorizontal: spacing.sm,
-    alignItems: 'center',
-  },
-  title: {
-    fontFamily: fonts.pixel,
-    fontSize: 8,
-    color: colors.star,
-    textAlign: 'center',
-  },
-  hud: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  playRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  boardWrap: {
+  stage: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 120,
+  },
+  boardChrome: {
+    borderWidth: 2,
+    borderColor: colors.cyan,
+    backgroundColor: colors.nightDeep,
   },
   boardPlaceholder: {
     width: COLS * 24,
     height: ROWS * 24,
   },
-  actions: {
+  hudLayer: {
+    ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
-    gap: 12,
-    marginTop: spacing.sm,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingTop: spacing.sm,
+    paddingHorizontal: spacing.sm,
+  },
+  hudTextWrap: {
+    flex: 1,
+    marginTop: 12,
+  },
+  hudText: {
+    textAlign: 'center',
+    fontFamily: fonts.pixel,
+    fontSize: 8,
+    color: colors.star,
+  },
+  cornerBtn: {
+    minWidth: layout.touchMin,
+    minHeight: layout.touchMin,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.cyan,
+    backgroundColor: colors.night,
+  },
+  panicBtn: {
+    borderColor: colors.panic,
+    paddingHorizontal: 6,
+  },
+  cornerOff: {
+    opacity: 0.4,
+  },
+  cornerLabel: {
+    fontFamily: fonts.pixel,
+    fontSize: typography.body,
+    color: colors.cyanHi,
+  },
+  panicLabel: {
+    fontFamily: fonts.pixel,
+    fontSize: 7,
+    color: colors.panic,
+  },
+  resultWrap: {
+    position: 'absolute',
+    left: spacing.sm,
+    right: spacing.sm,
+    bottom: 88,
   },
   result: {
     textAlign: 'center',
     color: colors.cyanHi,
     fontFamily: fonts.pixel,
     fontSize: 8,
-    marginVertical: 4,
   },
 });

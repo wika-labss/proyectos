@@ -8,8 +8,8 @@ No modifica `iterations/v1/`, `v2/`, `v3/` ni `v3.1/`.
 
 ## Qué cambia vs v3.1
 
-- Tablero 8×10 pixel-snapped (sin borde interno que corría las gemas)
-- Overlay de pretendiente del país + burbuja en partida
+- Tablero 8×10 grande (cell máx. 52, chrome 2px)
+- Cameo aleatorio 7s (saludo → regalos +10 → despedida)
 - Diálogo breve al DAR un regalo (español)
 - Tienda: 8 regalos × 20 000 · máximo 10 por tipo
 - CTA **Tienda** en Home

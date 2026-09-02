@@ -2,17 +2,19 @@
  * Smoke V4 — engine + economy + travel + affinity + shop + diálogos.
  */
 import assert from 'node:assert/strict';
-import { STARTING_COINS, GIFT_STOCK_CAP, SHOP_PRICE } from '../src/constants/game';
+import { STARTING_COINS, CAMEO_MS, GIFT_STOCK_CAP, SHOP_PRICE } from '../src/constants/game';
 import { AVATAR_IDS } from '../src/data/avatarIds';
 import { COUNTRIES } from '../src/data/countries';
 import {
   countryLine,
+  cameoBeats,
   giftReaction,
   loveLine,
   pickPlaySuitor,
+  pickRandomPlaySuitor,
   playLine,
 } from '../src/data/dialogues';
-import { GIFT_TITLES, rewardIdFromGiftN } from '../src/data/gifts';
+import { GIFT_TITLES, preferredGiftTitles, rewardIdFromGiftN } from '../src/data/gifts';
 import { allLevels, getLevel } from '../src/data/levels';
 import { SUITORS, getSuitor } from '../src/data/suitors';
 import {
@@ -281,6 +283,31 @@ function testDialoguesSpanish() {
   assert.equal(partner?.id, 'br-m1');
 }
 
+function testCameoBeats() {
+  assert.equal(CAMEO_MS, 7000);
+  assert.deepEqual(preferredGiftTitles('h1'), ['Rosa', 'Libro']);
+  assert.deepEqual(preferredGiftTitles('h2'), ['Chocolate', 'Collar']);
+  assert.deepEqual(preferredGiftTitles('m1'), ['Guitarra', 'Balón']);
+  assert.deepEqual(preferredGiftTitles('m2'), ['Café', 'Ticket']);
+  const diego = getSuitor('mx-h1')!;
+  const beats = cameoBeats(diego);
+  assert.equal(beats.length, 3);
+  assert.equal(beats[0], 'Hola, soy Diego.');
+  assert.match(beats[1]!, /Rosa/);
+  assert.match(beats[1]!, /Libro/);
+  assert.match(beats[1]!, /\+10 de afinidad/);
+  assert.equal(beats[2], 'Suerte. Nos vemos.');
+  const camila = getSuitor('mx-m1')!;
+  const info = cameoBeats(camila)[1]!;
+  assert.match(info, /Guitarra/);
+  assert.match(info, /Balón/);
+  assert.equal(/\b(thank|love you|this board is)\b/i.test(beats.join(' ')), false);
+  const woman = pickRandomPlaySuitor('mx', 'mujer', () => 0);
+  assert.equal(woman?.gender, 'mujer');
+  const man = pickRandomPlaySuitor('co', 'hombre', () => 0.99);
+  assert.equal(man?.gender, 'hombre');
+}
+
 const tests = [
   testBoardSize,
   testNoInitialMatches,
@@ -300,6 +327,7 @@ const tests = [
   testGiveGiftStillWorks,
   testShopCapAndPrice,
   testDialoguesSpanish,
+  testCameoBeats,
 ];
 
 for (const t of tests) {
