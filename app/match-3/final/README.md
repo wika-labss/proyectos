@@ -1,18 +1,22 @@
 # Match-3 América — final
 
-## APK Release V3.1 (actual — Design System)
+## APK Release V4 (actual)
 
-- **Archivo:** [`match-3-america-v3.1-release.apk`](./match-3-america-v3.1-release.apk)
+- **Archivo:** [`match-3-america-v4-release.apk`](./match-3-america-v4-release.apk)
 - **Package:** `com.wika.match3`
-- **Version:** 3.1.1 (versionCode 2)
-- **Tamaño:** ~70 MB
+- **Version:** 4.0.0 (versionCode 3)
 - **Modo:** Release autónomo (sin Metro)
 
 ```bash
-adb install -r match-3-america-v3.1-release.apk
+adb install -r match-3-america-v4-release.apk
 ```
 
-Fuente de build: `iterations/v3.1/` (Expo SDK 52, JDK 17, assembleRelease). Night-cyan + kit 8-bit.
+Fuente: `iterations/v4/` — tablero 8×10 alineado, diálogos ES, tienda 20 000 / máx. 10.
+
+## APK Release V3.1 (histórico)
+
+- **Archivo:** [`match-3-america-v3.1-release.apk`](./match-3-america-v3.1-release.apk)
+- Fuente: `iterations/v3.1/` · version 3.1.1
 
 ## APK Release V3 (histórico)
 
