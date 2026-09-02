@@ -18,7 +18,7 @@
         "backgroundColor": "#001B2E"
       },
       "package": "com.wika.match3",
-      "versionCode": 3
+      "versionCode": 4
     },
     "web": {
       "bundler": "metro",
