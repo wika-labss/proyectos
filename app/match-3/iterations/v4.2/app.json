@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Match-3 Am\u00e9rica",
+    "name": "Match-3 América",
     "slug": "match-3-america",
     "version": "4.2.0",
     "orientation": "portrait",
@@ -29,8 +29,12 @@
       "expo-router",
       "expo-asset",
       "expo-font",
-      "expo-av",
-      "expo-image",
+      [
+        "expo-av",
+        {
+          "microphonePermission": false
+        }
+      ],
       [
         "expo-build-properties",
         {

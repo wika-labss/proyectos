@@ -1,8 +1,8 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
   Animated,
+  Image,
   ImageBackground,
   Pressable,
   StyleSheet,
@@ -137,7 +137,7 @@ export default function MapScreen() {
                   <Image
                     source={VisualAssets.plane}
                     style={styles.planeImg}
-                    contentFit="contain"
+                    resizeMode="contain"
                   />
                 </Animated.View>
               ) : null}

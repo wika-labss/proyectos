@@ -29,3 +29,24 @@ if (fs.existsSync(buildGradlePath)) {
   fs.writeFileSync(buildGradlePath, buildGradle);
   console.log('[post-prebuild] Ensured Kotlin 1.9.25 in build.gradle');
 }
+
+const manifestPath = path.join(
+  __dirname,
+  '..',
+  'android',
+  'app',
+  'src',
+  'main',
+  'AndroidManifest.xml',
+);
+if (fs.existsSync(manifestPath)) {
+  let manifest = fs.readFileSync(manifestPath, 'utf8');
+  const next = manifest.replace(
+    /\s*<uses-permission android:name="android.permission.RECORD_AUDIO"\/>/g,
+    '',
+  );
+  if (next !== manifest) {
+    fs.writeFileSync(manifestPath, next);
+    console.log('[post-prebuild] Removed RECORD_AUDIO (BGM only)');
+  }
+}
