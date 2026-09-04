@@ -1,0 +1,27 @@
+{
+  "$schema": "wika-tokens/v1",
+  "project": "match-3",
+  "version": "v4.2",
+  "status": "pending",
+  "approvedAt": "",
+  "approvalRef": "visual-expectation/match-3-v4.2/approval.md",
+  "family": "night-cyan",
+  "componentHeights": {
+    "cta": 52,
+    "hud": 36,
+    "block": 120
+  },
+  "board": {
+    "cols": 8,
+    "rows": 10,
+    "cellInteger": true,
+    "gemFramePx": 256
+  },
+  "avatarCell": 96,
+  "shop": {
+    "price": 20000,
+    "giftCap": 10
+  },
+  "playOverlayWidth": 92,
+  "notes": "Avatares HD 8-bit. Avión GIF. Códigos vissiuss/map. BGM."
+}
