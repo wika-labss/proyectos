@@ -28,4 +28,4 @@
 
 ## Verify
 
-`npm run smoke` + `npm run typecheck`. APK local igual que v4 (sideload pendiente).
+`npm run smoke` + `npm run typecheck`. APK Release `com.wika.tower` 5.0.0 generado con `npm run apk`.

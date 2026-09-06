@@ -13,7 +13,7 @@ Keep pintado, torres/enemigos sprite, chrome de piedra. Engine V4 intacto.
 `preview/index.html` — maqueta web (Menú / Partida / Tienda / Victoria).  
 `preview/share-game.png` — captura de partida.
 
-No genera APK. `npm run apk:win` solo si se pide.
+APK Release: `npm run apk` → `android/app/build/outputs/apk/release/app-release.apk` (`com.wika.tower` 5.0.0).
 
 ## Scripts
 
