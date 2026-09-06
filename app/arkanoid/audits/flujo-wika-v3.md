@@ -62,7 +62,8 @@ Revisión: `app/arkanoid/review.md`
 ## Etapa 5 · Auditoría 2 (ejecutada 2026-09-06)
 
 `audits/auditoria-release-v3.md` — código OK; sideload pendiente.  
-`audits/auditoria-audio-arranque-v3.md` — H1/H2 (MP3 tumba el arranque) cerrados en 3.0.2.
+`audits/auditoria-audio-arranque-v3.md` — H1/H2 (MP3 tumba el arranque) cerrados en contrato; menú 3.0.3 no carga `expo-av`.  
+`audits/errores-v3.md` — catálogo `ERR-V3-01` … `ERR-V3-27`.
 
 ---
 

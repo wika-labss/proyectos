@@ -10,4 +10,5 @@ Las tres auditorías de preparación V3 (Etapa 3 del flujo WIKA) están en archi
 
 Referencia: `wika-fundaments/docs/auditoria-documentacion.md`, `auditoria-modulos.md`, `auditoria-ensamblado.md`.
 
-Auditoría 2 (la solución funciona): `audits/auditoria-release-v3.md`.
+Auditoría 2 (la solución funciona): `audits/auditoria-release-v3.md`.  
+Errores de ciclo V3: `audits/errores-v3.md`.

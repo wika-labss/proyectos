@@ -68,3 +68,5 @@ V3 **completa la fidelidad clásica** con:
 No es un juego distinto ni un delta de jefe.
 
 Fuente de verdad: `idea/02-features.md` → Feature 06 / 17 (33 niveles) + Feature 22 (sin delta V2) + Feature 23 (cápsulas) + Feature 24 (ambiente).
+
+Catálogo operativo de fallos V3 (arranque, audio, Windows, adb): `audits/errores-v3.md` (`ERR-V3-01` … `ERR-V3-27`).

@@ -196,6 +196,7 @@ Preparación V1 (01–05) ✓
 | V3-12 | docs + `brick-field` | 06, 17 | `idea/` + `levelLayouts.ts` + smoke | done |
 | V3-13 | auditoría 2 | 06, 17 | `audits/auditoria-release-v3.md` | en curso (APK pending) |
 | V3-14 | `ambient-audio` + auditoría | 24 | encode móvil + MediaPlayer + `auditoria-audio-arranque-v3.md` | done |
+| V3-15 | docs errores | 01, 15, 24 | `audits/errores-v3.md` (`ERR-V3-01`–`27`) | done |
 
 ### Contexto obligatorio usado (regla WIKA)
 
