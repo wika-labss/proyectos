@@ -7,6 +7,7 @@ import {
 } from '../constants/game';
 import {
   createWorld,
+  fireLasers,
   launchBall,
   resetBall,
   setPaddleX,
@@ -14,7 +15,7 @@ import {
 } from '../engine/arkanoidEngine';
 import { considerHighScore, onBrickDestroyed } from '../engine/arkanoidScore';
 import { onLevelCleared } from '../engine/levelProgress';
-import { onBallLost } from '../engine/livesSystem';
+import { onBallLost, onExtraLife } from '../engine/livesSystem';
 import type { WorldState } from '../engine/types';
 import { loadHighScore, saveHighScore } from '../storage/offlineProgress';
 
@@ -94,6 +95,19 @@ export function useArkanoidGame(): ArkanoidGameApi {
     await saveHighScore(nextHigh);
   }, []);
 
+  const finishLevel = useCallback(
+    (fromIndex: number) => {
+      const advance = onLevelCleared(fromIndex);
+      if (advance.kind === 'victory') {
+        void persistHigh(scoreRef.current);
+        setStatus('victory');
+        return;
+      }
+      setStatus('levelClear');
+    },
+    [persistHigh],
+  );
+
   const startGame = useCallback(() => {
     const next = createWorld(WORLD_WIDTH, WORLD_HEIGHT, 0);
     setWorld(next);
@@ -112,20 +126,27 @@ export function useArkanoidGame(): ArkanoidGameApi {
     worldRef.current = null;
   }, []);
 
-  const movePaddle = useCallback((worldX: number) => {
-    if (statusRef.current !== 'playing') return;
-    const current = worldRef.current;
-    if (!current) return;
-    const next = setPaddleX(current, worldX - current.paddle.w / 2);
-    setWorld(next);
-    worldRef.current = next;
-  }, []);
+  const movePaddle = useCallback(
+    (worldX: number) => {
+      if (statusRef.current !== 'playing') return;
+      const current = worldRef.current;
+      if (!current) return;
+      const next = setPaddleX(current, worldX - current.paddle.w / 2);
+      setWorld(next);
+      worldRef.current = next;
+      if (next.doorExit) {
+        finishLevel(next.levelIndex);
+      }
+    },
+    [finishLevel],
+  );
 
   const launch = useCallback(() => {
     if (statusRef.current !== 'playing') return;
     const current = worldRef.current;
-    if (!current || current.ball.launched) return;
-    const next = launchBall(current);
+    if (!current) return;
+    let next = current.ball.launched ? current : launchBall(current);
+    next = fireLasers(next);
     setWorld(next);
     worldRef.current = next;
   }, []);
@@ -162,8 +183,12 @@ export function useArkanoidGame(): ArkanoidGameApi {
       const dt = now - last;
       last = now;
       const current = worldRef.current;
-      if (current && current.ball.launched) {
-        const result = step(current, dt);
+      if (current) {
+        let ticking = current;
+        if (current.power === 'laser' && current.ball.launched) {
+          ticking = fireLasers(ticking);
+        }
+        const result = step(ticking, dt);
         setWorld(result.state);
         worldRef.current = result.state;
 
@@ -172,6 +197,11 @@ export function useArkanoidGame(): ArkanoidGameApi {
             const nextScore = scoreRef.current + onBrickDestroyed(event.brickType);
             setScore(nextScore);
             scoreRef.current = nextScore;
+          }
+          if (event.type === 'extraLife') {
+            const nextLives = onExtraLife(livesRef.current);
+            setLives(nextLives);
+            livesRef.current = nextLives;
           }
           if (event.type === 'ballLost') {
             const { lives: nextLives, gameOver } = onBallLost(livesRef.current);
@@ -193,14 +223,8 @@ export function useArkanoidGame(): ArkanoidGameApi {
             }, BALL_LOST_PAUSE_MS);
             return;
           }
-          if (event.type === 'cleared') {
-            const advance = onLevelCleared(result.state.levelIndex);
-            if (advance.kind === 'victory') {
-              void persistHigh(scoreRef.current);
-              setStatus('victory');
-              return;
-            }
-            setStatus('levelClear');
+          if (event.type === 'cleared' || event.type === 'breakExit') {
+            finishLevel(result.state.levelIndex);
             return;
           }
         }
@@ -213,7 +237,7 @@ export function useArkanoidGame(): ArkanoidGameApi {
       alive = false;
       cancelAnimationFrame(raf);
     };
-  }, [status, persistHigh]);
+  }, [status, persistHigh, finishLevel]);
 
   return {
     status,

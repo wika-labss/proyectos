@@ -16,6 +16,7 @@ Traducir `02-features.md` en módulos reutilizables con responsabilidades claras
 | Módulo | Tipo | Estado V1 | Justificación |
 |--------|------|-----------|---------------|
 | `arkanoid-engine` | core | **Nuevo** | Pala, bola, ladrillos, colisiones, rebotes clásicos |
+| `vaus-capsules` | core | **V3** | Cápsulas L/E/C/S/B/D/P (Feature 23) |
 | `brick-field` | core | **Nuevo** | Layouts de niveles, hits restantes, clear level |
 | `boss` | core | **V2** | Jefe móvil, HP, derrota |
 | `lives-system` | core | **Nuevo** | 3 vidas, pérdida por bola caída, game over |

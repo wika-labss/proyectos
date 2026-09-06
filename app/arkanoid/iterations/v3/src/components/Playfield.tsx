@@ -1,8 +1,9 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { brickRow, play } from '../constants/theme';
+import { StyleSheet, Text, View } from 'react-native';
+import { brickRow, capsuleColor, play } from '../constants/theme';
+import { doorRect } from '../engine/arkanoidEngine';
 import { aliveBricks } from '../engine/brickField';
-import type { WorldState } from '../engine/types';
+import type { Ball, WorldState } from '../engine/types';
 
 type Props = {
   world: WorldState;
@@ -13,6 +14,8 @@ export function Playfield({ world, scale }: Props) {
   const width = world.width * scale;
   const height = world.height * scale;
   const bricks = aliveBricks(world.bricks);
+  const balls: Ball[] = [world.ball, ...world.extraBalls];
+  const door = world.doorOpen ? doorRect(world.width, world.height) : null;
 
   return (
     <View style={[styles.field, { width, height }]}>
@@ -40,6 +43,55 @@ export function Playfield({ world, scale }: Props) {
         );
       })}
 
+      {door ? (
+        <View
+          style={[
+            styles.door,
+            {
+              left: door.x * scale,
+              top: door.y * scale,
+              width: door.w * scale,
+              height: door.h * scale,
+            },
+          ]}
+        />
+      ) : null}
+
+      {world.capsules.map((cap) => (
+        <View
+          key={cap.id}
+          style={[
+            styles.capsule,
+            {
+              left: cap.x * scale,
+              top: cap.y * scale,
+              width: cap.w * scale,
+              height: cap.h * scale,
+              backgroundColor: capsuleColor[cap.kind],
+            },
+          ]}
+        >
+          <Text style={[styles.capsuleLetter, { fontSize: Math.max(8, 9 * scale) }]}>
+            {cap.kind}
+          </Text>
+        </View>
+      ))}
+
+      {world.lasers.map((lz) => (
+        <View
+          key={lz.id}
+          style={[
+            styles.laser,
+            {
+              left: lz.x * scale,
+              top: lz.y * scale,
+              width: Math.max(2, lz.w * scale),
+              height: lz.h * scale,
+            },
+          ]}
+        />
+      ))}
+
       <View
         style={[
           styles.paddle,
@@ -48,22 +100,38 @@ export function Playfield({ world, scale }: Props) {
             top: world.paddle.y * scale,
             width: world.paddle.w * scale,
             height: world.paddle.h * scale,
+            backgroundColor:
+              world.power === 'laser'
+                ? '#F8C471'
+                : world.power === 'catch'
+                  ? '#1ABC9C'
+                  : play.paddle,
           },
         ]}
-      />
+      >
+        {world.power === 'laser' ? (
+          <>
+            <View style={[styles.cannon, { left: 4 * scale }]} />
+            <View style={[styles.cannon, { right: 4 * scale }]} />
+          </>
+        ) : null}
+      </View>
 
-      <View
-        style={[
-          styles.ball,
-          {
-            left: (world.ball.pos.x - world.ball.r) * scale,
-            top: (world.ball.pos.y - world.ball.r) * scale,
-            width: world.ball.r * 2 * scale,
-            height: world.ball.r * 2 * scale,
-            borderRadius: world.ball.r * scale,
-          },
-        ]}
-      />
+      {balls.map((ball) => (
+        <View
+          key={ball.id}
+          style={[
+            styles.ball,
+            {
+              left: (ball.pos.x - ball.r) * scale,
+              top: (ball.pos.y - ball.r) * scale,
+              width: ball.r * 2 * scale,
+              height: ball.r * 2 * scale,
+              borderRadius: ball.r * scale,
+            },
+          ]}
+        />
+      ))}
     </View>
   );
 }
@@ -97,11 +165,38 @@ const styles = StyleSheet.create({
   },
   paddle: {
     position: 'absolute',
-    backgroundColor: play.paddle,
     borderRadius: 3,
+  },
+  cannon: {
+    position: 'absolute',
+    top: -4,
+    width: 4,
+    height: 5,
+    backgroundColor: '#E74C3C',
+    borderRadius: 1,
   },
   ball: {
     position: 'absolute',
     backgroundColor: play.ball,
+  },
+  capsule: {
+    position: 'absolute',
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  capsuleLetter: {
+    color: '#111',
+    fontWeight: '800',
+  },
+  laser: {
+    position: 'absolute',
+    backgroundColor: '#FF6B6B',
+    borderRadius: 1,
+  },
+  door: {
+    position: 'absolute',
+    backgroundColor: '#E91E8C',
+    opacity: 0.85,
   },
 });

@@ -5,7 +5,7 @@
 
 ## Intención
 
-V3 **sin los cambios de V2**. Misma jugabilidad que V1: Breakout clásico, overlays de Game Over / Victoria, sin jefe y sin pantallas `/lose` `/win`.
+V3 **sin los cambios de V2**. Misma jugabilidad que V1: Breakout clásico, overlays de Game Over / Victoria, sin jefe y sin pantallas `/lose` `/win`. Añade las **cápsulas Vaus** (L/E/C/S/B/D/P) pedidas como reglas nuevas.
 
 ## Gates
 

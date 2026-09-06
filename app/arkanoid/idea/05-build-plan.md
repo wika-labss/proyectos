@@ -175,3 +175,4 @@ Idea → Preparación (01–05) ✓
 | Jugabilidad | Igual que V1 (3 niveles, overlays) |
 | Jefe / `/lose` / `/win` | **Retirados** |
 | High score | Clave `arkanoid:v3:highScore` |
+| Cápsulas Vaus | L E C S B D P |

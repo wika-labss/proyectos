@@ -28,3 +28,17 @@ export const BALL_LOST_PAUSE_MS = 700;
 export const PADDLE_MAX_BOUNCE_ANGLE = (70 * Math.PI) / 180;
 
 export const HIGH_SCORE_KEY = 'arkanoid:v3:highScore';
+
+export const MAX_LIVES = 6;
+export const PADDLE_WIDTH_ENLARGED = 122;
+export const SLOW_FACTOR = 0.62;
+export const CAPSULE_DROP_CHANCE = 0.32;
+export const CAPSULE_WIDTH = 22;
+export const CAPSULE_HEIGHT = 12;
+export const CAPSULE_FALL_SPEED = 92;
+export const LASER_WIDTH = 3;
+export const LASER_HEIGHT = 14;
+export const LASER_SPEED = 420;
+export const LASER_COOLDOWN_MS = 280;
+export const DOOR_WIDTH = 10;
+export const DOOR_HEIGHT = 56;

@@ -7,21 +7,30 @@ import {
   BALL_RADIUS,
   INITIAL_LIVES,
   LEVEL_COUNT,
+  PADDLE_WIDTH,
+  PADDLE_WIDTH_ENLARGED,
   SCORE_HARD,
   SCORE_NORMAL,
+  SLOW_FACTOR,
   WORLD_HEIGHT,
   WORLD_WIDTH,
 } from '../src/constants/game';
 import {
   createWorld,
+  fireLasers,
   launchBall,
   setPaddleX,
   step,
 } from '../src/engine/arkanoidEngine';
+import { applyCapsule } from '../src/engine/capsules';
 import { hitBrick, isCleared, loadLevel } from '../src/engine/brickField';
-import { createLives, onBallLost } from '../src/engine/livesSystem';
+import { createLives, onBallLost, onExtraLife } from '../src/engine/livesSystem';
 import { considerHighScore, onBrickDestroyed } from '../src/engine/arkanoidScore';
 import { onLevelCleared } from '../src/engine/levelProgress';
+import type { CapsuleKind, WorldState } from '../src/engine/types';
+
+const neverDrop = () => 1;
+const alwaysDrop = () => 0;
 
 function emptyWorld() {
   const world = createWorld();
@@ -39,7 +48,7 @@ function testWallBounce() {
       launched: true,
     },
   };
-  const result = step(world, 16);
+  const result = step(world, 16, neverDrop);
   assert.ok(result.state.ball.vel.x > 0, 'left wall should flip vx');
   assert.ok(result.events.some((e) => e.type === 'wallBounce'));
 }
@@ -55,7 +64,7 @@ function testCeilingBounce() {
       launched: true,
     },
   };
-  const result = step(world, 16);
+  const result = step(world, 16, neverDrop);
   assert.ok(result.state.ball.vel.y > 0, 'ceiling should flip vy downward');
 }
 
@@ -74,6 +83,7 @@ function testPaddleBounceZones() {
       },
     },
     16,
+    neverDrop,
   );
   assert.ok(hitLeft.events.some((e) => e.type === 'paddleBounce'));
   assert.ok(hitLeft.state.ball.vel.y < 0, 'paddle bounce goes up');
@@ -90,6 +100,7 @@ function testPaddleBounceZones() {
       },
     },
     16,
+    neverDrop,
   );
   assert.ok(hitRight.state.ball.vel.x > 0, 'right edge sends ball right');
 }
@@ -129,7 +140,7 @@ function testEngineBrickCollision() {
       vel: { x: 0, y: -280 },
     },
   };
-  const result = step(world, 16);
+  const result = step(world, 16, neverDrop);
   assert.ok(
     result.events.some((e) => e.type === 'brickDestroyed' || e.type === 'brickHit'),
     'ball hitting brick emits hit/destroy',
@@ -149,7 +160,7 @@ function testBallLost() {
       vel: { x: 0, y: 280 },
     },
   };
-  const result = step(world, 32);
+  const result = step(world, 32, neverDrop);
   assert.ok(result.events.some((e) => e.type === 'ballLost'));
 }
 
@@ -209,6 +220,142 @@ function testLaunchFromPaddle() {
   assert.ok(world.ball.vel.y < 0);
 }
 
+function flyingWorld(): WorldState {
+  const base = emptyWorld();
+  return launchBall({
+    ...base,
+    ball: {
+      ...base.ball,
+      launched: false,
+    },
+  });
+}
+
+function testCapsuleLaser() {
+  const armed = applyCapsule(flyingWorld(), 'L');
+  assert.equal(armed.power, 'laser');
+  const shot = fireLasers(armed);
+  assert.equal(shot.lasers.length, 2);
+  const brick = loadLevel(0)[0]!;
+  const aimed = {
+    ...shot,
+    bricks: [brick],
+    lasers: shot.lasers.map((lz) => ({
+      ...lz,
+      x: brick.x + brick.w / 2,
+      y: brick.y + brick.h + 4,
+    })),
+  };
+  const result = step(aimed, 16, neverDrop);
+  assert.ok(
+    result.events.some((e) => e.type === 'brickDestroyed' || e.type === 'brickHit'),
+    'laser should damage bricks',
+  );
+}
+
+function testCapsuleEnlarge() {
+  const wide = applyCapsule(createWorld(), 'E');
+  assert.equal(wide.power, 'enlarge');
+  assert.equal(wide.paddle.w, PADDLE_WIDTH_ENLARGED);
+}
+
+function testCapsuleCatch() {
+  const world = applyCapsule(emptyWorld(), 'C');
+  assert.equal(world.power, 'catch');
+  const result = step(
+    {
+      ...world,
+      ball: {
+        ...world.ball,
+        launched: true,
+        pos: { x: world.paddle.x + world.paddle.w / 2, y: world.paddle.y - BALL_RADIUS - 1 },
+        vel: { x: 0, y: 280 },
+      },
+    },
+    16,
+    neverDrop,
+  );
+  assert.equal(result.state.ball.launched, false, 'catch should stick the ball');
+}
+
+function testCapsuleSlow() {
+  const launched = flyingWorld();
+  const before = Math.hypot(launched.ball.vel.x, launched.ball.vel.y);
+  const slowed = applyCapsule(launched, 'S');
+  assert.equal(slowed.slow, true);
+  const result = step(slowed, 16, neverDrop);
+  const after = Math.hypot(result.state.ball.vel.x, result.state.ball.vel.y);
+  assert.ok(after < before * SLOW_FACTOR + 1, 'slow should reduce ball speed');
+}
+
+function testCapsuleBreak() {
+  const opened = applyCapsule(createWorld(), 'B');
+  assert.equal(opened.doorOpen, true);
+  const slid = setPaddleX(opened, 9999);
+  assert.ok(slid.doorExit, 'paddle entering the door should exit');
+}
+
+function testCapsuleDisrupt() {
+  const split = applyCapsule(flyingWorld(), 'D');
+  assert.equal(split.power, 'disrupt');
+  assert.equal(split.extraBalls.length, 2);
+}
+
+function testDisruptKeepsLifeUntilLastBall() {
+  const split = applyCapsule(flyingWorld(), 'D');
+  const lostOne = step(
+    {
+      ...split,
+      extraBalls: [
+        {
+          ...split.extraBalls[0]!,
+          pos: { x: 80, y: WORLD_HEIGHT - 2 },
+          vel: { x: 0, y: 280 },
+        },
+        split.extraBalls[1]!,
+      ],
+    },
+    32,
+    neverDrop,
+  );
+  assert.ok(!lostOne.events.some((e) => e.type === 'ballLost'), 'one extra lost is not a life');
+  assert.ok(lostOne.state.extraBalls.length + 1 >= 2);
+}
+
+function testCapsulePlayer() {
+  assert.equal(onExtraLife(3), 4);
+  assert.equal(onExtraLife(6), 6);
+  const idle = applyCapsule(createWorld(), 'P');
+  assert.equal(idle.power, null);
+  assert.equal(idle.paddle.w, PADDLE_WIDTH);
+}
+
+function testCapsuleSpawnOnDestroy() {
+  let world = createWorld(WORLD_WIDTH, WORLD_HEIGHT, 0);
+  const brick = world.bricks[0]!;
+  world = {
+    ...world,
+    bricks: [brick],
+    ball: {
+      ...world.ball,
+      launched: true,
+      pos: { x: brick.x + brick.w / 2, y: brick.y + brick.h + BALL_RADIUS + 1 },
+      vel: { x: 0, y: -280 },
+    },
+  };
+  const result = step(world, 16, alwaysDrop);
+  assert.ok(result.events.some((e) => e.type === 'capsuleSpawned'));
+  assert.ok(result.state.capsules.length >= 1);
+  const kinds: CapsuleKind[] = ['L', 'E', 'C', 'S', 'B', 'D', 'P'];
+  assert.ok(kinds.includes(result.state.capsules[0]!.kind));
+}
+
+function testNoBossRoutes() {
+  assert.equal(LEVEL_COUNT, 3);
+  const last = onLevelCleared(2);
+  assert.equal(last.kind, 'victory');
+}
+
 function main() {
   testWallBounce();
   testCeilingBounce();
@@ -223,8 +370,18 @@ function main() {
   testLevels();
   testPaddleClamp();
   testLaunchFromPaddle();
+  testCapsuleLaser();
+  testCapsuleEnlarge();
+  testCapsuleCatch();
+  testCapsuleSlow();
+  testCapsuleBreak();
+  testCapsuleDisrupt();
+  testDisruptKeepsLifeUntilLastBall();
+  testCapsulePlayer();
+  testCapsuleSpawnOnDestroy();
+  testNoBossRoutes();
   console.log(
-    'smoke-v3: PASSED (classic: walls, paddle, bricks, lives, score, levels; no boss)',
+    'smoke-v3: PASSED (classic + Vaus capsules L/E/C/S/B/D/P; no boss)',
   );
 }
 

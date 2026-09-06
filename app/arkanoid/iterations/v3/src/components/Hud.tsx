@@ -7,27 +7,37 @@ type Props = {
   score: number;
   level: number;
   statusLabel?: string;
+  powerLabel?: string;
 };
 
-export function Hud({ lives, score, level, statusLabel }: Props) {
-  const hearts = Array.from({ length: 3 }, (_, i) => (i < lives ? '♥' : '♡')).join(' ');
+export function Hud({ lives, score, level, statusLabel, powerLabel }: Props) {
+  const hearts =
+    lives <= 3
+      ? Array.from({ length: 3 }, (_, i) => (i < lives ? '♥' : '♡')).join(' ')
+      : `♥ × ${lives}`;
   return (
-    <View style={styles.row}>
-      <Text style={styles.lives}>{hearts}</Text>
-      <Text style={styles.score}>{score}</Text>
-      <Text style={styles.level}>Nv {level}</Text>
+    <View style={styles.wrap}>
+      <View style={styles.row}>
+        <Text style={styles.lives}>{hearts}</Text>
+        <Text style={styles.score}>{score}</Text>
+        <Text style={styles.level}>Nv {level}</Text>
+      </View>
+      {powerLabel ? <Text style={styles.power}>{powerLabel}</Text> : null}
       {statusLabel ? <Text style={styles.status}>{statusLabel}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrap: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    minHeight: 44,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
     gap: 8,
   },
   lives: {
@@ -49,12 +59,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
+  power: {
+    marginTop: 4,
+    color: play.hud,
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
   status: {
-    position: 'absolute',
-    right: 16,
-    top: 36,
+    marginTop: 2,
     color: play.hud,
     fontSize: 12,
     fontWeight: '600',
+    textAlign: 'center',
   },
 });

@@ -9,6 +9,7 @@ import { Playfield } from '../src/components/Playfield';
 import { ResultOverlay } from '../src/components/ResultOverlay';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '../src/constants/game';
 import { play } from '../src/constants/theme';
+import { powerLabel } from '../src/engine/capsules';
 import { useGame } from '../src/hooks/GameProvider';
 
 export default function GameScreen() {
@@ -54,7 +55,7 @@ export default function GameScreen() {
   const statusLabel =
     status === 'ballLost'
       ? 'Vida perdida'
-      : !world?.ball.launched && status === 'playing'
+      : world && !world.ball.launched && status === 'playing'
         ? 'Toca para lanzar'
         : undefined;
 
@@ -65,6 +66,11 @@ export default function GameScreen() {
         score={score}
         level={levelIndex + 1}
         statusLabel={statusLabel}
+        powerLabel={
+          world && status === 'playing'
+            ? powerLabel(world.power, world.doorOpen, world.slow)
+            : undefined
+        }
       />
 
       <View style={styles.boardWrap}>

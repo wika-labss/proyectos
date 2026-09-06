@@ -69,6 +69,22 @@
 - High score: `arkanoid:v3:highScore`.
 - El código de V2 permanece en `iterations/v2/` como histórico.
 
+### Feature 23 — Cápsulas Vaus (V3)
+
+Al destruir ladrillos pueden caer cápsulas. Atraparlas con la pala aplica:
+
+| Código | Nombre | Efecto |
+|--------|--------|--------|
+| L | Láser | La Vaus dispara y rompe bloques |
+| E | Enlarge | Alarga la nave |
+| C | Catch | Atrapa la bola; toca para relanzar |
+| S | Slow | Ralentiza la bola |
+| B | Break | Abre puerta lateral; salir avanza de nivel |
+| D | Disrupt | Divide la bola en tres |
+| P | Player | Vida extra (máx. 6) |
+
+Las cápsulas L/E/C/S/D se sustituyen entre sí. P y B no quitan el resto. Perder la última bola resetea poderes.
+
 ### Feature 07 — Puntuación
 
 - Puntos por ladrillo destruido (V1):
@@ -128,7 +144,7 @@ App nativa Android generada con pipeline WIKA (Expo prebuild + release), instala
 
 ### Feature 16 — Power-ups clásicos
 
-Cápsulas al romper ladrillos: expandir pala, multibola, ralentizar bola (subset Arkanoid clásico).
+**Hecho en V3** (Feature 23): L, E, C, S, B, D, P.
 
 ### Feature 17 — Más niveles / layouts
 

@@ -27,6 +27,16 @@ export const brickRow = [
   '#9B59B6',
 ] as const;
 
+export const capsuleColor = {
+  L: '#E74C3C',
+  E: '#2ECC71',
+  C: '#1ABC9C',
+  S: '#E67E22',
+  B: '#E91E8C',
+  D: '#3498DB',
+  P: '#BDC3C7',
+} as const;
+
 export const colors = {
   ...menu,
   ...play,
