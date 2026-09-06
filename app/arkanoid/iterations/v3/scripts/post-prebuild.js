@@ -39,3 +39,17 @@ if (fs.existsSync(manifestPath)) {
     console.log('[post-prebuild] Set android:largeHeap=true');
   }
 }
+
+const appJsonPath = path.join(__dirname, '..', 'app.json');
+const appGradlePath = path.join(__dirname, '..', 'android', 'app', 'build.gradle');
+if (fs.existsSync(appJsonPath) && fs.existsSync(appGradlePath)) {
+  const appJson = JSON.parse(fs.readFileSync(appJsonPath, 'utf8'));
+  const versionName = appJson.expo.version;
+  const versionCode = appJson.expo.android.versionCode;
+  let appGradle = fs.readFileSync(appGradlePath, 'utf8');
+  appGradle = appGradle
+    .replace(/versionCode\s+\d+/, `versionCode ${versionCode}`)
+    .replace(/versionName\s+"[^"]+"/, `versionName "${versionName}"`);
+  fs.writeFileSync(appGradlePath, appGradle);
+  console.log(`[post-prebuild] versionName ${versionName} versionCode ${versionCode}`);
+}
