@@ -45,7 +45,8 @@
 
 - V1: al menos **3 niveles** con layouts distintos (más ladrillos / filas / resistentes).
 - Completar nivel → pantalla breve de victoria de nivel → siguiente nivel (vidas se conservan).
-- Completar el último nivel **y derrotar al jefe** → victoria de partida (WIN) + actualización de high score.
+- Completar el último nivel de ladrillos → victoria de partida + actualización de high score.
+- V2 añadió un jefe; **V3 retira ese delta** (ver Feature 22).
 
 ### Feature 20 — Jefe (V2)
 
@@ -59,6 +60,14 @@
 - **LOSER** (`/lose`): derrota a 0 vidas. Título explícito, score, high score, Reintentar / Menú.
 - **WIN** (`/win`): victoria al derrotar al jefe. Título explícito, score, high score, Jugar de nuevo / Menú.
 - Ya no se resuelven como overlays sobre Game; son rutas propias.
+
+### Feature 22 — V3 sin delta V2
+
+- V3 **no incluye** jefe, nivel 4, ni rutas `/lose` y `/win`.
+- Game Over y Victoria vuelven a ser overlays sobre Game (como V1).
+- Victoria = limpiar el muro del nivel 3.
+- High score: `arkanoid:v3:highScore`.
+- El código de V2 permanece en `iterations/v2/` como histórico.
 
 ### Feature 07 — Puntuación
 

@@ -148,12 +148,13 @@ Idea → Preparación (01–05) ✓
      → Auditoría Módulos ✓
      → Auditoría Ensamblado ✓
      → Construcción iterations/v1 ✓
-     → Construcción iterations/v2 ← ACTUAL (jefe + LOSER/WIN)
+     → Construcción iterations/v2 (histórico: jefe + LOSER/WIN)
+     → Construcción iterations/v3 ← ACTUAL (clásico, sin delta V2)
      → Auditoría Release
 ```
 
-**Estado actual:** V1 generada. V2 añade jefe, pantalla LOSER y pantalla WIN.  
-**Siguiente:** gates v2 + APK local.
+**Estado actual:** V3 clásico — misma jugabilidad que V1; se retiraron jefe y pantallas `/lose` `/win`.  
+**Siguiente:** gates v3 + APK local.
 
 ---
 
@@ -166,3 +167,11 @@ Idea → Preparación (01–05) ✓
 | `/lose` | Pantalla LOSER dedicada |
 | `/win` | Pantalla WIN dedicada |
 | High score | Clave `arkanoid:v2:highScore` |
+
+## Delta V3
+
+| Incluido | Notas |
+|----------|-------|
+| Jugabilidad | Igual que V1 (3 niveles, overlays) |
+| Jefe / `/lose` / `/win` | **Retirados** |
+| High score | Clave `arkanoid:v3:highScore` |
