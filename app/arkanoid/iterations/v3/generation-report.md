@@ -11,6 +11,7 @@ V3 **sin los cambios de V2**. Misma jugabilidad que V1, más:
 - Feature 23: cápsulas Vaus L E C S B D P.
 - Feature 24: única pista `ambient-castle.mp3` en loop desde el arranque (menú y partida). Volumen `ambient` independiente.
 - Fondo de partida: pack independiente `recursos/inspiration/arkanoid-castle/`.
+- UI 8-bit unificada: Press Start 2P, paleta NES, scanlines; menú y partida ya no son dual futurista/retro.
 
 Flujo WIKA de este ciclo: `audits/flujo-wika-v3.md`.
 
