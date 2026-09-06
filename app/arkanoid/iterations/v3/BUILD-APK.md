@@ -23,9 +23,9 @@ git checkout cursor/arkanoid-v3-classic-eb2a
 git pull origin cursor/arkanoid-v3-classic-eb2a
 
 # 2) Toolchain (ajusta JAVA_HOME si tu JDK 17 está en otra carpeta)
-$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17"
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-17'
 if (-not (Test-Path "$env:JAVA_HOME\bin\java.exe")) {
-  $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot"
+  $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot'
 }
 $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
 $env:Path = "$env:JAVA_HOME\bin;C:\Program Files\nodejs;$env:ANDROID_HOME\platform-tools;$env:Path"
@@ -48,8 +48,11 @@ APK:
 Instalar en el móvil (USB + depuración):
 
 ```powershell
-adb install -r android\app\build\outputs\apk\release\app-release.apk
+adb uninstall com.wika.arkanoid
+adb install android\app\build\outputs\apk\release\app-release.apk
 ```
+
+El paquete es el mismo que V1/V2 (`com.wika.arkanoid`). Si el icono abre y se cierra (o se queda en negro), **desinstala Arkanoid** y vuelve a instalar este APK 3.0.1. No mezcles un APK viejo con uno nuevo.
 
 ### Si falla
 

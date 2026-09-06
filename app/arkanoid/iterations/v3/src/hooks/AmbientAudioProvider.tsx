@@ -1,5 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { audioManager, clampVolume, defaultVolume } from '../modules/ambient-audio';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { clampVolume, defaultVolume, type AudioChannel } from '../modules/ambient-audio/volume';
 
 type AmbientAudioApi = {
   ambientVolume: number;
@@ -7,26 +7,36 @@ type AmbientAudioApi = {
   ready: boolean;
 };
 
+type DelayedAudioManager = {
+  start: () => Promise<void>;
+  getVolume: (channel: AudioChannel) => number;
+  setVolume: (channel: AudioChannel, value: number) => Promise<number>;
+};
+
 const AmbientAudioContext = createContext<AmbientAudioApi | null>(null);
 
 export function AmbientAudioProvider({ children }: { children: React.ReactNode }) {
   const [ambientVolume, setAmbient] = useState(defaultVolume('ambient'));
   const [ready, setReady] = useState(false);
+  const managerRef = useRef<DelayedAudioManager | null>(null);
 
   useEffect(() => {
     let alive = true;
     const timer = setTimeout(() => {
       void (async () => {
         try {
+          const { audioManager } = await import('../modules/ambient-audio/audioManager');
+          if (!alive) return;
+          managerRef.current = audioManager;
           await audioManager.start();
+          if (!alive) return;
+          setAmbient(audioManager.getVolume('ambient'));
         } catch {
-          // El menú debe abrir aunque el MP3 falle en un dispositivo.
+          // El menú debe abrir aunque expo-av o el MP3 fallen.
         }
-        if (!alive) return;
-        setAmbient(audioManager.getVolume('ambient'));
-        setReady(true);
+        if (alive) setReady(true);
       })();
-    }, 700);
+    }, 900);
     return () => {
       alive = false;
       clearTimeout(timer);
@@ -34,8 +44,13 @@ export function AmbientAudioProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const setAmbientVolume = useCallback(async (value: number) => {
-    const next = await audioManager.setVolume('ambient', clampVolume(value));
+    const next = clampVolume(value);
     setAmbient(next);
+    try {
+      await managerRef.current?.setVolume('ambient', next);
+    } catch {
+      // ignore
+    }
   }, []);
 
   return (

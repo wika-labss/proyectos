@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { AmbientVolumeControl } from '../src/components/AmbientVolumeControl';
 import { EightBitBackdrop } from '../src/components/pixel/EightBitBackdrop';
 import { PixelButton } from '../src/components/pixel/PixelButton';
@@ -26,7 +25,7 @@ export default function MenuScreen() {
 
   return (
     <EightBitBackdrop>
-      <SafeAreaView style={styles.safe}>
+      <View style={styles.safe}>
         <View style={styles.hero}>
           <PixelText size="xs" color={bit.pink}>
             WIKA 8-BIT
@@ -63,7 +62,7 @@ export default function MenuScreen() {
           <PixelButton label="JUGAR" onPress={onPlay} />
           <PixelButton label="COMO JUGAR" variant="ghost" onPress={() => router.push('/how-to')} />
         </View>
-      </SafeAreaView>
+      </View>
     </EightBitBackdrop>
   );
 }
@@ -73,6 +72,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     justifyContent: 'space-between',
+    paddingTop: 36,
     paddingBottom: 36,
   },
   hero: {

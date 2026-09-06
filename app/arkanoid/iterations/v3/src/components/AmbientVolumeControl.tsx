@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { clampVolume } from '../modules/ambient-audio';
+import { clampVolume } from '../modules/ambient-audio/volume';
 import { bit } from '../constants/theme';
 import { PixelText } from './pixel/PixelText';
 

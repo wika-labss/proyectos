@@ -1,4 +1,3 @@
-export { audioManager, AudioManager } from './audioManager';
 export {
   AMBIENT_VOLUME_KEY,
   DEFAULT_AMBIENT_VOLUME,

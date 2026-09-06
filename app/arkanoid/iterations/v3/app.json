@@ -2,7 +2,7 @@
   "expo": {
     "name": "Arkanoid",
     "slug": "wika-arkanoid",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,11 +17,20 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0C0820"
       },
-      "package": "com.wika.arkanoid"
+      "package": "com.wika.arkanoid",
+      "versionCode": 2,
+      "largeHeap": true
     },
     "plugins": [
       "expo-router",
       "expo-asset",
+      [
+        "expo-av",
+        {
+          "microphonePermission": false
+        }
+      ],
+      "expo-font",
       [
         "expo-build-properties",
         {
@@ -32,8 +41,7 @@
             "minSdkVersion": 24
           }
         }
-      ],
-      "expo-font"
+      ]
     ]
   }
 }

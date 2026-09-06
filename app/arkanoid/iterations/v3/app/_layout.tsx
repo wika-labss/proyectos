@@ -1,21 +1,35 @@
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
+import { AppErrorBoundary } from '../src/components/AppErrorBoundary';
 import { PIXEL_FONT, PixelFontReadyContext } from '../src/constants/fonts';
 import { bit } from '../src/constants/theme';
 import { AmbientAudioProvider } from '../src/hooks/AmbientAudioProvider';
 import { GameProvider } from '../src/hooks/GameProvider';
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    PressStart2P: PIXEL_FONT,
-  });
-  const fontReady = loaded && !error;
+  const [fontReady, setFontReady] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    const timer = setTimeout(() => {
+      void import('expo-font')
+        .then((Font) => Font.loadAsync({ PressStart2P: PIXEL_FONT }))
+        .then(() => {
+          if (alive) setFontReady(true);
+        })
+        .catch(() => {
+          // Sistema de fuentes si Press Start 2P falla.
+        });
+    }, 400);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, []);
 
   return (
-    <SafeAreaProvider>
+    <AppErrorBoundary>
       <PixelFontReadyContext.Provider value={fontReady}>
         <AmbientAudioProvider>
           <GameProvider>
@@ -34,6 +48,6 @@ export default function RootLayout() {
           </GameProvider>
         </AmbientAudioProvider>
       </PixelFontReadyContext.Provider>
-    </SafeAreaProvider>
+    </AppErrorBoundary>
   );
 }

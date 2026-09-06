@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Hud } from '../src/components/Hud';
 import { PaddleControls } from '../src/components/PaddleControls';
 import { PauseOverlay } from '../src/components/PauseOverlay';
@@ -59,7 +58,7 @@ export default function GameScreen() {
 
   return (
     <EightBitBackdrop>
-      <SafeAreaView style={styles.safe}>
+      <View style={styles.safe}>
         <Hud
           lives={lives}
           score={score}
@@ -142,7 +141,7 @@ export default function GameScreen() {
             onSecondary={onMenu}
           />
         ) : null}
-      </SafeAreaView>
+      </View>
     </EightBitBackdrop>
   );
 }
@@ -151,6 +150,7 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: 'transparent',
+    paddingTop: 28,
   },
   boardWrap: {
     flex: 1,

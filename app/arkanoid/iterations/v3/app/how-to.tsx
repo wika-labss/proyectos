@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { EightBitBackdrop } from '../src/components/pixel/EightBitBackdrop';
 import { PixelButton } from '../src/components/pixel/PixelButton';
 import { PixelText } from '../src/components/pixel/PixelText';
@@ -20,7 +19,7 @@ export default function HowToScreen() {
   const router = useRouter();
   return (
     <EightBitBackdrop>
-      <SafeAreaView style={styles.safe}>
+      <View style={styles.safe}>
         <PixelText size="md" color={bit.gold}>
           COMO JUGAR
         </PixelText>
@@ -34,7 +33,7 @@ export default function HowToScreen() {
           ))}
         </ScrollView>
         <PixelButton label="VOLVER" variant="ghost" onPress={() => router.back()} />
-      </SafeAreaView>
+      </View>
     </EightBitBackdrop>
   );
 }
@@ -43,7 +42,7 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 28,
+    paddingTop: 36,
     paddingBottom: 28,
     justifyContent: 'space-between',
     gap: 16,
