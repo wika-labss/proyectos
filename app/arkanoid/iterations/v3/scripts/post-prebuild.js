@@ -29,3 +29,13 @@ if (fs.existsSync(buildGradlePath)) {
   fs.writeFileSync(buildGradlePath, buildGradle);
   console.log('[post-prebuild] Ensured Kotlin 1.9.25 in build.gradle');
 }
+
+const manifestPath = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
+if (fs.existsSync(manifestPath)) {
+  let manifest = fs.readFileSync(manifestPath, 'utf8');
+  if (!manifest.includes('android:largeHeap')) {
+    manifest = manifest.replace('<application ', '<application android:largeHeap="true" ');
+    fs.writeFileSync(manifestPath, manifest);
+    console.log('[post-prebuild] Set android:largeHeap=true');
+  }
+}
