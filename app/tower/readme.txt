@@ -1,20 +1,17 @@
 Tower — proyecto WIKA (Tower Defense)
 
 Fuente: wika-fundaments @ wika-fundaments-v2
+Design System: Ember Keep (v4 → v5)
 
-Producto V4:
-- Dificultad campaña un poco más alta que V3
-- Venta de torres (~70% oro invertido; evoluciones incluidas)
-- Modo Infinito con oleadas escalables
-- Tienda visual (Infinito + Pack contenido) sin IAP real
-- Hereda: fusión L1–L4, 25 mapas, prep, colocación continua
+Producto V5:
+- UI Ember Keep (keep pintado, torres/enemigos sprite, chrome piedra)
+- Hereda V4: 25 mapas, fusión L1–L4, venta 70%, infinito, shop visual
 - Entregable: APK Release SIN Metro
 
 Estado:
-- idea/ V4
-- audits V4 doc → APROBADO
-- audits release-v4 → APK pendiente
-- iterations/v1–v3 histórico · v4 construido
+- idea/ V4 (funcional)
+- DS Gate 1 APROBADO · Gate 2 pendiente
+- iterations/v5 construido
 - final/ vacío
 
-Siguiente: traer v4 → npm run apk:win → sideload → final/
+Siguiente: npm run apk:win en v5 → sideload → Gate 2 → final/

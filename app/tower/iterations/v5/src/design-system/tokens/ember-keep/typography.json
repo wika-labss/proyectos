@@ -1,0 +1,26 @@
+{
+  "$schema": "wika-tokens/v1",
+  "family": "ember-keep",
+  "source": "tower-v4",
+  "status": "approved",
+  "approvedAt": "2026-09-06",
+  "approvalRef": "visual-expectation/tower-v4/approval.md",
+  "fontFamily": {
+    "display": { "value": "System", "description": "Brand / titles condensed weight" },
+    "body": { "value": "System", "description": "Meta and rules" }
+  },
+  "fontSize": {
+    "xs": { "value": 10, "unit": "px" },
+    "sm": { "value": 12, "unit": "px" },
+    "body": { "value": 16, "unit": "px" },
+    "subtitle": { "value": 18, "unit": "px" },
+    "title": { "value": 32, "unit": "px" },
+    "display": { "value": 56, "unit": "px" }
+  },
+  "fontWeight": {
+    "semibold": { "value": 600 },
+    "bold": { "value": 700 },
+    "extrabold": { "value": 800 },
+    "black": { "value": 900 }
+  }
+}

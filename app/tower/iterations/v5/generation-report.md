@@ -1,0 +1,12 @@
+# Generation report — Tower V5
+
+## Origen
+Fork visual de `iterations/v4` + Design System Ember Keep (Gate 1).
+
+## Cambios
+UI reescrita al 100% de `visual-expectation/tower-v4/`. Engine intacto.
+
+## Verificación
+- `npm run smoke`
+- `npm run typecheck`
+- export / APK: pendiente entorno local
