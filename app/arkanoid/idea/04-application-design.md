@@ -146,7 +146,7 @@ Menú y partida comparten la misma atmósfera (ya no hay dual futurista/retro).
 2. Exactamente **3** vidas al iniciar partida.
 3. Score solo por ladrillos destruidos (100 / 200).
 4. High score = máximo histórico local.
-5. ≥ 3 niveles; limpiar muro = avanzar; último nivel = Victory.
+5. ≥ 3 niveles en V1; **V3: 33 niveles** fácil → difícil. Limpiar muro = avanzar; último = Victory.
 6. V3: menú y partida comparten look 8-bit (Press Start 2P + pack Castillo).
 
 ---
@@ -248,7 +248,7 @@ type WorldState = {
 7. Cápsulas caen al destruir ladrillos; recogerlas es el único input extra (más toque para láser/relanzar Catch).
 8. L/E/C/S/D se sustituyen. P y B no quitan el poder actual.
 9. Perder la última bola limpia poderes. Un nivel nuevo nace limpio.
-10. Victoria = limpiar el muro 3 o salir por Break en el último nivel. Sin jefe.
+10. Victoria = limpiar el muro 33 o salir por Break en el último nivel. Sin jefe.
 11. Única pista ambiente (Castillo) en loop desde que abre la app. Volumen **Ambiente** en Menú y Pausa.
 12. Fondo de partida: pack independiente `recursos/inspiration/arkanoid-castle/` (`dracula-castle-playfield.png`).
 

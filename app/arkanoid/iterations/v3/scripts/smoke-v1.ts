@@ -24,6 +24,7 @@ import {
 } from '../src/engine/arkanoidEngine';
 import { applyCapsule } from '../src/engine/capsules';
 import { hitBrick, isCleared, loadLevel } from '../src/engine/brickField';
+import { LEVEL_LAYOUTS } from '../src/engine/levelLayouts';
 import { createLives, onBallLost, onExtraLife } from '../src/engine/livesSystem';
 import { considerHighScore, onBrickDestroyed } from '../src/engine/arkanoidScore';
 import { onLevelCleared } from '../src/engine/levelProgress';
@@ -127,7 +128,7 @@ function testBrickDestroy() {
 }
 
 function testHardBrickTwoHits() {
-  const bricks = loadLevel(1);
+  const bricks = loadLevel(4);
   const hard = bricks.find((b) => b.type === 'hard');
   assert.ok(hard);
   const first = hitBrick(bricks, hard.id);
@@ -203,18 +204,43 @@ function testScore() {
   assert.equal(considerHighScore(50, 200), 200);
 }
 
+function hitsNeeded(bricks: ReturnType<typeof loadLevel>): number {
+  return bricks.reduce((sum, b) => sum + Math.max(0, b.hitsLeft), 0);
+}
+
 function testLevels() {
-  assert.equal(LEVEL_COUNT, 3);
-  assert.ok(loadLevel(0).length >= 8 * 5);
-  assert.ok(loadLevel(1).some((b) => b.type === 'hard'));
-  assert.ok(loadLevel(2).some((b) => b.type === 'hard'));
+  assert.equal(LEVEL_COUNT, 33);
+  assert.equal(LEVEL_LAYOUTS.length, 33);
+  for (let i = 0; i < LEVEL_COUNT; i += 1) {
+    const layout = LEVEL_LAYOUTS[i];
+    assert.ok(layout && layout.length > 0, `layout ${i + 1} missing`);
+    for (const row of layout) {
+      assert.ok(/^[nh.]+$/.test(row), `layout ${i + 1} has invalid cells`);
+    }
+    assert.ok(loadLevel(i).length > 0, `level ${i + 1} must spawn bricks`);
+  }
+  const first = loadLevel(0);
+  const last = loadLevel(32);
+  assert.ok(first.length >= 12, 'level 1 should have a starter wall');
+  assert.ok(first.every((b) => b.type === 'normal'), 'level 1 is all normal');
+  for (let i = 0; i < 4; i += 1) {
+    assert.ok(
+      loadLevel(i).every((b) => b.type === 'normal'),
+      `tutorial level ${i + 1} should be all normal`,
+    );
+  }
+  assert.ok(loadLevel(4).some((b) => b.type === 'hard'), 'hard bricks start at level 5');
+  assert.ok(last.every((b) => b.type === 'hard'), 'level 33 is all hard');
+  assert.ok(last.length > first.length, 'final wall is denser than level 1');
+  assert.ok(hitsNeeded(last) > hitsNeeded(first), 'final level takes more hits');
   const a1 = onLevelCleared(0);
   assert.equal(a1.kind, 'next');
   if (a1.kind === 'next') assert.equal(a1.nextIndex, 1);
-  const a2 = onLevelCleared(1);
-  assert.equal(a2.kind, 'next');
-  const last = onLevelCleared(2);
-  assert.equal(last.kind, 'victory');
+  const almost = onLevelCleared(31);
+  assert.equal(almost.kind, 'next');
+  if (almost.kind === 'next') assert.equal(almost.nextIndex, 32);
+  const lastAdvance = onLevelCleared(32);
+  assert.equal(lastAdvance.kind, 'victory');
 }
 
 function testPaddleClamp() {
@@ -413,8 +439,8 @@ function testAmbientThemeSwitch() {
 }
 
 function testNoBossRoutes() {
-  assert.equal(LEVEL_COUNT, 3);
-  const last = onLevelCleared(2);
+  assert.equal(LEVEL_COUNT, 33);
+  const last = onLevelCleared(32);
   assert.equal(last.kind, 'victory');
 }
 
@@ -447,7 +473,7 @@ function main() {
   testAmbientThemeSwitch();
   testNoBossRoutes();
   console.log(
-    'smoke-v3: PASSED (classic + Vaus capsules + castle ambient only; no boss)',
+    'smoke-v3: PASSED (classic + 33 levels + Vaus capsules + castle ambient only; no boss)',
   );
 }
 

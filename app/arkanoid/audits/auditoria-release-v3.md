@@ -8,7 +8,7 @@
 
 ## Funcionalidad
 - [x] Clásico V1 (sin jefe, sin `/lose` `/win`)
-- [x] 3 niveles de ladrillos; victoria al limpiar el último
+- [x] 33 niveles de ladrillos (fácil → difícil); victoria al limpiar el último
 - [x] Game Over / Victoria por overlay
 - [x] High score `arkanoid:v3:highScore`
 - [x] Cápsulas L E C S B D P (Feature 23)

@@ -22,6 +22,7 @@ export {
   step,
 } from './arkanoidEngine';
 export { hitBrick, isCleared, loadLevel, aliveBricks } from './brickField';
+export { LEVEL_LAYOUTS } from './levelLayouts';
 export { createLives, onBallLost, onExtraLife } from './livesSystem';
 export { considerHighScore, onBrickDestroyed, resetRunScore } from './arkanoidScore';
 export { isLastLevel, onLevelCleared } from './levelProgress';

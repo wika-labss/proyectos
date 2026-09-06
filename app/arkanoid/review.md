@@ -21,6 +21,7 @@ Arquitecto WIKA / Cloud Agent
 | Entregable | Estado |
 |------------|--------|
 | Sin jefe / `/lose` / `/win` (Feature 22) | ✅ |
+| 33 niveles fácil → difícil (Feature 06 / 17) | ✅ |
 | Overlays Game Over / Victoria | ✅ |
 | High score `arkanoid:v3:highScore` | ✅ |
 | Cápsulas L E C S B D P (Feature 23) | ✅ |

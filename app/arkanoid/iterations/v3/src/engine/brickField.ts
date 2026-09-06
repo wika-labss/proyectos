@@ -7,9 +7,16 @@ import {
   LEVEL_COUNT,
   WORLD_WIDTH,
 } from '../constants/game';
+import { LEVEL_LAYOUTS } from './levelLayouts';
 import type { Brick, BrickType } from './types';
 
 export { LEVEL_COUNT };
+
+if (LEVEL_LAYOUTS.length !== LEVEL_COUNT) {
+  throw new Error(
+    `LEVEL_LAYOUTS (${LEVEL_LAYOUTS.length}) must match LEVEL_COUNT (${LEVEL_COUNT})`,
+  );
+}
 
 export function brickWidth(worldW: number = WORLD_WIDTH): number {
   return (
@@ -36,44 +43,20 @@ function makeBrick(
   };
 }
 
-/**
- * V1 layouts:
- * 0 — 8×5 all normal
- * 1 — 8×6, top two rows hard
- * 2 — 8×6 checkerboard hard, gaps in the middle of rows 2–3
- */
 export function loadLevel(levelIndex: number, worldW: number = WORLD_WIDTH): Brick[] {
   const idx = Math.max(0, Math.min(LEVEL_COUNT - 1, Math.floor(levelIndex)));
+  const layout = LEVEL_LAYOUTS[idx] ?? LEVEL_LAYOUTS[0]!;
   const bricks: Brick[] = [];
 
-  if (idx === 0) {
-    for (let row = 0; row < 5; row += 1) {
-      for (let col = 0; col < BRICK_COLS; col += 1) {
-        bricks.push(makeBrick(col, row, 'normal', worldW));
-      }
-    }
-    return bricks;
-  }
-
-  if (idx === 1) {
-    for (let row = 0; row < 6; row += 1) {
-      for (let col = 0; col < BRICK_COLS; col += 1) {
-        const type: BrickType = row < 2 ? 'hard' : 'normal';
-        bricks.push(makeBrick(col, row, type, worldW));
-      }
-    }
-    return bricks;
-  }
-
-  for (let row = 0; row < 6; row += 1) {
+  layout.forEach((line, row) => {
+    const cells = line.padEnd(BRICK_COLS, '.').slice(0, BRICK_COLS);
     for (let col = 0; col < BRICK_COLS; col += 1) {
-      const gap =
-        (row === 2 || row === 3) && (col === 3 || col === 4);
-      if (gap) continue;
-      const type: BrickType = (row + col) % 2 === 0 ? 'hard' : 'normal';
-      bricks.push(makeBrick(col, row, type, worldW));
+      const cell = cells[col];
+      if (cell === 'h') bricks.push(makeBrick(col, row, 'hard', worldW));
+      else if (cell === 'n') bricks.push(makeBrick(col, row, 'normal', worldW));
     }
-  }
+  });
+
   return bricks;
 }
 

@@ -83,6 +83,7 @@ APK Release: pendiente de JDK 17 + SDK en máquina local → bloquea `final/`.
 | Quitar jefe / `/lose` `/win` | 22 | `arkanoid-screens`, `level-progress` |
 | Cápsulas L E C S B D P | 23 | `vaus-capsules` |
 | Loop ambiental + cambio de tema (stop → loop) | 24 | `ambient-audio` |
+| 33 niveles fácil → difícil | 06, 17 | `brick-field`, `levelLayouts.ts` |
 
 ---
 

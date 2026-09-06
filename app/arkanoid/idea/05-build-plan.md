@@ -193,6 +193,7 @@ Preparación V1 (01–05) ✓
 | V3-09 | generación | — | `generation-report.md`, `review.md` | done |
 | V3-10 | `ambient-audio` | 24 | `src/modules/ambient-audio/`, `assets/recursos/audio/` | done |
 | V3-11 | APK | 15 | `npm run apk` | pending |
+| V3-12 | `brick-field` | 06, 17 | `levelLayouts.ts` (33 niveles) | done |
 
 ### Contexto obligatorio usado (regla WIKA)
 
@@ -222,7 +223,7 @@ No se copian los documentos de `idea/` dentro de `iterations/`.
 
 | Incluido | Notas |
 |----------|-------|
-| Jugabilidad | Igual que V1 (3 niveles, overlays) |
+| Jugabilidad | Clásica V1 + **33 niveles** (fácil → difícil), overlays |
 | Jefe / `/lose` / `/win` | **Retirados** |
 | High score | Clave `arkanoid:v3:highScore` |
 | Cápsulas Vaus | L E C S B D P |

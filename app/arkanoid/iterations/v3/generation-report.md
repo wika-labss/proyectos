@@ -7,6 +7,7 @@
 
 V3 **sin los cambios de V2**. Misma jugabilidad que V1, más:
 
+- Feature 17 / 06: 33 layouts en `levelLayouts.ts`, de fácil a difícil. Victoria al limpiar el nivel 33.
 - Feature 22: sin jefe, sin `/lose` `/win` (overlays).
 - Feature 23: cápsulas Vaus L E C S B D P.
 - Feature 24: única pista `ambient-castle.mp3` en loop desde el arranque (menú y partida). Volumen `ambient` independiente.
@@ -26,7 +27,7 @@ Flujo WIKA de este ciclo: `audits/flujo-wika-v3.md`.
 
 ## Features cubiertas
 
-1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 18 (ambiente; SFX de beep sigue deseable), 22, 23, 24.
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 17 (33 niveles), 18 (ambiente; SFX de beep sigue deseable), 22, 23, 24.
 
 ## Delta vs V2 (retirado)
 

@@ -43,9 +43,10 @@
 
 ### Feature 06 — Niveles
 
-- V1: al menos **3 niveles** con layouts distintos (más ladrillos / filas / resistentes).
-- Completar nivel → pantalla breve de victoria de nivel → siguiente nivel (vidas se conservan).
-- Completar el último nivel de ladrillos → victoria de partida + actualización de high score.
+- V1: al menos **3 niveles** con layouts distintos.
+- **V3: 33 niveles**, de más fácil a más difícil (más filas, huecos, ladrillos hard).
+- Completar nivel → overlay de nivel → siguiente (vidas se conservan).
+- Completar el último (33) → victoria de partida + high score.
 - V2 añadió un jefe; **V3 retira ese delta** (ver Feature 22).
 
 ### Feature 20 — Jefe (V2)
@@ -65,7 +66,7 @@
 
 - V3 **no incluye** jefe, nivel 4, ni rutas `/lose` y `/win`.
 - Game Over y Victoria vuelven a ser overlays sobre Game (como V1).
-- Victoria = limpiar el muro del nivel 3.
+- Victoria = limpiar el muro del nivel 33.
 - High score: `arkanoid:v3:highScore`.
 - El código de V2 permanece en `iterations/v2/` como histórico.
 
@@ -162,7 +163,7 @@ App nativa Android generada con pipeline WIKA (Expo prebuild + release), instala
 
 ### Feature 17 — Más niveles / layouts
 
-Pack de 5–10 niveles con patrones geométricos.
+**Hecho en V3:** 33 layouts (`levelLayouts.ts`), fácil → difícil.
 
 ### Feature 18 — Sonidos / hápticos
 

@@ -9,7 +9,7 @@ V3 es el juego **clásico** (misma base que V1). **No incluye** los cambios de V
 - Sin jefe / nivel 4
 - Sin rutas `/lose` ni `/win`
 - Game Over y Victoria son overlays sobre Game
-- 3 niveles de ladrillos; victoria al limpiar el último muro
+- 33 niveles de ladrillos, de fácil a difícil; victoria al limpiar el último muro
 - Cápsulas Vaus: **L** láser, **E** enlarge, **C** catch, **S** slow, **B** break, **D** disrupt, **P** vida extra
 - Audio ambiente: solo el MP3 Castillo, en loop desde el menú y en toda la partida; volumen independiente
 - Fondo de partida: pack `inspiration/arkanoid-castle`

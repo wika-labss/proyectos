@@ -186,7 +186,8 @@ currentLevel: 0..N-1
 onLevelCleared(): nextLevel | victory
 ```
 
-**V1:** ≥ 3 niveles.
+**V1:** ≥ 3 niveles.  
+**V3:** 33 layouts en `levelLayouts.ts`, de más fácil a más difícil. Victoria al limpiar el 33.
 
 ---
 

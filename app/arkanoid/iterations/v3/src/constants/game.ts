@@ -1,5 +1,5 @@
 export const INITIAL_LIVES = 3;
-export const LEVEL_COUNT = 3;
+export const LEVEL_COUNT = 33;
 
 export const WORLD_WIDTH = 360;
 export const WORLD_HEIGHT = 520;
@@ -10,7 +10,7 @@ export const PADDLE_BOTTOM_GAP = 28;
 
 export const BALL_RADIUS = 6;
 export const BALL_SPEED_BASE = 280;
-export const BALL_SPEED_PER_LEVEL = 28;
+export const BALL_SPEED_PER_LEVEL = 5;
 export const LAUNCH_ANGLE = 0.22;
 
 export const BRICK_COLS = 8;
