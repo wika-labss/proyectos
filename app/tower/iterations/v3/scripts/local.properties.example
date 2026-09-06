@@ -1,0 +1,13 @@
+# Copy to android/local.properties and set your Android SDK path.
+# Required for the first Gradle build (./gradlew assembleDebug).
+#
+# Linux/macOS example:
+#   sdk.dir=/home/user/Android/Sdk
+#
+# Windows example:
+#   sdk.dir=C\:\\Users\\User\\AppData\\Local\\Android\\Sdk
+#
+# Or export ANDROID_HOME before running verify-build.sh:
+#   export ANDROID_HOME=$HOME/Android/Sdk
+
+sdk.dir=/path/to/Android/Sdk

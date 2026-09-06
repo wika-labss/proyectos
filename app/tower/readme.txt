@@ -2,19 +2,19 @@ Tower — proyecto WIKA (Tower Defense)
 
 Fuente: wika-fundaments @ wika-fundaments-v2
 
-Producto V2:
-- 25 niveles / mapas distintos
-- Todas las torres alcanzan el path desde cualquier pad
-- Fase preparación + colocación entre/durante oleadas
-- Torres con forma + etiqueta distintiva
+Producto V4:
+- Dificultad campaña un poco más alta que V3
+- Venta de torres (~70% oro invertido; evoluciones incluidas)
+- Modo Infinito con oleadas escalables
+- Tienda visual (Infinito + Pack contenido) sin IAP real
+- Hereda: fusión L1–L4, 25 mapas, prep, colocación continua
 - Entregable: APK Release SIN Metro
 
 Estado:
-- idea/ documentado V2
-- audits/ doc/módulos/ensamblado V2 → APROBADO
-- audits/ release-v2 → REQUIERE CORRECCIONES (APK pendiente)
-- iterations/v1/ histórico
-- iterations/v2/ construido (smoke + typecheck + export)
+- idea/ V4
+- audits V4 doc → APROBADO
+- audits release-v4 → APK pendiente
+- iterations/v1–v3 histórico · v4 construido
 - final/ vacío
 
-Siguiente: traer v2 a Windows → npm run apk:win → sideload → final/
+Siguiente: traer v4 → npm run apk:win → sideload → final/

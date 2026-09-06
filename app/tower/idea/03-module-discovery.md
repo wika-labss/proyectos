@@ -1,14 +1,19 @@
-# 03 — Descubrimiento de módulos (V2)
+# 03 — Módulos V4
 
-## Cambios respecto a V1
-| Módulo | Cambio V2 |
-|--------|-----------|
-| `map-catalog` | **25** mapas; pads con dist≤rango mínimo |
-| `tower-types` | Rangos revisados; Cañón = mínimo |
-| `td-engine` | Estado `preparing` + `startWaves()` |
-| `tower-placement-ui` | Activo en prep / break / playing |
-| `battlefield-view` | Formas/etiquetas por tipo de torre |
-| `level-campaign` | Unlock hasta 25; key `tower:v2:campaign` |
-| `wave-system` | Escalado extendido a niveles 0..24 |
+| Módulo | Cambio |
+|--------|--------|
+| `wave-system` | Multipliers campaña un poco más duros |
+| `td-engine` | `sellTower` + `investedGold` en place/merge |
+| `infinite-mode` | **Nuevo** — generación de oleadas endless |
+| `shop-catalog` | **Nuevo** — productos visuales |
+| `tower-screens` | Shop UI, Infinite game screen, sell CTA |
 
-Resto de módulos V1 se mantienen.
+# 04 — Diseño V4 (resumen)
+
+- Sell: HUD/acción con torre seleccionada.
+- Shop: cards Infinito + Pack.
+- Infinite: `waveIndex` crece; `hp = base * (1 + wave*0.07)`.
+
+# 05 — Plan V4
+
+`v3` → `iterations/v4` · smoke · typecheck · export · APK local.
