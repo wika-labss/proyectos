@@ -194,12 +194,12 @@ Implementación: `brick-field` lee 33 layouts (`levelLayouts.ts`). No se inventa
 
 ### Feature 18 — Sonidos / hápticos
 
-Beep al rebote / romper ladrillo / perder vida. **No bloquea V3.** El loop ambiental es Feature 24.
+Beep al rebote / romper ladrillo / perder vida. **No bloquea V3 ni V4.**
 
-### Feature 24 — Audio ambiente en bucle (V3)
+### Feature 24 — Audio ambiente en bucle (V3, histórica)
 
-**Estado:** hecho (V3)  
-**Módulo:** `ambient-audio`
+**Estado:** **retirada en V4** (sigue en `iterations/v3`)  
+**Módulo:** `ambient-audio` (solo V3)
 
 - Única pista: el MP3 subido (Castillo). Catálogo: `recursos/audio/arkanoid-ambient-castle.mp3`. Runtime: `ambient-castle.mp3` (misma pieza, encode móvil ≤ 64 kbps / ≤ 2 MB).
 - El menú y **Jugar** son el camino crítico. Abrir la app **no** carga `expo-av`. El loop Castillo arranca al pulsar **Jugar**, cuando la partida ya está en pantalla.
@@ -214,7 +214,10 @@ Beep al rebote / romper ladrillo / perder vida. **No bloquea V3.** El loop ambie
 - **Dado que** el usuario toca Jugar, **cuando** la partida está en pantalla, **entonces** se pide el loop Castillo.
 - **Dado que** `expo-av` o el MP3 fallan, **cuando** el usuario toca Jugar, **entonces** la partida arranca igual.
 - **Dado que** el audio cargó, **cuando** el usuario navega a partida o pausa, **entonces** la misma pista sigue sonando.
-- **Dado que** el usuario mueve el control de ambiente, **cuando** suelta un valor, **entonces** solo cambia el volumen; no cambia de archivo.
+#### V4 (sin MP3)
+
+- **Dado que** se abre la app V4, **cuando** el layout monta, **entonces** no existe ningún `.mp3` en el runtime ni se importa `expo-av`.
+- **Dado que** el usuario toca Jugar, **cuando** la partida arranca, **entonces** no se pide audio.
 
 ### Feature 19 — Temas visuales
 

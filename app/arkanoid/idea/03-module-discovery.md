@@ -257,7 +257,7 @@ saveHighScore(n): Promise<void>
 
 ---
 
-### `ambient-audio` (V3)
+### `ambient-audio` (V3, histórico — no V4)
 
 **Responsabilidad:** Cargar y reproducir el loop ambiental desde recursos; exponer volumen por canal.
 
@@ -283,7 +283,8 @@ resolveAmbientTheme(id): { id, label, file }
 
 **Dependencias:** `expo-av` (`~`), `expo-asset` (`~`), AsyncStorage. Sin React en el manager; el hook/UI envuelven el módulo. `expo-av` solo se importa dentro de `playResolved`.
 
-**Reutilizable:** Sí (otros juegos WIKA con un loop de menú/partida).
+**Reutilizable:** Sí (otros juegos WIKA con un loop de menú/partida).  
+**V4:** el módulo **no se genera**. Sin MP3, sin `expo-av`.
 
 ---
 
@@ -294,7 +295,7 @@ resolveAmbientTheme(id): { id, label, file }
 | Power-ups / multibola | **Hecho en V3** (`vaus-capsules`, Feature 23) |
 | Online leaderboard | Offline-first |
 | Physics engine 3D | 2D AABB / círculo-rectángulo basta |
-| Audio engine complejo (SFX por evento) | Deseable (Feature 18). Loop ambiente = `ambient-audio` V3 |
+| Audio engine complejo (SFX por evento) | Deseable (Feature 18). Loop ambiente = solo V3; V4 sin audio |
 
 ---
 
