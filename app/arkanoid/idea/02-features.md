@@ -173,15 +173,18 @@ Beep al rebote / romper ladrillo / perder vida. **No bloquea V3.** El loop ambie
 **Estado:** hecho (V3)  
 **Módulo:** `ambient-audio`
 
-- Al iniciar la app se carga `recursos/audio` (copia runtime en `assets/recursos/audio/`) y suena en loop.
-- El volumen **ambiente** es un canal propio, independiente de un futuro canal SFX (Feature 18).
-- El jugador puede subir/bajar (o silenciar) el ambiente desde el menú y la pausa.
-- El volumen ambiente se persiste en `arkanoid:v3:ambientVolume`.
+- Al iniciar la app se carga el tema ambiente persistido desde `recursos/audio` y suena en loop.
+- Temas: **Nebula** (`ambient-loop.mp3`) y **Castillo** (`ambient-castle.mp3`).
+- Cambiar de tema: busca el archivo del id, **detiene** la pista actual y reproduce la nueva **en bucle**.
+- El volumen **ambiente** es un canal propio, independiente del tema y de un futuro canal SFX (Feature 18).
+- Tema y volumen se eligen en menú y pausa.
+- Persistencia: `arkanoid:v3:ambientTheme` y `arkanoid:v3:ambientVolume`.
 
 #### Escenarios BDD
 
-- **Dado que** se abre la app, **cuando** el layout monta, **entonces** el loop ambiental empieza solo.
-- **Dado que** el usuario mueve el control de ambiente, **cuando** suelta un valor, **entonces** solo cambia el canal ambiente (0–1) y se guarda.
+- **Dado que** se abre la app, **cuando** el layout monta, **entonces** el loop del tema guardado empieza solo.
+- **Dado que** el usuario elige Castillo, **cuando** el gestor resuelve el archivo, **entonces** para Nebula y reproduce `ambient-castle.mp3` en loop.
+- **Dado que** el usuario mueve el control de ambiente, **cuando** suelta un valor, **entonces** solo cambia el canal ambiente (0–1) y se guarda; el tema no cambia.
 - **Dado que** el volumen ambiente es 0, **cuando** el loop sigue cargado, **entonces** no se oye música y los SFX futuros no quedan forzados a 0.
 
 ### Feature 19 — Temas visuales

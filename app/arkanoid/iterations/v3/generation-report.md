@@ -9,7 +9,7 @@ V3 **sin los cambios de V2**. Misma jugabilidad que V1, más:
 
 - Feature 22: sin jefe, sin `/lose` `/win` (overlays).
 - Feature 23: cápsulas Vaus L E C S B D P.
-- Feature 24: loop ambiental desde `recursos/audio` y volumen de canal `ambient` independiente.
+- Feature 24: temas ambiente (Nebula / Castillo). `setTheme` busca el archivo, detiene la pista actual y reproduce la nueva en loop. Volumen `ambient` independiente.
 
 Flujo WIKA de este ciclo: `audits/flujo-wika-v3.md`.
 
@@ -39,10 +39,11 @@ Flujo WIKA de este ciclo: `audits/flujo-wika-v3.md`.
 
 | Canal | Clave | Default |
 |-------|-------|---------|
+| tema | `arkanoid:v3:ambientTheme` | `nebula` |
 | ambient | `arkanoid:v3:ambientVolume` | 0.45 |
 | sfx | `arkanoid:v3:sfxVolume` | 0.80 (reservado) |
 
-Asset: `recursos/audio/arkanoid-ambient-loop.mp3` → `assets/recursos/audio/ambient-loop.mp3`.
+Assets: `ambient-loop.mp3` (Nebula), `ambient-castle.mp3` (Castillo).
 
 ## Stack
 Expo SDK 52 · React Native 0.76.9 · `expo-av` · package `com.wika.arkanoid` · version `3.0.0`

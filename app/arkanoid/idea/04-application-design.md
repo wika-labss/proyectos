@@ -267,13 +267,16 @@ type WorldState = {
 8. L/E/C/S/D se sustituyen. P y B no quitan el poder actual.
 9. Perder la última bola limpia poderes. Un nivel nuevo nace limpio.
 10. Victoria = limpiar el muro 3 o salir por Break en el último nivel. Sin jefe.
-11. Loop ambiental al abrir la app. Control **Ambiente** en Menú y Pausa; canal independiente del SFX.
+11. Loop ambiental al abrir la app. Tema (Nebula / Castillo) y volumen **Ambiente** en Menú y Pausa; el tema no mueve el volumen.
 
 ### Audio ambiente (Feature 24)
 
-| Canal | Clave | Default | UI |
-|-------|-------|---------|-----|
-| `ambient` | `arkanoid:v3:ambientVolume` | 0.45 | Slider Menú + Pausa |
-| `sfx` | (reservado) | 0.80 | — (Feature 18) |
+| Dato | Clave | Default | UI |
+|------|-------|---------|-----|
+| Tema | `arkanoid:v3:ambientTheme` | `nebula` | Chips Menú + Pausa |
+| Volumen `ambient` | `arkanoid:v3:ambientVolume` | 0.45 | Slider Menú + Pausa |
+| Volumen `sfx` | (reservado) | 0.80 | — (Feature 18) |
+
+Cambio de tema: buscar archivo → detener actual → reproducir nueva pista en bucle.
 
 - [ ] Auditoría de ensamblado V3 (pendiente; release en `audits/auditoria-release-v3.md`)

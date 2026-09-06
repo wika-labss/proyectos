@@ -82,7 +82,7 @@ APK Release: pendiente de JDK 17 + SDK en máquina local → bloquea `final/`.
 |------------|---------|--------|
 | Quitar jefe / `/lose` `/win` | 22 | `arkanoid-screens`, `level-progress` |
 | Cápsulas L E C S B D P | 23 | `vaus-capsules` |
-| Loop ambiental + volumen propio | 24 | `ambient-audio` |
+| Loop ambiental + cambio de tema (stop → loop) | 24 | `ambient-audio` |
 
 ---
 

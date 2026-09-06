@@ -28,6 +28,12 @@ import { createLives, onBallLost, onExtraLife } from '../src/engine/livesSystem'
 import { considerHighScore, onBrickDestroyed } from '../src/engine/arkanoidScore';
 import { onLevelCleared } from '../src/engine/levelProgress';
 import {
+  DEFAULT_AMBIENT_THEME,
+  nextAmbientTheme,
+  parseStoredTheme,
+  resolveAmbientTheme,
+} from '../src/modules/ambient-audio/themes';
+import {
   clampVolume,
   defaultVolume,
   parseStoredVolume,
@@ -394,6 +400,20 @@ function testAmbientVolumeChannel() {
   assert.notEqual(defaultVolume('ambient'), defaultVolume('sfx'));
 }
 
+function testAmbientThemeSwitch() {
+  const castle = resolveAmbientTheme('castle');
+  assert.equal(castle.id, 'castle');
+  assert.equal(castle.file, 'ambient-castle.mp3');
+  const unknown = resolveAmbientTheme('missing');
+  assert.equal(unknown.id, DEFAULT_AMBIENT_THEME);
+  assert.equal(unknown.file, 'ambient-loop.mp3');
+  assert.equal(parseStoredTheme(null), 'nebula');
+  assert.equal(parseStoredTheme('castle'), 'castle');
+  assert.equal(parseStoredTheme('nope'), 'nebula');
+  assert.equal(nextAmbientTheme('nebula'), 'castle');
+  assert.equal(nextAmbientTheme('castle'), 'nebula');
+}
+
 function testNoBossRoutes() {
   assert.equal(LEVEL_COUNT, 3);
   const last = onLevelCleared(2);
@@ -426,9 +446,10 @@ function main() {
   testExclusiveReplace();
   testCapsuleSpawnOnDestroy();
   testAmbientVolumeChannel();
+  testAmbientThemeSwitch();
   testNoBossRoutes();
   console.log(
-    'smoke-v3: PASSED (classic + Vaus capsules + ambient volume channel; no boss)',
+    'smoke-v3: PASSED (classic + Vaus capsules + ambient theme switch; no boss)',
   );
 }
 

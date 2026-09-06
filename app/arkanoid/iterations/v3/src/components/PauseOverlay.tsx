@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { play } from '../constants/theme';
 import { useAmbientAudio } from '../hooks/AmbientAudioProvider';
+import { AmbientThemeControl } from './AmbientThemeControl';
 import { AmbientVolumeControl } from './AmbientVolumeControl';
 
 type Props = {
@@ -10,10 +11,17 @@ type Props = {
 };
 
 export function PauseOverlay({ onResume, onMenu }: Props) {
-  const { ambientVolume, setAmbientVolume } = useAmbientAudio();
+  const { ambientVolume, setAmbientVolume, theme, setAmbientTheme } = useAmbientAudio();
   return (
     <View style={styles.overlay}>
       <Text style={styles.title}>Pausa</Text>
+      <AmbientThemeControl
+        tone="retro"
+        theme={theme}
+        onChange={(id) => {
+          void setAmbientTheme(id);
+        }}
+      />
       <AmbientVolumeControl
         tone="retro"
         volume={ambientVolume}

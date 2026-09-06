@@ -258,19 +258,25 @@ saveHighScore(n): Promise<void>
 
 **API conceptual:**
 ```
-start(): Promise<void>          // carga el asset y reproduce en loop
-setVolume('ambient' | 'sfx', n) // n en [0, 1]; canales independientes
+start(): Promise<void>
+setTheme(id): Promise<themeId>  // busca archivo → stop actual → play loop
+setVolume('ambient' | 'sfx', n)
+getTheme(): themeId
 getVolume(channel): number
 stop(): Promise<void>
+resolveAmbientTheme(id): { id, label, file }
 ```
 
-**Recurso:** catálogo `recursos/audio/arkanoid-ambient-loop.mp3` → runtime `iterations/v3/assets/recursos/audio/ambient-loop.mp3`.
+**Recursos:**
+- `recursos/audio/arkanoid-ambient-loop.mp3` → `ambient-loop.mp3` (Nebula)
+- `recursos/audio/arkanoid-ambient-castle.mp3` → `ambient-castle.mp3` (Castillo)
 
 **Reglas:**
 - Arranque automático al montar el layout (no espera a Jugar).
-- Canal `ambient` ≠ canal `sfx` (SFX aún no implementado; el canal existe para no acoplar volúmenes).
-- Persistencia solo del canal ambiente: `arkanoid:v3:ambientVolume`.
-- Fallo de carga no tumba la app (offline / dispositivo sin audio).
+- `setTheme` resuelve el id al archivo, detiene y descarga la pista en curso, carga la nueva y la deja en loop al volumen ambiente actual.
+- Canal `ambient` ≠ canal `sfx`; el tema no altera esos volúmenes.
+- Persistencia: `arkanoid:v3:ambientTheme` + `arkanoid:v3:ambientVolume`.
+- Fallo de carga no tumba la app.
 
 **Dependencias:** `expo-av` (`~`), AsyncStorage. Sin React en el manager; el hook/UI envuelven el módulo.
 

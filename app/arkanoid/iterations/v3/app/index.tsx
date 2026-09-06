@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AmbientThemeControl } from '../src/components/AmbientThemeControl';
 import { AmbientVolumeControl } from '../src/components/AmbientVolumeControl';
 import { menu } from '../src/constants/theme';
 import { useAmbientAudio } from '../src/hooks/AmbientAudioProvider';
@@ -16,7 +17,7 @@ import { useGame } from '../src/hooks/GameProvider';
 export default function MenuScreen() {
   const router = useRouter();
   const { highScore, highScoreLoaded, refreshHighScore, startGame } = useGame();
-  const { ambientVolume, setAmbientVolume } = useAmbientAudio();
+  const { ambientVolume, setAmbientVolume, theme, setAmbientTheme } = useAmbientAudio();
 
   useEffect(() => {
     void refreshHighScore();
@@ -52,13 +53,22 @@ export default function MenuScreen() {
           )}
         </View>
 
-        <AmbientVolumeControl
-          tone="future"
-          volume={ambientVolume}
-          onChange={(value) => {
-            void setAmbientVolume(value);
-          }}
-        />
+        <View style={styles.audioBlock}>
+          <AmbientThemeControl
+            tone="future"
+            theme={theme}
+            onChange={(id) => {
+              void setAmbientTheme(id);
+            }}
+          />
+          <AmbientVolumeControl
+            tone="future"
+            volume={ambientVolume}
+            onChange={(value) => {
+              void setAmbientVolume(value);
+            }}
+          />
+        </View>
 
         <View style={styles.actions}>
           <Pressable
@@ -149,6 +159,10 @@ const styles = StyleSheet.create({
     color: menu.neon,
     fontSize: 48,
     fontWeight: '800',
+  },
+  audioBlock: {
+    gap: 14,
+    alignItems: 'center',
   },
   actions: {
     gap: 12,

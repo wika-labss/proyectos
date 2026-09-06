@@ -11,7 +11,7 @@ V3 es el juego **clásico** (misma base que V1). **No incluye** los cambios de V
 - Game Over y Victoria son overlays sobre Game
 - 3 niveles de ladrillos; victoria al limpiar el último muro
 - Cápsulas Vaus: **L** láser, **E** enlarge, **C** catch, **S** slow, **B** break, **D** disrupt, **P** vida extra
-- Audio ambiente en loop al iniciar; volumen **Ambiente** independiente (menú y pausa)
+- Audio ambiente en loop al iniciar; temas **Nebula** / **Castillo** (cambiar detiene la pista y pone la nueva en bucle); volumen independiente
 - Score 100 / 200 + high score `arkanoid:v3:highScore`
 - Menú futurista + partida retro
 
