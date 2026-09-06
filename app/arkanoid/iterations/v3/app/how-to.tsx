@@ -1,9 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { EightBitBackdrop } from '../src/components/pixel/EightBitBackdrop';
-import { PixelButton } from '../src/components/pixel/PixelButton';
-import { PixelText } from '../src/components/pixel/PixelText';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { bit } from '../src/constants/theme';
 
 const RULES = [
@@ -12,33 +9,39 @@ const RULES = [
   'CAPSULAS: ATRAPALAS CON LA PALA.',
   'L LASER  E ENLARGE  C CATCH',
   'S SLOW  B BREAK  D DISRUPT  P 1UP',
-  'MUSICA CASTILLO EN LOOP. VOLUMEN EN MENU Y PAUSA.',
+  'MUSICA CASTILLO AL PULSAR JUGAR. VOLUMEN EN PAUSA.',
 ];
 
 export default function HowToScreen() {
   const router = useRouter();
   return (
-    <EightBitBackdrop>
+    <View style={styles.root}>
       <View style={styles.safe}>
-        <PixelText size="md" color={bit.gold}>
-          COMO JUGAR
-        </PixelText>
+        <Text style={styles.title}>COMO JUGAR</Text>
         <ScrollView contentContainerStyle={styles.rules}>
           {RULES.map((rule) => (
             <View key={rule} style={styles.ruleBox}>
-              <PixelText size="xs" color={bit.ink}>
-                {rule}
-              </PixelText>
+              <Text style={styles.rule}>{rule}</Text>
             </View>
           ))}
         </ScrollView>
-        <PixelButton label="VOLVER" variant="ghost" onPress={() => router.back()} />
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={({ pressed }) => [styles.back, pressed && styles.pressed]}
+        >
+          <Text style={styles.backText}>VOLVER</Text>
+        </Pressable>
       </View>
-    </EightBitBackdrop>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: bit.night,
+  },
   safe: {
     flex: 1,
     paddingHorizontal: 16,
@@ -46,6 +49,11 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     justifyContent: 'space-between',
     gap: 16,
+  },
+  title: {
+    color: bit.gold,
+    fontSize: 18,
+    fontWeight: '800',
   },
   rules: {
     gap: 10,
@@ -56,5 +64,25 @@ const styles = StyleSheet.create({
     borderColor: bit.wall,
     backgroundColor: bit.panel,
     padding: 10,
+  },
+  rule: {
+    color: bit.ink,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  back: {
+    borderWidth: 3,
+    borderColor: bit.gold,
+    backgroundColor: bit.panel,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  backText: {
+    color: bit.gold,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  pressed: {
+    opacity: 0.8,
   },
 });

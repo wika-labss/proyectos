@@ -202,7 +202,7 @@ Beep al rebote / romper ladrillo / perder vida. **No bloquea V3.** El loop ambie
 **Módulo:** `ambient-audio`
 
 - Única pista: el MP3 subido (Castillo). Catálogo: `recursos/audio/arkanoid-ambient-castle.mp3`. Runtime: `ambient-castle.mp3` (misma pieza, encode móvil ≤ 64 kbps / ≤ 2 MB).
-- El menú y **Jugar** son el camino crítico. El loop se programa **después** del primer frame, nunca en el `require` inicial.
+- El menú y **Jugar** son el camino crítico. Abrir la app **no** carga `expo-av`. El loop Castillo arranca al pulsar **Jugar**, cuando la partida ya está en pantalla.
 - Reproducción Android: `MediaPlayer` + URI local (stream). No ExoPlayer con `shouldPlay: true` sobre el asset embebido.
 - Si `expo-av` o el MP3 fallan, la app sigue; el usuario puede iniciar la partida.
 - El volumen **ambiente** es un canal propio (menú y pausa), independiente de un futuro canal SFX.
@@ -210,7 +210,8 @@ Beep al rebote / romper ladrillo / perder vida. **No bloquea V3.** El loop ambie
 
 #### Escenarios BDD
 
-- **Dado que** se abre la app, **cuando** el primer frame del menú está en pantalla, **entonces** se programa el loop de `ambient-castle.mp3` sin bloquear Jugar.
+- **Dado que** se abre la app, **cuando** el layout monta, **entonces** el menú es usable y no se importa `expo-av`.
+- **Dado que** el usuario toca Jugar, **cuando** la partida está en pantalla, **entonces** se pide el loop Castillo.
 - **Dado que** `expo-av` o el MP3 fallan, **cuando** el usuario toca Jugar, **entonces** la partida arranca igual.
 - **Dado que** el audio cargó, **cuando** el usuario navega a partida o pausa, **entonces** la misma pista sigue sonando.
 - **Dado que** el usuario mueve el control de ambiente, **cuando** suelta un valor, **entonces** solo cambia el volumen; no cambia de archivo.

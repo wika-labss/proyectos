@@ -70,4 +70,4 @@ idea/ 01–05
 | sfx | `arkanoid:v3:sfxVolume` | 0.80 (reservado) |
 
 ## Stack
-Expo SDK 52 · React Native 0.76.9 · `expo-av` · package `com.wika.arkanoid` · version `3.0.2`
+Expo SDK 52 · React Native 0.76.9 · `expo-av` · package `com.wika.arkanoid` · version `3.0.3`

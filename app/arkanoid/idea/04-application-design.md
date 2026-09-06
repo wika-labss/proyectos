@@ -276,7 +276,7 @@ type WorldState = {
 |------|-------|---------|-----|
 | Tema | fijado `castle` | runtime `ambient-castle.mp3` (≤ 2 MB, 64 kbps) | — |
 | Play Android | `MediaPlayer` + URI | no ExoPlayer embebido | — |
-| Arranque | post-primer-frame | `AMBIENT_BOOT_DELAY_MS` | Jugar no espera |
+| Arranque | gesto Jugar | `ensureStarted` | el menú no carga audio |
 | Volumen `ambient` | `arkanoid:v3:ambientVolume` | 0.45 | Slider Menú + Pausa |
 | Volumen `sfx` | (reservado) | 0.80 | — (Feature 18) |
 

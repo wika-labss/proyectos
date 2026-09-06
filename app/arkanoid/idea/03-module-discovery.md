@@ -275,7 +275,7 @@ resolveAmbientTheme(id): { id, label, file }
 **Recurso (única pista):** `recursos/audio/arkanoid-ambient-castle.mp3` (catálogo, original). Runtime: `ambient-castle.mp3` (encode ≤ 64 kbps, ≤ 2 MB).
 
 **Reglas:**
-- El grafo de arranque **no** importa `expo-av` ni el manager. El provider carga el manager después del primer frame (`AMBIENT_BOOT_DELAY_MS`).
+- El grafo de arranque **no** importa `expo-av` ni el manager. `ensureStarted()` se llama al pulsar Jugar, con la partida ya visible.
 - Play: `Asset.downloadAsync` → URI local → `Audio.Sound.createAsync({ uri }, { androidImplementation: 'MediaPlayer', shouldPlay: false }, null, false)` → `playAsync`.
 - Canal `ambient` ≠ canal `sfx`.
 - Persistencia del volumen: `arkanoid:v3:ambientVolume`. Tema fijado a `castle`.

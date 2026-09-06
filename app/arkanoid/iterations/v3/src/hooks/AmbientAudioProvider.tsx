@@ -1,11 +1,10 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { InteractionManager } from 'react-native';
-import { AMBIENT_BOOT_DELAY_MS } from '../modules/ambient-audio/playbackPolicy';
+import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { clampVolume, defaultVolume, type AudioChannel } from '../modules/ambient-audio/volume';
 
 type AmbientAudioApi = {
   ambientVolume: number;
   setAmbientVolume: (value: number) => Promise<void>;
+  ensureStarted: () => Promise<void>;
   ready: boolean;
 };
 
@@ -21,33 +20,28 @@ export function AmbientAudioProvider({ children }: { children: React.ReactNode }
   const [ambientVolume, setAmbient] = useState(defaultVolume('ambient'));
   const [ready, setReady] = useState(false);
   const managerRef = useRef<DelayedAudioManager | null>(null);
+  const startingRef = useRef<Promise<void> | null>(null);
 
-  useEffect(() => {
-    let alive = true;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const task = InteractionManager.runAfterInteractions(() => {
-      timer = setTimeout(() => {
-        void (async () => {
-          try {
-            const { audioManager } = await import('../modules/ambient-audio/audioManager');
-            if (!alive) return;
-            managerRef.current = audioManager;
-            await audioManager.start();
-            if (!alive) return;
-            setAmbient(audioManager.getVolume('ambient'));
-          } catch {
-            // El menú y Jugar siguen aunque expo-av o el MP3 fallen.
-          }
-          if (alive) setReady(true);
-        })();
-      }, AMBIENT_BOOT_DELAY_MS);
-    });
-    return () => {
-      alive = false;
-      task.cancel();
-      if (timer) clearTimeout(timer);
-    };
-  }, []);
+  const ensureStarted = useCallback(async () => {
+    if (ready && managerRef.current) return;
+    if (startingRef.current) return startingRef.current;
+    startingRef.current = (async () => {
+      try {
+        const { audioManager } = await import('../modules/ambient-audio/audioManager');
+        managerRef.current = audioManager;
+        await audioManager.start();
+        setAmbient(audioManager.getVolume('ambient'));
+      } catch {
+        // Jugar y el menú no dependen de expo-av.
+      }
+      setReady(true);
+    })();
+    try {
+      await startingRef.current;
+    } finally {
+      startingRef.current = null;
+    }
+  }, [ready]);
 
   const setAmbientVolume = useCallback(async (value: number) => {
     const next = clampVolume(value);
@@ -60,7 +54,7 @@ export function AmbientAudioProvider({ children }: { children: React.ReactNode }
   }, []);
 
   return (
-    <AmbientAudioContext.Provider value={{ ambientVolume, setAmbientVolume, ready }}>
+    <AmbientAudioContext.Provider value={{ ambientVolume, setAmbientVolume, ensureStarted, ready }}>
       {children}
     </AmbientAudioContext.Provider>
   );

@@ -1,10 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { AmbientVolumeControl } from '../src/components/AmbientVolumeControl';
-import { EightBitBackdrop } from '../src/components/pixel/EightBitBackdrop';
-import { PixelButton } from '../src/components/pixel/PixelButton';
-import { PixelText } from '../src/components/pixel/PixelText';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { bit } from '../src/constants/theme';
 import { useAmbientAudio } from '../src/hooks/AmbientAudioProvider';
 import { useGame } from '../src/hooks/GameProvider';
@@ -12,7 +8,7 @@ import { useGame } from '../src/hooks/GameProvider';
 export default function MenuScreen() {
   const router = useRouter();
   const { highScore, highScoreLoaded, refreshHighScore, startGame } = useGame();
-  const { ambientVolume, setAmbientVolume } = useAmbientAudio();
+  const { ensureStarted } = useAmbientAudio();
 
   useEffect(() => {
     void refreshHighScore();
@@ -21,53 +17,55 @@ export default function MenuScreen() {
   const onPlay = () => {
     startGame();
     router.push('/game');
+    setTimeout(() => {
+      void ensureStarted();
+    }, 500);
   };
 
   return (
-    <EightBitBackdrop>
+    <View style={styles.root}>
       <View style={styles.safe}>
         <View style={styles.hero}>
-          <PixelText size="xs" color={bit.pink}>
-            WIKA 8-BIT
-          </PixelText>
-          <PixelText size="xl" color={bit.gold}>
-            ARKANOID
-          </PixelText>
-          <PixelText size="xs" color={bit.muted} style={styles.tagline}>
-            ROMPE EL MURO
-          </PixelText>
+          <Text style={styles.kicker}>WIKA 8-BIT</Text>
+          <Text style={styles.brand}>ARKANOID</Text>
+          <Text style={styles.tagline}>ROMPE EL MURO</Text>
         </View>
 
         <View style={styles.scoreBlock}>
-          <PixelText size="xs" color={bit.muted}>
-            HI-SCORE
-          </PixelText>
+          <Text style={styles.scoreLabel}>HI-SCORE</Text>
           {highScoreLoaded ? (
-            <PixelText size="lg" color={bit.gold}>
-              {highScore}
-            </PixelText>
+            <Text style={styles.scoreValue}>{highScore}</Text>
           ) : (
             <ActivityIndicator color={bit.gold} />
           )}
         </View>
 
-        <AmbientVolumeControl
-          volume={ambientVolume}
-          onChange={(value) => {
-            void setAmbientVolume(value);
-          }}
-        />
-
         <View style={styles.actions}>
-          <PixelButton label="JUGAR" onPress={onPlay} />
-          <PixelButton label="COMO JUGAR" variant="ghost" onPress={() => router.push('/how-to')} />
+          <Pressable
+            accessibilityRole="button"
+            onPress={onPlay}
+            style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
+          >
+            <Text style={styles.ctaText}>JUGAR</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/how-to')}
+            style={({ pressed }) => [styles.ghost, pressed && styles.pressed]}
+          >
+            <Text style={styles.ghostText}>COMO JUGAR</Text>
+          </Pressable>
         </View>
       </View>
-    </EightBitBackdrop>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: bit.night,
+  },
   safe: {
     flex: 1,
     paddingHorizontal: 20,
@@ -80,14 +78,65 @@ const styles = StyleSheet.create({
     gap: 12,
     alignItems: 'center',
   },
+  kicker: {
+    color: bit.pink,
+    fontSize: 12,
+    letterSpacing: 2,
+    fontWeight: '700',
+  },
+  brand: {
+    color: bit.gold,
+    fontSize: 36,
+    fontWeight: '800',
+  },
   tagline: {
+    color: bit.muted,
+    fontSize: 14,
     textAlign: 'center',
   },
   scoreBlock: {
     alignItems: 'center',
     gap: 8,
   },
+  scoreLabel: {
+    color: bit.muted,
+    fontSize: 12,
+    letterSpacing: 2,
+  },
+  scoreValue: {
+    color: bit.gold,
+    fontSize: 28,
+    fontWeight: '800',
+  },
   actions: {
     gap: 12,
+  },
+  cta: {
+    borderWidth: 3,
+    borderColor: bit.gold,
+    backgroundColor: bit.gold,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  ctaText: {
+    color: bit.night,
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  ghost: {
+    borderWidth: 3,
+    borderColor: bit.gold,
+    backgroundColor: bit.panel,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  ghostText: {
+    color: bit.gold,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  pressed: {
+    opacity: 0.8,
   },
 });

@@ -118,8 +118,8 @@ El sideload físico sigue abierto en `auditoria-release-v3.md`.
 
 1. Desinstalar `com.wika.arkanoid`.
 2. Instalar 3.0.2.
-3. El menú aparece (JUGAR visible) aunque el Castillo tarde ~1 s.
-4. Tocar **JUGAR** abre LV 1 aunque el MP3 aún no suene.
+3. El menú 3.0.3 aparece **sin** cargar `expo-av` (texto de sistema, fondo liso).
+4. Tocar **JUGAR** abre LV 1; el Castillo se pide 500 ms después. Si el MP3 nativo falla, la partida sigue.
 5. Tras el delay, el Castillo entra en loop; el slider Ambiente cambia solo el volumen.
 
 ---

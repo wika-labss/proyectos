@@ -37,6 +37,7 @@ import {
 import {
   AMBIENT_ANDROID_IMPLEMENTATION,
   AMBIENT_BOOT_DELAY_MS,
+  AMBIENT_STARTS_ON_USER_GESTURE,
   AMBIENT_MAX_RUNTIME_BYTES,
   AMBIENT_RUNTIME_FILE,
   ambientInitialStatus,
@@ -446,7 +447,8 @@ function testAmbientVolumeChannel() {
 
 function testAmbientPlaybackPolicy() {
   assert.equal(AMBIENT_ANDROID_IMPLEMENTATION, 'MediaPlayer');
-  assert.ok(AMBIENT_BOOT_DELAY_MS >= 1000, 'boot delay must leave the first frame free');
+  assert.equal(AMBIENT_STARTS_ON_USER_GESTURE, true);
+  assert.ok(AMBIENT_BOOT_DELAY_MS >= 400, 'audio waits until Jugar has opened the game');
   const status = ambientInitialStatus(0.45);
   assert.equal(status.shouldPlay, false);
   assert.equal(status.isLooping, true);

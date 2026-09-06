@@ -1,6 +1,7 @@
 /** Política de arranque del loop Castillo. Sin expo-av: el smoke la puede importar. */
 
-export const AMBIENT_BOOT_DELAY_MS = 1200;
+export const AMBIENT_BOOT_DELAY_MS = 500;
+export const AMBIENT_STARTS_ON_USER_GESTURE = true;
 export const AMBIENT_MAX_RUNTIME_BYTES = 2_000_000;
 export const AMBIENT_RUNTIME_FILE = 'ambient-castle.mp3';
 export const AMBIENT_ANDROID_IMPLEMENTATION = 'MediaPlayer' as const;

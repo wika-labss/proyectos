@@ -42,7 +42,7 @@ APK:
 
 `C:\Alvaro proyectos\proyectos\app\arkanoid\iterations\v3\android\app\build\outputs\apk\release\app-release.apk`
 
-El paquete es el mismo que V1/V2 (`com.wika.arkanoid`). Desinstala Arkanoid en el móvil **antes** de instalar este APK **3.0.2**.
+El paquete es el mismo que V1/V2 (`com.wika.arkanoid`). Desinstala Arkanoid en el móvil **antes** de instalar este APK **3.0.3**.
 
 ### Instalar sin `adb` (recomendado si no hay dispositivo)
 
