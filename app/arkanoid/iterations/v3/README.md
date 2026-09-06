@@ -12,6 +12,7 @@ V3 es el juego **clásico** (misma base que V1). **No incluye** los cambios de V
 - 3 niveles de ladrillos; victoria al limpiar el último muro
 - Cápsulas Vaus: **L** láser, **E** enlarge, **C** catch, **S** slow, **B** break, **D** disrupt, **P** vida extra
 - Audio ambiente: solo el MP3 Castillo, en loop desde el menú y en toda la partida; volumen independiente
+- Fondo de partida: pack `inspiration/arkanoid-castle`
 - Score 100 / 200 + high score `arkanoid:v3:highScore`
 - Menú futurista + partida retro
 

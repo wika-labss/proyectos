@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ImageBackground, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Hud } from '../src/components/Hud';
 import { PaddleControls } from '../src/components/PaddleControls';
@@ -8,6 +8,7 @@ import { PauseOverlay } from '../src/components/PauseOverlay';
 import { Playfield } from '../src/components/Playfield';
 import { ResultOverlay } from '../src/components/ResultOverlay';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '../src/constants/game';
+import { CASTLE_PLAYFIELD_BG } from '../src/constants/inspiration';
 import { play } from '../src/constants/theme';
 import { powerLabel } from '../src/engine/capsules';
 import { useGame } from '../src/hooks/GameProvider';
@@ -60,7 +61,8 @@ export default function GameScreen() {
         : undefined;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <ImageBackground source={CASTLE_PLAYFIELD_BG} resizeMode="cover" style={styles.screen}>
+      <SafeAreaView style={styles.safe}>
       <Hud
         lives={lives}
         score={score}
@@ -144,14 +146,19 @@ export default function GameScreen() {
           onSecondary={onMenu}
         />
       ) : null}
-    </SafeAreaView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
+  screen: {
     flex: 1,
     backgroundColor: play.crt,
+  },
+  safe: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   boardWrap: {
     flex: 1,

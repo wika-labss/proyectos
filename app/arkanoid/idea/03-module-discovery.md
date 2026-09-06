@@ -228,7 +228,7 @@ saveHighScore(n): Promise<void>
 
 **Responsabilidad:** Render del campo con look **retro arcade**: ladrillos planos por color, pala/bola simples, HUD clásico.
 
-**V3:** dibuja cápsulas (letra + color), láseres, bolas extra y puerta Break.
+**V3:** dibuja cápsulas (letra + color), láseres, bolas extra, puerta Break y el fondo del pack `inspiration/arkanoid-castle`.
 
 **Dependencias:** estado del `arkanoid-engine` / `game-loop`.
 

@@ -214,7 +214,7 @@ Menu (futurista)
 ├── [Cómo jugar] ──► HowTo (reglas + L E C S B D P)
 └── Game
     ├── HUD: vidas (hasta 6) + score + nivel + poder activo
-    ├── Playfield: ladrillos + pala + bola(s) + cápsulas + láseres + puerta
+    ├── Playfield: fondo inspiration/arkanoid-castle + ladrillos + pala + bola(s) + cápsulas + láseres + puerta
     ├── [Pausa] overlay
     ├── ballLost → reset poderes → playing | Game Over overlay
     ├── level cleared | breakExit → Level Clear overlay → next | Victory overlay
@@ -268,6 +268,13 @@ type WorldState = {
 9. Perder la última bola limpia poderes. Un nivel nuevo nace limpio.
 10. Victoria = limpiar el muro 3 o salir por Break en el último nivel. Sin jefe.
 11. Única pista ambiente (Castillo) en loop desde que abre la app. Volumen **Ambiente** en Menú y Pausa.
+12. Fondo de partida: pack independiente `recursos/inspiration/arkanoid-castle/` (`dracula-castle-playfield.png`).
+
+### Inspiración visual V3
+
+| Pack | Catálogo | Runtime |
+|------|----------|---------|
+| `arkanoid-castle` | `recursos/inspiration/arkanoid-castle/` | `assets/recursos/inspiration/arkanoid-castle/` |
 
 ### Audio ambiente (Feature 24)
 

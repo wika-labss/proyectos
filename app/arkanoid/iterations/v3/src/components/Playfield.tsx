@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View } from 'react-native';
+import { CASTLE_PLAYFIELD_BG } from '../constants/inspiration';
 import { brickRow, capsuleColor, play } from '../constants/theme';
 import { doorRect } from '../engine/arkanoidEngine';
 import { aliveBricks } from '../engine/brickField';
@@ -18,7 +19,13 @@ export function Playfield({ world, scale }: Props) {
   const door = world.doorOpen ? doorRect(world.width, world.height) : null;
 
   return (
-    <View style={[styles.field, { width, height }]}>
+    <ImageBackground
+      source={CASTLE_PLAYFIELD_BG}
+      resizeMode="cover"
+      style={[styles.field, { width, height }]}
+      imageStyle={styles.fieldImage}
+    >
+      <View pointerEvents="none" style={styles.fieldDim} />
       {bricks.map((brick) => {
         const color = brickRow[brick.row % brickRow.length] ?? brickRow[0];
         const cracked = brick.type === 'hard' && brick.hitsLeft === 1;
@@ -132,7 +139,7 @@ export function Playfield({ world, scale }: Props) {
           ]}
         />
       ))}
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -151,6 +158,13 @@ const styles = StyleSheet.create({
     borderColor: play.wall,
     overflow: 'hidden',
     position: 'relative',
+  },
+  fieldImage: {
+    opacity: 1,
+  },
+  fieldDim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(8, 6, 14, 0.28)',
   },
   brick: {
     position: 'absolute',
