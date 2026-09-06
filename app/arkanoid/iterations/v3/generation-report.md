@@ -17,9 +17,9 @@ Flujo WIKA de este ciclo: `audits/flujo-wika-v3.md`.
 
 | Gate | Result |
 |------|--------|
-| `npm run smoke` | pendiente de esta revisión |
-| `npm run typecheck` | pendiente de esta revisión |
-| `npx expo export --platform android` | pendiente de esta revisión |
+| `npm run smoke` | **PASSED** (classic + cápsulas + canal ambiente) |
+| `npm run typecheck` | **PASSED** |
+| `npx expo export --platform android` | **PASSED** (944 modules; incluye `ambient-loop.mp3`) |
 | APK Release | Pendiente JDK 17 local |
 
 ## Features cubiertas

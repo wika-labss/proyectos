@@ -15,12 +15,13 @@
 - [x] Loop ambiental + volumen de canal ambiente independiente (Feature 24)
 
 ## Gates
-- [ ] `npm run smoke`
-- [ ] TypeScript
-- [ ] `expo export`
+- [x] `npm run smoke` PASSED
+- [x] TypeScript PASSED
+- [x] `expo export` PASSED (944 modules; asset `ambient-loop.mp3`)
 - [ ] APK Release local
 
 ## Resultado
 
-En curso (gates de esta revisión). APK Release sigue pendiente de JDK 17 + SDK.
- `final/` no aplica hasta Auditoría 2 completa + APK.
+**REQUIERE CORRECCIONES** solo por el APK Release (mismo patrón que V1).
+
+Código V3 (Features 22–24) pasa smoke, typecheck y export. `final/` espera sideload + visto del arquitecto.

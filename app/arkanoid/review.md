@@ -25,7 +25,7 @@ Arquitecto WIKA / Cloud Agent
 | High score `arkanoid:v3:highScore` | ✅ |
 | Cápsulas L E C S B D P (Feature 23) | ✅ |
 | Loop ambiental + volumen ambiente independiente (Feature 24) | ✅ |
-| Gates smoke / tsc / expo export | pendiente de esta revisión |
+| Gates smoke / tsc / expo export | ✅ (944 módulos; loop MP3 empaquetado) |
 | APK Release | ⚠️ pendiente JDK 17 local |
 
 V2 permanece en `iterations/v2/` como histórico.
