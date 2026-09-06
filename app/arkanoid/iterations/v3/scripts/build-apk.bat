@@ -7,9 +7,18 @@ echo Genera un APK autonomo: el bundle JS va embebido, no necesita Metro.
 echo.
 
 echo [1/5] Toolchain
+if not defined ANDROID_HOME (
+  if exist "%LOCALAPPDATA%\Android\Sdk" set "ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk"
+)
+if not defined JAVA_HOME (
+  for /d %%D in ("C:\Program Files\Eclipse Adoptium\jdk-17*") do (
+    if exist "%%D\bin\java.exe" set "JAVA_HOME=%%D"
+  )
+)
 if not defined JAVA_HOME (
   echo ERROR: Define JAVA_HOME apuntando a JDK 17.
   echo   set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17"
+  echo O instala Temurin 17 y deja la carpeta en Eclipse Adoptium.
   exit /b 1
 )
 set "JAVA_HOME=%JAVA_HOME:"=%"

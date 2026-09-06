@@ -15,29 +15,26 @@ El APK Release es autónomo (bundle embebido). **No requiere Metro.**
 
 En **PowerShell** (no uses Git Bash para Gradle):
 
+Pega **solo** los comandos. No copies el prompt `PS C:\...>` (eso es un alias de `Get-Process`).
+
 ```powershell
-# 1) Rama V3
 cd "C:\Alvaro proyectos\proyectos"
-git fetch origin
 git checkout cursor/arkanoid-v3-classic-eb2a
 git pull origin cursor/arkanoid-v3-classic-eb2a
 
-# 2) Toolchain (ajusta JAVA_HOME si tu JDK 17 está en otra carpeta)
-$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-17'
-if (-not (Test-Path "$env:JAVA_HOME\bin\java.exe")) {
-  $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-17.0.20.8-hotspot'
-}
+$jdk = Get-ChildItem "C:\Program Files\Eclipse Adoptium" -Directory -ErrorAction SilentlyContinue |
+  Where-Object { $_.Name -like "jdk-17*" } |
+  Sort-Object Name -Descending |
+  Select-Object -First 1
+if (-not $jdk) { throw "No hay JDK 17 en C:\Program Files\Eclipse Adoptium" }
+$env:JAVA_HOME = $jdk.FullName
 $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
 $env:Path = "$env:JAVA_HOME\bin;C:\Program Files\nodejs;$env:ANDROID_HOME\platform-tools;$env:Path"
-
+Write-Host "JAVA_HOME=$env:JAVA_HOME"
 java -version
-# debe decir 17.x
 
-# 3) Compilar
 cd "C:\Alvaro proyectos\proyectos\app\arkanoid\iterations\v3"
 npm install
-npm run smoke
-npm run typecheck
 npm run apk:win
 ```
 
