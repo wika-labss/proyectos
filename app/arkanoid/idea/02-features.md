@@ -43,11 +43,37 @@
 
 ### Feature 06 — Niveles
 
+**Estado V3:** hecho  
+**Módulos:** `brick-field`, `level-progress`, `arkanoid-engine`, `arkanoid-screens`
+
 - V1: al menos **3 niveles** con layouts distintos.
-- **V3: 33 niveles**, de más fácil a más difícil (más filas, huecos, ladrillos hard).
-- Completar nivel → overlay de nivel → siguiente (vidas se conservan).
-- Completar el último (33) → victoria de partida + high score.
+- **V3: exactamente 33 niveles** (`LEVEL_COUNT = 33`), de más fácil a más difícil.
+- Completar nivel → overlay Level Clear → siguiente (vidas se conservan).
+- Completar el **33** → overlay Victory + high score. Sin jefe y sin `/win`.
 - V2 añadió un jefe; **V3 retira ese delta** (ver Feature 22).
+
+#### Contrato de dificultad (V3)
+
+| Tramo | Niveles | Regla |
+|-------|---------|-------|
+| Tutorial | 1–6 | Solo ladrillos **normal**. El muro crece (2 → 7 filas). |
+| Hard entra | 7–12 | 6 filas. Aparecen **hard**; la proporción hard sube. |
+| Formas | 13–20 | 6–7 filas. Pasillos, tablero y fortalezas. |
+| Mayoría hard | 21–26 | 7–8 filas. Casi todo hard. |
+| Finales | 27–33 | 8 filas. El 33 es muro hard completo. |
+
+Alfabeto de layout: `n` normal (1 hit), `h` hard (2 hits), `.` vacío. 8 columnas.  
+Velocidad de bola: `280 + nivelIndex * 5` px/s (el 33 no se vuelve injugable).  
+Los hits necesarios no pueden caer más de 12 respecto del pico anterior (curva fácil → difícil).
+
+#### Escenarios BDD
+
+- **Dado que** el jugador toca Jugar, **cuando** carga el campo, **entonces** está en el nivel 1 (índice 0), solo ladrillos normales, y el HUD muestra `LV 1`.
+- **Dado que** limpia el muro del nivel N (N < 33), **cuando** continúa, **entonces** carga el nivel N+1 y las vidas se conservan.
+- **Dado que** limpia el muro del nivel 33, **cuando** se resuelve el clear, **entonces** aparece overlay Victory sobre Game y no existe ruta `/win`.
+- **Dado que** se carga el nivel 7 o posterior, **cuando** `loadLevel` termina, **entonces** hay al menos un ladrillo hard.
+- **Dado que** se carga el nivel 33, **cuando** `loadLevel` termina, **entonces** todos los ladrillos son hard.
+- **Dado que** hay B activo en el nivel 33, **cuando** la pala sale por la puerta, **entonces** también hay victoria (mismo camino que clear).
 
 ### Feature 20 — Jefe (V2)
 
@@ -163,7 +189,8 @@ App nativa Android generada con pipeline WIKA (Expo prebuild + release), instala
 
 ### Feature 17 — Más niveles / layouts
 
-**Hecho en V3:** 33 layouts (`levelLayouts.ts`), fácil → difícil.
+**Hecho en V3.** El contrato oficial está en Feature 06.  
+Implementación: `brick-field` lee 33 layouts (`levelLayouts.ts`). No se inventan tipos de ladrillo extra.
 
 ### Feature 18 — Sonidos / hápticos
 

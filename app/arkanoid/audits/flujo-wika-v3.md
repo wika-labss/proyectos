@@ -1,48 +1,43 @@
 # Flujo WIKA — Arkanoid V3
 
-Registro del ciclo oficial aplicado a este refinamiento.
+Registro del ciclo oficial aplicado a este refinamiento.  
 Referencia: `wika-fundaments/workflows/application-lifecycle.md`.
 
 ```
-Documentación (idea/)
-    → Auditoría 1
+Idea / Preparación (idea/ 01–05)     ← fuente oficial de verdad
+    → Auditoría 1 (puede construirse)
     → Generación IA (iterations/v3)
-    → Auditoría 2 (release)
+    → Auditoría 2 (la solución funciona)
     → Refinamiento
-    → Aprobación / final/   ← aún no
+    → Aprobación / final/            ← aún no
+    → Demo / Publicación             ← aún no
 ```
 
-La carpeta `idea/` es la única fuente de verdad. Este archivo no la duplica: solo traza el proceso.
+`idea/` es la única fuente de verdad. Este archivo no la duplica: solo traza el proceso.  
+Los documentos de `idea/` **no** se copian a `iterations/` ni a `final/`.
 
 ---
 
 ## Etapa 1–2 · Idea y preparación
 
-Se actualizó el contrato oficial **antes** de tratar el código como cerrado:
+Contrato oficial actualizado **antes** de cerrar el código:
 
-| Documento | Cambio V3 |
-|-----------|-----------|
-| `idea/01-problem.md` | Fidelidad clásica + cápsulas; sin jefe |
-| `idea/02-features.md` | Feature 22 (sin delta V2), 23 (cápsulas), 24 (ambiente) |
-| `idea/03-module-discovery.md` | `vaus-capsules`, `ambient-audio`; `boss` histórico |
-| `idea/04-application-design.md` | Overlays, modelo de cápsulas, canales de audio |
-| `idea/05-build-plan.md` | Orden WIKA y plan V3 |
-
-No se copiaron estos documentos dentro de `iterations/`.
+| Documento | Qué define en V3 |
+|-----------|------------------|
+| `idea/01-problem.md` | Clásico + cápsulas + 33 niveles; sin jefe |
+| `idea/02-features.md` | 06/17 (33 niveles + BDD), 22, 23, 24 |
+| `idea/03-module-discovery.md` | `brick-field` 33 layouts, `vaus-capsules`, `ambient-audio`; `boss` histórico |
+| `idea/04-application-design.md` | Overlays, constantes `LEVEL_COUNT = 33`, cápsulas, audio, 8-bit |
+| `idea/05-build-plan.md` | Orden WIKA y plan V3-01…V3-13 |
 
 ---
 
-## Etapa 3 · Auditoría 1 (puede construirse)
+## Etapa 3 · Auditoría 1
 
-Las auditorías V1 de documentación / módulos / ensamblado siguen **APROBADAS**.
-El refinamiento V3 añade módulos y features; la generación se apoya en ese contrato actualizado.
+Ver `audits/auditoria-1-v3.md` (**APROBADO**).
 
-Validaciones cubiertas:
-
-- Features 22–24 definidas, con BDD en 23 y 24.
-- Módulos con responsabilidad única (`vaus-capsules`, `ambient-audio`).
-- Recurso de audio en catálogo `recursos/audio/` y copia runtime en la iteración.
-- Entregable sigue siendo APK Release (Expo 52, JDK 17).
+Las auditorías V1 de documentación / módulos / ensamblado siguen vigentes.  
+Esta auditoría cubre el delta V3 (Features 06/17 y 22–24).
 
 ---
 
@@ -53,37 +48,39 @@ Validaciones cubiertas:
 ```
 idea/ 01–05
 + audits/ V1
-+ review.md (v1 / v2)
++ audits/auditoria-1-v3.md
++ review.md (v1 / v2 / v3)
 + iterations/v1 (base clásica)
 + iterations/v2 (histórico: qué no copiar)
 → iterations/v3
 ```
 
-V3 = jugabilidad V1 − delta V2 + Feature 23 + Feature 24.
+V3 = jugabilidad V1 − delta V2 + Feature 06/17 (33 niveles) + Feature 23 + Feature 24 + UI 8-bit.
 
 Código: `app/arkanoid/iterations/v3/`  
-Informe: `iterations/v3/generation-report.md`  
+Informe de generación: `iterations/v3/generation-report.md`  
 Revisión de iteración: `app/arkanoid/review.md`
 
 ---
 
-## Etapa 5 · Auditoría 2 (la solución funciona)
+## Etapa 5 · Auditoría 2
 
 Ver `audits/auditoria-release-v3.md`.
 
-Gates de código: smoke, TypeScript, `expo export`.
-APK Release: pendiente de JDK 17 + SDK en máquina local → bloquea `final/`.
+Gates de código: smoke (33 niveles), TypeScript, `expo export`.  
+APK Release: pendiente de JDK 17 + SDK local → bloquea `final/`.
 
 ---
 
-## Etapa 6 · Este refinamiento
+## Etapa 6 · Incrementos de este refinamiento
 
-| Incremento | Feature | Módulo |
-|------------|---------|--------|
+| Incremento | Feature | Módulo / docs |
+|------------|---------|---------------|
 | Quitar jefe / `/lose` `/win` | 22 | `arkanoid-screens`, `level-progress` |
 | Cápsulas L E C S B D P | 23 | `vaus-capsules` |
-| Loop ambiental + cambio de tema (stop → loop) | 24 | `ambient-audio` |
-| 33 niveles fácil → difícil | 06, 17 | `brick-field`, `levelLayouts.ts` |
+| Loop ambiental Castillo | 24 | `ambient-audio` |
+| UI 8-bit unificada | 09, 10 | `menu-futuristic`, `playfield-retro` |
+| 33 niveles fácil → difícil | 06, 17 | `idea/` + `brick-field` + `levelLayouts.ts` |
 
 ---
 

@@ -186,7 +186,7 @@ Menú y partida comparten la misma atmósfera (ya no hay dual futurista/retro).
 
 ## 9. Contrato V3 (vigente)
 
-V3 **sustituye** el flujo V2 (jefe, `/lose`, `/win`) y **añade** cápsulas. El menú futurista y la partida retro no cambian.
+V3 **sustituye** el flujo V2 (jefe, `/lose`, `/win`), **añade** cápsulas y fija **33 niveles**. El menú y la partida comparten look 8-bit.
 
 ### Flujo de pantallas V3
 
@@ -202,6 +202,17 @@ Menu (futurista)
     ├── level cleared | breakExit → Level Clear overlay → next | Victory overlay
     └── Game Over / Victory: score + high score · Reintentar / Menú
 ```
+
+### Constantes de niveles V3
+
+```ts
+const LEVEL_COUNT = 33;
+const BALL_SPEED_BASE = 280;
+const BALL_SPEED_PER_LEVEL = 5; // índice 32 → 440 px/s
+```
+
+Alfabeto de fila (8 columnas): `n` normal, `h` hard, `.` vacío.  
+HUD: `LV {levelIndex + 1}`. HowTo: `33 NIVELES`.
 
 ### Modelo de datos V3 (añadido)
 
@@ -251,6 +262,7 @@ type WorldState = {
 10. Victoria = limpiar el muro 33 o salir por Break en el último nivel. Sin jefe.
 11. Única pista ambiente (Castillo) en loop desde que abre la app. Volumen **Ambiente** en Menú y Pausa.
 12. Fondo de partida: pack independiente `recursos/inspiration/arkanoid-castle/` (`dracula-castle-playfield.png`).
+13. 33 layouts fácil → difícil (Feature 06). Tutorial 1–6 solo normal; hard desde el 7; el 33 es muro hard completo.
 
 ### Inspiración visual V3
 
@@ -266,4 +278,5 @@ type WorldState = {
 | Volumen `ambient` | `arkanoid:v3:ambientVolume` | 0.45 | Slider Menú + Pausa |
 | Volumen `sfx` | (reservado) | 0.80 | — (Feature 18) |
 
-- [ ] Auditoría de ensamblado V3 (pendiente; release en `audits/auditoria-release-v3.md`)
+- [x] Auditoría 1 V3 (docs / módulos / ensamblado): `audits/auditoria-1-v3.md`
+- [ ] Auditoría 2 V3: `audits/auditoria-release-v3.md` (código OK; APK pendiente)

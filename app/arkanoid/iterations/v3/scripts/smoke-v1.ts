@@ -128,7 +128,7 @@ function testBrickDestroy() {
 }
 
 function testHardBrickTwoHits() {
-  const bricks = loadLevel(4);
+  const bricks = loadLevel(6);
   const hard = bricks.find((b) => b.type === 'hard');
   assert.ok(hard);
   const first = hitBrick(bricks, hard.id);
@@ -223,16 +223,25 @@ function testLevels() {
   const last = loadLevel(32);
   assert.ok(first.length >= 12, 'level 1 should have a starter wall');
   assert.ok(first.every((b) => b.type === 'normal'), 'level 1 is all normal');
-  for (let i = 0; i < 4; i += 1) {
+  for (let i = 0; i < 6; i += 1) {
     assert.ok(
       loadLevel(i).every((b) => b.type === 'normal'),
       `tutorial level ${i + 1} should be all normal`,
     );
   }
-  assert.ok(loadLevel(4).some((b) => b.type === 'hard'), 'hard bricks start at level 5');
+  assert.ok(loadLevel(6).some((b) => b.type === 'hard'), 'hard bricks start at level 7');
   assert.ok(last.every((b) => b.type === 'hard'), 'level 33 is all hard');
   assert.ok(last.length > first.length, 'final wall is denser than level 1');
   assert.ok(hitsNeeded(last) > hitsNeeded(first), 'final level takes more hits');
+  let peakHits = 0;
+  for (let i = 0; i < LEVEL_COUNT; i += 1) {
+    const hits = hitsNeeded(loadLevel(i));
+    assert.ok(
+      hits + 12 >= peakHits,
+      `level ${i + 1} dips too far (${hits} hits after peak ${peakHits})`,
+    );
+    peakHits = Math.max(peakHits, hits);
+  }
   const a1 = onLevelCleared(0);
   assert.equal(a1.kind, 'next');
   if (a1.kind === 'next') assert.equal(a1.nextIndex, 1);

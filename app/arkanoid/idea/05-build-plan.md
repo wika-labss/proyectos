@@ -166,14 +166,14 @@ Preparación V1 (01–05) ✓
      → Auditoría Release V1 (código OK; APK pendiente)
      → Refinamiento V2 (jefe + /lose /win) — histórico en iterations/v2
      → Refinamiento V3 ← ACTUAL
-           Preparación: idea/ actualizada (Features 22 + 23)
-           Auditoría 1 V3: docs / módulos / ensamblado
-           Generación: iterations/v3 (V1 − delta V2 + cápsulas)
+           Preparación: idea/ 01–05 (Features 06/17, 22, 23, 24)
+           Auditoría 1: audits/auditoria-1-v3.md
+           Generación: iterations/v3
            Auditoría 2: audits/auditoria-release-v3.md
      → Aprobación / final/  — bloqueado hasta APK + visto del arquitecto
 ```
 
-**Estado actual:** V3 generado con cápsulas L E C S B D P. Gates smoke/tsc/export OK.  
+**Estado actual:** V3 con cápsulas, ambiente Castillo, UI 8-bit y **33 niveles**. Gates smoke/tsc/export OK.  
 **Siguiente:** APK local → aprobación del arquitecto.
 
 ---
@@ -182,8 +182,8 @@ Preparación V1 (01–05) ✓
 
 | Paso | Módulo | Feature | Archivos | Estado |
 |------|--------|---------|----------|--------|
-| V3-01 | docs | 22, 23 | `idea/01`–`05` | done |
-| V3-02 | auditoría 1 | 23 | `audits/auditoria-release-v3.md` | en curso |
+| V3-01 | docs | 06, 17, 22–24 | `idea/01`–`05` | done |
+| V3-02 | auditoría 1 | 06, 17, 22–24 | `audits/auditoria-1-v3.md` | done |
 | V3-03 | `vaus-capsules` | 23 | `src/engine/capsules.ts` | done |
 | V3-04 | `arkanoid-engine` | 23 | `arkanoidEngine.ts`, `types.ts` | done |
 | V3-05 | `lives-system` | 23 P | `livesSystem.ts` (`onExtraLife`) | done |
@@ -193,7 +193,8 @@ Preparación V1 (01–05) ✓
 | V3-09 | generación | — | `generation-report.md`, `review.md` | done |
 | V3-10 | `ambient-audio` | 24 | `src/modules/ambient-audio/`, `assets/recursos/audio/` | done |
 | V3-11 | APK | 15 | `npm run apk` | pending |
-| V3-12 | `brick-field` | 06, 17 | `levelLayouts.ts` (33 niveles) | done |
+| V3-12 | docs + `brick-field` | 06, 17 | `idea/` + `levelLayouts.ts` + smoke | done |
+| V3-13 | auditoría 2 | 06, 17 | `audits/auditoria-release-v3.md` | en curso (APK pending) |
 
 ### Contexto obligatorio usado (regla WIKA)
 

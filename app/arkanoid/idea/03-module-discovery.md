@@ -4,7 +4,7 @@
 Arkanoid — Breakout / Arkanoid Android (Expo / React Native)
 
 ## Versión de documentación
-V1 + refinamiento V3 (`vaus-capsules`)
+V1 + refinamiento V3 (`vaus-capsules`, `ambient-audio`, 33 layouts en `brick-field`)
 
 ## Objetivo de esta etapa
 Traducir `02-features.md` en módulos reutilizables con responsabilidades claras, entradas/salidas y dependencias. Priorizar motor puro (testable) separado de UI. Separar **menú futurista** de **partida retro** como capas de presentación.
@@ -17,7 +17,7 @@ Traducir `02-features.md` en módulos reutilizables con responsabilidades claras
 |--------|------|-----------|---------------|
 | `arkanoid-engine` | core | **Nuevo** | Pala, bola, ladrillos, colisiones, rebotes clásicos |
 | `vaus-capsules` | core | **V3** | Cápsulas L/E/C/S/B/D/P (Feature 23) |
-| `brick-field` | core | **Nuevo** | Layouts de niveles, hits restantes, clear level |
+| `brick-field` | core | **V3: 33 layouts** | Layouts de niveles, hits restantes, clear level |
 | `boss` | core | **V2 (histórico)** | Jefe móvil — no forma parte de V3 |
 | `lives-system` | core | **Nuevo** | 3 vidas, pérdida por bola caída, game over |
 | `arkanoid-score` | core | **Nuevo** | Puntos por ladrillo + jefe + high score en memoria |
@@ -103,11 +103,15 @@ hitBrick(id): { bricks, destroyed, cleared }
 isCleared(bricks): boolean
 ```
 
-**Tipos V1:** `normal` (1 hit), `hard` (2 hits, niveles ≥ 2).
+**Tipos:** `normal` (1 hit), `hard` (2 hits).
+
+**V1:** 3 layouts inline. Hard desde el nivel 2.
+
+**V3:** 33 layouts en tabla propia (`levelLayouts.ts`). `LEVEL_LAYOUTS.length` debe coincidir con `LEVEL_COUNT`. `loadLevel` recorta el índice a `0..32`. Alfabeto `n` / `h` / `.`. Feature 06 / 17.
 
 **Reutilizable:** Sí (otros breakout).
 
-**Dependencias:** ninguna de UI.
+**Dependencias:** ninguna de UI. No conoce score, vidas ni cápsulas.
 
 ---
 
@@ -187,7 +191,7 @@ onLevelCleared(): nextLevel | victory
 ```
 
 **V1:** ≥ 3 niveles.  
-**V3:** 33 layouts en `levelLayouts.ts`, de más fácil a más difícil. Victoria al limpiar el 33.
+**V3:** 33 layouts. `onLevelCleared(31)` → next 32. `onLevelCleared(32)` → `victory`. Sin jefe. Feature 06 / 22.
 
 ---
 

@@ -2,6 +2,8 @@
 
 Expo SDK 52 · React Native · Android package `com.wika.arkanoid` · versión 3.0.0
 
+Fuente de verdad: `app/arkanoid/idea/`. Flujo de este ciclo: `app/arkanoid/audits/flujo-wika-v3.md`. Este README no copia `idea/`.
+
 ## Reglas V3 (sin delta V2)
 
 V3 es el juego **clásico** (misma base que V1). **No incluye** los cambios de V2:

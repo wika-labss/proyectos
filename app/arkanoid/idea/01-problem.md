@@ -54,10 +54,16 @@ Entregar V1 instalable (APK Release) de Arkanoid en Android con: pala táctil, f
 
 ---
 
-## Refinamiento V3 (cápsulas clásicas)
+## Refinamiento V3 (cápsulas + 33 niveles)
 
 El problema original no cambia: Arkanoid Android offline, menú futurista, partida retro.
 
-V3 **completa la fidelidad clásica** con las cápsulas que caen al romper ladrillos y un loop ambiental con volumen propio. No es un juego distinto ni un delta de jefe.
+V3 **completa la fidelidad clásica** con:
 
-Fuente de verdad: `idea/02-features.md` → Feature 22 (sin delta V2) + Feature 23 (cápsulas) + Feature 24 (ambiente).
+- Cápsulas que caen al romper ladrillos.
+- Un loop ambiental con volumen propio.
+- **33 niveles** de muro, de más fácil a más difícil. La partida larga es el medidor de skill y de high score.
+
+No es un juego distinto ni un delta de jefe.
+
+Fuente de verdad: `idea/02-features.md` → Feature 06 / 17 (33 niveles) + Feature 22 (sin delta V2) + Feature 23 (cápsulas) + Feature 24 (ambiente).
