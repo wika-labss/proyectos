@@ -267,15 +267,12 @@ stop(): Promise<void>
 resolveAmbientTheme(id): { id, label, file }
 ```
 
-**Recursos:**
-- `recursos/audio/arkanoid-ambient-loop.mp3` → `ambient-loop.mp3` (Nebula)
-- `recursos/audio/arkanoid-ambient-castle.mp3` → `ambient-castle.mp3` (Castillo)
+**Recurso (única pista):** `recursos/audio/arkanoid-ambient-castle.mp3` → `ambient-castle.mp3`.
 
 **Reglas:**
-- Arranque automático al montar el layout (no espera a Jugar).
-- `setTheme` resuelve el id al archivo, detiene y descarga la pista en curso, carga la nueva y la deja en loop al volumen ambiente actual.
-- Canal `ambient` ≠ canal `sfx`; el tema no altera esos volúmenes.
-- Persistencia: `arkanoid:v3:ambientTheme` + `arkanoid:v3:ambientVolume`.
+- Arranque automático al montar el layout: detiene cualquier pista y reproduce Castillo en loop (menú + partida).
+- Canal `ambient` ≠ canal `sfx`.
+- Persistencia del volumen: `arkanoid:v3:ambientVolume`. Tema fijado a `castle`.
 - Fallo de carga no tumba la app.
 
 **Dependencias:** `expo-av` (`~`), AsyncStorage. Sin React en el manager; el hook/UI envuelven el módulo.

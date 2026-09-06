@@ -406,12 +406,10 @@ function testAmbientThemeSwitch() {
   assert.equal(castle.file, 'ambient-castle.mp3');
   const unknown = resolveAmbientTheme('missing');
   assert.equal(unknown.id, DEFAULT_AMBIENT_THEME);
-  assert.equal(unknown.file, 'ambient-loop.mp3');
-  assert.equal(parseStoredTheme(null), 'nebula');
-  assert.equal(parseStoredTheme('castle'), 'castle');
-  assert.equal(parseStoredTheme('nope'), 'nebula');
-  assert.equal(nextAmbientTheme('nebula'), 'castle');
-  assert.equal(nextAmbientTheme('castle'), 'nebula');
+  assert.equal(unknown.file, 'ambient-castle.mp3');
+  assert.equal(parseStoredTheme(null), 'castle');
+  assert.equal(parseStoredTheme('nebula'), 'castle');
+  assert.equal(nextAmbientTheme('castle'), 'castle');
 }
 
 function testNoBossRoutes() {
@@ -449,7 +447,7 @@ function main() {
   testAmbientThemeSwitch();
   testNoBossRoutes();
   console.log(
-    'smoke-v3: PASSED (classic + Vaus capsules + ambient theme switch; no boss)',
+    'smoke-v3: PASSED (classic + Vaus capsules + castle ambient only; no boss)',
   );
 }
 

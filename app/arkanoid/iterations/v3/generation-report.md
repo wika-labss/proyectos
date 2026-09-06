@@ -9,7 +9,7 @@ V3 **sin los cambios de V2**. Misma jugabilidad que V1, más:
 
 - Feature 22: sin jefe, sin `/lose` `/win` (overlays).
 - Feature 23: cápsulas Vaus L E C S B D P.
-- Feature 24: temas ambiente (Nebula / Castillo). `setTheme` busca el archivo, detiene la pista actual y reproduce la nueva en loop. Volumen `ambient` independiente.
+- Feature 24: única pista `ambient-castle.mp3` en loop desde el arranque (menú y partida). Volumen `ambient` independiente.
 
 Flujo WIKA de este ciclo: `audits/flujo-wika-v3.md`.
 

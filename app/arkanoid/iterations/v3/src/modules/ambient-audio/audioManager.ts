@@ -1,5 +1,5 @@
 import { Audio, type AVPlaybackStatusSuccess } from 'expo-av';
-import { loadAmbientTheme, loadChannelVolume, saveAmbientTheme, saveChannelVolume } from './storage';
+import { loadChannelVolume, saveAmbientTheme, saveChannelVolume } from './storage';
 import { resolveAmbientAsset } from './themeAssets';
 import {
   DEFAULT_AMBIENT_THEME,
@@ -79,7 +79,8 @@ export class AudioManager {
   private async boot(): Promise<void> {
     this.volumes.ambient = await loadChannelVolume('ambient');
     this.volumes.sfx = await loadChannelVolume('sfx');
-    this.theme = await loadAmbientTheme();
+    this.theme = DEFAULT_AMBIENT_THEME;
+    await saveAmbientTheme(this.theme);
     try {
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
@@ -87,6 +88,7 @@ export class AudioManager {
         shouldDuckAndroid: true,
         playThroughEarpieceAndroid: false,
       });
+      await this.stopCurrent();
       await this.playResolved(this.theme);
       this.started = true;
     } catch {
@@ -96,9 +98,6 @@ export class AudioManager {
 
   private async switchTheme(id: string): Promise<AmbientThemeId> {
     const theme = resolveAmbientTheme(id);
-    if (theme.id === this.theme && this.sound) {
-      return theme.id;
-    }
     await this.stopCurrent();
     this.theme = theme.id;
     await saveAmbientTheme(theme.id);

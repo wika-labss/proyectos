@@ -24,7 +24,7 @@ Arquitecto WIKA / Cloud Agent
 | Overlays Game Over / Victoria | ✅ |
 | High score `arkanoid:v3:highScore` | ✅ |
 | Cápsulas L E C S B D P (Feature 23) | ✅ |
-| Loop ambiental + cambio de tema (Nebula / Castillo) + volumen independiente (Feature 24) | ✅ |
+| Loop ambiental único (Castillo) en toda la app + volumen independiente (Feature 24) | ✅ |
 | Gates smoke / tsc / expo export | ✅ (948 módulos; Nebula + Castillo) |
 | APK Release | ⚠️ pendiente JDK 17 local |
 

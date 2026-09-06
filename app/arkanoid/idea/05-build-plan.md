@@ -226,4 +226,4 @@ No se copian los documentos de `idea/` dentro de `iterations/`.
 | Jefe / `/lose` / `/win` | **Retirados** |
 | High score | Clave `arkanoid:v3:highScore` |
 | Cápsulas Vaus | L E C S B D P |
-| Audio ambiente | Temas Nebula / Castillo; setTheme = stop + loop; volumen `ambient` |
+| Audio ambiente | Solo `ambient-castle.mp3` en loop permanente; volumen `ambient` |
