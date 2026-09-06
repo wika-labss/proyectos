@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { StyleSheet, Text, type TextProps } from 'react-native';
+import { PixelFontReadyContext } from '../../constants/fonts';
 import { bit, fontPixel } from '../../constants/theme';
 
 type Size = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -19,12 +20,13 @@ const SIZE: Record<Size, number> = {
 
 export function PixelText({ size = 'sm', color = bit.ink, style, ...rest }: Props) {
   const fontSize = SIZE[size];
+  const pixelReady = useContext(PixelFontReadyContext);
   return (
     <Text
       {...rest}
       style={[
-        styles.base,
         { color, fontSize, lineHeight: Math.round(fontSize * 1.7) },
+        pixelReady ? styles.pixel : null,
         style,
       ]}
     />
@@ -32,7 +34,7 @@ export function PixelText({ size = 'sm', color = bit.ink, style, ...rest }: Prop
 }
 
 const styles = StyleSheet.create({
-  base: {
+  pixel: {
     fontFamily: fontPixel,
   },
 });

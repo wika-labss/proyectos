@@ -15,14 +15,21 @@ export function AmbientAudioProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     let alive = true;
-    void (async () => {
-      await audioManager.start();
-      if (!alive) return;
-      setAmbient(audioManager.getVolume('ambient'));
-      setReady(true);
-    })();
+    const timer = setTimeout(() => {
+      void (async () => {
+        try {
+          await audioManager.start();
+        } catch {
+          // El menú debe abrir aunque el MP3 falle en un dispositivo.
+        }
+        if (!alive) return;
+        setAmbient(audioManager.getVolume('ambient'));
+        setReady(true);
+      })();
+    }, 700);
     return () => {
       alive = false;
+      clearTimeout(timer);
     };
   }, []);
 
