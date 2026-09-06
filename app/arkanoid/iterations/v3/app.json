@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Arkanoid",
+    "slug": "wika-arkanoid",
+    "version": "3.0.3",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "arkanoid",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0C0820"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0C0820"
+      },
+      "package": "com.wika.arkanoid",
+      "versionCode": 4,
+      "largeHeap": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      [
+        "expo-av",
+        {
+          "microphonePermission": false
+        }
+      ],
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25",
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 24
+          }
+        }
+      ]
+    ]
+  }
+}

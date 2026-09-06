@@ -2,6 +2,46 @@
 
 ## Versión evaluada
 
+**v3** — `app/arkanoid/iterations/v3/` (clásico + 33 niveles + cápsulas + ambiente)
+
+Flujo: `audits/flujo-wika-v3.md`
+
+Auditoría 1 V3: documentación / módulos / ensamblado **APROBADAS**.  
+Auditoría 2: `audits/auditoria-release-v3.md` — código OK; APK pendiente.
+
+## Evaluador
+
+Arquitecto WIKA / Cloud Agent
+
+## Fecha
+
+2026-09-06
+
+---
+
+## Delta V3
+
+| Entregable | Estado |
+|------------|--------|
+| Sin jefe / `/lose` / `/win` (Feature 22) | ✅ |
+| 33 niveles fácil → difícil (Feature 06 / 17) | ✅ `levelLayouts.ts` |
+| Overlays Game Over / Victoria | ✅ |
+| High score `arkanoid:v3:highScore` | ✅ |
+| Cápsulas L E C S B D P (Feature 23) | ✅ |
+| Loop ambiental único (Castillo) en toda la app + volumen independiente (Feature 24) | ✅ |
+| Auditoría documentación V3 | ✅ `audits/auditoria-documentacion-v3.md` |
+| Auditoría módulos V3 | ✅ `audits/auditoria-modulos-v3.md` |
+| Auditoría ensamblado V3 | ✅ `audits/auditoria-ensamblado-v3.md` |
+| Auditoría release V3 | ⚠️ código OK; APK pendiente |
+| Gates smoke / tsc / expo export | ✅ (962 módulos; font + Castillo PNG + MP3) |
+| APK Release | ⚠️ pendiente JDK 17 local |
+
+V2 permanece en `iterations/v2/` como histórico.
+
+---
+
+## Versión evaluada (histórica)
+
 **v2** — `app/arkanoid/iterations/v2/` (sobre v1)
 
 ## Evaluador

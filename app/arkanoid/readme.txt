@@ -2,19 +2,18 @@ Arkanoid — proyecto WIKA (Breakout / Arkanoid clásico)
 
 Fuente: wika-fundaments @ wika-fundaments-v2
 
-Producto V2:
-- Juego Arkanoid Android (Expo SDK 52)
-- Reglas clásicas V1 + jefe móvil (8 hits)
-- Pantallas dedicadas LOSER y WIN
+Producto V3:
+- Breakout clásico (misma base que V1)
+- **Sin** los cambios de V2: no hay jefe, no hay `/lose` ni `/win`
+- Game Over y Victoria como overlays
 - Menú futurista + partida retro
-- Score 100/200/1000 + high score local v2
-- Entregable: APK Release SIN Metro
+- Score 100/200 + high score `arkanoid:v3:highScore`
+- Expo SDK 52 · package com.wika.arkanoid
 
 Estado:
-- idea/ documentado V1 + delta V2
-- audits/ documentación + módulos + ensamblado → APROBADO (V1)
-- iterations/v1/ construido
-- iterations/v2/ jefe + /lose + /win
+- iterations/v1 histórico
+- iterations/v2 histórico (jefe + LOSER/WIN)
+- iterations/v3 clásico, sin delta V2
 - final/ vacío
 
-Siguiente: npm run apk en v2 (JDK 17 + SDK) → sideload → re-auditoría Release → final/
+Siguiente: npm start en v3 · APK local (JDK 17)

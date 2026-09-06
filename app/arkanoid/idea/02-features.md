@@ -43,9 +43,37 @@
 
 ### Feature 06 — Niveles
 
-- V1: al menos **3 niveles** con layouts distintos (más ladrillos / filas / resistentes).
-- Completar nivel → pantalla breve de victoria de nivel → siguiente nivel (vidas se conservan).
-- Completar el último nivel **y derrotar al jefe** → victoria de partida (WIN) + actualización de high score.
+**Estado V3:** hecho  
+**Módulos:** `brick-field`, `level-progress`, `arkanoid-engine`, `arkanoid-screens`
+
+- V1: al menos **3 niveles** con layouts distintos.
+- **V3: exactamente 33 niveles** (`LEVEL_COUNT = 33`), de más fácil a más difícil.
+- Completar nivel → overlay Level Clear → siguiente (vidas se conservan).
+- Completar el **33** → overlay Victory + high score. Sin jefe y sin `/win`.
+- V2 añadió un jefe; **V3 retira ese delta** (ver Feature 22).
+
+#### Contrato de dificultad (V3)
+
+| Tramo | Niveles | Regla |
+|-------|---------|-------|
+| Tutorial | 1–6 | Solo ladrillos **normal**. El muro crece (2 → 7 filas). |
+| Hard entra | 7–12 | 6 filas. Aparecen **hard**; la proporción hard sube. |
+| Formas | 13–20 | 6–7 filas. Pasillos, tablero y fortalezas. |
+| Mayoría hard | 21–26 | 7–8 filas. Casi todo hard. |
+| Finales | 27–33 | 8 filas. El 33 es muro hard completo. |
+
+Alfabeto de layout: `n` normal (1 hit), `h` hard (2 hits), `.` vacío. 8 columnas.  
+Velocidad de bola: `280 + nivelIndex * 5` px/s (el 33 no se vuelve injugable).  
+Los hits necesarios no pueden caer más de 12 respecto del pico anterior (curva fácil → difícil).
+
+#### Escenarios BDD
+
+- **Dado que** el jugador toca Jugar, **cuando** carga el campo, **entonces** está en el nivel 1 (índice 0), solo ladrillos normales, y el HUD muestra `LV 1`.
+- **Dado que** limpia el muro del nivel N (N < 33), **cuando** continúa, **entonces** carga el nivel N+1 y las vidas se conservan.
+- **Dado que** limpia el muro del nivel 33, **cuando** se resuelve el clear, **entonces** aparece overlay Victory sobre Game y no existe ruta `/win`.
+- **Dado que** se carga el nivel 7 o posterior, **cuando** `loadLevel` termina, **entonces** hay al menos un ladrillo hard.
+- **Dado que** se carga el nivel 33, **cuando** `loadLevel` termina, **entonces** todos los ladrillos son hard.
+- **Dado que** hay B activo en el nivel 33, **cuando** la pala sale por la puerta, **entonces** también hay victoria (mismo camino que clear).
 
 ### Feature 20 — Jefe (V2)
 
@@ -59,6 +87,44 @@
 - **LOSER** (`/lose`): derrota a 0 vidas. Título explícito, score, high score, Reintentar / Menú.
 - **WIN** (`/win`): victoria al derrotar al jefe. Título explícito, score, high score, Jugar de nuevo / Menú.
 - Ya no se resuelven como overlays sobre Game; son rutas propias.
+
+### Feature 22 — V3 sin delta V2
+
+- V3 **no incluye** jefe, nivel 4, ni rutas `/lose` y `/win`.
+- Game Over y Victoria vuelven a ser overlays sobre Game (como V1).
+- Victoria = limpiar el muro del nivel 33.
+- High score: `arkanoid:v3:highScore`.
+- El código de V2 permanece en `iterations/v2/` como histórico.
+
+### Feature 23 — Cápsulas Vaus (V3)
+
+**Estado:** hecho (V3)  
+**Módulo:** `vaus-capsules` (+ `arkanoid-engine`, `lives-system`, `playfield-retro`, `game-loop`)
+
+Al destruir ladrillos pueden caer cápsulas. Atraparlas con la pala aplica:
+
+| Código | Nombre | Efecto |
+|--------|--------|--------|
+| L | Láser | La Vaus dispara y rompe bloques |
+| E | Enlarge | Alarga la nave |
+| C | Catch | Atrapa la bola; toca para relanzar |
+| S | Slow | Ralentiza la bola |
+| B | Break | Abre puerta lateral; salir avanza de nivel |
+| D | Disrupt | Divide la bola en tres |
+| P | Player | Vida extra (máx. 6) |
+
+Las cápsulas L/E/C/S/D se sustituyen entre sí. P y B no quitan el resto. Perder la última bola resetea poderes.
+
+#### Escenarios BDD
+
+- **Dado que** un ladrillo se destruye, **cuando** el azar decide soltar cápsula, **entonces** cae una de L/E/C/S/B/D/P y el HUD/playfield la muestran.
+- **Dado que** la pala atrapa L, **cuando** la bola ya está en juego, **entonces** la Vaus dispara hacia arriba y el disparo puede romper ladrillos.
+- **Dado que** la pala atrapa E, **cuando** se aplica, **entonces** la nave se alarga y sustituye L/C/S/D.
+- **Dado que** hay C activo, **cuando** la bola toca la pala, **entonces** se pega; un toque la relanza.
+- **Dado que** hay S activo, **cuando** la bola se mueve, **entonces** su velocidad es menor que la del nivel.
+- **Dado que** hay B activo, **cuando** la pala sale por la puerta derecha, **entonces** se avanza de nivel (o victoria si era el último).
+- **Dado que** la bola está en juego y se atrapa D, **cuando** se aplica, **entonces** hay tres bolas; solo se pierde vida al caer la última.
+- **Dado que** se atrapa P, **cuando** hay menos de 6 vidas, **entonces** vidas + 1 y el poder actual no se borra.
 
 ### Feature 07 — Puntuación
 
@@ -119,15 +185,36 @@ App nativa Android generada con pipeline WIKA (Expo prebuild + release), instala
 
 ### Feature 16 — Power-ups clásicos
 
-Cápsulas al romper ladrillos: expandir pala, multibola, ralentizar bola (subset Arkanoid clásico).
+**Hecho en V3** (Feature 23): L, E, C, S, B, D, P.
 
 ### Feature 17 — Más niveles / layouts
 
-Pack de 5–10 niveles con patrones geométricos.
+**Hecho en V3.** El contrato oficial está en Feature 06.  
+Implementación: `brick-field` lee 33 layouts (`levelLayouts.ts`). No se inventan tipos de ladrillo extra.
 
 ### Feature 18 — Sonidos / hápticos
 
-Beep al rebote / romper ladrillo / perder vida.
+Beep al rebote / romper ladrillo / perder vida. **No bloquea V3.** El loop ambiental es Feature 24.
+
+### Feature 24 — Audio ambiente en bucle (V3)
+
+**Estado:** hecho (V3)  
+**Módulo:** `ambient-audio`
+
+- Única pista: el MP3 subido (Castillo). Catálogo: `recursos/audio/arkanoid-ambient-castle.mp3`. Runtime: `ambient-castle.mp3` (misma pieza, encode móvil ≤ 64 kbps / ≤ 2 MB).
+- El menú y **Jugar** son el camino crítico. Abrir la app **no** carga `expo-av`. El loop Castillo arranca al pulsar **Jugar**, cuando la partida ya está en pantalla.
+- Reproducción Android: `MediaPlayer` + URI local (stream). No ExoPlayer con `shouldPlay: true` sobre el asset embebido.
+- Si `expo-av` o el MP3 fallan, la app sigue; el usuario puede iniciar la partida.
+- El volumen **ambiente** es un canal propio (menú y pausa), independiente de un futuro canal SFX.
+- Persistencia: `arkanoid:v3:ambientVolume`. El tema queda fijado a `castle`.
+
+#### Escenarios BDD
+
+- **Dado que** se abre la app, **cuando** el layout monta, **entonces** el menú es usable y no se importa `expo-av`.
+- **Dado que** el usuario toca Jugar, **cuando** la partida está en pantalla, **entonces** se pide el loop Castillo.
+- **Dado que** `expo-av` o el MP3 fallan, **cuando** el usuario toca Jugar, **entonces** la partida arranca igual.
+- **Dado que** el audio cargó, **cuando** el usuario navega a partida o pausa, **entonces** la misma pista sigue sonando.
+- **Dado que** el usuario mueve el control de ambiente, **cuando** suelta un valor, **entonces** solo cambia el volumen; no cambia de archivo.
 
 ### Feature 19 — Temas visuales
 
