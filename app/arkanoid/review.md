@@ -2,6 +2,35 @@
 
 ## Versión evaluada
 
+**v3** — `app/arkanoid/iterations/v3/` (clásico + cápsulas Vaus)
+
+## Evaluador
+
+Arquitecto WIKA / Cloud Agent
+
+## Fecha
+
+2026-09-06
+
+---
+
+## Delta V3
+
+| Entregable | Estado |
+|------------|--------|
+| Sin jefe / `/lose` / `/win` (Feature 22) | ✅ |
+| Overlays Game Over / Victoria | ✅ |
+| High score `arkanoid:v3:highScore` | ✅ |
+| Cápsulas L E C S B D P (Feature 23) | ✅ |
+| Gates smoke / tsc / expo export | ✅ (922 módulos) |
+| APK Release | ⚠️ pendiente JDK 17 local |
+
+V2 permanece en `iterations/v2/` como histórico.
+
+---
+
+## Versión evaluada (histórica)
+
 **v2** — `app/arkanoid/iterations/v2/` (sobre v1)
 
 ## Evaluador
