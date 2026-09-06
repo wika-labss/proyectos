@@ -11,9 +11,9 @@ V3 **sin los cambios de V2**. Misma jugabilidad que V1: Breakout clásico, overl
 
 | Gate | Result |
 |------|--------|
-| `npm run smoke` | **PASSED** (classic, no boss) |
+| `npm run smoke` | **PASSED** (classic + cápsulas L/E/C/S/B/D/P; no boss) |
 | `npm run typecheck` | **PASSED** |
-| `npx expo export --platform android` | **PASSED** (921 modules) |
+| `npx expo export --platform android` | **PASSED** (922 modules) |
 | APK Release | Pendiente JDK 17 local |
 
 ## Delta vs V2 (retirado)
@@ -24,6 +24,7 @@ V3 **sin los cambios de V2**. Misma jugabilidad que V1: Breakout clásico, overl
 | `/lose` LOSER | No (overlay Game Over) |
 | `/win` WIN | No (overlay Victoria) |
 | High score v2 | `arkanoid:v3:highScore` |
+| Cápsulas Vaus | **Sí** (Feature 23) |
 
 ## Stack
 Expo SDK 52 · React Native 0.76.9 · package `com.wika.arkanoid` · version `3.0.0`

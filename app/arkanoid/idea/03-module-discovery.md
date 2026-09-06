@@ -4,21 +4,21 @@
 Arkanoid — Breakout / Arkanoid Android (Expo / React Native)
 
 ## Versión de documentación
-V1
+V1 + refinamiento V3 (`vaus-capsules`)
 
 ## Objetivo de esta etapa
 Traducir `02-features.md` en módulos reutilizables con responsabilidades claras, entradas/salidas y dependencias. Priorizar motor puro (testable) separado de UI. Separar **menú futurista** de **partida retro** como capas de presentación.
 
 ---
 
-## Inventario de módulos (V1 + V2)
+## Inventario de módulos (V1 + V2 histórico + V3)
 
 | Módulo | Tipo | Estado V1 | Justificación |
 |--------|------|-----------|---------------|
 | `arkanoid-engine` | core | **Nuevo** | Pala, bola, ladrillos, colisiones, rebotes clásicos |
 | `vaus-capsules` | core | **V3** | Cápsulas L/E/C/S/B/D/P (Feature 23) |
 | `brick-field` | core | **Nuevo** | Layouts de niveles, hits restantes, clear level |
-| `boss` | core | **V2** | Jefe móvil, HP, derrota |
+| `boss` | core | **V2 (histórico)** | Jefe móvil — no forma parte de V3 |
 | `lives-system` | core | **Nuevo** | 3 vidas, pérdida por bola caída, game over |
 | `arkanoid-score` | core | **Nuevo** | Puntos por ladrillo + jefe + high score en memoria |
 | `game-loop` | core | **Nuevo** | Tick/frame, estados de partida, pausa |
@@ -49,7 +49,9 @@ step(state, dtMs): StepResult
 
 **Entradas:** tamaño del campo, `dt`, input de pala, estado (paddle, ball, bricks).
 
-**Salidas:** nuevo estado; eventos `brickHit` | `brickDestroyed` | `ballLost` | `wallBounce` | `paddleBounce`.
+**Salidas:** nuevo estado; eventos `brickHit` | `brickDestroyed` | `ballLost` | `wallBounce` | `paddleBounce` | `cleared` | `capsuleSpawned` | `capsuleCaught` | `extraLife` | `breakExit`.
+
+**V3:** el engine orquesta `vaus-capsules` (cápsulas, láseres, multibola, puerta). No conoce vidas ni score.
 
 **Reglas:**
 - Rebote en techo y laterales.
@@ -59,7 +61,33 @@ step(state, dtMs): StepResult
 
 **Reutilizable:** Sí (cualquier UI / plataforma JS).
 
-**Dependencias:** `brick-field` para hits; no conoce score ni UI.
+**Dependencias:** `brick-field` para hits; `vaus-capsules` para spawn/apply; no conoce score ni UI.
+
+---
+
+### `vaus-capsules` (V3)
+
+**Responsabilidad:** Cápsulas clásicas de la Vaus. Puro, sin React.
+
+**API conceptual:**
+```
+maybeSpawnCapsule(brick, chance, rng): Capsule | null
+applyCapsule(state, kind): WorldState
+collectCapsules(state): { state, caught }
+fireLaser(state): WorldState
+powerLabel(power, doorOpen, slow): string | undefined
+```
+
+**Reglas (Feature 23):**
+- L/E/C/S/D son poderes exclusivos (se sustituyen).
+- P = vida extra (evento `extraLife`; no cambia el poder).
+- B = abre puerta; no quita el resto.
+- D = dos bolas extra; `ballLost` solo si no queda ninguna.
+- Perder la última bola (`resetBall`) limpia poderes, cápsulas y láseres.
+
+**Reutilizable:** Sí (otros breakout con power-ups de letra).
+
+**Dependencias:** tipos del engine; `lives-system` consume `extraLife` desde el loop, no desde este módulo.
 
 ---
 
@@ -90,9 +118,10 @@ isCleared(bricks): boolean
 ```
 initialLives = 3
 onBallLost(lives): { lives, gameOver }
+onExtraLife(lives): lives   // tope MAX_LIVES = 6
 ```
 
-**Entradas:** evento `ballLost` desde engine.
+**Entradas:** evento `ballLost` / `extraLife` desde engine.
 
 **Salidas:** `livesRemaining`, `gameOver`.
 
@@ -140,7 +169,9 @@ pause() / resume()
 launch()
 ```
 
-**Dependencias:** `arkanoid-engine`, `brick-field`, `lives-system`, `arkanoid-score`, `level-progress`, `paddle-controls`.
+**Dependencias:** `arkanoid-engine`, `vaus-capsules`, `brick-field`, `lives-system`, `arkanoid-score`, `level-progress`, `paddle-controls`.
+
+**V3:** el loop avanza cápsulas/láseres/extras aunque la bola primaria no esté lanzada. `breakExit` se trata como clear de nivel.
 
 ---
 
@@ -168,7 +199,7 @@ loadHighScore(): Promise<number>
 saveHighScore(n): Promise<void>
 ```
 
-**Clave sugerida:** `arkanoid:v1:highScore`
+**Claves:** `arkanoid:v1:highScore` · `arkanoid:v2:highScore` · `arkanoid:v3:highScore`
 
 **Dependencias:** AsyncStorage (Expo).
 
@@ -196,6 +227,8 @@ saveHighScore(n): Promise<void>
 
 **Responsabilidad:** Render del campo con look **retro arcade**: ladrillos planos por color, pala/bola simples, HUD clásico.
 
+**V3:** dibuja cápsulas (letra + color), láseres, bolas extra y puerta Break.
+
 **Dependencias:** estado del `arkanoid-engine` / `game-loop`.
 
 ---
@@ -204,7 +237,9 @@ saveHighScore(n): Promise<void>
 
 **Responsabilidad:** Navegación Menú / Game / Level Clear / **LOSER** / **WIN** / Pausa / Cómo jugar.
 
-**V2:** LOSER y WIN son pantallas propias (`/lose`, `/win`), no overlays.
+**V2 (histórico):** LOSER y WIN eran pantallas propias (`/lose`, `/win`).
+
+**V3:** Game Over / Victoria / Level Clear vuelven a overlays (Feature 22). Cómo jugar lista L E C S B D P.
 
 **Dependencias:** módulos ui + `game-loop`.
 
@@ -220,7 +255,7 @@ saveHighScore(n): Promise<void>
 
 | Idea | Motivo |
 |------|--------|
-| Power-ups / multibola | Deseable; fuera de V1 obligatorio |
+| Power-ups / multibola | **Hecho en V3** (`vaus-capsules`, Feature 23) |
 | Online leaderboard | Offline-first |
 | Physics engine 3D | 2D AABB / círculo-rectángulo basta |
 | Audio engine complejo | Deseable |
@@ -246,3 +281,10 @@ saveHighScore(n): Promise<void>
 - [x] Dependencias explícitas
 - [x] Fuera de alcance claro
 - [x] Auditoría de módulos (`audits/auditoria-modulos.md` — APROBADO)
+
+## Criterio de salida — Descubrimiento V3
+
+- [x] `vaus-capsules` con responsabilidad única (Feature 23)
+- [x] Eventos `capsuleSpawned` / `capsuleCaught` / `extraLife` / `breakExit` en el engine
+- [x] `boss` marcado histórico; V3 no lo consume
+- [x] Auditoría de módulos V3 (`audits/auditoria-modulos-v3.md`)

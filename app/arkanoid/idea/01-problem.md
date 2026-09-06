@@ -39,7 +39,7 @@ Entregar V1 instalable (APK Release) de Arkanoid en Android con: pala táctil, f
 - **Permisos:** Ningún permiso sensible en V1 (sin cámara, ubicación ni internet).
 - **Tamaño:** < 25 MB instalado.
 - **Entregable:** APK Release sideloadable **sin Metro**.
-- **Fidelidad:** Reglas de juego = Arkanoid clásico (no variantes modernas tipo power-up-heavy salvo las deseables).
+- **Fidelidad:** Reglas de juego = Arkanoid clásico. V1 = núcleo pala/bola/ladrillos. V3 añade las cápsulas Vaus clásicas (L E C S B D P). Sin jefe ni rutas dedicadas de derrota/victoria (eso fue un delta V2 retirado).
 
 ## Criterios de éxito
 
@@ -51,3 +51,13 @@ Entregar V1 instalable (APK Release) de Arkanoid en Android con: pala táctil, f
 - [ ] Menú principal intuitivo con diseño futurista; partida con diseño retro.
 - [ ] La app funciona 100% offline.
 - [ ] El APK Release compila, se instala por sideload y corre sin PC/Metro.
+
+---
+
+## Refinamiento V3 (cápsulas clásicas)
+
+El problema original no cambia: Arkanoid Android offline, menú futurista, partida retro.
+
+V3 **completa la fidelidad clásica** con las cápsulas que caen al romper ladrillos. No es un juego distinto ni un delta de jefe: es el mismo producto, con el núcleo Vaus documentado en Feature 23.
+
+Fuente de verdad: `idea/02-features.md` → Feature 22 (sin delta V2) + Feature 23 (cápsulas).

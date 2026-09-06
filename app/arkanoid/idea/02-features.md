@@ -71,6 +71,9 @@
 
 ### Feature 23 — Cápsulas Vaus (V3)
 
+**Estado:** hecho (V3)  
+**Módulo:** `vaus-capsules` (+ `arkanoid-engine`, `lives-system`, `playfield-retro`, `game-loop`)
+
 Al destruir ladrillos pueden caer cápsulas. Atraparlas con la pala aplica:
 
 | Código | Nombre | Efecto |
@@ -84,6 +87,17 @@ Al destruir ladrillos pueden caer cápsulas. Atraparlas con la pala aplica:
 | P | Player | Vida extra (máx. 6) |
 
 Las cápsulas L/E/C/S/D se sustituyen entre sí. P y B no quitan el resto. Perder la última bola resetea poderes.
+
+#### Escenarios BDD
+
+- **Dado que** un ladrillo se destruye, **cuando** el azar decide soltar cápsula, **entonces** cae una de L/E/C/S/B/D/P y el HUD/playfield la muestran.
+- **Dado que** la pala atrapa L, **cuando** la bola ya está en juego, **entonces** la Vaus dispara hacia arriba y el disparo puede romper ladrillos.
+- **Dado que** la pala atrapa E, **cuando** se aplica, **entonces** la nave se alarga y sustituye L/C/S/D.
+- **Dado que** hay C activo, **cuando** la bola toca la pala, **entonces** se pega; un toque la relanza.
+- **Dado que** hay S activo, **cuando** la bola se mueve, **entonces** su velocidad es menor que la del nivel.
+- **Dado que** hay B activo, **cuando** la pala sale por la puerta derecha, **entonces** se avanza de nivel (o victoria si era el último).
+- **Dado que** la bola está en juego y se atrapa D, **cuando** se aplica, **entonces** hay tres bolas; solo se pierde vida al caer la última.
+- **Dado que** se atrapa P, **cuando** hay menos de 6 vidas, **entonces** vidas + 1 y el poder actual no se borra.
 
 ### Feature 07 — Puntuación
 
