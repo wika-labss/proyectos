@@ -166,7 +166,23 @@ Pack de 5–10 niveles con patrones geométricos.
 
 ### Feature 18 — Sonidos / hápticos
 
-Beep al rebote / romper ladrillo / perder vida.
+Beep al rebote / romper ladrillo / perder vida. **No bloquea V3.** El loop ambiental es Feature 24.
+
+### Feature 24 — Audio ambiente en bucle (V3)
+
+**Estado:** hecho (V3)  
+**Módulo:** `ambient-audio`
+
+- Al iniciar la app se carga `recursos/audio` (copia runtime en `assets/recursos/audio/`) y suena en loop.
+- El volumen **ambiente** es un canal propio, independiente de un futuro canal SFX (Feature 18).
+- El jugador puede subir/bajar (o silenciar) el ambiente desde el menú y la pausa.
+- El volumen ambiente se persiste en `arkanoid:v3:ambientVolume`.
+
+#### Escenarios BDD
+
+- **Dado que** se abre la app, **cuando** el layout monta, **entonces** el loop ambiental empieza solo.
+- **Dado que** el usuario mueve el control de ambiente, **cuando** suelta un valor, **entonces** solo cambia el canal ambiente (0–1) y se guarda.
+- **Dado que** el volumen ambiente es 0, **cuando** el loop sigue cargado, **entonces** no se oye música y los SFX futuros no quedan forzados a 0.
 
 ### Feature 19 — Temas visuales
 

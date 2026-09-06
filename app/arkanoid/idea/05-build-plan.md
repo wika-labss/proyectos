@@ -117,7 +117,8 @@ Regla WIKA: instalar `expo-*` / `react-native-*` con `npx expo install`; version
 
 | Tipo | Qué |
 |------|-----|
-| Unitarias | Engine: wall/paddle bounce, brick destroy, ball lost |
+| Unitarias | Engine: wall/paddle bounce, brick destroy, ball lost, cápsulas L–P |
+| Unitarias | Audio: clamp de volumen ambiente 0–1; canales independientes |
 | Unitarias | Lives: 3 pérdidas → game over |
 | Unitarias | Score: normal 100, hard 200; high score max |
 | Unitarias | Levels: clear → next; last → victory |
@@ -190,7 +191,8 @@ Preparación V1 (01–05) ✓
 | V3-07 | `playfield-retro` / HUD / HowTo | 23 | `Playfield.tsx`, `Hud.tsx`, `how-to.tsx` | done |
 | V3-08 | smoke | 23 | `scripts/smoke-v1.ts` | done |
 | V3-09 | generación | — | `generation-report.md`, `review.md` | done |
-| V3-10 | APK | 15 | `npm run apk` | pending |
+| V3-10 | `ambient-audio` | 24 | `src/modules/ambient-audio/`, `assets/recursos/audio/` | done |
+| V3-11 | APK | 15 | `npm run apk` | pending |
 
 ### Contexto obligatorio usado (regla WIKA)
 
@@ -224,3 +226,4 @@ No se copian los documentos de `idea/` dentro de `iterations/`.
 | Jefe / `/lose` / `/win` | **Retirados** |
 | High score | Clave `arkanoid:v3:highScore` |
 | Cápsulas Vaus | L E C S B D P |
+| Audio ambiente | Loop desde `recursos/audio`; volumen canal `ambient` |

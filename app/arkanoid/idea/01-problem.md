@@ -58,6 +58,6 @@ Entregar V1 instalable (APK Release) de Arkanoid en Android con: pala táctil, f
 
 El problema original no cambia: Arkanoid Android offline, menú futurista, partida retro.
 
-V3 **completa la fidelidad clásica** con las cápsulas que caen al romper ladrillos. No es un juego distinto ni un delta de jefe: es el mismo producto, con el núcleo Vaus documentado en Feature 23.
+V3 **completa la fidelidad clásica** con las cápsulas que caen al romper ladrillos y un loop ambiental con volumen propio. No es un juego distinto ni un delta de jefe.
 
-Fuente de verdad: `idea/02-features.md` → Feature 22 (sin delta V2) + Feature 23 (cápsulas).
+Fuente de verdad: `idea/02-features.md` → Feature 22 (sin delta V2) + Feature 23 (cápsulas) + Feature 24 (ambiente).

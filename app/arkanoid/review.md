@@ -2,7 +2,9 @@
 
 ## Versión evaluada
 
-**v3** — `app/arkanoid/iterations/v3/` (clásico + cápsulas Vaus)
+**v3** — `app/arkanoid/iterations/v3/` (clásico + cápsulas + ambiente)
+
+Flujo: `audits/flujo-wika-v3.md`
 
 ## Evaluador
 
@@ -22,7 +24,8 @@ Arquitecto WIKA / Cloud Agent
 | Overlays Game Over / Victoria | ✅ |
 | High score `arkanoid:v3:highScore` | ✅ |
 | Cápsulas L E C S B D P (Feature 23) | ✅ |
-| Gates smoke / tsc / expo export | ✅ (922 módulos) |
+| Loop ambiental + volumen ambiente independiente (Feature 24) | ✅ |
+| Gates smoke / tsc / expo export | pendiente de esta revisión |
 | APK Release | ⚠️ pendiente JDK 17 local |
 
 V2 permanece en `iterations/v2/` como histórico.

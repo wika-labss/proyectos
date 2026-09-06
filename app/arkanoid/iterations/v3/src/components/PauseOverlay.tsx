@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { play } from '../constants/theme';
+import { useAmbientAudio } from '../hooks/AmbientAudioProvider';
+import { AmbientVolumeControl } from './AmbientVolumeControl';
 
 type Props = {
   onResume: () => void;
@@ -8,9 +10,17 @@ type Props = {
 };
 
 export function PauseOverlay({ onResume, onMenu }: Props) {
+  const { ambientVolume, setAmbientVolume } = useAmbientAudio();
   return (
     <View style={styles.overlay}>
       <Text style={styles.title}>Pausa</Text>
+      <AmbientVolumeControl
+        tone="retro"
+        volume={ambientVolume}
+        onChange={(value) => {
+          void setAmbientVolume(value);
+        }}
+      />
       <Pressable
         accessibilityRole="button"
         style={({ pressed }) => [styles.cta, pressed && styles.pressed]}

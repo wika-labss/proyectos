@@ -5,16 +5,26 @@
 
 ## Intención
 
-V3 **sin los cambios de V2**. Misma jugabilidad que V1: Breakout clásico, overlays de Game Over / Victoria, sin jefe y sin pantallas `/lose` `/win`. Añade las **cápsulas Vaus** (L/E/C/S/B/D/P) pedidas como reglas nuevas.
+V3 **sin los cambios de V2**. Misma jugabilidad que V1, más:
+
+- Feature 22: sin jefe, sin `/lose` `/win` (overlays).
+- Feature 23: cápsulas Vaus L E C S B D P.
+- Feature 24: loop ambiental desde `recursos/audio` y volumen de canal `ambient` independiente.
+
+Flujo WIKA de este ciclo: `audits/flujo-wika-v3.md`.
 
 ## Gates
 
 | Gate | Result |
 |------|--------|
-| `npm run smoke` | **PASSED** (classic + cápsulas L/E/C/S/B/D/P; no boss) |
-| `npm run typecheck` | **PASSED** |
-| `npx expo export --platform android` | **PASSED** (922 modules) |
+| `npm run smoke` | pendiente de esta revisión |
+| `npm run typecheck` | pendiente de esta revisión |
+| `npx expo export --platform android` | pendiente de esta revisión |
 | APK Release | Pendiente JDK 17 local |
+
+## Features cubiertas
+
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 18 (ambiente; SFX de beep sigue deseable), 22, 23, 24.
 
 ## Delta vs V2 (retirado)
 
@@ -24,7 +34,15 @@ V3 **sin los cambios de V2**. Misma jugabilidad que V1: Breakout clásico, overl
 | `/lose` LOSER | No (overlay Game Over) |
 | `/win` WIN | No (overlay Victoria) |
 | High score v2 | `arkanoid:v3:highScore` |
-| Cápsulas Vaus | **Sí** (Feature 23) |
+
+## Audio
+
+| Canal | Clave | Default |
+|-------|-------|---------|
+| ambient | `arkanoid:v3:ambientVolume` | 0.45 |
+| sfx | `arkanoid:v3:sfxVolume` | 0.80 (reservado) |
+
+Asset: `recursos/audio/arkanoid-ambient-loop.mp3` → `assets/recursos/audio/ambient-loop.mp3`.
 
 ## Stack
-Expo SDK 52 · React Native 0.76.9 · package `com.wika.arkanoid` · version `3.0.0`
+Expo SDK 52 · React Native 0.76.9 · `expo-av` · package `com.wika.arkanoid` · version `3.0.0`

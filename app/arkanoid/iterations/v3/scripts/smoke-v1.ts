@@ -27,6 +27,11 @@ import { hitBrick, isCleared, loadLevel } from '../src/engine/brickField';
 import { createLives, onBallLost, onExtraLife } from '../src/engine/livesSystem';
 import { considerHighScore, onBrickDestroyed } from '../src/engine/arkanoidScore';
 import { onLevelCleared } from '../src/engine/levelProgress';
+import {
+  clampVolume,
+  defaultVolume,
+  parseStoredVolume,
+} from '../src/modules/ambient-audio/volume';
 import type { CapsuleKind, WorldState } from '../src/engine/types';
 
 const neverDrop = () => 1;
@@ -350,6 +355,45 @@ function testCapsuleSpawnOnDestroy() {
   assert.ok(kinds.includes(result.state.capsules[0]!.kind));
 }
 
+function testCapsulePlayerEvent() {
+  const world = createWorld();
+  const withP = {
+    ...applyCapsule(world, 'E'),
+    capsules: [
+      {
+        id: 'p',
+        kind: 'P' as const,
+        x: world.paddle.x,
+        y: world.paddle.y - 4,
+        w: 22,
+        h: 12,
+        vy: 80,
+      },
+    ],
+  };
+  const result = step(withP, 16, neverDrop);
+  assert.ok(result.events.some((e) => e.type === 'extraLife'));
+  assert.equal(result.state.power, 'enlarge');
+}
+
+function testExclusiveReplace() {
+  const enlarged = applyCapsule(createWorld(), 'E');
+  const laser = applyCapsule(enlarged, 'L');
+  assert.equal(laser.power, 'laser');
+  assert.equal(laser.paddle.w, PADDLE_WIDTH);
+  assert.equal(laser.slow, false);
+}
+
+function testAmbientVolumeChannel() {
+  assert.equal(clampVolume(-1), 0);
+  assert.equal(clampVolume(2), 1);
+  assert.equal(clampVolume(Number.NaN), defaultVolume('ambient'));
+  assert.equal(parseStoredVolume(null, 'ambient'), defaultVolume('ambient'));
+  assert.equal(parseStoredVolume('0.2', 'ambient'), 0.2);
+  assert.equal(parseStoredVolume(null, 'sfx'), defaultVolume('sfx'));
+  assert.notEqual(defaultVolume('ambient'), defaultVolume('sfx'));
+}
+
 function testNoBossRoutes() {
   assert.equal(LEVEL_COUNT, 3);
   const last = onLevelCleared(2);
@@ -378,10 +422,13 @@ function main() {
   testCapsuleDisrupt();
   testDisruptKeepsLifeUntilLastBall();
   testCapsulePlayer();
+  testCapsulePlayerEvent();
+  testExclusiveReplace();
   testCapsuleSpawnOnDestroy();
+  testAmbientVolumeChannel();
   testNoBossRoutes();
   console.log(
-    'smoke-v3: PASSED (classic + Vaus capsules L/E/C/S/B/D/P; no boss)',
+    'smoke-v3: PASSED (classic + Vaus capsules + ambient volume channel; no boss)',
   );
 }
 

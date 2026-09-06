@@ -19,6 +19,7 @@ export default function HowToScreen() {
           <Text style={styles.rule}>C Catch — atrapa la bola y lanza cuando quieras. S Slow — la ralenta.</Text>
           <Text style={styles.rule}>B Break — abre la puerta derecha y sal al siguiente nivel.</Text>
           <Text style={styles.rule}>D Disrupt — divide la bola en tres. P Player — vida extra.</Text>
+          <Text style={styles.rule}>La música ambiente suena al abrir la app. El volumen Ambiente (menú o pausa) no afecta a los efectos.</Text>
         </ScrollView>
         <Pressable
           accessibilityRole="button"

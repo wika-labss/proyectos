@@ -29,6 +29,7 @@ Traducir `02-features.md` en módulos reutilizables con responsabilidades claras
 | `playfield-retro` | ui | **Nuevo** | Render partida look retro arcade |
 | `arkanoid-screens` | ui | **Nuevo** | Orquestación de pantallas / navegación |
 | `android-release` | infra | Reutilizar patrón WIKA | Pipeline APK Release Expo SDK 52 |
+| `ambient-audio` | infra | **V3** | Loop ambiental + volumen por canal |
 
 ---
 
@@ -251,6 +252,32 @@ saveHighScore(n): Promise<void>
 
 ---
 
+### `ambient-audio` (V3)
+
+**Responsabilidad:** Cargar y reproducir el loop ambiental desde recursos; exponer volumen por canal.
+
+**API conceptual:**
+```
+start(): Promise<void>          // carga el asset y reproduce en loop
+setVolume('ambient' | 'sfx', n) // n en [0, 1]; canales independientes
+getVolume(channel): number
+stop(): Promise<void>
+```
+
+**Recurso:** catálogo `recursos/audio/arkanoid-ambient-loop.mp3` → runtime `iterations/v3/assets/recursos/audio/ambient-loop.mp3`.
+
+**Reglas:**
+- Arranque automático al montar el layout (no espera a Jugar).
+- Canal `ambient` ≠ canal `sfx` (SFX aún no implementado; el canal existe para no acoplar volúmenes).
+- Persistencia solo del canal ambiente: `arkanoid:v3:ambientVolume`.
+- Fallo de carga no tumba la app (offline / dispositivo sin audio).
+
+**Dependencias:** `expo-av` (`~`), AsyncStorage. Sin React en el manager; el hook/UI envuelven el módulo.
+
+**Reutilizable:** Sí (otros juegos WIKA con un loop de menú/partida).
+
+---
+
 ## Qué NO es módulo en V1
 
 | Idea | Motivo |
@@ -258,7 +285,7 @@ saveHighScore(n): Promise<void>
 | Power-ups / multibola | **Hecho en V3** (`vaus-capsules`, Feature 23) |
 | Online leaderboard | Offline-first |
 | Physics engine 3D | 2D AABB / círculo-rectángulo basta |
-| Audio engine complejo | Deseable |
+| Audio engine complejo (SFX por evento) | Deseable (Feature 18). Loop ambiente = `ambient-audio` V3 |
 
 ---
 

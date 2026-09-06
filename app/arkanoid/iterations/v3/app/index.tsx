@@ -8,12 +8,15 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AmbientVolumeControl } from '../src/components/AmbientVolumeControl';
 import { menu } from '../src/constants/theme';
+import { useAmbientAudio } from '../src/hooks/AmbientAudioProvider';
 import { useGame } from '../src/hooks/GameProvider';
 
 export default function MenuScreen() {
   const router = useRouter();
   const { highScore, highScoreLoaded, refreshHighScore, startGame } = useGame();
+  const { ambientVolume, setAmbientVolume } = useAmbientAudio();
 
   useEffect(() => {
     void refreshHighScore();
@@ -48,6 +51,14 @@ export default function MenuScreen() {
             <ActivityIndicator color={menu.neon} />
           )}
         </View>
+
+        <AmbientVolumeControl
+          tone="future"
+          volume={ambientVolume}
+          onChange={(value) => {
+            void setAmbientVolume(value);
+          }}
+        />
 
         <View style={styles.actions}>
           <Pressable

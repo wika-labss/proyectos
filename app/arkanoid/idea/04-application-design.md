@@ -267,5 +267,13 @@ type WorldState = {
 8. L/E/C/S/D se sustituyen. P y B no quitan el poder actual.
 9. Perder la última bola limpia poderes. Un nivel nuevo nace limpio.
 10. Victoria = limpiar el muro 3 o salir por Break en el último nivel. Sin jefe.
+11. Loop ambiental al abrir la app. Control **Ambiente** en Menú y Pausa; canal independiente del SFX.
+
+### Audio ambiente (Feature 24)
+
+| Canal | Clave | Default | UI |
+|-------|-------|---------|-----|
+| `ambient` | `arkanoid:v3:ambientVolume` | 0.45 | Slider Menú + Pausa |
+| `sfx` | (reservado) | 0.80 | — (Feature 18) |
 
 - [ ] Auditoría de ensamblado V3 (pendiente; release en `audits/auditoria-release-v3.md`)
