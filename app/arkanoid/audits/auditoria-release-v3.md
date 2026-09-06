@@ -12,12 +12,12 @@
 - [x] Game Over / Victoria por overlay
 - [x] High score `arkanoid:v3:highScore`
 - [x] Cápsulas L E C S B D P (Feature 23)
-- [x] Loop ambiental + volumen de canal ambiente independiente (Feature 24)
+- [x] Temas ambiente Nebula / Castillo: buscar archivo, stop, loop (Feature 24)
 
 ## Gates
 - [x] `npm run smoke` PASSED
 - [x] TypeScript PASSED
-- [x] `expo export` PASSED (944 modules; asset `ambient-loop.mp3`)
+- [x] `expo export` PASSED (948 modules; `ambient-loop.mp3` + `ambient-castle.mp3`)
 - [ ] APK Release local
 
 ## Resultado

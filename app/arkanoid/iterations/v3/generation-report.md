@@ -19,7 +19,7 @@ Flujo WIKA de este ciclo: `audits/flujo-wika-v3.md`.
 |------|--------|
 | `npm run smoke` | **PASSED** (classic + cápsulas + canal ambiente) |
 | `npm run typecheck` | **PASSED** |
-| `npx expo export --platform android` | **PASSED** (944 modules; incluye `ambient-loop.mp3`) |
+| `npx expo export --platform android` | **PASSED** (948 modules; Nebula + Castillo empaquetados) |
 | APK Release | Pendiente JDK 17 local |
 
 ## Features cubiertas
