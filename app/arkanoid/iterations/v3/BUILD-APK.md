@@ -45,19 +45,45 @@ APK:
 
 `C:\Alvaro proyectos\proyectos\app\arkanoid\iterations\v3\android\app\build\outputs\apk\release\app-release.apk`
 
-Instalar en el móvil (USB + depuración):
+El paquete es el mismo que V1/V2 (`com.wika.arkanoid`). Desinstala Arkanoid en el móvil **antes** de instalar este APK **3.0.2**.
+
+### Instalar sin `adb` (recomendado si no hay dispositivo)
+
+El APK ya está listo. No hace falta volver a compilar.
+
+1. En el móvil: Ajustes → Aplicaciones → **Arkanoid** → Desinstalar.
+2. Conecta el USB y en el móvil elige **Transferencia de archivos / MTP** (no “Solo carga”).
+3. Copia este archivo a Descargas del móvil:
+
+`C:\Alvaro proyectos\proyectos\app\arkanoid\iterations\v3\android\app\build\outputs\apk\release\app-release.apk`
+
+4. En el móvil abre el APK → Instalar. Si pide “orígenes desconocidos”, actívalo para Archivos.
+
+### Instalar con `adb`
+
+En el móvil: Opciones de desarrollador → **Depuración USB** ON. Desbloquea la pantalla y acepta “¿Permitir depuración USB?”.
+
+```powershell
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$env:Path = "$env:ANDROID_HOME\platform-tools;$env:Path"
+adb kill-server
+adb start-server
+adb devices
+```
+
+Tiene que salir un serial y `device` (no `unauthorized` ni lista vacía). Luego:
 
 ```powershell
 adb uninstall com.wika.arkanoid
 adb install android\app\build\outputs\apk\release\app-release.apk
 ```
 
-El paquete es el mismo que V1/V2 (`com.wika.arkanoid`). Si el icono abre y se cierra (o se queda en negro), **desinstala Arkanoid** y vuelve a instalar este APK **3.0.2**. No mezcles un APK viejo con uno nuevo.
-
 ### Si falla
 
 | Error | Qué hacer |
 |-------|-----------|
+| `no devices/emulators found` | No es un error de Gradle. USB + Depuración USB, o copia el APK a Descargas |
+| `unauthorized` | Acepta el diálogo RSA en el móvil; `adb kill-server` y `adb devices` otra vez |
 | `JAVA_HOME` / version 21 | Instala Temurin JDK 17 y apunta `JAVA_HOME` ahí |
 | `ANDROID_HOME` | Android Studio → SDK Manager → Android 35 + Build-Tools 35 |
 | `sdk.dir` | El `.bat` escribe `android\local.properties` solo |
