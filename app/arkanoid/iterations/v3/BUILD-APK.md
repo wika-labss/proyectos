@@ -9,6 +9,8 @@
 
 El APK Release es autónomo (bundle embebido). **No requiere Metro.**
 
+Catálogo de errores del ciclo (ERR-V3-01 … 27): `app/arkanoid/audits/errores-v3.md`.
+
 ---
 
 ## Windows (`C:\Alvaro proyectos`)
