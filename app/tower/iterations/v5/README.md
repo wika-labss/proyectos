@@ -13,7 +13,14 @@ Keep pintado, torres/enemigos sprite, chrome de piedra. Engine V4 intacto.
 `preview/index.html` — maqueta web (Menú / Partida / Tienda / Victoria).  
 `preview/share-game.png` — captura de partida.
 
-APK Release: `npm run apk` → `android/app/build/outputs/apk/release/app-release.apk` (`com.wika.tower` 5.0.0).
+## APK Release (GitHub)
+
+- [`tower-v5-release.apk`](./tower-v5-release.apk) (~67 MB, Git LFS)
+- Package: `com.wika.tower` · 5.0.0 · sin Metro
+
+```bash
+adb install -r tower-v5-release.apk
+```
 
 ## Scripts
 
