@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 cd /d "%~dp0\.."
 
-echo === WIKA APK Release — Arkanoid v3 ===
+echo === WIKA APK Release - Arkanoid v3 ===
 echo Genera un APK autonomo: el bundle JS va embebido, no necesita Metro.
 echo.
 
@@ -12,37 +12,35 @@ if not defined JAVA_HOME (
   echo   set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17"
   exit /b 1
 )
+set "JAVA_HOME=%JAVA_HOME:"=%"
 if not exist "%JAVA_HOME%\bin\java.exe" (
-  echo ERROR: No existe %JAVA_HOME%\bin\java.exe
+  echo ERROR: No existe "%JAVA_HOME%\bin\java.exe"
+  echo JAVA_HOME actual: %JAVA_HOME%
   exit /b 1
 )
-set "PATH=%JAVA_HOME%\bin;%PATH%"
 
-for /f "tokens=3" %%v in ('"%JAVA_HOME%\bin\java.exe" -version 2^>^&1 ^| findstr /i "version"') do (
-  set "JAVA_RAW=%%v"
-  goto :got_java
-)
-:got_java
-set "JAVA_RAW=!JAVA_RAW:"=!"
-for /f "delims=. tokens=1" %%m in ("!JAVA_RAW!") do set "JAVA_MAJOR=%%m"
-echo Java detectado: !JAVA_RAW!
-
-if not "!JAVA_MAJOR!"=="17" (
+set "JAVA_VER_FILE=%TEMP%\wika-arkanoid-java-ver.txt"
+"%JAVA_HOME%\bin\java.exe" -version >"%JAVA_VER_FILE%" 2>&1
+type "%JAVA_VER_FILE%"
+findstr /c:"version \"17" "%JAVA_VER_FILE%" >nul
+if errorlevel 1 (
   echo.
-  echo ERROR: WIKA requiere JDK 17 para Gradle. Detectado: !JAVA_MAJOR!
+  echo ERROR: WIKA requiere JDK 17 para Gradle.
   echo   set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17"
-  echo   set "PATH=%%JAVA_HOME%%\bin;%%PATH%%"
   exit /b 1
 )
+echo JDK 17 OK
 
 set "SDK_DIR=%ANDROID_HOME%"
 if "%SDK_DIR%"=="" set "SDK_DIR=%ANDROID_SDK_ROOT%"
 if "%SDK_DIR%"=="" (
   echo ERROR: Define ANDROID_HOME con la ruta del SDK de Android.
-  echo   set "ANDROID_HOME=%%LOCALAPPDATA%%\Android\Sdk"
+  echo   set "ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk"
   exit /b 1
 )
 echo SDK: %SDK_DIR%
+
+set "PATH=%JAVA_HOME%\bin;%PATH%"
 
 echo.
 echo [2/5] prebuild android
@@ -56,8 +54,8 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo [4/5] android\local.properties
-set "SDK_FWD=!SDK_DIR:\=/!"
-> android\local.properties echo sdk.dir=!SDK_FWD!
+set "SDK_FWD=%SDK_DIR:\=/%"
+> android\local.properties echo sdk.dir=%SDK_FWD%
 type android\local.properties
 
 echo.

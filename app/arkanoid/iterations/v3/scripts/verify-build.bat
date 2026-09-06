@@ -1,8 +1,8 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal
 cd /d "%~dp0\.."
 
-echo === WIKA Build Verification — Arkanoid v3 ===
+echo === WIKA Build Verification - Arkanoid v3 ===
 echo.
 
 echo [1/7] Toolchain
@@ -10,22 +10,17 @@ if not defined JAVA_HOME (
   echo ERROR: Define JAVA_HOME apuntando a JDK 17.
   exit /b 1
 )
+set "JAVA_HOME=%JAVA_HOME:"=%"
 if not exist "%JAVA_HOME%\bin\java.exe" (
-  echo ERROR: No existe %JAVA_HOME%\bin\java.exe
+  echo ERROR: No existe "%JAVA_HOME%\bin\java.exe"
   exit /b 1
 )
-set "PATH=%JAVA_HOME%\bin;%PATH%"
-
-for /f "tokens=3" %%v in ('"%JAVA_HOME%\bin\java.exe" -version 2^>^&1 ^| findstr /i "version"') do (
-  set "JAVA_RAW=%%v"
-  goto :got_java
-)
-:got_java
-set "JAVA_RAW=!JAVA_RAW:"=!"
-for /f "delims=. tokens=1" %%m in ("!JAVA_RAW!") do set "JAVA_MAJOR=%%m"
-echo Java detectado: !JAVA_RAW!
-if not "!JAVA_MAJOR!"=="17" (
-  echo ERROR: WIKA requiere JDK 17. Detectado: !JAVA_MAJOR!
+set "JAVA_VER_FILE=%TEMP%\wika-arkanoid-java-ver.txt"
+"%JAVA_HOME%\bin\java.exe" -version >"%JAVA_VER_FILE%" 2>&1
+type "%JAVA_VER_FILE%"
+findstr /c:"version \"17" "%JAVA_VER_FILE%" >nul
+if errorlevel 1 (
+  echo ERROR: WIKA requiere JDK 17.
   exit /b 1
 )
 
@@ -35,6 +30,7 @@ if "%SDK_DIR%"=="" (
   echo ERROR: Define ANDROID_HOME.
   exit /b 1
 )
+set "PATH=%JAVA_HOME%\bin;%PATH%"
 
 echo.
 echo [2/7] Smoke
@@ -60,8 +56,8 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo [6/7] Android SDK
-set "SDK_FWD=!SDK_DIR:\=/!"
-> android\local.properties echo sdk.dir=!SDK_FWD!
+set "SDK_FWD=%SDK_DIR:\=/%"
+> android\local.properties echo sdk.dir=%SDK_FWD%
 type android\local.properties
 
 echo.
