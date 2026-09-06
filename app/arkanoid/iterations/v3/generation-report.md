@@ -14,6 +14,8 @@ V3 **sin los cambios de V2**. Misma jugabilidad que V1, más el contrato de `ide
 - UI 8-bit + pack `inspiration/arkanoid-castle`.
 
 Flujo WIKA: `audits/flujo-wika-v3.md`.  
+Auditoría 1: `auditoria-documentacion-v3.md` / `auditoria-modulos-v3.md` / `auditoria-ensamblado-v3.md` (APROBADAS).  
+Auditoría 2: `auditoria-release-v3.md` (código OK; APK pendiente).  
 Fuente de verdad: `idea/` (no se copia aquí).
 
 ## Contexto de generación
