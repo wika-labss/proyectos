@@ -30,7 +30,11 @@ if "%SDK_DIR%"=="" (
   echo ERROR: Define ANDROID_HOME.
   exit /b 1
 )
-set "PATH=%JAVA_HOME%\bin;%PATH%"
+set "PATH=%CD%\node_modules\.bin;%JAVA_HOME%\bin;%PATH%"
+if not exist "node_modules\expo-font\package.json" (
+  call npm install
+  if errorlevel 1 exit /b 1
+)
 
 echo.
 echo [2/7] Smoke

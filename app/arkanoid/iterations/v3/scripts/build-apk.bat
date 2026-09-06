@@ -40,11 +40,26 @@ if "%SDK_DIR%"=="" (
 )
 echo SDK: %SDK_DIR%
 
-set "PATH=%JAVA_HOME%\bin;%PATH%"
+set "PATH=%CD%\node_modules\.bin;%JAVA_HOME%\bin;%PATH%"
+
+if not exist "node_modules\expo-font\package.json" (
+  echo.
+  echo [1b] npm install en iterations\v3
+  call npm install
+  if errorlevel 1 exit /b 1
+)
+if not exist "node_modules\expo-font\package.json" (
+  echo ERROR: falta expo-font. Corre npm install dentro de iterations\v3
+  exit /b 1
+)
 
 echo.
 echo [2/5] prebuild android
-call npx expo prebuild --platform android
+if exist "node_modules\.bin\expo.cmd" (
+  call node_modules\.bin\expo.cmd prebuild --platform android
+) else (
+  call npx --no -- expo prebuild --platform android
+)
 if errorlevel 1 exit /b 1
 
 echo.
