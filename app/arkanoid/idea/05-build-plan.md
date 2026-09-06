@@ -142,19 +142,67 @@ Regla WIKA: instalar `expo-*` / `react-native-*` con `npx expo install`; version
 
 ## Orden WIKA (estado)
 
+El ciclo oficial (`wika-fundaments/workflows/application-lifecycle.md`):
+
 ```
-Idea → Preparación (01–05) ✓
-     → Auditoría Documentación ✓
-     → Auditoría Módulos ✓
-     → Auditoría Ensamblado ✓
-     → Construcción iterations/v1 ✓
-     → Construcción iterations/v2 (histórico: jefe + LOSER/WIN)
-     → Construcción iterations/v3 ← ACTUAL (clásico, sin delta V2)
-     → Auditoría Release
+Idea → Preparación (idea/01–05)
+     → Auditoría 1 (docs / módulos / ensamblado)
+     → Generación IA (iterations/vN)
+     → Auditoría 2 (release)
+     → Refinamiento
+     → Aprobación (final/)  — aún no
+     → Demo / Publicación  — aún no
 ```
 
-**Estado actual:** V3 clásico — misma jugabilidad que V1; se retiraron jefe y pantallas `/lose` `/win`.  
-**Siguiente:** gates v3 + APK local.
+Aplicado a Arkanoid:
+
+```
+Preparación V1 (01–05) ✓
+     → Auditoría Documentación V1 ✓
+     → Auditoría Módulos V1 ✓
+     → Auditoría Ensamblado V1 ✓
+     → Generación iterations/v1 ✓
+     → Auditoría Release V1 (código OK; APK pendiente)
+     → Refinamiento V2 (jefe + /lose /win) — histórico en iterations/v2
+     → Refinamiento V3 ← ACTUAL
+           Preparación: idea/ actualizada (Features 22 + 23)
+           Auditoría 1 V3: docs / módulos / ensamblado
+           Generación: iterations/v3 (V1 − delta V2 + cápsulas)
+           Auditoría 2: audits/auditoria-release-v3.md
+     → Aprobación / final/  — bloqueado hasta APK + visto del arquitecto
+```
+
+**Estado actual:** V3 generado con cápsulas L E C S B D P. Gates smoke/tsc/export OK.  
+**Siguiente:** APK local → aprobación del arquitecto.
+
+---
+
+## Plan de construcción V3 (cápsulas)
+
+| Paso | Módulo | Feature | Archivos | Estado |
+|------|--------|---------|----------|--------|
+| V3-01 | docs | 22, 23 | `idea/01`–`05` | done |
+| V3-02 | auditoría 1 | 23 | `audits/auditoria-release-v3.md` | en curso |
+| V3-03 | `vaus-capsules` | 23 | `src/engine/capsules.ts` | done |
+| V3-04 | `arkanoid-engine` | 23 | `arkanoidEngine.ts`, `types.ts` | done |
+| V3-05 | `lives-system` | 23 P | `livesSystem.ts` (`onExtraLife`) | done |
+| V3-06 | `game-loop` | 23 | `useArkanoidGame.ts` | done |
+| V3-07 | `playfield-retro` / HUD / HowTo | 23 | `Playfield.tsx`, `Hud.tsx`, `how-to.tsx` | done |
+| V3-08 | smoke | 23 | `scripts/smoke-v1.ts` | done |
+| V3-09 | generación | — | `generation-report.md`, `review.md` | done |
+| V3-10 | APK | 15 | `npm run apk` | pending |
+
+### Contexto obligatorio usado (regla WIKA)
+
+```
+idea/ (oficial, priorizada)
++ audits/ V1 y V3
++ iterations/v1/review.md  (vía review.md de proyecto)
++ iterations/v2/ (histórico: qué NO copiar)
++ iterations/v3/ (base clásica, luego cápsulas)
+```
+
+No se copian los documentos de `idea/` dentro de `iterations/`.
 
 ---
 

@@ -199,3 +199,73 @@ const BALL_SPEED_BASE = 280; // px/s aprox. en coords lógicas
 - [x] Modelo de datos
 - [x] Tokens menú futurista + partida retro
 - [x] Auditoría de ensamblado (`audits/auditoria-ensamblado.md` — APROBADO)
+
+---
+
+## 9. Contrato V3 (vigente)
+
+V3 **sustituye** el flujo V2 (jefe, `/lose`, `/win`) y **añade** cápsulas. El menú futurista y la partida retro no cambian.
+
+### Flujo de pantallas V3
+
+```
+Menu (futurista)
+├── [Jugar] ──► Game (retro)
+├── [Cómo jugar] ──► HowTo (reglas + L E C S B D P)
+└── Game
+    ├── HUD: vidas (hasta 6) + score + nivel + poder activo
+    ├── Playfield: ladrillos + pala + bola(s) + cápsulas + láseres + puerta
+    ├── [Pausa] overlay
+    ├── ballLost → reset poderes → playing | Game Over overlay
+    ├── level cleared | breakExit → Level Clear overlay → next | Victory overlay
+    └── Game Over / Victory: score + high score · Reintentar / Menú
+```
+
+### Modelo de datos V3 (añadido)
+
+```ts
+type CapsuleKind = "L" | "E" | "C" | "S" | "B" | "D" | "P";
+type ExclusivePower = "laser" | "enlarge" | "catch" | "slow" | "disrupt";
+
+type WorldState = {
+  // ...campos V1
+  extraBalls: Ball[];
+  capsules: Capsule[];
+  lasers: Laser[];
+  power: ExclusivePower | null;
+  slow: boolean;
+  doorOpen: boolean;
+  doorExit: boolean;
+  laserCooldownMs: number;
+};
+```
+
+### Relación de módulos V3
+
+| Emisor | Evento | Consumidor |
+|--------|--------|------------|
+| `arkanoid-engine` | `capsuleSpawned` / `capsuleCaught` | `playfield-retro`, HUD |
+| `vaus-capsules` | `extraLife` | `lives-system` (tope 6) |
+| `vaus-capsules` | `breakExit` | `level-progress` (mismo camino que clear) |
+| `playfield-retro` | render L/E/C/S/B/D/P | tokens `capsuleColor` |
+
+### Tokens de cápsula (partida retro)
+
+| Código | Color | Uso |
+|--------|-------|-----|
+| L | rojo | Láser |
+| E | verde | Enlarge |
+| C | cian | Catch |
+| S | naranja | Slow |
+| B | magenta | Break |
+| D | azul | Disrupt |
+| P | gris | Player |
+
+### Reglas de diseño V3
+
+7. Cápsulas caen al destruir ladrillos; recogerlas es el único input extra (más toque para láser/relanzar Catch).
+8. L/E/C/S/D se sustituyen. P y B no quitan el poder actual.
+9. Perder la última bola limpia poderes. Un nivel nuevo nace limpio.
+10. Victoria = limpiar el muro 3 o salir por Break en el último nivel. Sin jefe.
+
+- [ ] Auditoría de ensamblado V3 (pendiente; release en `audits/auditoria-release-v3.md`)
