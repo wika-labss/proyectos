@@ -4,7 +4,10 @@
 
 **v3** — `app/arkanoid/iterations/v3/` (clásico + 33 niveles + cápsulas + ambiente)
 
-Flujo: `audits/flujo-wika-v3.md` · Auditoría 1: `audits/auditoria-1-v3.md`
+Flujo: `audits/flujo-wika-v3.md`
+
+Auditoría 1 V3: documentación / módulos / ensamblado **APROBADAS**.  
+Auditoría 2: `audits/auditoria-release-v3.md` — código OK; APK pendiente.
 
 ## Evaluador
 
@@ -26,6 +29,10 @@ Arquitecto WIKA / Cloud Agent
 | High score `arkanoid:v3:highScore` | ✅ |
 | Cápsulas L E C S B D P (Feature 23) | ✅ |
 | Loop ambiental único (Castillo) en toda la app + volumen independiente (Feature 24) | ✅ |
+| Auditoría documentación V3 | ✅ `audits/auditoria-documentacion-v3.md` |
+| Auditoría módulos V3 | ✅ `audits/auditoria-modulos-v3.md` |
+| Auditoría ensamblado V3 | ✅ `audits/auditoria-ensamblado-v3.md` |
+| Auditoría release V3 | ⚠️ código OK; APK pendiente |
 | Gates smoke / tsc / expo export | ✅ (962 módulos; font + Castillo PNG + MP3) |
 | APK Release | ⚠️ pendiente JDK 17 local |
 

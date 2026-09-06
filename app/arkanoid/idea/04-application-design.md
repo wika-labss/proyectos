@@ -191,8 +191,8 @@ V3 **sustituye** el flujo V2 (jefe, `/lose`, `/win`), **añade** cápsulas y fij
 ### Flujo de pantallas V3
 
 ```
-Menu (futurista)
-├── [Jugar] ──► Game (retro)
+Menu (8-bit)
+├── [Jugar] ──► Game (8-bit)
 ├── [Cómo jugar] ──► HowTo (reglas + L E C S B D P)
 └── Game
     ├── HUD: vidas (hasta 6) + score + nivel + poder activo
@@ -278,5 +278,7 @@ type WorldState = {
 | Volumen `ambient` | `arkanoid:v3:ambientVolume` | 0.45 | Slider Menú + Pausa |
 | Volumen `sfx` | (reservado) | 0.80 | — (Feature 18) |
 
-- [x] Auditoría 1 V3 (docs / módulos / ensamblado): `audits/auditoria-1-v3.md`
-- [ ] Auditoría 2 V3: `audits/auditoria-release-v3.md` (código OK; APK pendiente)
+- [x] Auditoría documentación V3: `audits/auditoria-documentacion-v3.md`
+- [x] Auditoría módulos V3: `audits/auditoria-modulos-v3.md`
+- [x] Auditoría ensamblado V3: `audits/auditoria-ensamblado-v3.md`
+- [ ] Auditoría release V3: `audits/auditoria-release-v3.md` (código OK; APK pendiente)

@@ -167,9 +167,9 @@ Preparación V1 (01–05) ✓
      → Refinamiento V2 (jefe + /lose /win) — histórico en iterations/v2
      → Refinamiento V3 ← ACTUAL
            Preparación: idea/ 01–05 (Features 06/17, 22, 23, 24)
-           Auditoría 1: audits/auditoria-1-v3.md
+           Auditoría 1: documentacion / módulos / ensamblado V3 (APROBADAS)
            Generación: iterations/v3
-           Auditoría 2: audits/auditoria-release-v3.md
+           Auditoría 2: audits/auditoria-release-v3.md (APK pendiente)
      → Aprobación / final/  — bloqueado hasta APK + visto del arquitecto
 ```
 
@@ -183,7 +183,7 @@ Preparación V1 (01–05) ✓
 | Paso | Módulo | Feature | Archivos | Estado |
 |------|--------|---------|----------|--------|
 | V3-01 | docs | 06, 17, 22–24 | `idea/01`–`05` | done |
-| V3-02 | auditoría 1 | 06, 17, 22–24 | `audits/auditoria-1-v3.md` | done |
+| V3-02 | auditoría 1 | 06, 17, 22–24 | `audits/auditoria-*-v3.md` (docs / módulos / ensamblado) | done |
 | V3-03 | `vaus-capsules` | 23 | `src/engine/capsules.ts` | done |
 | V3-04 | `arkanoid-engine` | 23 | `arkanoidEngine.ts`, `types.ts` | done |
 | V3-05 | `lives-system` | 23 P | `livesSystem.ts` (`onExtraLife`) | done |
