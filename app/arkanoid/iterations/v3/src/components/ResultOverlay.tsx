@@ -1,9 +1,11 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { menu, play } from '../constants/theme';
+import { StyleSheet, View } from 'react-native';
+import { bit } from '../constants/theme';
+import { PixelButton } from './pixel/PixelButton';
+import { PixelText } from './pixel/PixelText';
 
 type Props = {
-  tone: 'retro' | 'future';
+  tone?: 'retro' | 'future';
   title: string;
   subtitle?: string;
   score?: number;
@@ -15,7 +17,6 @@ type Props = {
 };
 
 export function ResultOverlay({
-  tone,
   title,
   subtitle,
   score,
@@ -25,49 +26,44 @@ export function ResultOverlay({
   secondaryLabel,
   onSecondary,
 }: Props) {
-  const future = tone === 'future';
   return (
-    <View style={[styles.overlay, future && styles.overlayFuture]}>
-      <Text style={[styles.title, future && styles.titleFuture]}>{title}</Text>
-      {subtitle ? (
-        <Text style={[styles.sub, future && styles.subFuture]}>{subtitle}</Text>
-      ) : null}
-      {score != null ? (
-        <>
-          <Text style={[styles.label, future && styles.labelFuture]}>Puntaje</Text>
-          <Text style={[styles.score, future && styles.scoreFuture]}>{score}</Text>
-        </>
-      ) : null}
-      {highScore != null ? (
-        <>
-          <Text style={[styles.label, future && styles.labelFuture]}>Máximo</Text>
-          <Text style={[styles.high, future && styles.highFuture]}>{highScore}</Text>
-        </>
-      ) : null}
-      <Pressable
-        accessibilityRole="button"
-        style={({ pressed }) => [
-          styles.cta,
-          future && styles.ctaFuture,
-          pressed && styles.pressed,
-        ]}
-        onPress={onPrimary}
-      >
-        <Text style={[styles.ctaText, future && styles.ctaTextFuture]}>
-          {primaryLabel}
-        </Text>
-      </Pressable>
-      {secondaryLabel && onSecondary ? (
-        <Pressable
-          accessibilityRole="button"
-          style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}
-          onPress={onSecondary}
-        >
-          <Text style={[styles.secondaryText, future && styles.subFuture]}>
-            {secondaryLabel}
-          </Text>
-        </Pressable>
-      ) : null}
+    <View style={styles.overlay}>
+      <View style={styles.panel}>
+        <PixelText size="md" color={bit.gold} style={styles.center}>
+          {title}
+        </PixelText>
+        {subtitle ? (
+          <PixelText size="xs" color={bit.muted} style={styles.center}>
+            {subtitle}
+          </PixelText>
+        ) : null}
+        {score != null ? (
+          <>
+            <PixelText size="xs" color={bit.muted}>
+              PUNTAJE
+            </PixelText>
+            <PixelText size="lg" color={bit.gold}>
+              {score}
+            </PixelText>
+          </>
+        ) : null}
+        {highScore != null ? (
+          <>
+            <PixelText size="xs" color={bit.muted}>
+              HI-SCORE
+            </PixelText>
+            <PixelText size="md" color={bit.cyan}>
+              {highScore}
+            </PixelText>
+          </>
+        ) : null}
+        <View style={styles.actions}>
+          <PixelButton label={primaryLabel} onPress={onPrimary} />
+          {secondaryLabel && onSecondary ? (
+            <PixelButton label={secondaryLabel} variant="ghost" onPress={onSecondary} />
+          ) : null}
+        </View>
+      </View>
     </View>
   );
 }
@@ -75,91 +71,27 @@ export function ResultOverlay({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: play.overlay,
+    backgroundColor: bit.overlay,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
     zIndex: 20,
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
   },
-  overlayFuture: {
-    backgroundColor: '#050B18EE',
-  },
-  title: {
-    color: play.hud,
-    fontSize: 34,
-    fontWeight: '800',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  titleFuture: {
-    color: menu.neon,
-  },
-  sub: {
-    color: play.muted,
-    fontSize: 16,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  subFuture: {
-    color: menu.muted,
-  },
-  label: {
-    color: play.muted,
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 1.4,
-  },
-  labelFuture: {
-    color: menu.muted,
-  },
-  score: {
-    color: play.hud,
-    fontSize: 44,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  scoreFuture: {
-    color: menu.text,
-  },
-  high: {
-    color: play.paddle,
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 20,
-  },
-  highFuture: {
-    color: menu.magenta,
-  },
-  cta: {
-    backgroundColor: play.paddle,
-    paddingHorizontal: 36,
-    paddingVertical: 16,
-    borderRadius: 12,
-    minWidth: 220,
+  panel: {
+    width: '100%',
+    borderWidth: 4,
+    borderColor: bit.gold,
+    backgroundColor: bit.panel,
+    padding: 16,
     alignItems: 'center',
+    gap: 10,
+  },
+  center: {
+    textAlign: 'center',
+  },
+  actions: {
+    width: '100%',
+    gap: 10,
     marginTop: 8,
-  },
-  ctaFuture: {
-    backgroundColor: menu.neon,
-  },
-  ctaText: {
-    color: play.crt,
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  ctaTextFuture: {
-    color: menu.void,
-  },
-  secondary: {
-    paddingVertical: 12,
-  },
-  secondaryText: {
-    color: play.muted,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  pressed: {
-    opacity: 0.85,
   },
 });

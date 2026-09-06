@@ -115,46 +115,28 @@ const BALL_SPEED_BASE = 280; // px/s aprox. en coords lógicas
 
 ## 5. Navegación / UI
 
-### Menú (futurista)
-- Marca **Arkanoid** como señal hero (no solo nav).
-- Una frase corta: “Rompe el muro. Sobrevive al rebote.”
-- High score visible.
-- CTA primario único: **Jugar**.
-- Secundario: **Cómo jugar** (reglas en 3–4 líneas).
-- Atmósfera: fondo profundo con gradiente/scanlines sutiles; acentos cyan/magenta controlados; tipografía display; **sin** cards ni badges flotantes.
-
-### Game (retro)
-- Campo con ladrillos por color (filas tipo arcade).
-- Pala y bola simples, alto contraste.
-- HUD superior: vidas · score · nivel.
-- Controles: drag sobre pala / zona inferior; tap para launch si no lanzada.
-- Pausa discreta (icono), sin overlays decorativos.
+### Menú y partida (8-bit unificado)
+- Tipografía **Press Start 2P**. Paleta NES (`bit.*`). Sin radios redondos.
+- Fondo: pack `inspiration/arkanoid-castle` + scanlines CRT.
+- Marca **ARKANOID**, CTA **JUGAR**, secundario **COMO JUGAR**.
+- Campo: ladrillos/pala/bola/cápsulas cuadrados, alto contraste.
 
 ### Level Clear / Game Over / Victory
 - Mensaje claro + score + high score.
 - CTAs: Continuar / Reintentar / Menú.
 
-### Dirección visual V1 — dos atmósferas
+### Dirección visual V3 — 8-bit unificado
 
-**Menú (futurista)**
-
-| Token | Hex | Uso |
-|-------|-----|-----|
-| Void | `#050B18` | Fondo |
-| Nebula | `#0E1A33` → `#1A0B2E` | Gradiente |
-| Neon | `#2EE6D6` | CTA / acentos |
-| Magenta | `#E84AFF` | Detalles secundarios |
-| Text | `#E8F4FF` | Títulos |
-
-**Partida (retro)**
+Menú y partida comparten la misma atmósfera (ya no hay dual futurista/retro).
 
 | Token | Hex | Uso |
 |-------|-----|-----|
-| CRT | `#1A1020` | Fondo campo |
-| Brick1–N | `#E74C3C` `#E67E22` `#F1C40F` `#2ECC71` `#3498DB` `#9B59B6` | Filas |
-| Paddle | `#ECF0F1` | Pala |
-| Ball | `#FFFFFF` | Bola |
-| HUD | `#F5EE9E` | Texto score |
+| Night | `#0C0820` | Fondo |
+| Panel | `#140C28` | Cajas pixel |
+| Gold | `#F8D878` | CTA / HUD |
+| Ink | `#F8F8F8` | Texto |
+| Brick NES | `#F83800` `#FC9838` `#F8D878` `#00B800` `#3CBCFC` `#B8B8F8` | Filas |
+| Font | Press Start 2P | Toda la UI |
 
 ---
 
@@ -165,7 +147,7 @@ const BALL_SPEED_BASE = 280; // px/s aprox. en coords lógicas
 3. Score solo por ladrillos destruidos (100 / 200).
 4. High score = máximo histórico local.
 5. ≥ 3 niveles; limpiar muro = avanzar; último nivel = Victory.
-6. Menú futurista ≠ look de partida retro (dos skins conscientes).
+6. V3: menú y partida comparten look 8-bit (Press Start 2P + pack Castillo).
 
 ---
 

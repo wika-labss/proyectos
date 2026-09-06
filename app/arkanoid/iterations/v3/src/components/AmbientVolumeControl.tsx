@@ -1,65 +1,64 @@
 import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { menu, play } from '../constants/theme';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { clampVolume } from '../modules/ambient-audio';
-
-type Tone = 'future' | 'retro';
+import { bit } from '../constants/theme';
+import { PixelText } from './pixel/PixelText';
 
 type Props = {
   volume: number;
   onChange: (value: number) => void;
-  tone?: Tone;
+  tone?: 'future' | 'retro';
 };
 
-const TRACK_WIDTH = 168;
+const TRACK_WIDTH = 140;
 const STEP = 0.1;
 
-export function AmbientVolumeControl({ volume, onChange, tone = 'future' }: Props) {
-  const colors = tone === 'future'
-    ? { label: menu.muted, fill: menu.neon, track: menu.magenta, text: menu.text }
-    : { label: play.muted, fill: play.hud, track: play.wall, text: play.hud };
-
+export function AmbientVolumeControl({ volume, onChange }: Props) {
   const fillWidth = useMemo(() => Math.round(clampVolume(volume) * TRACK_WIDTH), [volume]);
   const percent = Math.round(clampVolume(volume) * 100);
 
-  const bump = (delta: number) => {
-    onChange(clampVolume(volume + delta));
-  };
-
-  const setFromTouch = (locationX: number) => {
-    onChange(clampVolume(locationX / TRACK_WIDTH));
-  };
-
   return (
     <View style={styles.wrap} accessibilityRole="adjustable" accessibilityLabel="Volumen ambiente">
-      <Text style={[styles.label, { color: colors.label }]}>Ambiente</Text>
+      <PixelText size="xs" color={bit.muted}>
+        AMBIENTE
+      </PixelText>
       <View style={styles.row}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Bajar ambiente"
-          onPress={() => bump(-STEP)}
+          onPress={() => onChange(clampVolume(volume - STEP))}
           style={({ pressed }) => [styles.step, pressed && styles.pressed]}
         >
-          <Text style={[styles.stepText, { color: colors.text }]}>−</Text>
+          <PixelText size="sm" color={bit.gold}>
+            -
+          </PixelText>
         </Pressable>
         <View
-          style={[styles.track, { borderColor: colors.track, width: TRACK_WIDTH }]}
+          style={styles.track}
           onStartShouldSetResponder={() => true}
           onMoveShouldSetResponder={() => true}
-          onResponderGrant={(event) => setFromTouch(event.nativeEvent.locationX)}
-          onResponderMove={(event) => setFromTouch(event.nativeEvent.locationX)}
+          onResponderGrant={(event) =>
+            onChange(clampVolume(event.nativeEvent.locationX / TRACK_WIDTH))
+          }
+          onResponderMove={(event) =>
+            onChange(clampVolume(event.nativeEvent.locationX / TRACK_WIDTH))
+          }
         >
-          <View style={[styles.fill, { width: fillWidth, backgroundColor: colors.fill }]} />
+          <View style={[styles.fill, { width: fillWidth }]} />
         </View>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Subir ambiente"
-          onPress={() => bump(STEP)}
+          onPress={() => onChange(clampVolume(volume + STEP))}
           style={({ pressed }) => [styles.step, pressed && styles.pressed]}
         >
-          <Text style={[styles.stepText, { color: colors.text }]}>+</Text>
+          <PixelText size="sm" color={bit.gold}>
+            +
+          </PixelText>
         </Pressable>
-        <Text style={[styles.percent, { color: colors.text }]}>{percent}%</Text>
+        <PixelText size="xs" color={bit.ink} style={styles.percent}>
+          {percent}
+        </PixelText>
       </View>
     </View>
   );
@@ -70,41 +69,34 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: 'center',
   },
-  label: {
-    fontSize: 12,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    fontWeight: '700',
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   step: {
-    minWidth: 36,
-    minHeight: 36,
+    minWidth: 28,
+    minHeight: 28,
+    borderWidth: 3,
+    borderColor: bit.gold,
+    backgroundColor: bit.panel,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepText: {
-    fontSize: 22,
-    fontWeight: '800',
-  },
   track: {
-    height: 10,
-    borderWidth: 1,
-    borderRadius: 6,
-    overflow: 'hidden',
+    width: TRACK_WIDTH,
+    height: 12,
+    borderWidth: 3,
+    borderColor: bit.wall,
+    backgroundColor: bit.night,
     justifyContent: 'center',
   },
   fill: {
     height: '100%',
+    backgroundColor: bit.gold,
   },
   percent: {
-    minWidth: 40,
-    fontSize: 13,
-    fontWeight: '700',
+    minWidth: 28,
   },
   pressed: {
     opacity: 0.7,

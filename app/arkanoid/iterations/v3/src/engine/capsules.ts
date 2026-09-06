@@ -195,11 +195,11 @@ export function powerLabel(
   doorOpen: boolean,
   slow = false,
 ): string | undefined {
-  if (doorOpen) return 'B Break — sal por la derecha';
-  if (power === 'laser') return 'L Láser — toca para disparar';
-  if (power === 'enlarge') return slow ? 'E Enlarge · S Slow' : 'E Enlarge';
-  if (power === 'catch') return 'C Catch — toca para soltar';
-  if (power === 'disrupt') return 'D Disrupt';
-  if (power === 'slow' || slow) return 'S Slow';
+  if (doorOpen) return 'B BREAK - SAL POR LA DERECHA';
+  if (power === 'laser') return 'L LASER - TOCA PARA DISPARAR';
+  if (power === 'enlarge') return slow ? 'E ENLARGE + S SLOW' : 'E ENLARGE';
+  if (power === 'catch') return 'C CATCH - TOCA PARA SOLTAR';
+  if (power === 'disrupt') return 'D DISRUPT';
+  if (power === 'slow' || slow) return 'S SLOW';
   return undefined;
 }

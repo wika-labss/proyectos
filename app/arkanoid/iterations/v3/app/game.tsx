@@ -1,15 +1,16 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
-import { ImageBackground, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Hud } from '../src/components/Hud';
 import { PaddleControls } from '../src/components/PaddleControls';
 import { PauseOverlay } from '../src/components/PauseOverlay';
+import { EightBitBackdrop } from '../src/components/pixel/EightBitBackdrop';
+import { PixelText } from '../src/components/pixel/PixelText';
 import { Playfield } from '../src/components/Playfield';
 import { ResultOverlay } from '../src/components/ResultOverlay';
 import { WORLD_HEIGHT, WORLD_WIDTH } from '../src/constants/game';
-import { CASTLE_PLAYFIELD_BG } from '../src/constants/inspiration';
-import { play } from '../src/constants/theme';
+import { bit } from '../src/constants/theme';
 import { powerLabel } from '../src/engine/capsules';
 import { useGame } from '../src/hooks/GameProvider';
 
@@ -49,113 +50,104 @@ export default function GameScreen() {
     router.replace('/');
   };
 
-  const onRetry = () => {
-    startGame();
-  };
-
   const statusLabel =
     status === 'ballLost'
-      ? 'Vida perdida'
+      ? 'VIDA PERDIDA'
       : world && !world.ball.launched && status === 'playing'
-        ? 'Toca para lanzar'
+        ? 'TOCA PARA LANZAR'
         : undefined;
 
   return (
-    <ImageBackground source={CASTLE_PLAYFIELD_BG} resizeMode="cover" style={styles.screen}>
+    <EightBitBackdrop>
       <SafeAreaView style={styles.safe}>
-      <Hud
-        lives={lives}
-        score={score}
-        level={levelIndex + 1}
-        statusLabel={statusLabel}
-        powerLabel={
-          world && status === 'playing'
-            ? powerLabel(world.power, world.doorOpen, world.slow)
-            : undefined
-        }
-      />
+        <Hud
+          lives={lives}
+          score={score}
+          level={levelIndex + 1}
+          statusLabel={statusLabel}
+          powerLabel={
+            world && status === 'playing'
+              ? powerLabel(world.power, world.doorOpen, world.slow)
+              : undefined
+          }
+        />
 
-      <View style={styles.boardWrap}>
-        {world ? (
-          <PaddleControls
-            enabled={status === 'playing'}
-            worldWidth={world.width}
-            scale={scale}
-            width={world.width * scale}
-            height={world.height * scale}
-            onMove={movePaddle}
-            onLaunch={launch}
-          >
-            <Playfield world={world} scale={scale} />
-          </PaddleControls>
+        <View style={styles.boardWrap}>
+          {world ? (
+            <PaddleControls
+              enabled={status === 'playing'}
+              worldWidth={world.width}
+              scale={scale}
+              width={world.width * scale}
+              height={world.height * scale}
+              onMove={movePaddle}
+              onLaunch={launch}
+            >
+              <Playfield world={world} scale={scale} />
+            </PaddleControls>
+          ) : null}
+        </View>
+
+        <View style={styles.controls}>
+          {status === 'paused' ? (
+            <PixelText size="xs" color={bit.muted}>
+              PAUSA
+            </PixelText>
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              onPress={pause}
+              disabled={status !== 'playing'}
+              style={[styles.pauseBtn, status !== 'playing' && styles.dim]}
+            >
+              <PixelText size="xs" color={bit.gold}>
+                PAUSA
+              </PixelText>
+            </Pressable>
+          )}
+        </View>
+
+        {status === 'paused' ? <PauseOverlay onResume={resume} onMenu={onMenu} /> : null}
+
+        {status === 'levelClear' ? (
+          <ResultOverlay
+            title={`NIVEL ${levelIndex + 1} CLEAR`}
+            score={score}
+            primaryLabel="CONTINUAR"
+            onPrimary={continueLevel}
+          />
         ) : null}
-      </View>
 
-      <View style={styles.controls}>
-        {status === 'paused' ? (
-          <Text style={styles.hint}>Juego en pausa</Text>
-        ) : (
-          <Pressable
-            accessibilityRole="button"
-            onPress={pause}
-            disabled={status !== 'playing'}
-            style={[styles.pauseBtn, status !== 'playing' && styles.dim]}
-          >
-            <Text style={styles.pauseText}>Pausa</Text>
-          </Pressable>
-        )}
-      </View>
+        {status === 'gameOver' ? (
+          <ResultOverlay
+            title="GAME OVER"
+            score={score}
+            highScore={highScore}
+            primaryLabel="REINTENTAR"
+            onPrimary={startGame}
+            secondaryLabel="MENU"
+            onSecondary={onMenu}
+          />
+        ) : null}
 
-      {status === 'paused' ? (
-        <PauseOverlay onResume={resume} onMenu={onMenu} />
-      ) : null}
-
-      {status === 'levelClear' ? (
-        <ResultOverlay
-          tone="retro"
-          title={`Nivel ${levelIndex + 1} completado`}
-          score={score}
-          primaryLabel="Continuar"
-          onPrimary={continueLevel}
-        />
-      ) : null}
-
-      {status === 'gameOver' ? (
-        <ResultOverlay
-          tone="retro"
-          title="Game Over"
-          score={score}
-          highScore={highScore}
-          primaryLabel="Reintentar"
-          onPrimary={onRetry}
-          secondaryLabel="Menú"
-          onSecondary={onMenu}
-        />
-      ) : null}
-
-      {status === 'victory' ? (
-        <ResultOverlay
-          tone="future"
-          title="Victoria"
-          subtitle="El muro cayó."
-          score={score}
-          highScore={highScore}
-          primaryLabel="Reintentar"
-          onPrimary={onRetry}
-          secondaryLabel="Menú"
-          onSecondary={onMenu}
-        />
-      ) : null}
+        {status === 'victory' ? (
+          <ResultOverlay
+            title="VICTORIA"
+            subtitle="EL MURO CAYO"
+            score={score}
+            highScore={highScore}
+            primaryLabel="REINTENTAR"
+            onPrimary={startGame}
+            secondaryLabel="MENU"
+            onSecondary={onMenu}
+          />
+        ) : null}
       </SafeAreaView>
-    </ImageBackground>
+    </EightBitBackdrop>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: play.crt,
-  },
   safe: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -175,15 +167,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     minHeight: 44,
     justifyContent: 'center',
-  },
-  pauseText: {
-    color: play.muted,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  hint: {
-    color: play.muted,
-    fontSize: 13,
+    borderWidth: 3,
+    borderColor: bit.gold,
+    backgroundColor: bit.panel,
   },
   dim: {
     opacity: 0.4,

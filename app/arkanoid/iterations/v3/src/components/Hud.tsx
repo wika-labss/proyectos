@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { play } from '../constants/theme';
+import { StyleSheet, View } from 'react-native';
+import { bit } from '../constants/theme';
+import { PixelText } from './pixel/PixelText';
 
 type Props = {
   lives: number;
@@ -11,28 +12,40 @@ type Props = {
 };
 
 export function Hud({ lives, score, level, statusLabel, powerLabel }: Props) {
-  const hearts =
-    lives <= 3
-      ? Array.from({ length: 3 }, (_, i) => (i < lives ? '♥' : '♡')).join(' ')
-      : `♥ × ${lives}`;
+  const lifeMarks = Array.from({ length: Math.min(lives, 6) }, () => '*').join('');
   return (
     <View style={styles.wrap}>
       <View style={styles.row}>
-        <Text style={styles.lives}>{hearts}</Text>
-        <Text style={styles.score}>{score}</Text>
-        <Text style={styles.level}>Nv {level}</Text>
+        <PixelText size="xs" color={bit.red} style={styles.lives}>
+          {lifeMarks || '-'}
+        </PixelText>
+        <PixelText size="sm" color={bit.gold} style={styles.score}>
+          {score}
+        </PixelText>
+        <PixelText size="xs" color={bit.cyan}>
+          LV {level}
+        </PixelText>
       </View>
-      {powerLabel ? <Text style={styles.power}>{powerLabel}</Text> : null}
-      {statusLabel ? <Text style={styles.status}>{statusLabel}</Text> : null}
+      {powerLabel ? (
+        <PixelText size="xs" color={bit.gold} style={styles.center}>
+          {powerLabel}
+        </PixelText>
+      ) : null}
+      {statusLabel ? (
+        <PixelText size="xs" color={bit.muted} style={styles.center}>
+          {statusLabel}
+        </PixelText>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     minHeight: 44,
+    gap: 4,
   },
   row: {
     flexDirection: 'row',
@@ -41,36 +54,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   lives: {
-    color: '#E74C3C',
-    fontSize: 18,
-    letterSpacing: 1,
-    fontWeight: '700',
-    minWidth: 72,
+    minWidth: 64,
   },
   score: {
-    color: play.hud,
-    fontSize: 20,
-    fontWeight: '800',
     flex: 1,
     textAlign: 'center',
   },
-  level: {
-    color: play.muted,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  power: {
-    marginTop: 4,
-    color: play.hud,
-    fontSize: 12,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  status: {
-    marginTop: 2,
-    color: play.hud,
-    fontSize: 12,
-    fontWeight: '600',
+  center: {
     textAlign: 'center',
   },
 });

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { play } from '../constants/theme';
+import { StyleSheet, View } from 'react-native';
+import { bit } from '../constants/theme';
 import { useAmbientAudio } from '../hooks/AmbientAudioProvider';
 import { AmbientVolumeControl } from './AmbientVolumeControl';
+import { PixelButton } from './pixel/PixelButton';
+import { PixelText } from './pixel/PixelText';
 
 type Props = {
   onResume: () => void;
@@ -13,28 +15,21 @@ export function PauseOverlay({ onResume, onMenu }: Props) {
   const { ambientVolume, setAmbientVolume } = useAmbientAudio();
   return (
     <View style={styles.overlay}>
-      <Text style={styles.title}>Pausa</Text>
-      <AmbientVolumeControl
-        tone="retro"
-        volume={ambientVolume}
-        onChange={(value) => {
-          void setAmbientVolume(value);
-        }}
-      />
-      <Pressable
-        accessibilityRole="button"
-        style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
-        onPress={onResume}
-      >
-        <Text style={styles.ctaText}>Reanudar</Text>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}
-        onPress={onMenu}
-      >
-        <Text style={styles.secondaryText}>Menú</Text>
-      </Pressable>
+      <View style={styles.panel}>
+        <PixelText size="lg" color={bit.gold}>
+          PAUSA
+        </PixelText>
+        <AmbientVolumeControl
+          volume={ambientVolume}
+          onChange={(value) => {
+            void setAmbientVolume(value);
+          }}
+        />
+        <View style={styles.actions}>
+          <PixelButton label="REANUDAR" onPress={onResume} />
+          <PixelButton label="MENU" variant="ghost" onPress={onMenu} />
+        </View>
+      </View>
     </View>
   );
 }
@@ -42,40 +37,23 @@ export function PauseOverlay({ onResume, onMenu }: Props) {
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: play.overlay,
+    backgroundColor: bit.overlay,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 14,
     zIndex: 20,
+    paddingHorizontal: 16,
   },
-  title: {
-    color: play.hud,
-    fontSize: 32,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  cta: {
-    backgroundColor: play.paddle,
-    paddingHorizontal: 36,
-    paddingVertical: 14,
-    borderRadius: 12,
-    minWidth: 200,
+  panel: {
+    width: '100%',
+    borderWidth: 4,
+    borderColor: bit.gold,
+    backgroundColor: bit.panel,
+    padding: 16,
     alignItems: 'center',
+    gap: 16,
   },
-  ctaText: {
-    color: play.crt,
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  secondary: {
-    paddingVertical: 10,
-  },
-  secondaryText: {
-    color: play.muted,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  pressed: {
-    opacity: 0.85,
+  actions: {
+    width: '100%',
+    gap: 10,
   },
 });

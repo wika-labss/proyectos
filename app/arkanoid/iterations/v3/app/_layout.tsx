@@ -1,11 +1,22 @@
-import React from 'react';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { menu } from '../src/constants/theme';
+import React from 'react';
+import { View } from 'react-native';
+import { PIXEL_FONT } from '../src/constants/fonts';
+import { bit } from '../src/constants/theme';
 import { AmbientAudioProvider } from '../src/hooks/AmbientAudioProvider';
 import { GameProvider } from '../src/hooks/GameProvider';
 
 export default function RootLayout() {
+  const [loaded] = useFonts({
+    PressStart2P: PIXEL_FONT,
+  });
+
+  if (!loaded) {
+    return <View style={{ flex: 1, backgroundColor: bit.night }} />;
+  }
+
   return (
     <AmbientAudioProvider>
       <GameProvider>
@@ -13,7 +24,7 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: menu.void },
+            contentStyle: { backgroundColor: bit.night },
             animation: 'fade',
           }}
         >

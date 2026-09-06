@@ -1,40 +1,61 @@
+/** Paleta 8-bit unificada (NES / CRT). Una sola atmósfera en menú y partida. */
+export const fontPixel = 'PressStart2P';
+
+export const bit = {
+  night: '#0C0820',
+  panel: '#140C28',
+  wall: '#5C4A6E',
+  ink: '#F8F8F8',
+  muted: '#A0A0B8',
+  gold: '#F8D878',
+  red: '#F83800',
+  orange: '#FC9838',
+  yellow: '#F8D878',
+  green: '#00B800',
+  cyan: '#3CBCFC',
+  purple: '#B8B8F8',
+  pink: '#F878F8',
+  white: '#F8F8F8',
+  overlay: '#000000DD',
+} as const;
+
 export const menu = {
-  void: '#050B18',
-  nebulaTop: '#0E1A33',
-  nebulaBottom: '#1A0B2E',
-  neon: '#2EE6D6',
-  magenta: '#E84AFF',
-  text: '#E8F4FF',
-  muted: '#7A93B0',
+  void: bit.night,
+  nebulaTop: bit.panel,
+  nebulaBottom: bit.night,
+  neon: bit.gold,
+  magenta: bit.pink,
+  text: bit.ink,
+  muted: bit.muted,
 } as const;
 
 export const play = {
-  crt: '#1A1020',
-  paddle: '#ECF0F1',
-  ball: '#FFFFFF',
-  hud: '#F5EE9E',
-  muted: '#9A8A78',
-  wall: '#3A2A38',
-  overlay: '#000000CC',
+  crt: bit.night,
+  paddle: bit.white,
+  ball: bit.white,
+  hud: bit.gold,
+  muted: bit.muted,
+  wall: bit.wall,
+  overlay: bit.overlay,
 } as const;
 
 export const brickRow = [
-  '#E74C3C',
-  '#E67E22',
-  '#F1C40F',
-  '#2ECC71',
-  '#3498DB',
-  '#9B59B6',
+  bit.red,
+  bit.orange,
+  bit.yellow,
+  bit.green,
+  bit.cyan,
+  bit.purple,
 ] as const;
 
 export const capsuleColor = {
-  L: '#E74C3C',
-  E: '#2ECC71',
-  C: '#1ABC9C',
-  S: '#E67E22',
-  B: '#E91E8C',
-  D: '#3498DB',
-  P: '#BDC3C7',
+  L: bit.red,
+  E: bit.green,
+  C: bit.cyan,
+  S: bit.orange,
+  B: bit.pink,
+  D: bit.purple,
+  P: bit.white,
 } as const;
 
 export const colors = {

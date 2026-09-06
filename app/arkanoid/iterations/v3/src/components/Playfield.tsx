@@ -1,7 +1,7 @@
 import React from 'react';
 import { ImageBackground, StyleSheet, Text, View } from 'react-native';
 import { CASTLE_PLAYFIELD_BG } from '../constants/inspiration';
-import { brickRow, capsuleColor, play } from '../constants/theme';
+import { bit, brickRow, capsuleColor, play } from '../constants/theme';
 import { doorRect } from '../engine/arkanoidEngine';
 import { aliveBricks } from '../engine/brickField';
 import type { Ball, WorldState } from '../engine/types';
@@ -168,36 +168,41 @@ const styles = StyleSheet.create({
   },
   brick: {
     position: 'absolute',
-    borderRadius: 2,
+    borderRadius: 0,
+    borderWidth: 2,
+    borderColor: '#00000055',
   },
   hardStripe: {
     height: 3,
-    backgroundColor: 'rgba(255,255,255,0.55)',
+    backgroundColor: '#F8F8F8',
     marginTop: 2,
     marginHorizontal: 3,
-    borderRadius: 1,
   },
   paddle: {
     position: 'absolute',
-    borderRadius: 3,
+    borderRadius: 0,
+    borderWidth: 2,
+    borderColor: '#5C4A6E',
   },
   cannon: {
     position: 'absolute',
     top: -4,
     width: 4,
     height: 5,
-    backgroundColor: '#E74C3C',
-    borderRadius: 1,
+    backgroundColor: bit.red,
   },
   ball: {
     position: 'absolute',
     backgroundColor: play.ball,
+    borderRadius: 0,
   },
   capsule: {
     position: 'absolute',
-    borderRadius: 6,
+    borderRadius: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#00000066',
   },
   capsuleLetter: {
     color: '#111',
@@ -205,12 +210,11 @@ const styles = StyleSheet.create({
   },
   laser: {
     position: 'absolute',
-    backgroundColor: '#FF6B6B',
-    borderRadius: 1,
+    backgroundColor: bit.red,
   },
   door: {
     position: 'absolute',
-    backgroundColor: '#E91E8C',
-    opacity: 0.85,
+    backgroundColor: bit.pink,
+    opacity: 0.9,
   },
 });

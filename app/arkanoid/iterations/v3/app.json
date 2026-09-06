@@ -15,7 +15,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#050B18"
+        "backgroundColor": "#0C0820"
       },
       "package": "com.wika.arkanoid"
     },
@@ -32,7 +32,8 @@
             "minSdkVersion": 24
           }
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }
