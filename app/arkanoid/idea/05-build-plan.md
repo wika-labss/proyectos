@@ -195,6 +195,7 @@ Preparación V1 (01–05) ✓
 | V3-11 | APK | 15 | `npm run apk` | pending |
 | V3-12 | docs + `brick-field` | 06, 17 | `idea/` + `levelLayouts.ts` + smoke | done |
 | V3-13 | auditoría 2 | 06, 17 | `audits/auditoria-release-v3.md` | en curso (APK pending) |
+| V3-14 | `ambient-audio` + auditoría | 24 | encode móvil + MediaPlayer + `auditoria-audio-arranque-v3.md` | done |
 
 ### Contexto obligatorio usado (regla WIKA)
 
@@ -228,4 +229,4 @@ No se copian los documentos de `idea/` dentro de `iterations/`.
 | Jefe / `/lose` / `/win` | **Retirados** |
 | High score | Clave `arkanoid:v3:highScore` |
 | Cápsulas Vaus | L E C S B D P |
-| Audio ambiente | Solo `ambient-castle.mp3` en loop permanente; volumen `ambient` |
+| Audio ambiente | Misma pista Castillo; runtime ≤ 2 MB / 64 kbps; MediaPlayer diferido; volumen `ambient` |

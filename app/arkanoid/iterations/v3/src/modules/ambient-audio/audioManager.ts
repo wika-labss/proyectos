@@ -1,23 +1,23 @@
-import { Audio, type AVPlaybackStatusSuccess } from 'expo-av';
-import { loadChannelVolume, saveAmbientTheme, saveChannelVolume } from './storage';
 import { resolveAmbientAsset } from './themeAssets';
-import {
-  DEFAULT_AMBIENT_THEME,
-  resolveAmbientTheme,
-  type AmbientThemeId,
-} from './themes';
-import {
-  type AudioChannel,
-  clampVolume,
-  defaultVolume,
-} from './volume';
+import { ambientInitialStatus } from './playbackPolicy';
+import { loadChannelVolume, saveAmbientTheme, saveChannelVolume } from './storage';
+import { DEFAULT_AMBIENT_THEME, resolveAmbientTheme, type AmbientThemeId } from './themes';
+import { type AudioChannel, clampVolume, defaultVolume } from './volume';
+
+type SoundHandle = {
+  setVolumeAsync: (value: number) => Promise<unknown>;
+  stopAsync: () => Promise<unknown>;
+  unloadAsync: () => Promise<unknown>;
+  playAsync: () => Promise<unknown>;
+  getStatusAsync: () => Promise<{ isLoaded?: boolean; isPlaying?: boolean }>;
+};
 
 /**
- * Gestor de audio por canales + cambio de tema ambiente.
- * setTheme busca el archivo, detiene la pista actual y reproduce la nueva en loop.
+ * Gestor de audio por canales.
+ * expo-av se importa solo en playResolved (después del primer frame).
  */
 export class AudioManager {
-  private sound: Audio.Sound | null = null;
+  private sound: SoundHandle | null = null;
   private theme: AmbientThemeId = DEFAULT_AMBIENT_THEME;
   private volumes: Record<AudioChannel, number> = {
     ambient: defaultVolume('ambient'),
@@ -40,7 +40,11 @@ export class AudioManager {
     this.volumes[channel] = next;
     await saveChannelVolume(channel, next);
     if (channel === 'ambient' && this.sound) {
-      await this.sound.setVolumeAsync(next);
+      try {
+        await this.sound.setVolumeAsync(next);
+      } catch {
+        // el slider no puede tumbar la partida
+      }
     }
     return next;
   }
@@ -56,9 +60,6 @@ export class AudioManager {
     }
   }
 
-  /**
-   * Cambia el tema ambiente: resuelve el archivo, para lo que suena y lanza el loop nuevo.
-   */
   async setTheme(id: string): Promise<AmbientThemeId> {
     await this.start();
     if (this.switching) await this.switching;
@@ -82,12 +83,6 @@ export class AudioManager {
     this.theme = DEFAULT_AMBIENT_THEME;
     await saveAmbientTheme(this.theme);
     try {
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
       await this.stopCurrent();
       await this.playResolved(this.theme);
       this.started = true;
@@ -121,15 +116,34 @@ export class AudioManager {
     }
   }
 
-  private async playResolved(id: AmbientThemeId): Promise<void> {
-    const asset = resolveAmbientAsset(id);
-    const { sound } = await Audio.Sound.createAsync(asset, {
-      isLooping: true,
-      volume: this.volumes.ambient,
-      shouldPlay: true,
-    });
+  private async playResolved(_id: AmbientThemeId): Promise<void> {
+    const [{ Audio }, { Asset }] = await Promise.all([import('expo-av'), import('expo-asset')]);
+    const asset = Asset.fromModule(resolveAmbientAsset());
+    await asset.downloadAsync();
+    const uri = asset.localUri ?? asset.uri;
+    if (!uri) {
+      throw new Error('ambient-castle uri missing');
+    }
+
+    try {
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+      });
+    } catch {
+      // el modo es opcional; el loop igual se intenta
+    }
+
+    const { sound } = await Audio.Sound.createAsync(
+      { uri },
+      ambientInitialStatus(this.volumes.ambient),
+      null,
+      false,
+    );
     this.sound = sound;
-    const status = (await sound.getStatusAsync()) as AVPlaybackStatusSuccess;
+    const status = await sound.getStatusAsync();
     if (status.isLoaded && !status.isPlaying) {
       await sound.playAsync();
     }

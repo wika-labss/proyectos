@@ -15,7 +15,8 @@ V3 **sin los cambios de V2**. Misma jugabilidad que V1, más el contrato de `ide
 
 Flujo WIKA: `audits/flujo-wika-v3.md`.  
 Auditoría 1: `auditoria-documentacion-v3.md` / `auditoria-modulos-v3.md` / `auditoria-ensamblado-v3.md` (APROBADAS).  
-Auditoría 2: `auditoria-release-v3.md` (código OK; APK pendiente).  
+Auditoría 2: `auditoria-release-v3.md` (sideload pendiente).  
+Audio/arranque: `audits/auditoria-audio-arranque-v3.md` (APROBADA; APK 3.0.2).  
 Fuente de verdad: `idea/` (no se copia aquí).
 
 ## Contexto de generación
@@ -69,4 +70,4 @@ idea/ 01–05
 | sfx | `arkanoid:v3:sfxVolume` | 0.80 (reservado) |
 
 ## Stack
-Expo SDK 52 · React Native 0.76.9 · `expo-av` · package `com.wika.arkanoid` · version `3.0.1`
+Expo SDK 52 · React Native 0.76.9 · `expo-av` · package `com.wika.arkanoid` · version `3.0.2`

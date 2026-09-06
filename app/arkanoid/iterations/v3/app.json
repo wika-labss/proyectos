@@ -2,7 +2,7 @@
   "expo": {
     "name": "Arkanoid",
     "slug": "wika-arkanoid",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -18,7 +18,7 @@
         "backgroundColor": "#0C0820"
       },
       "package": "com.wika.arkanoid",
-      "versionCode": 2,
+      "versionCode": 3,
       "largeHeap": true
     },
     "plugins": [

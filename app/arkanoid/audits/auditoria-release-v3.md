@@ -4,7 +4,7 @@
 Arkanoid
 
 ## Versión evaluada
-`iterations/v3/` — 2026-09-06
+`iterations/v3/` — 2026-09-06 (3.0.2 audio/arranque)
 
 ## Evaluador
 Arquitecto WIKA / Cloud Agent
@@ -40,7 +40,8 @@ Referencia de ciclo: `wika-fundaments/workflows/application-lifecycle.md` (Etapa
 - [x] `ambient-audio` no importa el engine
 - [x] Sin módulo `boss` en V3
 - [x] Rutas reales: `app/index.tsx`, `app/game.tsx`, `app/how-to.tsx`. No existen `lose.tsx` ni `win.tsx`
-- [x] Package `com.wika.arkanoid` version `3.0.0`; portrait; minSdk 24
+- [x] Package `com.wika.arkanoid` version `3.0.2`; portrait; minSdk 24
+- [x] `ambient-audio` no importa `expo-av` en el top-level; play = MediaPlayer + URI (`auditoria-audio-arranque-v3.md`)
 
 ## Funcionalidad (código vs `idea/02`)
 
@@ -65,7 +66,8 @@ Referencia de ciclo: `wika-fundaments/workflows/application-lifecycle.md` (Etapa
 - [x] Sin permisos sensibles en `app.json`
 - [x] Orientación portrait
 - [ ] Ciclo de vida en hardware (sideload sin Metro) — no ejecutado aquí
-- [ ] Audio Castillo audible en dispositivo — no ejecutado aquí (el bundle sí empaqueta el MP3)
+- [x] Runtime Castillo ≤ 2 MB / 64 kbps; política MediaPlayer en smoke
+- [ ] Audio Castillo audible en dispositivo — pendiente sideload 3.0.2
 
 ---
 
@@ -87,9 +89,10 @@ Referencia de ciclo: `wika-fundaments/workflows/application-lifecycle.md` (Etapa
 ## REQUIERE CORRECCIONES
 
 La **construcción de código V3 está completa** frente a Features 06/17 y 22–24 (smoke + typecheck + export).  
-El **APK Release no fue producido ni validado en dispositivo** (JDK 17 + SDK local), igual que V1.
+El hallazgo de arranque (MP3 192 kbps tumba el proceso) se cierra en `auditoria-audio-arranque-v3.md` y APK **3.0.2**.  
+El **sideload en dispositivo** sigue pendiente para Feature 15.
 
-Esto **no** abre una V4 por sí solo. Cierra Feature 15 y re-ejecuta esta auditoría.
+Esto **no** abre una V4 por sí solo. Sideload 3.0.2 y re-ejecuta esta auditoría.
 
 Para cerrar Release en máquina local:
 

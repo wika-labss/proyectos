@@ -11,7 +11,8 @@ Idea / Preparación (idea/ 01–05)
          ensamblado     → auditoria-ensamblado-v3.md     APROBADO
     → Generación IA (iterations/v3)
     → Auditoría 2 (release)
-         auditoria-release-v3.md  REQUIERE CORRECCIONES (APK)
+         auditoria-release-v3.md           REQUIERE CORRECCIONES (sideload)
+         auditoria-audio-arranque-v3.md    APROBADA (contrato + código)
     → Aprobación / final/     ← bloqueado
     → Demo / Publicación      ← bloqueado
 ```
@@ -60,7 +61,8 @@ Revisión: `app/arkanoid/review.md`
 
 ## Etapa 5 · Auditoría 2 (ejecutada 2026-09-06)
 
-`audits/auditoria-release-v3.md` — código OK; APK pendiente.
+`audits/auditoria-release-v3.md` — código OK; sideload pendiente.  
+`audits/auditoria-audio-arranque-v3.md` — H1/H2 (MP3 tumba el arranque) cerrados en 3.0.2.
 
 ---
 
@@ -70,7 +72,7 @@ Revisión: `app/arkanoid/review.md`
 |------------|---------|-------|
 | Sin jefe / `/lose` `/win` | 22 | screens, level-progress |
 | Cápsulas L E C S B D P | 23 | vaus-capsules |
-| Loop Castillo | 24 | ambient-audio |
+| Loop Castillo (MediaPlayer, ≤ 2 MB) | 24 | ambient-audio |
 | UI 8-bit | 09, 10 | pixel + pack Castillo |
 | 33 niveles fácil → difícil | 06, 17 | brick-field, levelLayouts.ts |
 

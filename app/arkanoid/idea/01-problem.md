@@ -37,7 +37,8 @@ Entregar V1 instalable (APK Release) de Arkanoid en Android con: pala táctil, f
 - **Stack WIKA:** Expo SDK 52 + React Native; dependencias pinneadas (`~`); JDK 17 para BUILD.
 - **Orientación:** Portrait (V1).
 - **Permisos:** Ningún permiso sensible en V1 (sin cámara, ubicación ni internet).
-- **Tamaño:** < 25 MB instalado.
+- **Tamaño:** < 25 MB instalado (objetivo V1). El runtime Expo 52 supera ese techo; no se suma más peso de audio.
+- **Audio / arranque (V3):** Feature 24 no puede tumbar el proceso ni bloquear **Jugar**. El menú pinta antes de decodificar el MP3. Un fallo de `expo-av` deja la partida usable.
 - **Entregable:** APK Release sideloadable **sin Metro**.
 - **Fidelidad:** Reglas de juego = Arkanoid clásico. V1 = núcleo pala/bola/ladrillos. V3 añade las cápsulas Vaus clásicas (L E C S B D P). Sin jefe ni rutas dedicadas de derrota/victoria (eso fue un delta V2 retirado).
 

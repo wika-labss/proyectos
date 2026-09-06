@@ -272,15 +272,16 @@ stop(): Promise<void>
 resolveAmbientTheme(id): { id, label, file }
 ```
 
-**Recurso (única pista):** `recursos/audio/arkanoid-ambient-castle.mp3` → `ambient-castle.mp3`.
+**Recurso (única pista):** `recursos/audio/arkanoid-ambient-castle.mp3` (catálogo, original). Runtime: `ambient-castle.mp3` (encode ≤ 64 kbps, ≤ 2 MB).
 
 **Reglas:**
-- Arranque automático al montar el layout: detiene cualquier pista y reproduce Castillo en loop (menú + partida).
+- El grafo de arranque **no** importa `expo-av` ni el manager. El provider carga el manager después del primer frame (`AMBIENT_BOOT_DELAY_MS`).
+- Play: `Asset.downloadAsync` → URI local → `Audio.Sound.createAsync({ uri }, { androidImplementation: 'MediaPlayer', shouldPlay: false }, null, false)` → `playAsync`.
 - Canal `ambient` ≠ canal `sfx`.
 - Persistencia del volumen: `arkanoid:v3:ambientVolume`. Tema fijado a `castle`.
-- Fallo de carga no tumba la app.
+- Fallo de carga, OOM o excepción nativa envuelta: no tumba el proceso; Jugar sigue activo.
 
-**Dependencias:** `expo-av` (`~`), AsyncStorage. Sin React en el manager; el hook/UI envuelven el módulo.
+**Dependencias:** `expo-av` (`~`), `expo-asset` (`~`), AsyncStorage. Sin React en el manager; el hook/UI envuelven el módulo. `expo-av` solo se importa dentro de `playResolved`.
 
 **Reutilizable:** Sí (otros juegos WIKA con un loop de menú/partida).
 

@@ -52,7 +52,7 @@ adb uninstall com.wika.arkanoid
 adb install android\app\build\outputs\apk\release\app-release.apk
 ```
 
-El paquete es el mismo que V1/V2 (`com.wika.arkanoid`). Si el icono abre y se cierra (o se queda en negro), **desinstala Arkanoid** y vuelve a instalar este APK 3.0.1. No mezcles un APK viejo con uno nuevo.
+El paquete es el mismo que V1/V2 (`com.wika.arkanoid`). Si el icono abre y se cierra (o se queda en negro), **desinstala Arkanoid** y vuelve a instalar este APK **3.0.2**. No mezcles un APK viejo con uno nuevo.
 
 ### Si falla
 

@@ -35,10 +35,19 @@ import {
   resolveAmbientTheme,
 } from '../src/modules/ambient-audio/themes';
 import {
+  AMBIENT_ANDROID_IMPLEMENTATION,
+  AMBIENT_BOOT_DELAY_MS,
+  AMBIENT_MAX_RUNTIME_BYTES,
+  AMBIENT_RUNTIME_FILE,
+  ambientInitialStatus,
+} from '../src/modules/ambient-audio/playbackPolicy';
+import {
   clampVolume,
   defaultVolume,
   parseStoredVolume,
 } from '../src/modules/ambient-audio/volume';
+import { readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import type { CapsuleKind, WorldState } from '../src/engine/types';
 
 const neverDrop = () => 1;
@@ -435,6 +444,24 @@ function testAmbientVolumeChannel() {
   assert.notEqual(defaultVolume('ambient'), defaultVolume('sfx'));
 }
 
+function testAmbientPlaybackPolicy() {
+  assert.equal(AMBIENT_ANDROID_IMPLEMENTATION, 'MediaPlayer');
+  assert.ok(AMBIENT_BOOT_DELAY_MS >= 1000, 'boot delay must leave the first frame free');
+  const status = ambientInitialStatus(0.45);
+  assert.equal(status.shouldPlay, false);
+  assert.equal(status.isLooping, true);
+  assert.equal(status.androidImplementation, 'MediaPlayer');
+  const runtime = join(__dirname, '..', 'assets', 'recursos', 'audio', AMBIENT_RUNTIME_FILE);
+  const bytes = statSync(runtime).size;
+  assert.ok(bytes > 10_000, 'runtime castle mp3 missing');
+  assert.ok(
+    bytes <= AMBIENT_MAX_RUNTIME_BYTES,
+    `runtime castle mp3 exceeds budget: ${bytes} > ${AMBIENT_MAX_RUNTIME_BYTES}`,
+  );
+  const magic = readFileSync(runtime).subarray(0, 3);
+  assert.ok(magic.equals(Buffer.from('ID3')) || magic[0] === 0xff, 'runtime file is not mp3');
+}
+
 function testAmbientThemeSwitch() {
   const castle = resolveAmbientTheme('castle');
   assert.equal(castle.id, 'castle');
@@ -480,6 +507,7 @@ function main() {
   testCapsuleSpawnOnDestroy();
   testAmbientVolumeChannel();
   testAmbientThemeSwitch();
+  testAmbientPlaybackPolicy();
   testNoBossRoutes();
   console.log(
     'smoke-v3: PASSED (classic + 33 levels + Vaus capsules + castle ambient only; no boss)',

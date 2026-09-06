@@ -1,4 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { InteractionManager } from 'react-native';
+import { AMBIENT_BOOT_DELAY_MS } from '../modules/ambient-audio/playbackPolicy';
 import { clampVolume, defaultVolume, type AudioChannel } from '../modules/ambient-audio/volume';
 
 type AmbientAudioApi = {
@@ -22,24 +24,28 @@ export function AmbientAudioProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     let alive = true;
-    const timer = setTimeout(() => {
-      void (async () => {
-        try {
-          const { audioManager } = await import('../modules/ambient-audio/audioManager');
-          if (!alive) return;
-          managerRef.current = audioManager;
-          await audioManager.start();
-          if (!alive) return;
-          setAmbient(audioManager.getVolume('ambient'));
-        } catch {
-          // El menú debe abrir aunque expo-av o el MP3 fallen.
-        }
-        if (alive) setReady(true);
-      })();
-    }, 900);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const task = InteractionManager.runAfterInteractions(() => {
+      timer = setTimeout(() => {
+        void (async () => {
+          try {
+            const { audioManager } = await import('../modules/ambient-audio/audioManager');
+            if (!alive) return;
+            managerRef.current = audioManager;
+            await audioManager.start();
+            if (!alive) return;
+            setAmbient(audioManager.getVolume('ambient'));
+          } catch {
+            // El menú y Jugar siguen aunque expo-av o el MP3 fallen.
+          }
+          if (alive) setReady(true);
+        })();
+      }, AMBIENT_BOOT_DELAY_MS);
+    });
     return () => {
       alive = false;
-      clearTimeout(timer);
+      task.cancel();
+      if (timer) clearTimeout(timer);
     };
   }, []);
 
