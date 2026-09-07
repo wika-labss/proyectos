@@ -1,0 +1,17 @@
+{
+  "$schema": "wika-tokens/v1",
+  "project": "tower",
+  "version": "v4",
+  "status": "approved",
+  "approvedAt": "2026-09-06",
+  "approvalRef": "visual-expectation/tower-v4/approval.md",
+  "family": "ember-keep",
+  "notes": "Sin overrides de color. Semántica de mapa (25 frentes) usa tinte de bioma en runtime, no hex sueltos en UI.",
+  "biomeAccents": {
+    "forest": "#5DBB63",
+    "keep": "#E85D04",
+    "desert": "#C4A574",
+    "frost": "#4FC3F7",
+    "void": "#9B59B6"
+  }
+}

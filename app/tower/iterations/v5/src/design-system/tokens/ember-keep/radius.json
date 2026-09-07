@@ -1,0 +1,19 @@
+{
+  "$schema": "wika-tokens/v1",
+  "family": "ember-keep",
+  "source": "tower-v4",
+  "status": "approved",
+  "approvedAt": "2026-09-06",
+  "approvalRef": "visual-expectation/tower-v4/approval.md",
+  "radius": {
+    "sm": { "value": 8, "unit": "px", "usage": "chips, pad" },
+    "md": { "value": 12, "unit": "px", "usage": "plates, banners" },
+    "lg": { "value": 14, "unit": "px", "usage": "cards, CTAs" },
+    "xl": { "value": 20, "unit": "px", "usage": "hero plates" }
+  },
+  "borderWidth": {
+    "thin": { "value": 1, "unit": "px" },
+    "medium": { "value": 2, "unit": "px" },
+    "thick": { "value": 3, "unit": "px" }
+  }
+}

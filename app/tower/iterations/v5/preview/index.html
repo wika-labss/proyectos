@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tower v5 — preview Ember Keep</title>
+  <style>
+    :root {
+      --void: #0A0E16;
+      --stone: #2A3344;
+      --stone-hi: #3D4A5C;
+      --ember: #E85D04;
+      --gold: #F0C14B;
+      --mist: #E8EEF7;
+      --muted: #8A9BB0;
+      --ochre: #C4A574;
+      --breach: #8B1E1E;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      background: var(--void);
+      color: var(--mist);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+    h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: -0.4px; }
+    .sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+    .stage { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: #111;
+      border-radius: 36px;
+      padding: 10px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.55);
+      position: relative;
+    }
+    .notch {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 22px; border-radius: 12px; background: #05070c; z-index: 4;
+    }
+    .screen {
+      height: 100%;
+      border-radius: 26px;
+      overflow: hidden;
+      position: relative;
+      background: var(--void);
+    }
+    .view { display: none; height: 100%; }
+    .view.on { display: flex; flex-direction: column; }
+    .bg {
+      position: absolute; inset: 0;
+      background: center/cover no-repeat;
+    }
+    .scrim { position: absolute; inset: 0; background: rgba(10,14,22,.55); }
+    .safe { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; padding: 48px 20px 28px; }
+    .brand { font-size: 56px; font-weight: 900; letter-spacing: -1.5px; margin: 24px 0 8px; }
+    .tag { color: var(--muted); max-width: 260px; }
+    .prog { margin-top: auto; margin-bottom: 20px; }
+    .prog small { color: var(--muted); text-transform: uppercase; letter-spacing: 1.4px; font-size: 12px; }
+    .prog b { display: block; color: var(--gold); font-size: 28px; }
+    .btn {
+      width: 100%; border: 0; border-radius: 14px; padding: 16px;
+      font-weight: 800; font-size: 17px; cursor: pointer;
+    }
+    .btn.ember { background: var(--ember); color: var(--mist); }
+    .btn.gold { background: var(--stone); color: var(--gold); box-shadow: inset 0 0 0 2px var(--gold); }
+    .btn.ghost { background: transparent; color: var(--muted); }
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+    .hud {
+      display: flex; gap: 8px; align-items: center;
+      background: var(--stone); padding: 10px 12px 8px;
+    }
+    .hud div { flex: 1; }
+    .hud small { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; }
+    .hud b { font-size: 16px; }
+    .field {
+      flex: 1; margin: 10px 12px; border-radius: 12px; overflow: hidden;
+      background: var(--void); position: relative;
+    }
+    .path {
+      position: absolute; inset: 8% 10%;
+      background: transparent;
+    }
+    .path svg { width: 100%; height: 100%; }
+    .sprite { position: absolute; width: 44px; height: 44px; object-fit: contain; }
+    .enemy { width: 28px; height: 28px; }
+    .pad {
+      position: absolute; width: 22px; height: 22px; border-radius: 7px;
+      background: var(--stone-hi); box-shadow: inset 0 0 0 2px var(--stone);
+    }
+    .gate {
+      position: absolute; width: 28px; height: 28px; border-radius: 8px;
+      border: 3px solid var(--ember); background: rgba(10,14,22,.72);
+    }
+    .bar {
+      display: flex; gap: 8px; padding: 0 12px 16px;
+    }
+    .slot {
+      flex: 1; background: var(--stone); border-radius: 8px;
+      padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 800;
+    }
+    .slot img { width: 36px; height: 36px; }
+    .slot em { display: block; color: var(--gold); font-style: normal; }
+    .tabs { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .tabs button {
+      background: var(--stone); color: var(--mist); border: 0;
+      border-radius: 999px; padding: 8px 14px; font-weight: 700; cursor: pointer;
+    }
+    .tabs button.active { background: var(--ember); }
+    .note { color: var(--muted); font-size: 13px; max-width: 420px; text-align: center; margin-top: 14px; }
+    .kicker { color: var(--gold); font-weight: 700; letter-spacing: 1px; }
+    .title { font-size: 48px; font-weight: 900; margin: 8px 0; }
+    .muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <h1>Tower v5 — Ember Keep</h1>
+  <p class="sub">Vista para compartir · no es el APK · cambia de pantalla abajo</p>
+  <div class="stage">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+
+        <section id="home" class="view on">
+          <div class="bg" style="background-image:url('assets/bg_keep.png')"></div>
+          <div class="scrim"></div>
+          <div class="safe">
+            <div class="brand">Tower</div>
+            <div class="tag">Defiende la base. Fusiona. Sobrevive.</div>
+            <div class="prog"><small>Progreso</small><b>Nivel 7/25</b></div>
+            <div class="stack">
+              <button class="btn ember" type="button" onclick="show('game')">Campaña</button>
+              <button class="btn gold" type="button" onclick="show('game')">Modo Infinito</button>
+              <button class="btn ghost" type="button" onclick="show('shop')">Tienda</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="game" class="view">
+          <div class="hud">
+            <div><small>Vidas</small><b>18</b></div>
+            <div><small>Oro</small><b style="color:var(--gold)">240</b></div>
+            <div><small>Oleada</small><b>2/6</b></div>
+            <div><small>N7</small><b>Fortaleza</b></div>
+          </div>
+          <div class="field" id="field">
+            <svg class="path" viewBox="0 0 100 140" preserveAspectRatio="none">
+              <path d="M18 12 C 48 18, 62 40, 40 62 S 22 96, 52 112 88 128, 88 128"
+                fill="none" stroke="var(--ochre)" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+            <div class="pad" style="left:28%;top:22%"></div>
+            <div class="pad" style="left:58%;top:30%"></div>
+            <div class="pad" style="left:22%;top:48%"></div>
+            <div class="pad" style="left:62%;top:58%"></div>
+            <div class="pad" style="left:38%;top:72%"></div>
+            <div class="pad" style="left:70%;top:78%"></div>
+            <img class="sprite" src="assets/tower_archer.png" alt="" style="left:24%;top:18%" />
+            <img class="sprite" src="assets/tower_cannon.png" alt="" style="left:54%;top:26%" />
+            <img class="sprite" src="assets/tower_frost.png" alt="" style="left:18%;top:44%" />
+            <img class="sprite" src="assets/tower_sniper.png" alt="" style="left:58%;top:54%" />
+            <img class="sprite enemy" src="assets/enemy_grunt.png" alt="" style="left:42%;top:36%" />
+            <img class="sprite enemy" src="assets/enemy_runner.png" alt="" style="left:34%;top:58%" />
+            <img class="sprite enemy" src="assets/enemy_tank.png" alt="" style="left:48%;top:78%" />
+            <div class="gate" style="left:82%;top:86%"></div>
+          </div>
+          <div class="bar">
+            <div class="slot"><img src="assets/tower_archer.png" alt="" /><div>Arquera</div><em>50</em></div>
+            <div class="slot"><img src="assets/tower_cannon.png" alt="" /><div>Cañón</div><em>75</em></div>
+            <div class="slot"><img src="assets/tower_frost.png" alt="" /><div>Hielo</div><em>65</em></div>
+            <div class="slot"><img src="assets/tower_sniper.png" alt="" /><div>Franco</div><em>95</em></div>
+          </div>
+        </section>
+
+        <section id="shop" class="view">
+          <div class="bg" style="background-image:url('assets/bg_keep.png')"></div>
+          <div class="scrim"></div>
+          <div class="safe">
+            <div class="kicker">Armería</div>
+            <div class="title" style="font-size:36px">Tienda</div>
+            <p class="muted">Precios visuales · sin cobros</p>
+            <div class="stack">
+              <div style="background:var(--stone);border-radius:14px;padding:16px">
+                <div style="display:flex;justify-content:space-between"><b>Modo Infinito</b><span style="color:var(--gold)">$2.99</span></div>
+                <p class="muted">Oleadas sin fin con dificultad escalable.</p>
+                <button class="btn ember" type="button">Comprar</button>
+              </div>
+              <div style="background:var(--stone);border-radius:14px;padding:16px">
+                <div style="display:flex;justify-content:space-between"><b>Pack de Contenido</b><span style="color:var(--gold)">$4.99</span></div>
+                <p class="muted">Tesla · Soporte · 10 mapas · hardcore</p>
+                <button class="btn ember" type="button">Comprar</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="win" class="view">
+          <div class="bg" style="background-image:url('assets/bg_victory.png')"></div>
+          <div class="scrim"></div>
+          <div class="safe" style="justify-content:center">
+            <div class="kicker">Nivel 7</div>
+            <div class="title">Victoria</div>
+            <p class="muted">Fortaleza asegurada. Siguiente: N8.</p>
+            <button class="btn ember" type="button" onclick="show('game')">Continuar</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="active" type="button" data-view="home" onclick="show('home')">Menú</button>
+    <button type="button" data-view="game" onclick="show('game')">Partida</button>
+    <button type="button" data-view="shop" onclick="show('shop')">Tienda</button>
+    <button type="button" data-view="win" onclick="show('win')">Victoria</button>
+  </div>
+  <p class="note">Esto es una maqueta web para revisión visual. El APK nativo se genera aparte si lo pides.</p>
+  <script>
+    function show(id) {
+      document.querySelectorAll('.view').forEach((el) => el.classList.toggle('on', el.id === id));
+      document.querySelectorAll('.tabs button').forEach((el) => el.classList.toggle('active', el.dataset.view === id));
+    }
+  </script>
+</body>
+</html>

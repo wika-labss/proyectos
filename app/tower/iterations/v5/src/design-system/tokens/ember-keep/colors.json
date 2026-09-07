@@ -1,0 +1,26 @@
+{
+  "$schema": "wika-tokens/v1",
+  "family": "ember-keep",
+  "source": "tower-v4",
+  "status": "approved",
+  "approvedAt": "2026-09-06",
+  "approvalRef": "visual-expectation/tower-v4/approval.md",
+  "colors": {
+    "keep-void": { "value": "#0A0E16", "description": "App night / keep background" },
+    "stone": { "value": "#2A3344", "description": "Carved plates, bars" },
+    "stone-hi": { "value": "#3D4A5C", "description": "Plate highlight / pad hot" },
+    "ember": { "value": "#E85D04", "description": "Primary CTA" },
+    "torch-gold": { "value": "#F0C14B", "description": "Gold, kickers, L4" },
+    "mist": { "value": "#E8EEF7", "description": "Text on night" },
+    "muted": { "value": "#8A9BB0", "description": "Meta / links" },
+    "path-ochre": { "value": "#C4A574", "description": "Playfield path" },
+    "archer-green": { "value": "#5DBB63", "description": "Archer tower" },
+    "cannon-rust": { "value": "#E07A3D", "description": "Cannon tower" },
+    "frost": { "value": "#4FC3F7", "description": "Frost tower" },
+    "sniper-violet": { "value": "#9B59B6", "description": "Sniper tower" },
+    "breach": { "value": "#8B1E1E", "description": "Defeat / sell" },
+    "danger": { "value": "#D62828", "description": "Low lives" },
+    "scrim": { "value": "rgba(10,14,22,0.55)", "description": "Keep overlay" },
+    "overlay": { "value": "rgba(10,14,22,0.72)", "description": "Pause / result scrim" }
+  }
+}
