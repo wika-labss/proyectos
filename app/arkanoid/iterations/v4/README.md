@@ -1,8 +1,10 @@
 # Arkanoid — iterations/v4
 
-Expo SDK 52 · React Native · Android package `com.wika.arkanoid` · versión 4.0.0
+Expo SDK 52 · React Native · Android package `com.wika.arkanoid` · versión **4.0.0**
 
 Fuente de verdad: `app/arkanoid/idea/`. Flujo: `app/arkanoid/audits/flujo-wika-v4.md`. Este README no copia `idea/`.
+
+Índice de todas las versiones: [`../README.md`](../README.md).
 
 ## Reglas V4
 
@@ -13,6 +15,16 @@ V3 clásico **sin audio**:
 - 33 niveles, cápsulas L E C S B D P
 - High score `arkanoid:v4:highScore`
 - UI 8-bit; fondo de partida pack Castillo (PNG, no sonido)
+
+## Metadatos
+
+| Campo | Valor |
+|-------|-------|
+| Versión APK | 4.0.0 (`versionCode` 5) |
+| Rama Git | `cursor/arkanoid-v4-silent-eb2a` |
+| Estado | Código OK; sideload pendiente |
+| Auditoría | [`auditoria-release-v4.md`](../../audits/auditoria-release-v4.md) |
+| Informe | [`generation-report.md`](generation-report.md) |
 
 ## Scripts
 

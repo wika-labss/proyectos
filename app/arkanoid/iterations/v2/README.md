@@ -2,6 +2,10 @@
 
 Expo SDK 52 · React Native · Android package `com.wika.arkanoid`
 
+Índice de todas las versiones: [`../README.md`](../README.md).
+
+> **Histórico:** V2 es una rama experimental (jefe + `/lose` `/win`). **No** se usa como base de V3/V4.
+
 ## Reglas V2
 
 - Pala táctil + bola + ladrillos (rebotes clásicos)
@@ -10,6 +14,16 @@ Expo SDK 52 · React Native · Android package `com.wika.arkanoid`
 - Score 100 / 200 / 1000 + high score local (`arkanoid:v2:highScore`)
 - Pantallas dedicadas **LOSER** (`/lose`) y **WIN** (`/win`)
 - Menú futurista + partida retro
+
+## Metadatos
+
+| Campo | Valor |
+|-------|-------|
+| Versión APK | 1.0.0 |
+| Rama Git | `cursor/arkanoid-v2-eb2a` |
+| Estado | Histórico — gates smoke/tsc OK; descartado en contrato V3/V4 |
+| Auditoría | [`auditoria-release-v2.md`](../../audits/auditoria-release-v2.md) |
+| Informe | [`generation-report.md`](generation-report.md) |
 
 ## Scripts
 
