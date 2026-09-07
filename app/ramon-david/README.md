@@ -38,7 +38,19 @@ categories  1──N  products  1──N  product_variants
 | `product_variants` | 103 filas: talla + opción + precio neto (2.950–47.800 CLP) |
 | `catalogo_precios` | Vista lista para cotizar |
 
-RLS activo: **lectura** para `anon` y `authenticated`. Escrituras solo con service role / SQL editor.
+RLS: lectura y **CRUD** para `anon` / `authenticated` (el admin HTML escribe directo). No publiques la página en internet abierto: quien tenga el HTML puede editar el catálogo.
+
+## Admin HTML
+
+Abre `index.html` (mejor con un servidor local):
+
+```bash
+cd app/ramon-david
+python3 -m http.server 8765
+# http://127.0.0.1:8765
+```
+
+Desde ahí puedes listar, crear, editar y eliminar productos y precios. Los cambios van a Supabase en vivo.
 
 ## Consultas útiles
 
@@ -75,5 +87,8 @@ Authorization: Bearer {SUPABASE_ANON_KEY}
 
 ## Archivos
 
+- `index.html` — admin CRUD conectado a Supabase
+- `abrir-admin.sh` — sirve la página en el puerto 8765
 - `supabase/migrations/20260907152300_catalogo_gd_2025.sql` — schema + seed
+- `supabase/migrations/20260907173700_catalogo_gd_2025_crud_policies.sql` — políticas de escritura
 - `env.example` — variables de entorno
