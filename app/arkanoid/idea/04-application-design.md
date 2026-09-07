@@ -260,7 +260,7 @@ type WorldState = {
 8. L/E/C/S/D se sustituyen. P y B no quitan el poder actual.
 9. Perder la última bola limpia poderes. Un nivel nuevo nace limpio.
 10. Victoria = limpiar el muro 33 o salir por Break en el último nivel. Sin jefe.
-11. Única pista ambiente (Castillo) en loop **después** del primer frame del menú. Volumen **Ambiente** en Menú y Pausa. Jugar no espera al audio.
+11. **V4:** sin pista ambiente, sin slider de volumen. El PNG del pack Castillo sigue en partida. Feature 24 es histórica V3.
 12. Fondo de partida: pack independiente `recursos/inspiration/arkanoid-castle/` (`dracula-castle-playfield.png`).
 13. 33 layouts fácil → difícil (Feature 06). Tutorial 1–6 solo normal; hard desde el 7; el 33 es muro hard completo.
 
@@ -270,7 +270,9 @@ type WorldState = {
 |------|----------|---------|
 | `arkanoid-castle` | `recursos/inspiration/arkanoid-castle/` | `assets/recursos/inspiration/arkanoid-castle/` |
 
-### Audio ambiente (Feature 24)
+### Audio ambiente (Feature 24) — solo V3
+
+**V4:** sin tabla de audio. No hay MP3 en `iterations/v4/assets`.
 
 | Dato | Clave | Default | UI |
 |------|-------|---------|-----|
@@ -285,3 +287,5 @@ type WorldState = {
 - [x] Auditoría ensamblado V3: `audits/auditoria-ensamblado-v3.md`
 - [x] Auditoría audio/arranque V3: `audits/auditoria-audio-arranque-v3.md`
 - [ ] Auditoría release V3: `audits/auditoria-release-v3.md` (sideload pendiente)
+- [x] Auditoría documentación / módulos / ensamblado V4: `audits/auditoria-*-v4.md`
+- [ ] Auditoría release V4: `audits/auditoria-release-v4.md`

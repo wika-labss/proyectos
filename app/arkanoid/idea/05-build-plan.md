@@ -165,16 +165,17 @@ Preparación V1 (01–05) ✓
      → Generación iterations/v1 ✓
      → Auditoría Release V1 (código OK; APK pendiente)
      → Refinamiento V2 (jefe + /lose /win) — histórico en iterations/v2
-     → Refinamiento V3 ← ACTUAL
-           Preparación: idea/ 01–05 (Features 06/17, 22, 23, 24)
-           Auditoría 1: documentacion / módulos / ensamblado V3 (APROBADAS)
-           Generación: iterations/v3
-           Auditoría 2: audits/auditoria-release-v3.md (APK pendiente)
+     → Refinamiento V3 (cápsulas + Castillo MP3 + 33 niveles) — `iterations/v3`
+     → Refinamiento V4 ← ACTUAL
+           Preparación: idea/ 01–05 (Feature 24 retirada)
+           Auditoría 1: documentacion / módulos / ensamblado V4
+           Generación: iterations/v4 (sin MP3, sin expo-av)
+           Auditoría 2: audits/auditoria-release-v4.md
      → Aprobación / final/  — bloqueado hasta APK + visto del arquitecto
 ```
 
-**Estado actual:** V3 con cápsulas, ambiente Castillo, UI 8-bit y **33 niveles**. Gates smoke/tsc/export OK.  
-**Siguiente:** APK local → aprobación del arquitecto.
+**Estado actual:** V4 = V3 sin audio.  
+**Siguiente:** `npm run apk:win` en `iterations/v4` → sideload 4.0.0.
 
 ---
 
@@ -231,3 +232,21 @@ No se copian los documentos de `idea/` dentro de `iterations/`.
 | High score | Clave `arkanoid:v3:highScore` |
 | Cápsulas Vaus | L E C S B D P |
 | Audio ambiente | Misma pista Castillo; runtime ≤ 2 MB / 64 kbps; MediaPlayer diferido; volumen `ambient` |
+
+## Delta V4
+
+| Incluido | Notas |
+|----------|-------|
+| Jugabilidad | Igual que V3 (33 niveles, cápsulas, overlays, 8-bit) |
+| MP3 / `expo-av` / `ambient-audio` | **Retirados** |
+| High score | Clave `arkanoid:v4:highScore` |
+
+### Plan V4
+
+| Paso | Módulo | Feature | Archivos | Estado |
+|------|--------|---------|----------|--------|
+| V4-01 | docs | 24 retirada | `idea/01`–`05` | done |
+| V4-02 | auditoría 1 | 01, 15 | `audits/auditoria-*-v4.md` | done |
+| V4-03 | generación | — | `iterations/v4/` sin MP3 | done |
+| V4-04 | smoke / tsc | 06, 23 | `scripts/smoke-v1.ts` | done |
+| V4-05 | APK | 15 | `npm run apk:win` | pending |

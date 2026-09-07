@@ -38,7 +38,7 @@ Entregar V1 instalable (APK Release) de Arkanoid en Android con: pala táctil, f
 - **Orientación:** Portrait (V1).
 - **Permisos:** Ningún permiso sensible en V1 (sin cámara, ubicación ni internet).
 - **Tamaño:** < 25 MB instalado (objetivo V1). El runtime Expo 52 supera ese techo; no se suma más peso de audio.
-- **Audio / arranque (V3):** Feature 24 no puede tumbar el proceso ni bloquear **Jugar**. El menú pinta antes de decodificar el MP3. Un fallo de `expo-av` deja la partida usable.
+- **Audio / arranque (V4):** V4 **no incluye MP3 ni `expo-av`**. El arranque no puede depender de un archivo de sonido. Feature 24 queda histórica en V3.
 - **Entregable:** APK Release sideloadable **sin Metro**.
 - **Fidelidad:** Reglas de juego = Arkanoid clásico. V1 = núcleo pala/bola/ladrillos. V3 añade las cápsulas Vaus clásicas (L E C S B D P). Sin jefe ni rutas dedicadas de derrota/victoria (eso fue un delta V2 retirado).
 
@@ -67,6 +67,14 @@ V3 **completa la fidelidad clásica** con:
 
 No es un juego distinto ni un delta de jefe.
 
-Fuente de verdad: `idea/02-features.md` → Feature 06 / 17 (33 niveles) + Feature 22 (sin delta V2) + Feature 23 (cápsulas) + Feature 24 (ambiente).
+Fuente de verdad: `idea/02-features.md` → Feature 06 / 17 (33 niveles) + Feature 22 (sin delta V2) + Feature 23 (cápsulas). Feature 24 (ambiente) es **histórica V3**.
 
-Catálogo operativo de fallos V3 (arranque, audio, Windows, adb): `audits/errores-v3.md` (`ERR-V3-01` … `ERR-V3-27`).
+## Refinamiento V4 (sin MP3)
+
+V4 es V3 **sin sonido ambiente**:
+
+- No se empaqueta `ambient-castle.mp3` ni ningún otro MP3.
+- No hay módulo `ambient-audio` ni dependencia `expo-av`.
+- El menú y Jugar no tocan audio. Cierra ERR-V3-02 / 06 / 07 en código.
+
+Catálogo de fallos V3: `audits/errores-v3.md`. Flujo V4: `audits/flujo-wika-v4.md`.
