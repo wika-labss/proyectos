@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ramon David — Catálogo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --ink: #1c2433;
+      --muted: #5c6574;
+      --line: #e4ddd2;
+      --paper: #f6f1e8;
+      --card: #fffdf8;
+      --navy: #24324a;
+      --navy-2: #1a2436;
+      --gold: #b0894a;
+      --gold-2: #c9a36a;
+      --danger: #9b2c2c;
+      --ok: #2f6b4f;
+      --shadow: 0 18px 40px rgba(28, 36, 51, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "Source Sans 3", system-ui, sans-serif;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #fff 0%, transparent 50%),
+        linear-gradient(180deg, #efe7d8 0%, var(--paper) 40%);
+      color: var(--ink);
+    }
+    header {
+      background: linear-gradient(135deg, var(--navy-2), var(--navy));
+      color: #f7f1e6;
+      padding: 22px 28px 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    header p { margin: 6px 0 0; color: #d5cbb8; font-size: 14px; }
+    h1 {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 28px;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    h1 span { color: var(--gold-2); font-weight: 560; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 22px; }
+    .toolbar, .panel, .list-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      padding: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input, select, textarea, button {
+      font: inherit;
+    }
+    input, select, textarea {
+      border: 1px solid #d8d0c4;
+      background: #fff;
+      border-radius: 10px;
+      padding: 9px 11px;
+      color: var(--ink);
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid #e6d3ae;
+      border-color: var(--gold);
+    }
+    .toolbar input, .toolbar select { min-width: 180px; flex: 1; }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 16px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .btn-gold { background: var(--gold); color: #1c170e; }
+    .btn-navy { background: var(--navy); color: #f7f1e6; }
+    .btn-ghost { background: transparent; color: var(--navy); border: 1px solid var(--line); }
+    .btn-danger { background: #f8e8e8; color: var(--danger); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 1.2fr;
+      gap: 16px;
+    }
+    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+    .list-card { overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); font-size: 14px; }
+    th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: #faf6ef; }
+    tr { cursor: pointer; }
+    tr:hover td { background: #fbf6ee; }
+    tr.active td { background: #f3ead8; }
+    .muted { color: var(--muted); }
+    .price { font-variant-numeric: tabular-nums; font-weight: 700; }
+    .panel { padding: 18px; }
+    .panel h2 {
+      font-family: Fraunces, Georgia, serif;
+      font-size: 22px;
+      margin: 0 0 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .full { grid-column: 1 / -1; }
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+    .row-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      background: #fff;
+      cursor: pointer;
+      user-select: none;
+    }
+    .chip.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .section { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .toast {
+      position: fixed; right: 18px; bottom: 18px;
+      background: var(--navy); color: #fff; padding: 12px 16px;
+      border-radius: 12px; display: none; z-index: 20; max-width: 360px;
+    }
+    .toast.err { background: var(--danger); }
+    .empty { padding: 28px; color: var(--muted); }
+    .stats { color: #d5cbb8; font-size: 13px; }
+    textarea { min-height: 70px; width: 100%; resize: vertical; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Ramon <span>David</span></h1>
+      <p>Admin del catálogo GD 2025 · precios valor neto CLP · conectado a Supabase</p>
+    </div>
+    <div class="stats" id="stats">Cargando…</div>
+  </header>
+  <div class="wrap">
+    <div class="toolbar">
+      <input id="q" placeholder="Buscar producto…" />
+      <select id="catFilter"><option value="">Todas las categorías</option></select>
+      <button class="btn-gold" id="btnNew" type="button">Nuevo producto</button>
+    </div>
+    <div class="layout">
+      <div class="list-card">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Producto</th><th>Categoría</th><th>Precios</th></tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div id="emptyList" class="empty" hidden>No hay productos con ese filtro.</div>
+      </div>
+      <div class="panel" id="editor">
+        <h2 id="editorTitle">Selecciona un producto</h2>
+        <form id="productForm">
+          <div class="grid">
+            <div>
+              <label>ID (slug)</label>
+              <input name="id" required placeholder="sabana-300" />
+            </div>
+            <div>
+              <label>Nº catálogo</label>
+              <input name="catalog_number" type="number" required />
+            </div>
+            <div class="full">
+              <label>Nombre</label>
+              <input name="name" required placeholder="Sábana 300 hilos 100% algodón" />
+            </div>
+            <div>
+              <label>Categoría</label>
+              <select name="category_id" required></select>
+            </div>
+            <div>
+              <label>Hilos</label>
+              <input name="thread_count" type="number" />
+            </div>
+            <div>
+              <label>% algodón</label>
+              <input name="cotton_pct" type="number" />
+            </div>
+            <div>
+              <label>% poliéster</label>
+              <input name="polyester_pct" type="number" />
+            </div>
+            <div>
+              <label>Relleno gr/m²</label>
+              <input name="fill_gsm" type="number" />
+            </div>
+            <div>
+              <label>Incluye fundas</label>
+              <select name="includes_pillowcases">
+                <option value="">—</option>
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+            <div>
+              <label>Solo cotización</label>
+              <select name="quote_only">
+                <option value="false">No</option>
+                <option value="true">Sí</option>
+              </select>
+            </div>
+            <div class="full">
+              <label>Notas</label>
+              <textarea name="notes"></textarea>
+            </div>
+          </div>
+          <div class="row-actions">
+            <button class="btn-navy" type="submit">Guardar producto</button>
+            <button class="btn-danger" type="button" id="btnDelete">Eliminar</button>
+          </div>
+        </form>
+
+        <div class="section" id="linksSection">
+          <h3>Colores</h3>
+          <div class="chips" id="colorChips"></div>
+          <h3 style="margin-top:16px">Telas</h3>
+          <div class="chips" id="fabricChips"></div>
+        </div>
+
+        <div class="section" id="variantsSection">
+          <h3>Precios por talla</h3>
+          <table>
+            <thead>
+              <tr><th>Talla</th><th>Opción</th><th>Medida</th><th>Precio neto</th><th></th></tr>
+            </thead>
+            <tbody id="varBody"></tbody>
+          </table>
+          <form id="variantForm" class="grid" style="margin-top:12px">
+            <div>
+              <label>Talla</label>
+              <select name="size_id" required></select>
+            </div>
+            <div>
+              <label>Opción</label>
+              <input name="option_key" value="base" required />
+            </div>
+            <div>
+              <label>Etiqueta</label>
+              <input name="option_label" placeholder="Juego completo" />
+            </div>
+            <div>
+              <label>Precio neto CLP</label>
+              <input name="price_neto_clp" type="number" required />
+            </div>
+            <div>
+              <label>Ancho cm</label>
+              <input name="width_cm" type="number" />
+            </div>
+            <div>
+              <label>Largo cm</label>
+              <input name="length_cm" type="number" />
+            </div>
+            <div>
+              <label>Fuelle / caída cm</label>
+              <input name="drop_cm" type="number" />
+            </div>
+            <div class="full row-actions">
+              <input type="hidden" name="variant_id" />
+              <button class="btn-gold" type="submit">Guardar precio</button>
+              <button class="btn-ghost" type="button" id="btnCancelVar">Limpiar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = "https://lgafrcuuvfexvlsmveju.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnYWZyY3V1dmZleHZsc212ZWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTAxOTQsImV4cCI6MjEwNDM2NjE5NH0._FSjW4RqkAqk8NWO9gPU3LGGdm6gr9MXbnxCgDQxdDM";
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const els = {
+      tbody: document.getElementById("tbody"),
+      emptyList: document.getElementById("emptyList"),
+      q: document.getElementById("q"),
+      catFilter: document.getElementById("catFilter"),
+      stats: document.getElementById("stats"),
+      form: document.getElementById("productForm"),
+      editorTitle: document.getElementById("editorTitle"),
+      varBody: document.getElementById("varBody"),
+      variantForm: document.getElementById("variantForm"),
+      colorChips: document.getElementById("colorChips"),
+      fabricChips: document.getElementById("fabricChips"),
+      toast: document.getElementById("toast"),
+    };
+
+    const state = {
+      products: [],
+      categories: [],
+      sizes: [],
+      colors: [],
+      fabrics: [],
+      selected: null,
+      variants: [],
+      productColors: new Set(),
+      productFabrics: new Set(),
+      creating: false,
+    };
+
+    function toast(msg, err) {
+      els.toast.textContent = msg;
+      els.toast.className = "toast" + (err ? " err" : "");
+      els.toast.style.display = "block";
+      setTimeout(() => { els.toast.style.display = "none"; }, 2800);
+    }
+    function clp(n) {
+      if (n == null || n === "") return "—";
+      return "$" + Number(n).toLocaleString("es-CL");
+    }
+    function num(v) {
+      if (v === "" || v == null) return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    }
+    function boolOrNull(v) {
+      if (v === "true") return true;
+      if (v === "false") return false;
+      return null;
+    }
+
+    async function boot() {
+      const [cats, sizes, colors, fabrics] = await Promise.all([
+        db.from("categories").select("*").order("sort_order"),
+        db.from("sizes").select("*").order("sort_order"),
+        db.from("colors").select("*").order("name"),
+        db.from("fabrics").select("*").order("name"),
+      ]);
+      if (cats.error) return toast(cats.error.message, true);
+      state.categories = cats.data;
+      state.sizes = sizes.data;
+      state.colors = colors.data;
+      state.fabrics = fabrics.data;
+      fillSelect(els.catFilter, [{ id: "", name: "Todas las categorías" }, ...state.categories], "id", "name");
+      fillSelect(els.form.category_id, state.categories, "id", "name");
+      fillSelect(els.variantForm.size_id, state.sizes, "id", "label");
+      await loadProducts();
+    }
+
+    function fillSelect(sel, rows, idKey, labelKey) {
+      const current = sel.value;
+      sel.innerHTML = "";
+      for (const row of rows) {
+        const o = document.createElement("option");
+        o.value = row[idKey];
+        o.textContent = row[labelKey];
+        sel.appendChild(o);
+      }
+      if (current) sel.value = current;
+    }
+
+    async function loadProducts() {
+      const { data, error } = await db
+        .from("products")
+        .select("*, categories(name), product_variants(price_neto_clp)")
+        .order("catalog_number")
+        .order("name");
+      if (error) return toast(error.message, true);
+      state.products = data;
+      renderList();
+      const priced = data.flatMap((p) => p.product_variants.map((v) => v.price_neto_clp).filter((n) => n != null));
+      els.stats.textContent = data.length + " productos · " +
+        data.reduce((n, p) => n + p.product_variants.length, 0) + " precios" +
+        (priced.length ? " · " + clp(Math.min(...priced)) + " a " + clp(Math.max(...priced)) : "");
+    }
+
+    function renderList() {
+      const q = els.q.value.trim().toLowerCase();
+      const cat = els.catFilter.value;
+      const rows = state.products.filter((p) => {
+        const hit = !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q) || String(p.catalog_number).includes(q);
+        return hit && (!cat || p.category_id === cat);
+      });
+      els.tbody.innerHTML = "";
+      els.emptyList.hidden = rows.length > 0;
+      for (const p of rows) {
+        const prices = p.product_variants.map((v) => v.price_neto_clp).filter((n) => n != null);
+        const tr = document.createElement("tr");
+        if (state.selected && state.selected.id === p.id) tr.className = "active";
+        tr.innerHTML =
+          "<td>" + p.catalog_number + "</td>" +
+          "<td><strong>" + escapeHtml(p.name) + "</strong><div class='muted'>" + escapeHtml(p.id) + "</div></td>" +
+          "<td>" + escapeHtml(p.categories ? p.categories.name : p.category_id) + "</td>" +
+          "<td class='price'>" + (prices.length ? clp(Math.min(...prices)) + (prices.length > 1 ? " – " + clp(Math.max(...prices)) : "") : "cotización") + "</td>";
+        tr.onclick = () => selectProduct(p.id);
+        els.tbody.appendChild(tr);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function blankProduct() {
+      return {
+        id: "",
+        catalog_number: "",
+        name: "",
+        category_id: state.categories[0] ? state.categories[0].id : "",
+        thread_count: "",
+        cotton_pct: "",
+        polyester_pct: "",
+        fill_gsm: "",
+        includes_pillowcases: "",
+        quote_only: false,
+        notes: "",
+      };
+    }
+
+    function fillForm(p) {
+      const f = els.form;
+      f.id.value = p.id || "";
+      f.id.readOnly = !state.creating;
+      f.catalog_number.value = p.catalog_number ?? "";
+      f.name.value = p.name || "";
+      f.category_id.value = p.category_id || "";
+      f.thread_count.value = p.thread_count ?? "";
+      f.cotton_pct.value = p.cotton_pct ?? "";
+      f.polyester_pct.value = p.polyester_pct ?? "";
+      f.fill_gsm.value = p.fill_gsm ?? "";
+      f.includes_pillowcases.value = p.includes_pillowcases == null ? "" : String(p.includes_pillowcases);
+      f.quote_only.value = String(!!p.quote_only);
+      f.notes.value = p.notes || "";
+    }
+
+    async function selectProduct(id) {
+      state.creating = false;
+      const { data, error } = await db.from("products").select("*").eq("id", id).single();
+      if (error) return toast(error.message, true);
+      state.selected = data;
+      els.editorTitle.textContent = data.name;
+      fillForm(data);
+      clearVariant();
+      await loadProductExtras(id);
+      renderList();
+    }
+
+    async function loadProductExtras(id) {
+      const [vars, cols, fabs] = await Promise.all([
+        db.from("product_variants").select("*, sizes(label)").eq("product_id", id).order("id"),
+        db.from("product_colors").select("color_id").eq("product_id", id),
+        db.from("product_fabrics").select("fabric_id").eq("product_id", id),
+      ]);
+      if (vars.error) return toast(vars.error.message, true);
+      state.variants = vars.data;
+      state.productColors = new Set((cols.data || []).map((r) => r.color_id));
+      state.productFabrics = new Set((fabs.data || []).map((r) => r.fabric_id));
+      renderVariants();
+      renderChips();
+    }
+
+    function renderVariants() {
+      els.varBody.innerHTML = "";
+      for (const v of state.variants) {
+        const tr = document.createElement("tr");
+        const medida = [v.width_cm, v.length_cm].filter((n) => n != null).join("×") + (v.drop_cm != null ? "+" + v.drop_cm : "");
+        tr.innerHTML =
+          "<td>" + escapeHtml(v.sizes ? v.sizes.label : v.size_id) + "</td>" +
+          "<td>" + escapeHtml(v.option_label || v.option_key) + "</td>" +
+          "<td>" + escapeHtml(medida || "—") + "</td>" +
+          "<td class='price'>" + clp(v.price_neto_clp) + "</td>" +
+          "<td><button class='btn-ghost' type='button'>Editar</button> <button class='btn-danger' type='button'>Borrar</button></td>";
+        tr.onclick = (e) => e.stopPropagation();
+        tr.querySelector(".btn-ghost").onclick = () => fillVariant(v);
+        tr.querySelector(".btn-danger").onclick = () => deleteVariant(v.id);
+        els.varBody.appendChild(tr);
+      }
+    }
+
+    function fillVariant(v) {
+      const f = els.variantForm;
+      f.variant_id.value = v.id;
+      f.size_id.value = v.size_id;
+      f.option_key.value = v.option_key;
+      f.option_label.value = v.option_label || "";
+      f.price_neto_clp.value = v.price_neto_clp ?? "";
+      f.width_cm.value = v.width_cm ?? "";
+      f.length_cm.value = v.length_cm ?? "";
+      f.drop_cm.value = v.drop_cm ?? "";
+    }
+
+    function clearVariant() {
+      els.variantForm.reset();
+      els.variantForm.option_key.value = "base";
+      els.variantForm.variant_id.value = "";
+    }
+
+    function renderChips() {
+      els.colorChips.innerHTML = "";
+      for (const c of state.colors) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip" + (state.productColors.has(c.id) ? " on" : "");
+        b.textContent = c.name;
+        b.onclick = () => toggleLink("product_colors", "color_id", c.id, state.productColors);
+        els.colorChips.appendChild(b);
+      }
+      els.fabricChips.innerHTML = "";
+      for (const f of state.fabrics) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "chip" + (state.productFabrics.has(f.id) ? " on" : "");
+        b.textContent = f.name;
+        b.onclick = () => toggleLink("product_fabrics", "fabric_id", f.id, state.productFabrics);
+        els.fabricChips.appendChild(b);
+      }
+    }
+
+    async function toggleLink(table, col, value, set) {
+      if (!state.selected || state.creating) return toast("Guarda el producto primero", true);
+      const id = state.selected.id;
+      if (set.has(value)) {
+        const { error } = await db.from(table).delete().eq("product_id", id).eq(col, value);
+        if (error) return toast(error.message, true);
+        set.delete(value);
+      } else {
+        const { error } = await db.from(table).insert({ product_id: id, [col]: value });
+        if (error) return toast(error.message, true);
+        set.add(value);
+      }
+      renderChips();
+    }
+
+    function productPayload(isInsert) {
+      const f = els.form;
+      const row = {
+        catalog_number: Number(f.catalog_number.value),
+        name: f.name.value.trim(),
+        category_id: f.category_id.value,
+        thread_count: num(f.thread_count.value),
+        cotton_pct: num(f.cotton_pct.value),
+        polyester_pct: num(f.polyester_pct.value),
+        fill_gsm: num(f.fill_gsm.value),
+        includes_pillowcases: boolOrNull(f.includes_pillowcases.value),
+        quote_only: f.quote_only.value === "true",
+        notes: f.notes.value.trim() || null,
+      };
+      if (isInsert) row.id = f.id.value.trim();
+      return row;
+    }
+
+    els.form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const creating = state.creating;
+      const payload = productPayload(creating);
+      if (creating && !payload.id) return toast("El ID es obligatorio", true);
+      const q = creating
+        ? db.from("products").insert(payload).select().single()
+        : db.from("products").update(payload).eq("id", state.selected.id).select().single();
+      const { data, error } = await q;
+      if (error) return toast(error.message, true);
+      toast(creating ? "Producto creado" : "Producto actualizado");
+      state.creating = false;
+      state.selected = data;
+      els.form.id.readOnly = true;
+      els.editorTitle.textContent = data.name;
+      await loadProducts();
+      await loadProductExtras(data.id);
+    });
+
+    document.getElementById("btnDelete").onclick = async () => {
+      if (!state.selected || state.creating) return;
+      if (!confirm("¿Eliminar «" + state.selected.name + "» y todos sus precios?")) return;
+      const { error } = await db.from("products").delete().eq("id", state.selected.id);
+      if (error) return toast(error.message, true);
+      toast("Producto eliminado");
+      state.selected = null;
+      state.creating = true;
+      fillForm(blankProduct());
+      els.editorTitle.textContent = "Nuevo producto";
+      els.form.id.readOnly = false;
+      els.varBody.innerHTML = "";
+      state.productColors = new Set();
+      state.productFabrics = new Set();
+      renderChips();
+      await loadProducts();
+    };
+
+    document.getElementById("btnNew").onclick = () => {
+      state.creating = true;
+      state.selected = null;
+      fillForm(blankProduct());
+      els.editorTitle.textContent = "Nuevo producto";
+      els.varBody.innerHTML = "";
+      state.productColors = new Set();
+      state.productFabrics = new Set();
+      clearVariant();
+      renderChips();
+      renderList();
+      els.form.id.focus();
+    };
+
+    els.variantForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!state.selected || state.creating) return toast("Guarda el producto primero", true);
+      const f = els.variantForm;
+      const width = num(f.width_cm.value);
+      const length = num(f.length_cm.value);
+      const drop = num(f.drop_cm.value);
+      const extra = {};
+      if (width != null && length != null) extra.medida = width + "x" + length + (drop != null ? "+" + drop : "");
+      const payload = {
+        product_id: state.selected.id,
+        size_id: f.size_id.value,
+        option_key: f.option_key.value.trim() || "base",
+        option_label: f.option_label.value.trim() || null,
+        price_neto_clp: num(f.price_neto_clp.value),
+        width_cm: width,
+        length_cm: length,
+        drop_cm: drop,
+        extra,
+      };
+      const vid = f.variant_id.value;
+      const q = vid
+        ? db.from("product_variants").update(payload).eq("id", vid)
+        : db.from("product_variants").insert(payload);
+      const { error } = await q;
+      if (error) return toast(error.message, true);
+      toast(vid ? "Precio actualizado" : "Precio agregado");
+      clearVariant();
+      await loadProductExtras(state.selected.id);
+      await loadProducts();
+    });
+
+    async function deleteVariant(id) {
+      if (!confirm("¿Eliminar este precio?")) return;
+      const { error } = await db.from("product_variants").delete().eq("id", id);
+      if (error) return toast(error.message, true);
+      toast("Precio eliminado");
+      await loadProductExtras(state.selected.id);
+      await loadProducts();
+    }
+
+    document.getElementById("btnCancelVar").onclick = clearVariant;
+    els.q.oninput = renderList;
+    els.catFilter.onchange = renderList;
+
+    boot();
+  </script>
+</body>
+</html>
