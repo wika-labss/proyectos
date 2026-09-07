@@ -1,8 +1,8 @@
 ---
 id: "FEAT-001"
-title: "Ramon David — Features V1 (web)"
+title: "Ramon David — Features V1–V2 (web)"
 status: "EN_REVISION"
-version: "1.0.0"
+version: "1.1.0"
 owner: "Vissiuss / Equipo WIKA"
 created_at: "2026-09-07"
 updated_at: "2026-09-07"
@@ -35,6 +35,9 @@ excepcion_web: true
 | `FEAT-05` | `ERR-05` | Páginas Nosotros y Contacto | `Alta` | `mod-public-site` |
 | `FEAT-06` | `ERR-06` | Login admin + sesión + CSRF | `Crítica` | `mod-admin-auth` |
 | `FEAT-07` | `ERR-01` | Arranque local del servidor web | `Crítica` | `mod-web-serve` |
+| `FEAT-12` | `ERR-07` | Portales separados + roles user/admin | `Crítica` | `mod-roles` |
+| `FEAT-13` | `ERR-08` | Catálogo interno: categoría → producto → edición | `Crítica` | `mod-portal-user` |
+| `FEAT-14` | `ERR-09` | Stock por talla, +/−, consultas y reporte CSV | `Crítica` | `mod-stock` |
 
 ---
 
@@ -78,7 +81,7 @@ excepcion_web: true
 
 ### Feature `FEAT-03`: Panel de precios (CRUD)
 
-**Descripción:** Admin logueado crea, edita y borra productos (categoría, orden, descripción, colores, notas, tablas de precios/medidas). Persistencia atómica en `data/products.json`.
+**Descripción:** V1: CRUD en `/admin`. **V2:** el CRUD vive en el portal **usuario** (`/portal/p/<id>`). Persistencia atómica en `data/products.json`.
 
 #### Escenario 3.1: Happy Path
 
@@ -154,6 +157,54 @@ excepcion_web: true
 
 ---
 
+### Feature `FEAT-12`: Dos portales y roles
+
+**Descripción:** `data/users.json` con rol `user` o `admin`. Login en `/portal/login` y `/admin/login`. Sesión con `role`. Cruzar de portal = 403/redirect.
+
+#### Escenario 12.1: Happy Path
+
+- **Dado que** `existen usuarios user y admin`
+- **Cuando** `cada uno inicia sesión en su URL`
+- **Entonces** `el user llega a categorías y el admin a consultas de stock`
+
+#### Escenario 12.2: Cruce de rol
+
+- **Dado que** `hay sesión user`
+- **Cuando** `pide /admin o POST /admin/api/stock`
+- **Entonces** `se redirige o responde 403; no hay movimiento`
+
+---
+
+### Feature `FEAT-13`: Catálogo interno por categoría
+
+**Descripción:** Portal usuario: lista de categorías con conteo → productos de esa categoría → editor (CRUD + imagen).
+
+#### Escenario 13.1: Happy Path
+
+- **Dado que** `el user está logueado`
+- **Cuando** `abre Sábanas y luego sabana-300`
+- **Entonces** `ve el editor y puede guardar cambios`
+
+---
+
+### Feature `FEAT-14`: Stock y reportes (solo admin)
+
+**Descripción:** Stock por `producto|talla` (o `base`). Sumar/descontar con motivo. Consultas (categoría, producto, talla, stock bajo ≤5). Reporte en pantalla + CSV. No saldo negativo.
+
+#### Escenario 14.1: Happy Path
+
+- **Dado que** `hay 10 unidades en sabana-300|1 plaza`
+- **Cuando** `el admin descuenta 3 con motivo «pedido»`
+- **Entonces** `quedan 7 y el movimiento aparece en el reporte`
+
+#### Escenario 14.2: Saldo insuficiente
+
+- **Dado que** `el saldo es 1`
+- **Cuando** `intenta descontar 2`
+- **Entonces** `400; el saldo no cambia`
+
+---
+
 ## 4. Funcionalidades Deseables (V1.1+)
 
 | ID Feature | Nombre | Prioridad | Notas |
@@ -169,7 +220,7 @@ excepcion_web: true
 
 - Expo, React Native, APK, expo-router, `npm run typecheck`.
 - Pipeline `design-system/` (V3+).
-- Pagos, carrito, inventario, cuentas de cliente.
+- Pagos, carrito, cuentas de cliente, multi-sucursal.
 - iOS nativo / store.
 
 ---
@@ -180,7 +231,7 @@ excepcion_web: true
 | :--- | :--- | :--- | :--- |
 | `NFR-01` | **Arranque** | Home + `/api/products` 200 en &lt; 5 s tras `app.py` | `curl` / smoke |
 | `NFR-02` | **Catálogo** | 19 productos V1 listables y filtrables | UI + JSON |
-| `NFR-03` | **Seguridad admin** | CRUD y upload exigen sesión | 401 sin cookie |
+| `NFR-03` | **Seguridad** | CRUD exige rol `user`; stock exige `admin` | 401/403 |
 | `NFR-04` | **Offline visitante** | Sitio **requiere** servidor local/red; no es PWA | Documentado (N/A offline-first) |
 | `NFR-05` | **Fidelidad visual** | Tokens `:root` de `css/main.css` | `04-application-design.md` |
 | `NFR-06` | **Pins** | Flask/Werkzeug con `~=` | `requirements.txt` |
@@ -194,8 +245,9 @@ excepcion_web: true
 | Header / brand CD | Todas públicas | `--teal`, header `#151716` | Implementado |
 | Hero slider | Home | `--serif`, overlay | Implementado |
 | `catalog-card` | Productos | `--paper`, `--ink` | Implementado |
-| Login card | `/admin/login` | `--paper`, `--teal` | Implementado |
-| Editor + preview | `/admin` | tokens admin embebidos en `app.py` | Implementado |
+| Login card | `/portal/login`, `/admin/login` | `--paper`, `--teal` | V2 |
+| Categorías / editor | `/portal` | `--paper`, `--teal` | V2 |
+| Consultas stock | `/admin` | `--paper`, `--teal` | V2 |
 
 ---
 

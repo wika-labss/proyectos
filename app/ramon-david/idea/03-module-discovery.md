@@ -1,8 +1,8 @@
 ---
 id: "MOD-001"
-title: "Ramon David — Módulos V1 (web)"
+title: "Ramon David — Módulos V1–V2 (web)"
 status: "EN_REVISION"
-version: "1.0.0"
+version: "1.1.0"
 owner: "Vissiuss / Arquitecto WIKA"
 created_at: "2026-09-07"
 updated_at: "2026-09-07"
@@ -22,6 +22,7 @@ excepcion_web: true
 - **Especificaciones base:** `01-problem.md` (`PROB-001`) | `02-features.md` (`FEAT-001`)
 - **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_MODULOS`
 - **Raíz V1:** `iterations/v1/`
+- **Raíz V2:** `iterations/v2/`
 
 ---
 
@@ -38,6 +39,9 @@ excepcion_web: true
 | `MOD-07` | `FEAT-02` | `ERR-02` | `mod-catalog-ui` | UI | `productos.html` + `js/product.js` |
 | `MOD-08` | `FEAT-01` | `ERR-01` | `mod-theme` | tokens | `css/main.css`, `css/componentes.css` |
 | `MOD-09` | `FEAT-07` | `ERR-01` | `mod-web-serve` | serve | Flask static + `main()` host/port |
+| `MOD-10` | `FEAT-12` | `ERR-07` | `mod-roles` | auth | `users.json`, rol en sesión, guardas |
+| `MOD-11` | `FEAT-13` | `ERR-08` | `mod-portal-user` | UI | categorías → productos → editor |
+| `MOD-12` | `FEAT-14` | `ERR-09` | `mod-stock` | persist + UI | stock, movimientos, consultas, CSV |
 
 ---
 
@@ -154,6 +158,38 @@ excepcion_web: true
 
 ---
 
+### Módulo `MOD-10`: `mod-roles`
+
+**Patrón:** Auth por rol  
+**Ruta:** `iterations/v2/app.py` + `data/users.json`
+
+- **Entradas:** username, password, portal destino
+- **Salidas:** `session["user"]`, `session["role"]` ∈ {`user`,`admin`}
+- Usuario no entra a `/admin*`. Admin no escribe CRUD en `/portal/api` (solo lectura de catálogo para elegir ítem).
+
+---
+
+### Módulo `MOD-11`: `mod-portal-user`
+
+**Patrón:** UI staff  
+**Ruta:** `/portal`, `/portal/c/<slug>`, `/portal/p/<id>`, `/portal/api/*`
+
+- Categorías derivadas de `product.category`
+- Editor reutiliza el CRUD de MOD-01/04/05
+
+---
+
+### Módulo `MOD-12`: `mod-stock`
+
+**Patrón:** Inventario  
+**Ruta:** `data/stock.json`, `data/stock_movimientos.json`, `/admin`, `/admin/reportes`
+
+- Clave `{product_id}|{talla}` o `|base`
+- `POST` movimiento `{ product_id, size, delta, motivo }`
+- Descuento bloqueado si saldo < |delta|
+
+---
+
 ## 4. Grafo de Dependencias y Reglas de Importación
 
 ```text
@@ -163,15 +199,15 @@ excepcion_web: true
     │         │
     │         └─ /api/products ──► MOD-02 ──► MOD-01
     │
-    └─ /admin ──► MOD-03 ──► MOD-04 ──► MOD-01
-                         └──► MOD-05
+    ├─ /portal ──► MOD-10 (user) ──► MOD-11 ──► MOD-01 / MOD-05
+    └─ /admin  ──► MOD-10 (admin) ──► MOD-12
 [proceso]
     MOD-09 sirve todo
 ```
 
 **Reglas:**
 
-- Sin ciclos: UI pública no escribe JSON; solo MOD-04/05 escriben.
+- Sin ciclos: UI pública no escribe JSON; solo MOD-11 escribe catálogo; solo MOD-12 escribe stock.
 - `/data/` no es descargable.
 - No hay capa Expo. Equivalente web a `src/engine/` = funciones de MOD-01 en `app.py`.
 

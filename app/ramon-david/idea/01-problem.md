@@ -8,6 +8,7 @@ created_at: "2026-09-07"
 updated_at: "2026-09-07"
 audit_1_passed: false
 excepcion_web: true
+iteracion_actual: "v2"
 ---
 
 # [01] Definición del Problema, Alcance y Metas
@@ -21,7 +22,8 @@ excepcion_web: true
 - **Nombre del Proyecto:** `Ramon David` (marca pública: Acolchados CD)
 - **Repositorio de aplicación:** `proyectos/app/ramon-david/`
 - **Código V1 (as-built):** `iterations/v1/`
-- **Stakeholders clave:** Vissiuss (producto / ingeniería), Acolchados CD (cliente / catálogo), visitante del sitio, administrador de precios
+- **Código V2:** `iterations/v2/` — portales usuario/admin + stock
+- **Stakeholders clave:** Vissiuss (producto / ingeniería), Acolchados CD, visitante del sitio, personal interno (`user`), administrador de stock (`admin`)
 - **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION` (V1 ya construida; docs son retrofit)
 - **Sitio de referencia:** https://www.acolchadoscd.cl
 
@@ -36,8 +38,8 @@ excepcion_web: true
   Cotizar a mano desde el PDF; el visitante no ve tallas/precios en la web; cada cambio de lista implica reeditar archivos o republicar el PDF.
 
 - **Análisis de brecha (Gap Analysis):**
-  - **Estado actual (hoy):** Sitio Flask en `iterations/v1/` (`products.json`) y admin HTML + migraciones Supabase en la raíz de `app/ramon-david/`. Dos fuentes de datos. `Ramon David/` es puntero.
-  - **Estado deseado (mañana):** Flujo WIKA (01–05, audits, `iterations/v{N}/`). V1.1 unifica JSON y Supabase (`FEAT-08`).
+  - **Estado actual (hoy):** V1 en `iterations/v1/` (un solo `/admin` para CRUD, sin stock). Supabase en la raíz del proyecto (no cableado).
+  - **Estado deseado (v2):** Sitio público sin login + portal **usuario** (categorías → productos → edición) + portal **admin** (consultas, reportes y +/− stock). JSON local. Supabase sigue siendo `FEAT-08`.
 
 ---
 
@@ -51,6 +53,9 @@ excepcion_web: true
 | `ERR-04` | Productos sin foto usable en la ficha | `Medio` | `FEAT-04` | `mod-uploads` |
 | `ERR-05` | No hay canal de contacto / historia de marca | `Medio` | `FEAT-05` | `mod-public-site` |
 | `ERR-06` | El panel de precios no puede quedar abierto | `Alto` | `FEAT-06` | `mod-admin-auth` |
+| `ERR-07` | Un solo login mezcla edición y operación | `Alto` | `FEAT-12` | `mod-roles` |
+| `ERR-08` | El personal no navega catálogo por categoría para editar | `Alto` | `FEAT-13` | `mod-portal-user` |
+| `ERR-09` | No hay stock, movimientos ni reportes | `Alto` | `FEAT-14` | `mod-stock` |
 
 ---
 
@@ -58,14 +63,15 @@ excepcion_web: true
 
 - **Usuarios principales:**
   - **Visitante / comprador B2B o hogar:** ver colección, filtrar categoría, abrir medidas y precio neto.
-  - **Administrador de catálogo:** entrar a `/admin`, crear/editar/borrar productos, subir imagen, ver preview.
-- **Fuera de alcance (Out of Scope explícito V1):**
+  - **Personal interno (`user`):** login en `/portal`, ver categorías → productos → editar ficha.
+  - **Administrador (`admin`):** login en `/admin`, consultas de stock, reportes, sumar/descontar unidades.
+- **Fuera de alcance (Out of Scope explícito V2):**
   - App móvil Expo / APK / iOS (excepción web).
   - Pipeline Design System V3+ (`design-system/`).
-  - Sync live con Supabase `ramon-david` (existe proyecto aparte; V1.1).
+  - Sync live con Supabase `ramon-david` (`FEAT-08`).
   - Envío real de correo del formulario de contacto.
-  - Carrito, pago, stock, multi-idioma, CMS headless.
-  - Publicar el admin a internet abierto sin HTTPS ni hash de contraseña propio.
+  - Carrito, pago, multi-sucursal, cuentas de cliente.
+  - Publicar portales a internet abierto sin HTTPS ni hash propio.
 
 ---
 
@@ -93,7 +99,19 @@ excepcion_web: true
 - **Cuando** `cambia un valor de tabla y el panel guarda`
 - **Entonces** `GET /api/products refleja el cambio y la ficha pública lo muestra`
 
-### Escenario 3: Tokens visuales (web)
+### Escenario 3: Portal usuario edita por categoría
+
+- **Dado que** `un usuario con rol user inicia sesión en /portal`
+- **Cuando** `abre una categoría y luego un producto`
+- **Entonces** `puede editar la ficha; no puede abrir /admin ni APIs de stock`
+
+### Escenario 4: Admin mueve stock
+
+- **Dado que** `un admin inicia sesión en /admin`
+- **Cuando** `descuenta 2 unidades de una talla con stock suficiente`
+- **Entonces** `el saldo baja, queda un movimiento y el reporte lo incluye`
+
+### Escenario 5: Tokens visuales (web)
 
 - **Dado que** `se renderizan páginas públicas`
 - **Cuando** `el agente revise estilos`

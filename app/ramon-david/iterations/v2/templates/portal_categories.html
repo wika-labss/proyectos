@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo interno | Acolchados CD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/portales.css">
+</head>
+<body class="portal-body">
+  <header class="portal-top">
+    <a class="portal-brand" href="/portal">ACOLCHADOS CD <span>portal usuario</span></a>
+    <div class="portal-top-links">
+      <a class="is-active" href="/portal">Categorías</a>
+      <a href="/">Sitio público</a>
+      <a href="/portal/logout">Cerrar sesión ({{ user }})</a>
+    </div>
+  </header>
+  <main class="portal-wrap">
+    <p class="crumb">Catálogo interno</p>
+    <h1>Categorías</h1>
+    <p class="lead">Elige una categoría para ver sus productos y editarlos.</p>
+    <div class="toolbar">
+      <a class="btn btn-primary" href="/portal/nuevo">+ Nuevo producto</a>
+    </div>
+    <div class="card-grid">
+      {% for c in categories %}
+      <a class="portal-card" href="/portal/c/{{ c.slug }}">
+        <h2>{{ c.name }}</h2>
+        <p>{{ c.count }} {{ 'producto' if c.count == 1 else 'productos' }}</p>
+      </a>
+      {% else %}
+      <p class="muted">No hay categorías todavía. Crea el primer producto.</p>
+      {% endfor %}
+    </div>
+  </main>
+</body>
+</html>
