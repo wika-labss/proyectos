@@ -451,6 +451,7 @@
       state.selected = data;
       els.editorTitle.textContent = data.name;
       fillForm(data);
+      clearVariant();
       await loadProductExtras(id);
       renderList();
     }
@@ -604,6 +605,7 @@
       els.varBody.innerHTML = "";
       state.productColors = new Set();
       state.productFabrics = new Set();
+      clearVariant();
       renderChips();
       renderList();
       els.form.id.focus();
