@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% if portal == 'admin' %}Admin stock{% else %}Portal{% endif %} | Acolchados CD</title>
+  <title>Portal | Acolchados CD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/portales.css">
@@ -17,9 +17,9 @@
   </header>
   <div class="login-wrap">
     <div class="login-card">
-      <p class="crumb">{% if portal == 'admin' %}Portal administrador{% else %}Portal de usuario{% endif %}</p>
-      <h1>{% if portal == 'admin' %}Consultas y <em>stock</em>{% else %}Catálogo y <em>edición</em>{% endif %}</h1>
-      <p class="lead">{% if portal == 'admin' %}Entra para consultar existencias, mover unidades y bajar reportes.{% else %}Entra para recorrer categorías, abrir productos y editar fichas.{% endif %}</p>
+      <p class="crumb">Portal interno</p>
+      <h1>Catálogo, stock y <em>reportes</em></h1>
+      <p class="lead">Un solo acceso para editar el catálogo, mover existencias y bajar reportes.</p>
       {% if error %}<p class="login-error">{{ error }}</p>{% endif %}
       <form class="login-form" method="post" action="{{ action }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">

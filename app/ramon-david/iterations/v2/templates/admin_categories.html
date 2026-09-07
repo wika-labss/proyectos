@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catálogo | Portal Acolchados CD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/portales.css">
+</head>
+<body class="portal-body">
+  <header class="portal-top">
+    <a class="portal-brand" href="/admin">ACOLCHADOS CD <span>portal</span></a>
+    <nav class="portal-nav">
+      <a class="is-active" href="/admin">Catálogo</a>
+      <a href="/admin/stock">Stock</a>
+      <a href="/admin/reportes">Reportes</a>
+    </nav>
+    <div class="portal-top-links">
+      <a href="/">Sitio público</a>
+      <span class="portal-user">{{ user }}</span>
+      <a href="/admin/logout">Salir</a>
+    </div>
+  </header>
+  <main class="portal-wrap">
+    <div class="portal-head">
+      <div>
+        <p class="crumb">Catálogo</p>
+        <h1>Categorías</h1>
+        <p class="lead">Elige una categoría para ver y editar sus productos. También puedes crear, renombrar o eliminar categorías vacías.</p>
+      </div>
+      <button class="btn btn-primary" type="button" id="new-category">Nueva categoría</button>
+    </div>
+    <p id="flash" class="flash" hidden></p>
+    <section class="card-grid" id="cats">
+      {% for c in categories %}
+      <article class="cat-card">
+        <a class="cat-open" href="/admin/c/{{ c.id }}">
+          <h2>{{ c.name }}</h2>
+          <p>{{ c.product_count }} producto{{ "" if c.product_count == 1 else "s" }}</p>
+        </a>
+        <div class="cat-actions">
+          <button type="button" class="btn edit" data-id="{{ c.id }}" data-name="{{ c.name }}" data-order="{{ c.order }}">Editar</button>
+          <button type="button" class="btn btn-danger del" data-id="{{ c.id }}" data-name="{{ c.name }}" {% if c.product_count %}disabled{% endif %}>Eliminar</button>
+        </div>
+      </article>
+      {% endfor %}
+    </section>
+  </main>
+
+  <dialog class="sheet" id="cat-dialog">
+    <form method="dialog" id="cat-form">
+      <h2 id="cat-title">Nueva categoría</h2>
+      <label class="field">Nombre <input required name="name" maxlength="80"></label>
+      <label class="field">Orden <input name="order" type="number" value="10"></label>
+      <menu>
+        <button class="btn" value="cancel" type="button" id="cat-cancel">Cancelar</button>
+        <button class="btn btn-primary" value="save">Guardar</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script>
+    const flash = document.getElementById("flash");
+    const catsEl = document.getElementById("cats");
+    const dialog = document.getElementById("cat-dialog");
+    const form = document.getElementById("cat-form");
+    let editingId = null;
+
+    function showFlash(text, ok) {
+      flash.hidden = false;
+      flash.textContent = text;
+      flash.className = "flash " + (ok ? "ok" : "err");
+    }
+
+    function bindCard(card, c) {
+      card.querySelector(".edit").onclick = () => openEdit(c);
+      card.querySelector(".del").onclick = () => removeCat(c);
+    }
+
+    function render(list) {
+      catsEl.innerHTML = "";
+      list.forEach((c) => {
+        const count = c.product_count ?? c.count ?? 0;
+        const card = document.createElement("article");
+        card.className = "cat-card";
+        card.innerHTML = `
+          <a class="cat-open" href="/admin/c/${c.id}">
+            <h2>${c.name}</h2>
+            <p>${count} producto${count === 1 ? "" : "s"}</p>
+          </a>
+          <div class="cat-actions">
+            <button type="button" class="btn edit">Editar</button>
+            <button type="button" class="btn btn-danger del" ${count ? "disabled" : ""}>Eliminar</button>
+          </div>`;
+        bindCard(card, c);
+        catsEl.appendChild(card);
+      });
+    }
+
+    async function load() {
+      const res = await fetch("/admin/api/categories");
+      const data = await res.json();
+      render(data.categories || []);
+    }
+
+    document.querySelectorAll("#cats .cat-card").forEach((card) => {
+      const edit = card.querySelector(".edit");
+      const del = card.querySelector(".del");
+      if (!edit || !del) return;
+      bindCard(card, { id: edit.dataset.id, name: edit.dataset.name, order: Number(edit.dataset.order || 10) });
+    });
+
+    function openCreate() {
+      editingId = null;
+      document.getElementById("cat-title").textContent = "Nueva categoría";
+      form.name.value = "";
+      form.order.value = "10";
+      dialog.showModal();
+    }
+
+    function openEdit(c) {
+      editingId = c.id;
+      document.getElementById("cat-title").textContent = "Editar categoría";
+      form.name.value = c.name;
+      form.order.value = c.order || 10;
+      dialog.showModal();
+    }
+
+    async function removeCat(c) {
+      if (!confirm(`¿Eliminar la categoría “${c.name}”? Solo se puede si está vacía.`)) return;
+      const res = await fetch("/admin/api/categories/" + encodeURIComponent(c.id), { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) { showFlash(data.error || "No se pudo eliminar", false); return; }
+      showFlash("Categoría eliminada.", true);
+      load();
+    }
+
+    document.getElementById("new-category").onclick = openCreate;
+    document.getElementById("cat-cancel").onclick = () => dialog.close();
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const payload = { name: form.name.value.trim(), order: Number(form.order.value || 10) };
+      const url = editingId
+        ? "/admin/api/categories/" + encodeURIComponent(editingId)
+        : "/admin/api/categories";
+      const method = editingId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { showFlash(data.error || "No se pudo guardar", false); return; }
+      dialog.close();
+      showFlash(editingId ? "Categoría actualizada." : "Categoría creada.", true);
+      load();
+    });
+
+    load();
+  </script>
+</body>
+</html>

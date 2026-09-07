@@ -78,7 +78,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "sabanas"
   },
   "sabana-200": {
     "order": 20,
@@ -159,7 +160,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "sabanas"
   },
   "sabana-144": {
     "order": 30,
@@ -245,7 +247,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "sabanas"
   },
   "plumon-microfibra": {
     "order": 10,
@@ -293,7 +296,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "plumones"
   },
   "plumon-144": {
     "order": 20,
@@ -346,7 +350,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "plumones"
   },
   "quilt-microfibra": {
     "order": 10,
@@ -392,7 +397,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "quilts"
   },
   "quilt-144": {
     "order": 20,
@@ -445,7 +451,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "quilts"
   },
   "cubreplumon-300": {
     "order": 10,
@@ -508,7 +515,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "cubre-plumon"
   },
   "cubreplumon-200": {
     "order": 20,
@@ -571,7 +579,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "cubre-plumon"
   },
   "cubreplumon-144": {
     "order": 30,
@@ -641,7 +650,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "cubre-plumon"
   },
   "pieceras": {
     "order": 10,
@@ -725,7 +735,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "pieceras"
   },
   "colchas": {
     "order": 10,
@@ -812,7 +823,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "colchas"
   },
   "almohada-hule": {
     "order": 10,
@@ -844,7 +856,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "protectores-de-colchon"
   },
   "cubrecolchon-clasico": {
     "order": 20,
@@ -925,7 +938,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "protectores-de-colchon"
   },
   "cubrecolchon-impermeable": {
     "order": 30,
@@ -971,7 +985,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "protectores-de-colchon"
   },
   "faldones-144": {
     "order": 10,
@@ -1039,7 +1054,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "faldones-y-almohadas"
   },
   "toallas": {
     "order": 10,
@@ -1090,7 +1106,8 @@
           ]
         ]
       }
-    ]
+    ],
+    "category_id": "toallas"
   },
   "bordado": {
     "order": 10,
@@ -1100,7 +1117,8 @@
     "imagen": "",
     "colors": [],
     "notes": [],
-    "tables": []
+    "tables": [],
+    "category_id": "servicios"
   },
   "manteleria": {
     "order": 20,
@@ -1110,6 +1128,7 @@
     "imagen": "",
     "colors": [],
     "notes": [],
-    "tables": []
+    "tables": [],
+    "category_id": "servicios"
   }
 }

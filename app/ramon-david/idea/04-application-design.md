@@ -32,8 +32,8 @@ excepcion_web: true
 V2 ensambla V1 más:
 
 1. **`iterations/v2/*.html`** — páginas públicas.
-2. **`iterations/v2/app.py`** — Flask: público, `/portal`, `/admin` stock, roles.
-3. **`data/products.json`**, **`users.json`**, **`stock.json`**, **`stock_movimientos.json`**.
+2. **`iterations/v2/app.py`** — Flask: público + un portal `/admin` (Catálogo / Stock / Reportes).
+3. **`data/products.json`**, **`categories.json`**, **`users.json`**, **`stock.json`**, **`stock_movimientos.json`**.
 4. **`css/`** + **`css/portales.css`**.
 
 No hay `app/` expo-router ni `src/engine/` TS.
@@ -53,7 +53,7 @@ No hay `app/` expo-router ni `src/engine/` TS.
 | `MOD-07` | `mod-catalog-ui` | Productos |
 | `MOD-08` | `mod-theme` | Tokens CSS |
 | `MOD-09` | `mod-web-serve` | HTTP |
-| `MOD-10` | `mod-roles` | Login por portal |
+| `MOD-10` | `mod-roles` | Login único `/admin` |
 | `MOD-11` | `mod-portal-user` | Catálogo interno + edición |
 | `MOD-12` | `mod-stock` | Consultas y movimientos |
 
@@ -63,8 +63,7 @@ No hay `app/` expo-router ni `src/engine/` TS.
 
 ```text
 Visitante → MOD-06/07 → MOD-02 → MOD-01
-User      → MOD-10 → MOD-11 → MOD-01
-Admin     → MOD-10 → MOD-12
+Portal    → MOD-10 → MOD-11 (Catálogo) + MOD-12 (Stock / Reportes)
 MOD-09 envuelve el proceso
 ```
 
@@ -79,8 +78,10 @@ Estados admin: `login` · `saved` · `saving` · `error` (sync pill).
 [Home VIEW-01]
     → Productos [VIEW-03] → filtro categoría → detalle en card
     → Nosotros [VIEW-02] / Contacto [VIEW-04]
-    → Portal [/portal/login] → [VIEW-07 categorías] → [VIEW-08 productos] → [VIEW-09 editor]
-    → Admin [/admin/login] → [VIEW-10 consultas] → movimiento / [VIEW-11 reportes]
+    → Portal [/admin/login]
+         → [VIEW-07 Catálogo categorías] → [VIEW-08 productos] → [VIEW-09 editor]
+         → [VIEW-10 Stock]
+         → [VIEW-11 Reportes]
 ```
 
 ---
@@ -93,13 +94,13 @@ Estados admin: `login` · `saved` · `saving` · `error` (sync pill).
 | `/nosotros.html` | Nosotros | MOD-06 | FEAT-05 |
 | `/productos.html` | Catálogo | MOD-07, MOD-02 | FEAT-02 |
 | `/contacto.html` | Contacto | MOD-06 | FEAT-05 |
-| `/portal/login` | Login usuario | MOD-10 | FEAT-12 |
-| `/portal` | Categorías | MOD-11 | FEAT-13 |
-| `/portal/c/<slug>` | Productos de categoría | MOD-11 | FEAT-13 |
-| `/portal/p/<id>` | Editor | MOD-11 | FEAT-03, FEAT-13 |
-| `/admin/login` | Login admin | MOD-10 | FEAT-12 |
-| `/admin` | Consultas + movimientos | MOD-12 | FEAT-14 |
+| `/admin/login` | Login del portal | MOD-10 | FEAT-12 |
+| `/admin` | Catálogo · categorías | MOD-11 | FEAT-12, FEAT-13 |
+| `/admin/c/<id>` | Productos de categoría | MOD-11 | FEAT-13 |
+| `/admin/nuevo` · `/admin/p/<id>` | Editor | MOD-11 | FEAT-03, FEAT-13 |
+| `/admin/stock` | Consultas + movimientos | MOD-12 | FEAT-14 |
 | `/admin/reportes` | Reportes / CSV | MOD-12 | FEAT-14 |
+| `/portal` · `/portal/*` | Redirect a `/admin` | MOD-10 | FEAT-12 |
 | `/api/products` | API pública | MOD-02 | FEAT-02 |
 
 ---

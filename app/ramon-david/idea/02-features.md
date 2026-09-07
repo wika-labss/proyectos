@@ -30,14 +30,14 @@ excepcion_web: true
 | :--- | :--- | :--- | :--- | :--- |
 | `FEAT-01` | `ERR-01` | Sitio público (home + nav + footer) | `Crítica` | `mod-public-site` |
 | `FEAT-02` | `ERR-02` | Catálogo con filtros, precios y medidas | `Crítica` | `mod-catalog-api`, `mod-catalog-ui` |
-| `FEAT-03` | `ERR-03` | CRUD de productos y tablas en `/admin` | `Crítica` | `mod-admin-crud`, `mod-catalog-store` |
+| `FEAT-03` | `ERR-03` | CRUD de productos y tablas en el portal `/admin` | `Crítica` | `mod-admin-crud`, `mod-catalog-store` |
 | `FEAT-04` | `ERR-04` | Subida de imagen de producto | `Alta` | `mod-uploads` |
 | `FEAT-05` | `ERR-05` | Páginas Nosotros y Contacto | `Alta` | `mod-public-site` |
 | `FEAT-06` | `ERR-06` | Login admin + sesión + CSRF | `Crítica` | `mod-admin-auth` |
 | `FEAT-07` | `ERR-01` | Arranque local del servidor web | `Crítica` | `mod-web-serve` |
-| `FEAT-12` | `ERR-07` | Portales separados + roles user/admin | `Crítica` | `mod-roles` |
-| `FEAT-13` | `ERR-08` | Catálogo interno: categoría → producto → edición | `Crítica` | `mod-portal-user` |
-| `FEAT-14` | `ERR-09` | Stock por talla, +/−, consultas y reporte CSV | `Crítica` | `mod-stock` |
+| `FEAT-12` | `ERR-07` | Un portal `/admin` con tres botones | `Crítica` | `mod-roles` |
+| `FEAT-13` | `ERR-08` | Catálogo interno editable: categoría → producto | `Crítica` | `mod-portal-user` |
+| `FEAT-14` | `ERR-09` | Stock y Reportes como secciones del mismo portal | `Crítica` | `mod-stock` |
 
 ---
 
@@ -81,11 +81,11 @@ excepcion_web: true
 
 ### Feature `FEAT-03`: Panel de precios (CRUD)
 
-**Descripción:** V1: CRUD en `/admin`. **V2:** el CRUD vive en el portal **usuario** (`/portal/p/<id>`). Persistencia atómica en `data/products.json`.
+**Descripción:** V1: CRUD en `/admin`. **V2:** el CRUD vive en Catálogo del portal único (`/admin/p/<id>`). Persistencia atómica en `data/products.json`.
 
 #### Escenario 3.1: Happy Path
 
-- **Dado que** `hay sesión admin`
+- **Dado que** `hay sesión del portal`
 - **Cuando** `edita «Sábana 300 hilos» y guarda`
 - **Entonces** `el JSON se actualiza y la preview del panel refleja título y tablas`
 
@@ -157,39 +157,39 @@ excepcion_web: true
 
 ---
 
-### Feature `FEAT-12`: Dos portales y roles
+### Feature `FEAT-12`: Un portal, tres botones
 
-**Descripción:** `data/users.json` con rol `user` o `admin`. Login en `/portal/login` y `/admin/login`. Sesión con `role`. Cruzar de portal = 403/redirect.
+**Descripción:** Un login en `/admin/login`. Sesión `role=admin`. Nav interna: **Catálogo · Stock · Reportes**. El sitio público muestra un solo enlace **Portal → /admin**. `/portal` y `/portal/*` redirigen a `/admin`.
 
 #### Escenario 12.1: Happy Path
 
-- **Dado que** `existen usuarios user y admin`
-- **Cuando** `cada uno inicia sesión en su URL`
-- **Entonces** `el user llega a categorías y el admin a consultas de stock`
+- **Dado que** `existe el usuario admin`
+- **Cuando** `inicia sesión en /admin/login`
+- **Entonces** `llega a Catálogo y puede abrir Stock y Reportes sin otro login`
 
-#### Escenario 12.2: Cruce de rol
+#### Escenario 12.2: Sin sesión
 
-- **Dado que** `hay sesión user`
+- **Dado que** `no hay cookie de portal`
 - **Cuando** `pide /admin o POST /admin/api/stock`
-- **Entonces** `se redirige o responde 403; no hay movimiento`
+- **Entonces** `se redirige al login o responde 401; no hay movimiento`
 
 ---
 
 ### Feature `FEAT-13`: Catálogo interno por categoría
 
-**Descripción:** Portal usuario: lista de categorías con conteo → productos de esa categoría → editor (CRUD + imagen).
+**Descripción:** Catálogo: categorías editables (crear / renombrar / borrar si vacía) → productos de esa categoría (crear / editar ficha / eliminar).
 
 #### Escenario 13.1: Happy Path
 
-- **Dado que** `el user está logueado`
+- **Dado que** `el personal está logueado`
 - **Cuando** `abre Sábanas y luego sabana-300`
 - **Entonces** `ve el editor y puede guardar cambios`
 
 ---
 
-### Feature `FEAT-14`: Stock y reportes (solo admin)
+### Feature `FEAT-14`: Stock y reportes
 
-**Descripción:** Stock por `producto|talla` (o `base`). Sumar/descontar con motivo. Consultas (categoría, producto, talla, stock bajo ≤5). Reporte en pantalla + CSV. No saldo negativo.
+**Descripción:** Botones Stock y Reportes del mismo portal. Stock por `producto|talla` (o `base`). Sumar/descontar con motivo. Consultas (categoría, producto, talla, stock bajo ≤5). Reporte en pantalla + CSV. No saldo negativo.
 
 #### Escenario 14.1: Happy Path
 
@@ -231,7 +231,7 @@ excepcion_web: true
 | :--- | :--- | :--- | :--- |
 | `NFR-01` | **Arranque** | Home + `/api/products` 200 en &lt; 5 s tras `app.py` | `curl` / smoke |
 | `NFR-02` | **Catálogo** | 19 productos V1 listables y filtrables | UI + JSON |
-| `NFR-03` | **Seguridad** | CRUD exige rol `user`; stock exige `admin` | 401/403 |
+| `NFR-03` | **Seguridad** | Catálogo, stock y reportes exigen sesión admin | 401/redirect |
 | `NFR-04` | **Offline visitante** | Sitio **requiere** servidor local/red; no es PWA | Documentado (N/A offline-first) |
 | `NFR-05` | **Fidelidad visual** | Tokens `:root` de `css/main.css` | `04-application-design.md` |
 | `NFR-06` | **Pins** | Flask/Werkzeug con `~=` | `requirements.txt` |
@@ -245,9 +245,10 @@ excepcion_web: true
 | Header / brand CD | Todas públicas | `--teal`, header `#151716` | Implementado |
 | Hero slider | Home | `--serif`, overlay | Implementado |
 | `catalog-card` | Productos | `--paper`, `--ink` | Implementado |
-| Login card | `/portal/login`, `/admin/login` | `--paper`, `--teal` | V2 |
-| Categorías / editor | `/portal` | `--paper`, `--teal` | V2 |
-| Consultas stock | `/admin` | `--paper`, `--teal` | V2 |
+| Login card | `/admin/login` | `--paper`, `--teal` | V2 |
+| Categorías / editor | `/admin`, `/admin/c/<id>`, `/admin/p/<id>` | `--paper`, `--teal` | V2 |
+| Consultas stock | `/admin/stock` | `--paper`, `--teal` | V2 |
+| Reportes | `/admin/reportes` | `--paper`, `--teal` | V2 |
 
 ---
 

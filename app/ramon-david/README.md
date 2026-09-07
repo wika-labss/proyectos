@@ -6,7 +6,7 @@ Proyecto WIKA **web** (excepción al stack Expo/Android). Catálogo de [Acolchad
 |---|---|
 | Docs oficiales | [`idea/`](./idea/) (01–05) |
 | Auditorías | [`audits/`](./audits/) — pendiente de firma |
-| Sitio + portales V2 | [`iterations/v2/`](./iterations/v2/) |
+| Sitio + portal V2 | [`iterations/v2/`](./iterations/v2/) |
 | Sitio + admin único V1 | [`iterations/v1/`](./iterations/v1/) |
 | Admin HTML → Supabase | [`index.html`](./index.html) |
 | Schema / seed | [`supabase/migrations/`](./supabase/migrations/) |
@@ -32,8 +32,8 @@ python3 app.py --host 0.0.0.0 --port 5003
 ```
 
 - Público: http://127.0.0.1:5003/
-- Portal usuario: http://127.0.0.1:5003/portal (`user` / `usuario123`)
-- Admin stock: http://127.0.0.1:5003/admin (`admin` / `cambiar123`)
+- Portal: http://127.0.0.1:5003/admin (`admin` / `cambiar123`) — Catálogo / Stock / Reportes
+- `/portal` redirige a `/admin`
 
 Detalle: `iterations/v2/README.md`. V1 queda en `iterations/v1/`.
 

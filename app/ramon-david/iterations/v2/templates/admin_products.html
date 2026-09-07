@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ category.name }} | Portal Acolchados CD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/portales.css">
+</head>
+<body class="portal-body">
+  <header class="portal-top">
+    <a class="portal-brand" href="/admin">ACOLCHADOS CD <span>portal</span></a>
+    <nav class="portal-nav">
+      <a class="is-active" href="/admin">Catálogo</a>
+      <a href="/admin/stock">Stock</a>
+      <a href="/admin/reportes">Reportes</a>
+    </nav>
+    <div class="portal-top-links">
+      <a href="/">Sitio público</a>
+      <span class="portal-user">{{ user }}</span>
+      <a href="/admin/logout">Salir</a>
+    </div>
+  </header>
+  <main class="portal-wrap">
+    <p class="crumb"><a href="/admin">Categorías</a> / {{ category.name }}</p>
+    <div class="portal-head">
+      <div>
+        <h1>{{ category.name }}</h1>
+        <p class="lead">Crea, edita o elimina las fichas de esta categoría.</p>
+      </div>
+      <a class="btn btn-primary" href="/admin/nuevo?categoria={{ category.id }}">Nuevo producto</a>
+    </div>
+    <p id="flash" class="flash" hidden></p>
+    <section class="table-wrap panel">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Precio desde</th>
+            <th>Tallas</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if not products %}
+          <tr><td colspan="4" class="empty">No hay productos en esta categoría.</td></tr>
+          {% endif %}
+          {% for product in products %}
+          <tr>
+            <td>
+              <strong>{{ product.title }}</strong>
+              <div class="muted">{{ product.id }}</div>
+            </td>
+            <td>{{ product.price_from or "—" }}</td>
+            <td>{{ product.size_count }}</td>
+            <td class="row-actions">
+              <a class="btn" href="/admin/p/{{ product.id }}">Editar ficha</a>
+              <button type="button" class="btn btn-danger" data-del="{{ product.id }}">Eliminar</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    const flash = document.getElementById("flash");
+    document.querySelectorAll("[data-del]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-del");
+        if (!confirm("¿Eliminar este producto del catálogo?")) return;
+        const res = await fetch("/admin/api/products/" + encodeURIComponent(id), { method: "DELETE" });
+        const data = await res.json();
+        if (!res.ok) {
+          flash.hidden = false;
+          flash.className = "flash err";
+          flash.textContent = data.error || "No se pudo eliminar";
+          return;
+        }
+        location.reload();
+      });
+    });
+  </script>
+</body>
+</html>

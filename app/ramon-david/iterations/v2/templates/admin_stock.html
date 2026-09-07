@@ -3,23 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Stock | Admin Acolchados CD</title>
+  <title>Stock | Portal Acolchados CD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/portales.css">
 </head>
 <body class="portal-body">
   <header class="portal-top">
-    <a class="portal-brand" href="/admin">ACOLCHADOS CD <span>admin</span></a>
-    <div class="portal-top-links">
-      <a class="is-active" href="/admin">Consultas</a>
+    <a class="portal-brand" href="/admin">ACOLCHADOS CD <span>portal</span></a>
+    <nav class="portal-nav">
+      <a href="/admin">Catálogo</a>
+      <a class="is-active" href="/admin/stock">Stock</a>
       <a href="/admin/reportes">Reportes</a>
+    </nav>
+    <div class="portal-top-links">
       <a href="/">Sitio público</a>
-      <a href="/admin/logout">Cerrar sesión ({{ user }})</a>
+      <span class="portal-user">{{ user }}</span>
+      <a href="/admin/logout">Salir</a>
     </div>
   </header>
   <main class="portal-wrap">
-    <p class="crumb">Portal administrador</p>
+    <p class="crumb">Stock</p>
     <h1>Consultas de stock</h1>
     <p class="lead">Filtra existencias. Stock bajo: {{ low_stock }} unidades o menos. Los movimientos no dejan saldo negativo.</p>
     <div class="filters">

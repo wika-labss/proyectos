@@ -56,9 +56,9 @@ Entregable: sitio web servido por Flask, **no** APK.
 | `09` | MOD-05 | FEAT-04 | uploads | 5 MB / whitelist | COMPLETADO | — |
 | `10` | integración | BDD | smoke HTTP | NFR-01 | COMPLETADO | — |
 
-| `11` | MOD-10 | FEAT-12 | `users.json`, logins `/portal` `/admin` | roles | V2 |
-| `12` | MOD-11 | FEAT-13 | portal categorías / productos / editor | VIEW-07–09 | V2 |
-| `13` | MOD-12 | FEAT-14 | stock + movimientos + CSV | VIEW-10–11 | V2 |
+| `11` | MOD-10 | FEAT-12 | `users.json`, login `/admin`, `/portal` → `/admin` | un portal | V2 |
+| `12` | MOD-11 | FEAT-13 | Catálogo: categorías + productos + editor | VIEW-07–09 | V2 |
+| `13` | MOD-12 | FEAT-14 | Stock + Reportes + CSV | VIEW-10–11 | V2 |
 
 `FEAT-08` Supabase sigue fuera. V1 no se modifica.
 
@@ -67,7 +67,7 @@ Entregable: sitio web servido por Flask, **no** APK.
 ## 4. Orden de Implementación y Justificación
 
 1. **V1:** servidor + páginas + JSON + admin único.
-2. **V2 (este corte):** portales + stock en `iterations/v2/` (pedido de producto; gates V1 siguen sin firma).
+2. **V2 (este corte):** un portal `/admin` (Catálogo / Stock / Reportes) en `iterations/v2/` (pedido de producto; gates V1 siguen sin firma).
 3. **Después:** `FEAT-08` Supabase.
 
 ---

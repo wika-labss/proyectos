@@ -1,0 +1,42 @@
+{
+  "sabanas": {
+    "name": "Sábanas",
+    "order": 10
+  },
+  "plumones": {
+    "name": "Plumones",
+    "order": 20
+  },
+  "quilts": {
+    "name": "Quilts",
+    "order": 30
+  },
+  "cubre-plumon": {
+    "name": "Cubre Plumón",
+    "order": 40
+  },
+  "pieceras": {
+    "name": "Pieceras",
+    "order": 50
+  },
+  "colchas": {
+    "name": "Colchas",
+    "order": 60
+  },
+  "protectores-de-colchon": {
+    "name": "Protectores de colchón",
+    "order": 70
+  },
+  "faldones-y-almohadas": {
+    "name": "Faldones y Almohadas",
+    "order": 80
+  },
+  "toallas": {
+    "name": "Toallas",
+    "order": 90
+  },
+  "servicios": {
+    "name": "Servicios",
+    "order": 100
+  }
+}

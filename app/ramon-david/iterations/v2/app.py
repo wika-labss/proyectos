@@ -29,6 +29,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_DIR = PROJECT_ROOT / "data"
 PRODUCTS_FILE = DATA_DIR / "products.json"
 USERS_FILE = DATA_DIR / "users.json"
+CATEGORIES_FILE = DATA_DIR / "categories.json"
 STOCK_FILE = DATA_DIR / "stock.json"
 MOVEMENTS_FILE = DATA_DIR / "stock_movimientos.json"
 UPLOADS_DIR = PROJECT_ROOT / "uploads"
@@ -87,6 +88,15 @@ def load_users():
     return data if isinstance(data, dict) else {}
 
 
+def load_categories():
+    data = load_json(CATEGORIES_FILE, {})
+    return data if isinstance(data, dict) else {}
+
+
+def save_categories(cats):
+    atomic_write(CATEGORIES_FILE, cats)
+
+
 def load_stock():
     data = load_json(STOCK_FILE, {})
     return data if isinstance(data, dict) else {}
@@ -111,7 +121,7 @@ def slugify(text):
     return text or "item"
 
 
-def new_product_id(title, existing):
+def new_id(title, existing):
     base = slugify(title)
     pid, i = base, 2
     while pid in existing:
@@ -120,7 +130,7 @@ def new_product_id(title, existing):
     return pid
 
 
-def sanitize_product(payload):
+def sanitize_product(payload, category_name=""):
     if not isinstance(payload, dict):
         payload = {}
 
@@ -148,7 +158,8 @@ def sanitize_product(payload):
     order = payload.get("order")
     return {
         "order": order if isinstance(order, (int, float)) else 0,
-        "category": as_str(payload.get("category"), "Sin categoría"),
+        "category_id": as_str(payload.get("category_id")),
+        "category": as_str(payload.get("category"), category_name or "Sin categoría"),
         "title": as_str(payload.get("title"), "Nuevo producto"),
         "description": as_str(payload.get("description")),
         "imagen": as_str(payload.get("imagen")),
@@ -192,6 +203,29 @@ def ensure_stock_keys(products=None, stock=None):
     return stock
 
 
+def sync_product_categories(products=None, cats=None):
+    products = products if products is not None else load_products()
+    cats = cats if cats is not None else load_categories()
+    changed = False
+    for product in products.values():
+        cid = product.get("category_id")
+        if cid and cid in cats:
+            name = cats[cid]["name"]
+            if product.get("category") != name:
+                product["category"] = name
+                changed = True
+        elif not cid:
+            match = next((k for k, v in cats.items() if v.get("name") == product.get("category")), slugify(product.get("category") or "sin-categoria"))
+            if match not in cats:
+                cats[match] = {"name": product.get("category") or "Sin categoría", "order": 999}
+                save_categories(cats)
+            product["category_id"] = match
+            changed = True
+    if changed:
+        save_products(products)
+    return products, cats
+
+
 def delete_upload_file(url):
     if not isinstance(url, str) or not url.startswith("/uploads/"):
         return
@@ -210,23 +244,20 @@ def current_user():
     return session.get("user")
 
 
-def current_role():
-    return session.get("role")
+def is_admin():
+    return session.get("role") == "admin"
 
 
-def wants_json():
-    return request.path.startswith("/portal/api") or request.path.startswith("/admin/api") or request.accept_mimetypes.best == "application/json" and request.path.startswith("/api")
+def is_api():
+    return request.path.startswith("/admin/api") or request.path.startswith("/portal/api")
 
 
-def require_role(*roles):
-    role = current_role()
-    if role in roles:
+def require_admin():
+    if is_admin():
         return None
-    if wants_json() or request.path.startswith("/portal/api") or request.path.startswith("/admin/api"):
-        return jsonify({"error": "No autorizado"}), 403 if current_user() else 401
-    if "admin" in roles and "user" not in roles:
-        return redirect(url_for("admin_login", next=request.path))
-    return redirect(url_for("portal_login", next=request.path))
+    if is_api():
+        return jsonify({"error": "No autorizado"}), 401
+    return redirect(url_for("admin_login", next=request.path))
 
 
 def products_list(products=None):
@@ -236,13 +267,24 @@ def products_list(products=None):
     return items
 
 
-def categories_from(products=None):
-    counts = {}
+def category_rows(products=None, cats=None):
+    products = products if products is not None else load_products()
+    cats = cats if cats is not None else load_categories()
+    counts = {cid: 0 for cid in cats}
     for item in products_list(products):
-        cat = item.get("category") or "Sin categoría"
-        counts.setdefault(cat, {"name": cat, "slug": slugify(cat), "count": 0})
-        counts[cat]["count"] += 1
-    return sorted(counts.values(), key=lambda c: c["name"])
+        cid = item.get("category_id") or slugify(item.get("category") or "")
+        counts[cid] = counts.get(cid, 0) + 1
+    rows = []
+    for cid, meta in cats.items():
+        rows.append({
+            "id": cid,
+            "name": meta.get("name") or cid,
+            "order": meta.get("order") or 0,
+            "count": counts.get(cid, 0),
+            "product_count": counts.get(cid, 0),
+        })
+    rows.sort(key=lambda c: (c["order"], c["name"]))
+    return rows
 
 
 # --- Público ----------------------------------------------------------------
@@ -269,23 +311,27 @@ def block_templates(_ignored):
 
 # --- Auth -------------------------------------------------------------------
 
-def render_login(portal, error=None, next_url=None):
+def render_login(error=None, next_url=None):
     session["csrf_token"] = session.get("csrf_token") or secrets.token_hex(16)
-    default_next = "/admin" if portal == "admin" else "/portal"
     return render_template(
         "login.html",
-        portal=portal,
         error=error,
         csrf_token=session["csrf_token"],
-        next_url=next_url or default_next,
-        action=url_for("admin_login") if portal == "admin" else url_for("portal_login"),
+        next_url=next_url or "/admin",
+        action=url_for("admin_login"),
     )
 
 
-def attempt_login(expected_role, default_next):
-    next_url = request.form.get("next") or default_next
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "GET":
+        if is_admin():
+            return redirect(request.args.get("next") or "/admin")
+        return render_login(next_url=request.args.get("next"))
+
+    next_url = request.form.get("next") or "/admin"
     if not next_url.startswith("/"):
-        next_url = default_next
+        next_url = "/admin"
     token = session.get("csrf_token") or ""
     submitted = request.form.get("csrf_token") or ""
     username = (request.form.get("username") or "").strip()
@@ -296,150 +342,228 @@ def attempt_login(expected_role, default_next):
         bool(token)
         and secrets.compare_digest(submitted, token)
         and record is not None
-        and record.get("role") == expected_role
+        and record.get("role") == "admin"
         and check_password_hash(record.get("password_hash") or "", password)
     )
     if not valid:
         session["csrf_token"] = secrets.token_hex(16)
-        return render_login(expected_role if expected_role == "admin" else "user", "Usuario o contraseña incorrectos.", next_url), 401
+        return render_login("Usuario o contraseña incorrectos.", next_url), 401
     session.clear()
     session.permanent = True
     session["user"] = username
-    session["role"] = expected_role
+    session["role"] = "admin"
     return redirect(next_url)
 
 
-@app.route("/portal/login", methods=["GET", "POST"])
-def portal_login():
-    if request.method == "GET":
-        if current_role() == "user":
-            return redirect(request.args.get("next") or "/portal")
-        return render_login("user", next_url=request.args.get("next"))
-    return attempt_login("user", "/portal")
-
-
-@app.route("/admin/login", methods=["GET", "POST"])
-def admin_login():
-    if request.method == "GET":
-        if current_role() == "admin":
-            return redirect(request.args.get("next") or "/admin")
-        return render_login("admin", next_url=request.args.get("next"))
-    return attempt_login("admin", "/admin")
-
-
-@app.get("/portal/logout")
-def portal_logout():
-    session.clear()
-    return redirect(url_for("portal_login"))
-
-
-@app.get("/admin/logout")
+@app.route("/admin/logout", methods=["GET", "POST"])
 def admin_logout():
     session.clear()
     return redirect(url_for("admin_login"))
 
 
-# --- Portal usuario ---------------------------------------------------------
-
 @app.get("/portal")
-def portal_home():
-    err = require_role("user")
+@app.get("/portal/login")
+@app.get("/portal/<path:_rest>")
+def portal_redirect(_rest=None):
+    return redirect("/admin")
+
+
+# --- Catálogo ---------------------------------------------------------------
+
+@app.get("/admin")
+def admin_home():
+    err = require_admin()
     if err:
         return err
     with LOCK:
-        products = load_products()
-    return render_template(
-        "portal_categories.html",
-        user=current_user(),
-        categories=categories_from(products),
-    )
+        products, cats = sync_product_categories()
+        rows = category_rows(products, cats)
+    return render_template("admin_categories.html", user=current_user(), nav="catalogo", categories=rows)
 
 
-@app.get("/portal/c/<slug>")
-def portal_category(slug):
-    err = require_role("user")
+@app.get("/admin/c/<cid>")
+def admin_category_products(cid):
+    err = require_admin()
     if err:
         return err
     with LOCK:
-        products = load_products()
-    cats = {c["slug"]: c for c in categories_from(products)}
-    cat = cats.get(slug)
-    if not cat:
-        abort(404)
-    items = [p for p in products_list(products) if slugify(p.get("category")) == slug]
+        products, cats = sync_product_categories()
+        cat = cats.get(cid)
+        if not cat:
+            abort(404)
+        items = [p for p in products_list(products) if p.get("category_id") == cid]
+        for item in items:
+            item["size_count"] = len(product_sizes(item))
+            price = ""
+            for table in item.get("tables") or []:
+                rows = table.get("rows") or []
+                if rows and len(rows[0]) > 1:
+                    price = rows[0][1]
+                    break
+            item["price_from"] = price
     return render_template(
-        "portal_products.html",
+        "admin_products.html",
         user=current_user(),
-        category=cat,
+        nav="catalogo",
+        category={"id": cid, **cat},
         products=items,
     )
 
 
-@app.get("/portal/nuevo")
-def portal_new_product():
-    err = require_role("user")
+@app.get("/admin/nuevo")
+def admin_new_product():
+    err = require_admin()
     if err:
         return err
-    preset = request.args.get("categoria") or ""
+    cid = request.args.get("categoria") or ""
+    with LOCK:
+        cats = load_categories()
+    name = (cats.get(cid) or {}).get("name", "")
     return render_template(
-        "portal_editor.html",
+        "admin_editor.html",
         user=current_user(),
-        product={"id": "", "category": preset, "title": "", "description": "", "imagen": "", "order": 0, "colors": [], "notes": [], "tables": []},
+        nav="catalogo",
         is_new=True,
+        categories=category_rows(),
+        product={"id": "", "category_id": cid, "category": name, "title": "", "description": "", "imagen": "", "order": 0, "colors": [], "notes": [], "tables": []},
     )
 
 
-@app.get("/portal/p/<pid>")
-def portal_edit_product(pid):
-    err = require_role("user")
+@app.get("/admin/p/<pid>")
+def admin_edit_product(pid):
+    err = require_admin()
     if err:
         return err
     with LOCK:
-        products = load_products()
+        products, _cats = sync_product_categories()
         product = products.get(pid)
-    if not product:
-        abort(404)
+        if not product:
+            abort(404)
     return render_template(
-        "portal_editor.html",
+        "admin_editor.html",
         user=current_user(),
-        product=dict(id=pid, **product),
+        nav="catalogo",
         is_new=False,
+        categories=category_rows(),
+        product=dict(id=pid, **product),
     )
 
 
-@app.get("/portal/api/products")
-def portal_api_list():
-    err = require_role("user", "admin")
+@app.get("/admin/api/categories")
+def api_categories_list():
+    err = require_admin()
     if err:
         return err
-    return jsonify({"products": products_list()})
-
-
-@app.post("/portal/api/products")
-def portal_api_create():
-    err = require_role("user")
-    if err:
-        return err
-    product = sanitize_product(request.get_json(silent=True))
     with LOCK:
+        products, cats = sync_product_categories()
+        return jsonify({"categories": category_rows(products, cats)})
+
+
+@app.post("/admin/api/categories")
+def api_categories_create():
+    err = require_admin()
+    if err:
+        return err
+    body = request.get_json(silent=True) or {}
+    name = str(body.get("name") or "").strip()
+    if not name:
+        return jsonify({"error": "El nombre es obligatorio"}), 400
+    try:
+        order = int(body.get("order") or 0)
+    except (TypeError, ValueError):
+        order = 0
+    with LOCK:
+        cats = load_categories()
+        cid = new_id(name, cats)
+        cats[cid] = {"name": name, "order": order}
+        save_categories(cats)
+    return jsonify({"id": cid, "name": name, "order": order}), 201
+
+
+@app.put("/admin/api/categories/<cid>")
+def api_categories_update(cid):
+    err = require_admin()
+    if err:
+        return err
+    body = request.get_json(silent=True) or {}
+    name = str(body.get("name") or "").strip()
+    if not name:
+        return jsonify({"error": "El nombre es obligatorio"}), 400
+    try:
+        order = int(body.get("order") if body.get("order") is not None else 0)
+    except (TypeError, ValueError):
+        order = 0
+    with LOCK:
+        cats = load_categories()
+        if cid not in cats:
+            return jsonify({"error": "Categoría no encontrada"}), 404
+        cats[cid] = {"name": name, "order": order}
+        save_categories(cats)
         products = load_products()
-        pid = new_product_id(product["title"], products)
+        for product in products.values():
+            if product.get("category_id") == cid:
+                product["category"] = name
+        save_products(products)
+    return jsonify({"id": cid, "name": name, "order": order})
+
+
+@app.delete("/admin/api/categories/<cid>")
+def api_categories_delete(cid):
+    err = require_admin()
+    if err:
+        return err
+    with LOCK:
+        cats = load_categories()
+        if cid not in cats:
+            return jsonify({"error": "Categoría no encontrada"}), 404
+        products = load_products()
+        used = any(p.get("category_id") == cid for p in products.values())
+        if used:
+            return jsonify({"error": "No se puede borrar: tiene productos. Muévelos o elíminalos antes."}), 400
+        cats.pop(cid)
+        save_categories(cats)
+    return jsonify({"ok": True})
+
+
+@app.post("/admin/api/products")
+def api_products_create():
+    err = require_admin()
+    if err:
+        return err
+    body = request.get_json(silent=True) or {}
+    with LOCK:
+        cats = load_categories()
+        cid = str(body.get("category_id") or "").strip()
+        if cid not in cats:
+            return jsonify({"error": "Categoría inválida"}), 400
+        product = sanitize_product(body, cats[cid]["name"])
+        product["category_id"] = cid
+        product["category"] = cats[cid]["name"]
+        products = load_products()
+        pid = new_id(product["title"], products)
         products[pid] = product
         save_products(products)
         ensure_stock_keys(products)
     return jsonify(dict(id=pid, **product)), 201
 
 
-@app.put("/portal/api/products/<pid>")
-def portal_api_update(pid):
-    err = require_role("user")
+@app.put("/admin/api/products/<pid>")
+def api_products_update(pid):
+    err = require_admin()
     if err:
         return err
-    product = sanitize_product(request.get_json(silent=True))
+    body = request.get_json(silent=True) or {}
     with LOCK:
         products = load_products()
         if pid not in products:
             return jsonify({"error": "Producto no encontrado"}), 404
+        cats = load_categories()
+        cid = str(body.get("category_id") or products[pid].get("category_id") or "").strip()
+        if cid not in cats:
+            return jsonify({"error": "Categoría inválida"}), 400
+        product = sanitize_product(body, cats[cid]["name"])
+        product["category_id"] = cid
+        product["category"] = cats[cid]["name"]
         old_imagen = products[pid].get("imagen")
         products[pid] = product
         save_products(products)
@@ -449,9 +573,9 @@ def portal_api_update(pid):
     return jsonify(dict(id=pid, **product))
 
 
-@app.delete("/portal/api/products/<pid>")
-def portal_api_delete(pid):
-    err = require_role("user")
+@app.delete("/admin/api/products/<pid>")
+def api_products_delete(pid):
+    err = require_admin()
     if err:
         return err
     with LOCK:
@@ -468,9 +592,9 @@ def portal_api_delete(pid):
     return jsonify({"ok": True})
 
 
-@app.post("/portal/api/uploads")
-def portal_api_upload():
-    err = require_role("user")
+@app.post("/admin/api/uploads")
+def api_upload():
+    err = require_admin()
     if err:
         return err
     file = request.files.get("image")
@@ -485,7 +609,7 @@ def portal_api_upload():
     return jsonify({"url": f"/uploads/{filename}"}), 201
 
 
-# --- Admin stock ------------------------------------------------------------
+# --- Stock ------------------------------------------------------------------
 
 def stock_rows(products=None, stock=None, movements=None):
     products = products if products is not None else load_products()
@@ -516,9 +640,9 @@ def stock_rows(products=None, stock=None, movements=None):
     return rows
 
 
-@app.get("/admin")
-def admin_home():
-    err = require_role("admin")
+@app.get("/admin/stock")
+def admin_stock():
+    err = require_admin()
     if err:
         return err
     with LOCK:
@@ -527,6 +651,7 @@ def admin_home():
     return render_template(
         "admin_stock.html",
         user=current_user(),
+        nav="stock",
         rows=rows,
         categories=cats,
         low_stock=LOW_STOCK,
@@ -535,15 +660,15 @@ def admin_home():
 
 @app.get("/admin/reportes")
 def admin_reportes():
-    err = require_role("admin")
+    err = require_admin()
     if err:
         return err
-    return render_template("admin_reportes.html", user=current_user())
+    return render_template("admin_reportes.html", user=current_user(), nav="reportes")
 
 
 @app.get("/admin/api/stock")
 def admin_api_stock():
-    err = require_role("admin")
+    err = require_admin()
     if err:
         return err
     with LOCK:
@@ -565,7 +690,7 @@ def admin_api_stock():
 
 @app.post("/admin/api/stock")
 def admin_api_move():
-    err = require_role("admin")
+    err = require_admin()
     if err:
         return err
     body = request.get_json(silent=True) or {}
@@ -611,7 +736,7 @@ def admin_api_move():
 
 @app.get("/admin/api/stock/reportes")
 def admin_api_report():
-    err = require_role("admin")
+    err = require_admin()
     if err:
         return err
     date_from = (request.args.get("desde") or "").strip()
@@ -646,9 +771,8 @@ def admin_api_report():
                 mov.get("at"),
                 mov.get("actor"),
             ])
-        data = buf.getvalue()
         return Response(
-            data,
+            buf.getvalue(),
             mimetype="text/csv; charset=utf-8",
             headers={"Content-Disposition": "attachment; filename=reporte-stock.csv"},
         )
@@ -656,15 +780,15 @@ def admin_api_report():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Acolchados CD v2 — portales y stock")
+    parser = argparse.ArgumentParser(description="Acolchados CD v2 — portal admin")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=5003)
     args = parser.parse_args()
     with LOCK:
+        sync_product_categories()
         ensure_stock_keys()
-    print(f"Público:  http://127.0.0.1:{args.port}/")
-    print(f"Portal:   http://127.0.0.1:{args.port}/portal  (user / usuario123)")
-    print(f"Admin:    http://127.0.0.1:{args.port}/admin   (admin / cambiar123)")
+    print(f"Público: http://127.0.0.1:{args.port}/")
+    print(f"Portal:  http://127.0.0.1:{args.port}/admin  (admin / cambiar123)")
     app.run(host=args.host, port=args.port, debug=False, use_reloader=False, threaded=True)
 
 

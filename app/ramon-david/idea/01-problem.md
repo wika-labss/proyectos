@@ -22,8 +22,8 @@ iteracion_actual: "v2"
 - **Nombre del Proyecto:** `Ramon David` (marca pública: Acolchados CD)
 - **Repositorio de aplicación:** `proyectos/app/ramon-david/`
 - **Código V1 (as-built):** `iterations/v1/`
-- **Código V2:** `iterations/v2/` — portales usuario/admin + stock
-- **Stakeholders clave:** Vissiuss (producto / ingeniería), Acolchados CD, visitante del sitio, personal interno (`user`), administrador de stock (`admin`)
+- **Código V2:** `iterations/v2/` — sitio público + un portal `/admin` (Catálogo / Stock / Reportes)
+- **Stakeholders clave:** Vissiuss (producto / ingeniería), Acolchados CD, visitante del sitio, personal interno (un login `admin`)
 - **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION` (V1 ya construida; docs son retrofit)
 - **Sitio de referencia:** https://www.acolchadoscd.cl
 
@@ -39,7 +39,7 @@ iteracion_actual: "v2"
 
 - **Análisis de brecha (Gap Analysis):**
   - **Estado actual (hoy):** V1 en `iterations/v1/` (un solo `/admin` para CRUD, sin stock). Supabase en la raíz del proyecto (no cableado).
-  - **Estado deseado (v2):** Sitio público sin login + portal **usuario** (categorías → productos → edición) + portal **admin** (consultas, reportes y +/− stock). JSON local. Supabase sigue siendo `FEAT-08`.
+  - **Estado deseado (v2):** Sitio público sin login + **un** portal interno `/admin` con tres botones (Catálogo editable por categoría → producto, Stock, Reportes). JSON local. Supabase sigue siendo `FEAT-08`. `/portal` redirige a `/admin`.
 
 ---
 
@@ -53,8 +53,8 @@ iteracion_actual: "v2"
 | `ERR-04` | Productos sin foto usable en la ficha | `Medio` | `FEAT-04` | `mod-uploads` |
 | `ERR-05` | No hay canal de contacto / historia de marca | `Medio` | `FEAT-05` | `mod-public-site` |
 | `ERR-06` | El panel de precios no puede quedar abierto | `Alto` | `FEAT-06` | `mod-admin-auth` |
-| `ERR-07` | Un solo login mezcla edición y operación | `Alto` | `FEAT-12` | `mod-roles` |
-| `ERR-08` | El personal no navega catálogo por categoría para editar | `Alto` | `FEAT-13` | `mod-portal-user` |
+| `ERR-07` | Dos logins internos (usuario vs admin) fragmentan el trabajo | `Alto` | `FEAT-12` | `mod-roles` |
+| `ERR-08` | El personal no navega ni edita el catálogo por categoría | `Alto` | `FEAT-13` | `mod-portal-user` |
 | `ERR-09` | No hay stock, movimientos ni reportes | `Alto` | `FEAT-14` | `mod-stock` |
 
 ---
@@ -63,8 +63,7 @@ iteracion_actual: "v2"
 
 - **Usuarios principales:**
   - **Visitante / comprador B2B o hogar:** ver colección, filtrar categoría, abrir medidas y precio neto.
-  - **Personal interno (`user`):** login en `/portal`, ver categorías → productos → editar ficha.
-  - **Administrador (`admin`):** login en `/admin`, consultas de stock, reportes, sumar/descontar unidades.
+  - **Personal interno (`admin`):** un login en `/admin`. Botones Catálogo (categorías ↔ productos), Stock y Reportes.
 - **Fuera de alcance (Out of Scope explícito V2):**
   - App móvil Expo / APK / iOS (excepción web).
   - Pipeline Design System V3+ (`design-system/`).
@@ -99,17 +98,17 @@ iteracion_actual: "v2"
 - **Cuando** `cambia un valor de tabla y el panel guarda`
 - **Entonces** `GET /api/products refleja el cambio y la ficha pública lo muestra`
 
-### Escenario 3: Portal usuario edita por categoría
+### Escenario 3: Portal edita por categoría
 
-- **Dado que** `un usuario con rol user inicia sesión en /portal`
-- **Cuando** `abre una categoría y luego un producto`
-- **Entonces** `puede editar la ficha; no puede abrir /admin ni APIs de stock`
+- **Dado que** `el personal inicia sesión en /admin`
+- **Cuando** `abre Catálogo, una categoría y luego un producto`
+- **Entonces** `puede editar la ficha; `/portal` redirige al mismo portal`
 
-### Escenario 4: Admin mueve stock
+### Escenario 4: Portal mueve stock
 
-- **Dado que** `un admin inicia sesión en /admin`
-- **Cuando** `descuenta 2 unidades de una talla con stock suficiente`
-- **Entonces** `el saldo baja, queda un movimiento y el reporte lo incluye`
+- **Dado que** `el personal inicia sesión en /admin`
+- **Cuando** `abre Stock y descuenta 2 unidades de una talla con saldo suficiente`
+- **Entonces** `el saldo baja, queda un movimiento y Reportes lo incluye`
 
 ### Escenario 5: Tokens visuales (web)
 

@@ -7,13 +7,14 @@ Producto V1 (iterations/v1/):
 - Sitio público + un /admin CRUD sobre products.json
 
 Producto V2 (iterations/v2/):
-- Sitio público sin login
-- Portal usuario: categorías → productos → edición
-- Portal admin: consultas, reportes de stock, +/− unidades
-- Roles en data/users.json (user / admin)
+- Sitio público sin login (un enlace Portal → /admin)
+- Un portal /admin: Catálogo · Stock · Reportes
+- Catálogo: categorías y productos editables
+- Stock: consultas y +/− unidades; Reportes + CSV
+- /portal redirige a /admin
 
 Estado:
-- idea/ 01–05 actualizados (ERR-07–09 / FEAT-12–14)
+- idea/ 01–05 actualizados (ERR-07–09 / FEAT-12–14 = portal único)
 - audits/ V1 PENDIENTE DE FIRMA
 - iterations/v2/ en construcción
 - final/ vacío
