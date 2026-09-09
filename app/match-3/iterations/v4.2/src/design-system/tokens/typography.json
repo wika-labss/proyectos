@@ -1,0 +1,23 @@
+{
+  "$schema": "wika-tokens/v1",
+  "family": "night-cyan",
+  "source": "match-3-v3",
+  "status": "approved",
+  "approvedAt": "2026-09-01",
+  "approvalRef": "visual-expectation/match-3-v3/approval.md",
+  "fontFamily": {
+    "pixel": { "value": "PressStart2P", "description": "HUD / CTAs — Press Start 2P OFL" },
+    "body": { "value": "sans-serif", "description": "Meta / legal" }
+  },
+  "fontSize": {
+    "sm": { "value": 8, "unit": "px" },
+    "body": { "value": 10, "unit": "px" },
+    "hud": { "value": 10, "unit": "px" },
+    "title": { "value": 12, "unit": "px" },
+    "brand": { "value": 14, "unit": "px" }
+  },
+  "fontWeight": {
+    "regular": { "value": 400 },
+    "bold": { "value": 700 }
+  }
+}
