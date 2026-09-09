@@ -16,13 +16,16 @@ type Props = {
   children: React.ReactNode;
 };
 
+/** Dual layer: painted keep + bottom-weighted scrim so labels stay native. */
 export function KeepBackdrop({ variant = 'menu', children }: Props) {
   if (variant === 'void') {
     return <View style={styles.void}>{children}</View>;
   }
   return (
     <ImageBackground source={SOURCE[variant]} style={styles.root} resizeMode="cover">
-      <View style={styles.scrim}>{children}</View>
+      <View pointerEvents="none" style={styles.wash} />
+      <View pointerEvents="none" style={styles.bottomFade} />
+      <View style={styles.content}>{children}</View>
     </ImageBackground>
   );
 }
@@ -30,5 +33,17 @@ export function KeepBackdrop({ variant = 'menu', children }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.keepVoid },
   void: { flex: 1, backgroundColor: colors.keepVoid },
-  scrim: { flex: 1, backgroundColor: colors.scrim },
+  wash: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.scrim,
+  },
+  bottomFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '42%',
+    backgroundColor: colors.overlay,
+  },
+  content: { flex: 1 },
 });

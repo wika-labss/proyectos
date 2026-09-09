@@ -6,7 +6,12 @@ import { Battlefield } from '../src/components/Battlefield';
 import { Hud } from '../src/components/Hud';
 import { PauseOverlay } from '../src/components/PauseOverlay';
 import { TowerBar } from '../src/components/TowerBar';
-import { colors, radius, spacing, typography } from '../src/design-system/tokens';
+import {
+  colors,
+  fontWeight,
+  spacing,
+  typography,
+} from '../src/design-system/tokens';
 import { useGame } from '../src/hooks/GameProvider';
 import { StoneButton, StonePlate } from '../src/modules/tower-ui-kit';
 
@@ -92,13 +97,13 @@ export default function GameScreen() {
 
         {preparing && (
           <StonePlate style={styles.banner}>
-            <Text style={styles.bannerTitle}>
-              {infinite ? 'Infinito — Preparación' : 'Preparación'}
-            </Text>
+            <Text style={styles.bannerTitle}>Preparación</Text>
             <Text style={styles.bannerSub}>
-              Coloca, fusiona o vende torres. Luego inicia.
+              {infinite
+                ? 'Infinito — coloca, fusiona o vende. Luego inicia.'
+                : 'Coloca, fusiona o vende torres. Luego inicia.'}
             </Text>
-            <StoneButton label="Iniciar oleadas" onPress={beginWaves} />
+            <StoneButton label="Iniciar" onPress={beginWaves} compact />
           </StonePlate>
         )}
 
@@ -112,7 +117,7 @@ export default function GameScreen() {
                 ? 'La siguiente será más dura. Refuerza o vende.'
                 : 'Refuerza, fusiona o vende antes de continuar.'}
             </Text>
-            <StoneButton label="Siguiente oleada" onPress={nextWave} />
+            <StoneButton label="Siguiente oleada" onPress={nextWave} compact />
           </StonePlate>
         )}
 
@@ -120,6 +125,7 @@ export default function GameScreen() {
           <StoneButton
             label={`Vender (+${sellPreview} oro)`}
             variant="danger"
+            compact
             onPress={sellSelected}
           />
         )}
@@ -144,7 +150,11 @@ export default function GameScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.keepVoid },
   safe: { flex: 1, paddingBottom: spacing.sm },
-  fieldWrap: { flex: 1, marginHorizontal: spacing.md, marginVertical: spacing.sm },
+  fieldWrap: {
+    flex: 1,
+    marginHorizontal: spacing.md,
+    marginVertical: spacing.sm,
+  },
   hint: {
     textAlign: 'center',
     color: colors.muted,
@@ -156,17 +166,18 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.md,
     marginBottom: spacing.sm,
     alignItems: 'center',
-    gap: spacing.xs,
-    borderRadius: radius.md,
   },
   bannerTitle: {
-    color: colors.mist,
-    fontWeight: '800',
+    color: colors.torchGold,
+    fontWeight: fontWeight.extrabold,
     fontSize: typography.body,
+    textAlign: 'center',
+    letterSpacing: 0.8,
   },
   bannerSub: {
     color: colors.muted,
     fontSize: typography.sm,
     textAlign: 'center',
+    marginBottom: spacing.sm,
   },
 });
