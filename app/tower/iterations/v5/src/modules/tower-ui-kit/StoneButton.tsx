@@ -1,13 +1,27 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
 import {
-  borderWidth,
+  ImageBackground,
+  Pressable,
+  StyleSheet,
+  Text,
+  type ImageSourcePropType,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import {
   colors,
+  fontWeight,
   layout,
+  motion,
   radius,
   spacing,
   typography,
 } from '../../design-system/tokens';
+import {
+  chromeCtaEmber,
+  chromeCtaStone,
+  chromePlaqueBreach,
+} from './assets';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
@@ -16,6 +30,14 @@ type Props = {
   onPress: () => void;
   variant?: Variant;
   disabled?: boolean;
+  compact?: boolean;
+  style?: StyleProp<ViewStyle>;
+};
+
+const PLATE: Record<Exclude<Variant, 'ghost'>, ImageSourcePropType> = {
+  primary: chromeCtaEmber,
+  secondary: chromeCtaStone,
+  danger: chromePlaqueBreach,
 };
 
 export function StoneButton({
@@ -23,50 +45,111 @@ export function StoneButton({
   onPress,
   variant = 'primary',
   disabled,
+  compact,
+  style,
 }: Props) {
+  if (variant === 'ghost') {
+    return (
+      <Pressable
+        disabled={disabled}
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.ghost,
+          !compact && styles.ghostFull,
+          compact && styles.ghostCompact,
+          pressed && styles.pressed,
+          disabled && styles.disabled,
+          style,
+        ]}
+      >
+        <Text style={styles.ghostLabel}>{label}</Text>
+      </Pressable>
+    );
+  }
+
   return (
     <Pressable
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
-        styles.base,
-        styles[variant],
+        styles.hit,
+        compact && styles.hitCompact,
         pressed && styles.pressed,
         disabled && styles.disabled,
+        style,
       ]}
     >
-      <Text style={[styles.label, styles[`${variant}Label`]]}>{label}</Text>
+      <ImageBackground
+        source={PLATE[variant]}
+        style={styles.plate}
+        imageStyle={styles.plateImg}
+        resizeMode="stretch"
+      >
+        <Text
+          style={[
+            styles.label,
+            variant === 'secondary' && styles.secondaryLabel,
+            variant === 'danger' && styles.dangerLabel,
+          ]}
+        >
+          {label}
+        </Text>
+      </ImageBackground>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  base: {
+  hit: {
     minHeight: layout.touchMin,
     maxWidth: layout.ctaMaxWidth,
     width: '100%',
-    borderRadius: radius.lg,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
     alignSelf: 'center',
-    borderWidth: borderWidth.medium,
-    borderColor: 'transparent',
+    height: 56,
   },
-  primary: { backgroundColor: colors.ember },
-  secondary: {
-    backgroundColor: colors.stone,
-    borderColor: colors.torchGold,
+  hitCompact: {
+    maxWidth: '100%',
+    height: 48,
   },
-  danger: { backgroundColor: colors.breach },
-  ghost: { backgroundColor: 'transparent' },
+  plate: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+  },
+  plateImg: {
+    borderRadius: radius.sm,
+  },
   label: {
     fontSize: typography.subtitle,
-    fontWeight: '800',
+    fontWeight: fontWeight.extrabold,
+    color: colors.mist,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    textAlign: 'center',
   },
-  primaryLabel: { color: colors.mist },
   secondaryLabel: { color: colors.torchGold },
   dangerLabel: { color: colors.mist },
-  ghostLabel: { color: colors.muted },
-  pressed: { opacity: 0.88 },
+  ghost: {
+    minHeight: layout.touchMin,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  ghostFull: {
+    maxWidth: layout.ctaMaxWidth,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  ghostCompact: { alignSelf: 'flex-start' },
+  ghostLabel: {
+    color: colors.muted,
+    fontSize: typography.body,
+    fontWeight: fontWeight.bold,
+    letterSpacing: 1.6,
+    textTransform: 'uppercase',
+  },
+  pressed: { opacity: motion.pressOpacity },
   disabled: { opacity: 0.45 },
 });

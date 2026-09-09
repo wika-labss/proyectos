@@ -1,10 +1,19 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, typography } from '../src/design-system/tokens';
+import {
+  colors,
+  fontWeight,
+  spacing,
+  typography,
+} from '../src/design-system/tokens';
 import { useGame } from '../src/hooks/GameProvider';
-import { KeepBackdrop, StoneButton } from '../src/modules/tower-ui-kit';
+import {
+  KeepBackdrop,
+  OrnamentKicker,
+  StoneButton,
+} from '../src/modules/tower-ui-kit';
 
 export default function DefeatScreen() {
   const router = useRouter();
@@ -17,60 +26,66 @@ export default function DefeatScreen() {
   return (
     <KeepBackdrop variant="defeat">
       <SafeAreaView style={styles.safe}>
-        <Text style={styles.kicker}>
-          {infinite
-            ? waveReached
-              ? `Oleada ${waveReached}∞`
-              : 'Infinito'
-            : `Nivel ${level}`}
-        </Text>
-        <Text style={styles.title}>Base caída</Text>
-        <Text style={styles.sub}>
-          {infinite
-            ? 'Las oleadas escalaron hasta romper la muralla.'
-            : 'Las oleadas rompieron la muralla. Reorganiza y reintenta.'}
-        </Text>
-        <StoneButton
-          label="Reintentar"
-          onPress={() => {
-            if (infinite) startInfinite();
-            else startLevel(level);
-            router.replace('/game');
-          }}
-        />
-        {!infinite && (
-          <StoneButton
-            label="Selector"
-            variant="ghost"
-            onPress={() => router.replace('/levels')}
+        <View style={styles.cluster}>
+          <OrnamentKicker
+            tone="breach"
+            label={
+              infinite
+                ? waveReached
+                  ? `Oleada ${waveReached}∞`
+                  : 'Infinito'
+                : 'Derrota'
+            }
           />
-        )}
-        <StoneButton
-          label="Menú"
-          variant="ghost"
-          onPress={() => router.replace('/')}
-        />
+          <Text style={styles.title}>Base caída</Text>
+          <Text style={styles.sub}>
+            {infinite
+              ? 'Las oleadas escalaron hasta romper la muralla.'
+              : 'Las oleadas rompieron la muralla.'}
+          </Text>
+          <StoneButton
+            label="Reintentar"
+            onPress={() => {
+              if (infinite) startInfinite();
+              else startLevel(level);
+              router.replace('/game');
+            }}
+          />
+          {!infinite && (
+            <StoneButton
+              label="Selector"
+              variant="ghost"
+              onPress={() => router.replace('/levels')}
+            />
+          )}
+          <StoneButton
+            label="Menú"
+            variant="ghost"
+            onPress={() => router.replace('/')}
+          />
+        </View>
       </SafeAreaView>
     </KeepBackdrop>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    padding: spacing.lg,
-    justifyContent: 'center',
+  safe: { flex: 1, padding: spacing.lg },
+  cluster: {
+    marginTop: 'auto',
+    alignItems: 'center',
     gap: spacing.md,
+    paddingBottom: spacing.xl,
   },
-  kicker: { color: colors.breach, fontWeight: '700' },
   title: {
     color: colors.mist,
-    fontSize: 48,
-    fontWeight: '900',
+    fontSize: 44,
+    fontWeight: fontWeight.black,
+    textAlign: 'center',
   },
   sub: {
     color: colors.muted,
     fontSize: typography.body,
-    marginBottom: spacing.md,
+    textAlign: 'center',
   },
 });

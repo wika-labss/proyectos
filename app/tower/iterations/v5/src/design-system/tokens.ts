@@ -24,7 +24,7 @@ export const colors = {
   sniperViolet: '#9B59B6',
   breach: '#8B1E1E',
   danger: '#D62828',
-  scrim: 'rgba(10, 14, 22, 0.55)',
+  scrim: 'rgba(10, 14, 22, 0.35)',
   overlay: 'rgba(10, 14, 22, 0.72)',
   night: '#0A0E16',
   steel: '#2A3344',
@@ -33,7 +33,19 @@ export const colors = {
   pad: '#3D4A5C',
   padHot: '#E85D04',
   path: '#C4A574',
+  available: '#5DBB63',
 } as const;
+
+/** tokens/tower-v4/overrides.json biomeAccents */
+export const biomeAccents = {
+  forest: '#5DBB63',
+  keep: '#E85D04',
+  desert: '#C4A574',
+  frost: '#4FC3F7',
+  void: '#9B59B6',
+} as const;
+
+export type BiomeId = keyof typeof biomeAccents;
 
 export const spacing = {
   xs: 4,
@@ -72,9 +84,20 @@ export const typography = {
   display: 56,
 } as const;
 
+export const fontWeight = {
+  semibold: '600' as const,
+  bold: '700' as const,
+  extrabold: '800' as const,
+  black: '900' as const,
+};
+
 export const fonts = {
   display: 'System',
   body: 'System',
+} as const;
+
+export const motion = {
+  pressOpacity: 0.88,
 } as const;
 
 export const towerTint = {

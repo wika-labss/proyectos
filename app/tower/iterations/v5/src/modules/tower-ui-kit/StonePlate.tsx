@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, type ViewStyle } from 'react-native';
-import { borderWidth, colors, radius, spacing } from '../../design-system/tokens';
+import { ImageBackground, StyleSheet, type ViewStyle } from 'react-native';
+import { spacing } from '../../design-system/tokens';
+import { chromePlaqueHud } from './assets';
 
 type Props = {
   children: React.ReactNode;
@@ -8,15 +9,22 @@ type Props = {
 };
 
 export function StonePlate({ children, style }: Props) {
-  return <View style={[styles.plate, style]}>{children}</View>;
+  return (
+    <ImageBackground
+      source={chromePlaqueHud}
+      style={[styles.plate, style]}
+      imageStyle={styles.img}
+      resizeMode="stretch"
+    >
+      {children}
+    </ImageBackground>
+  );
 }
 
 const styles = StyleSheet.create({
   plate: {
-    backgroundColor: colors.stone,
-    borderRadius: radius.md,
-    borderWidth: borderWidth.thin,
-    borderColor: colors.stoneHi,
+    overflow: 'hidden',
     padding: spacing.md,
   },
+  img: {},
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { spacing } from '../design-system/tokens';
+import { colors, spacing } from '../design-system/tokens';
 import { listTowerTypes } from '../engine/towerTypes';
 import type { TowerKind } from '../engine/types';
 import { TowerSlot } from '../modules/tower-ui-kit';
@@ -34,5 +34,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.stone,
   },
 });

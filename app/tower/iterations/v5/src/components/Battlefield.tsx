@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LOGICAL_H, LOGICAL_W } from '../constants/game';
+import { biomeForMotif } from '../design-system/biome';
 import {
+  biomeAccents,
   colors,
+  fontWeight,
   radius,
   towerTint,
   typography,
@@ -33,8 +36,7 @@ function TowerSprite({
   size: number;
   selected: boolean;
 }) {
-  const label =
-    tier === 4 ? getTowerDisplayName(kind, tier) : `Lv.${tier}`;
+  const label = tier === 4 ? getTowerDisplayName(kind, tier) : `L${tier}`;
   return (
     <View style={[styles.glyphBase, selected && styles.glyphSelected]}>
       <Image
@@ -65,6 +67,8 @@ export function Battlefield({
 }: Props) {
   const sx = width / LOGICAL_W;
   const sy = height / LOGICAL_H;
+  const biome = biomeForMotif(run.map.motif);
+  const accent = biomeAccents[biome];
 
   const pathSegments = useMemo(() => {
     const pts = run.map.path;
@@ -84,21 +88,10 @@ export function Battlefield({
   }, [run.map.path]);
 
   return (
-    <View
-      style={[
-        styles.root,
-        { width, height, backgroundColor: colors.keepVoid },
-      ]}
-    >
+    <View style={[styles.root, { width, height, backgroundColor: colors.keepVoid }]}>
       <View
-        style={[
-          styles.deco,
-          {
-            backgroundColor: colors.stone,
-            top: height * 0.08,
-            left: width * 0.05,
-          },
-        ]}
+        pointerEvents="none"
+        style={[styles.biomeWash, { backgroundColor: accent }]}
       />
 
       {pathSegments.map((seg, i) => (
@@ -107,11 +100,11 @@ export function Battlefield({
           style={{
             position: 'absolute',
             left: seg.mx * sx - (seg.len * sx) / 2,
-            top: seg.my * sy - 7,
+            top: seg.my * sy - 8,
             width: seg.len * sx,
-            height: 14,
+            height: 16,
             backgroundColor: colors.pathOchre,
-            borderRadius: 7,
+            borderRadius: 8,
             transform: [{ rotate: `${seg.angle}deg` }],
             opacity: 0.95,
           }}
@@ -128,8 +121,8 @@ export function Battlefield({
             style={[
               styles.pad,
               {
-                left: pad.x * sx - 14,
-                top: pad.y * sy - 14,
+                left: pad.x * sx - 16,
+                top: pad.y * sy - 16,
                 backgroundColor: hot
                   ? colors.padHot
                   : occupied
@@ -138,7 +131,9 @@ export function Battlefield({
                 borderColor: hot ? colors.torchGold : colors.stone,
               },
             ]}
-          />
+          >
+            <View style={styles.padRing} />
+          </Pressable>
         );
       })}
 
@@ -148,15 +143,15 @@ export function Battlefield({
           onPress={() => onTowerPress(t.id)}
           style={{
             position: 'absolute',
-            left: t.pos.x * sx - 22,
-            top: t.pos.y * sy - 26,
+            left: t.pos.x * sx - 24,
+            top: t.pos.y * sy - 30,
             zIndex: 5,
           }}
         >
           <TowerSprite
             kind={t.kind}
             tier={t.tier}
-            size={36}
+            size={44}
             selected={selectedPlacedId === t.id}
           />
         </Pressable>
@@ -164,7 +159,7 @@ export function Battlefield({
 
       {run.enemies.map((e) => {
         const pos = positionAt(run.map.path, e.pathT);
-        const r = Math.max(10, e.radius * sx * 0.7);
+        const r = Math.max(12, e.radius * sx * 0.85);
         const kind = e.kind as EnemyKind;
         return (
           <Image
@@ -205,13 +200,17 @@ export function Battlefield({
         return (
           <View
             style={[
-              styles.base,
+              styles.gate,
               {
-                left: end.x * sx - 16,
-                top: end.y * sy - 16,
+                left: end.x * sx - 22,
+                top: end.y * sy - 18,
               },
             ]}
-          />
+          >
+            <View style={styles.gatePillar} />
+            <View style={styles.gateEmber} />
+            <View style={styles.gatePillar} />
+          </View>
         );
       })()}
     </View>
@@ -220,19 +219,25 @@ export function Battlefield({
 
 const styles = StyleSheet.create({
   root: { overflow: 'hidden', borderRadius: radius.md },
-  deco: {
-    position: 'absolute',
-    width: 48,
-    height: 48,
-    borderRadius: radius.sm,
-    opacity: 0.35,
+  biomeWash: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.2,
   },
   pad: {
     position: 'absolute',
-    width: 28,
-    height: 28,
-    borderRadius: radius.sm,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  padRing: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: colors.stone,
   },
   glyphBase: { alignItems: 'center', justifyContent: 'center' },
   glyphSelected: {
@@ -243,7 +248,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.overlay,
   },
   tag: {
-    fontWeight: '900',
+    fontWeight: fontWeight.black,
     fontSize: typography.xs,
     marginTop: 2,
   },
@@ -253,13 +258,23 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
-  base: {
+  gate: {
     position: 'absolute',
-    width: 32,
-    height: 32,
-    borderRadius: radius.sm,
-    borderWidth: 3,
-    borderColor: colors.ember,
-    backgroundColor: colors.overlay,
+    width: 44,
+    height: 36,
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    zIndex: 4,
+  },
+  gatePillar: {
+    width: 10,
+    backgroundColor: colors.stone,
+    borderRadius: 2,
+  },
+  gateEmber: {
+    flex: 1,
+    backgroundColor: colors.ember,
+    marginHorizontal: 2,
+    opacity: 0.95,
   },
 });
