@@ -15,8 +15,9 @@ Keep pintado, torres/enemigos sprite, chrome de piedra. Engine V4 intacto.
 
 ## APK Release (GitHub)
 
-- [`tower-v5-release.apk`](./tower-v5-release.apk) (~67 MB, Git LFS)
+- [`tower-v5-release.apk`](./tower-v5-release.apk) (67.4 MiB, Git LFS)
 - Package: `com.wika.tower` · 5.0.0 · sin Metro
+- Firma: Android Debug (sin keystore de release). Sideload: `adb install -r`. No Play Store.
 
 ```bash
 adb install -r tower-v5-release.apk
