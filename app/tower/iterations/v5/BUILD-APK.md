@@ -19,4 +19,5 @@ npm run apk
 ```
 
 APK Release: `android/app/build/outputs/apk/release/app-release.apk`  
-Paquete: `com.wika.tower` · versión `5.0.0` · sin Metro
+Paquete: `com.wika.tower` · versión `5.0.0` · sin Metro  
+Firma: Android Debug si no hay keystore de upload (sideload OK).
