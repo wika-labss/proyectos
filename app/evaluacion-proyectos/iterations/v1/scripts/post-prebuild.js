@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * WIKA post-prebuild — Kotlin 1.9.25 + release signed with debug keystore for sideload.
+ * WIKA post-prebuild — Kotlin 1.9.25, arm64-only APK, debug-signed release for sideload.
  */
 const fs = require('fs');
 const path = require('path');
@@ -15,10 +15,12 @@ if (fs.existsSync(gradlePropsPath)) {
     .split('\n')
     .filter((line) => !line.startsWith('android.kotlinVersion'))
     .join('\n')
-    .trimEnd();
-  props += '\n\nandroid.kotlinVersion=1.9.25\n';
+    .replace(/^reactNativeArchitectures=.*/m, 'reactNativeArchitectures=arm64-v8a');
+  if (!props.includes('android.kotlinVersion')) {
+    props = `${props.trimEnd()}\n\nandroid.kotlinVersion=1.9.25\n`;
+  }
   fs.writeFileSync(gradlePropsPath, props);
-  console.log('[post-prebuild] Set android.kotlinVersion=1.9.25');
+  console.log('[post-prebuild] Kotlin 1.9.25 + arm64-v8a');
 }
 
 if (fs.existsSync(buildGradlePath)) {
@@ -29,18 +31,22 @@ if (fs.existsSync(buildGradlePath)) {
 
 if (fs.existsSync(appGradlePath)) {
   let appGradle = fs.readFileSync(appGradlePath, 'utf8');
+  let changed = false;
   if (!appGradle.includes('signingConfig signingConfigs.debug')) {
     appGradle = appGradle.replace(
-      /buildTypes\s*\{[\s\S]*?release\s*\{/,
-      (block) => {
-        if (block.includes('signingConfig')) return block;
-        return block.replace(
-          /release\s*\{/,
-          'release {\n            signingConfig signingConfigs.debug',
-        );
-      },
+      /release\s*\{/,
+      'release {\n            signingConfig signingConfigs.debug',
     );
-    fs.writeFileSync(appGradlePath, appGradle);
+    changed = true;
     console.log('[post-prebuild] Release signed with debug keystore for sideload');
   }
+  if (!appGradle.includes('abiFilters')) {
+    appGradle = appGradle.replace(
+      /versionName "1\.0\.0"/,
+      'versionName "1.0.0"\n        ndk {\n            abiFilters "arm64-v8a"\n        }',
+    );
+    changed = true;
+    console.log('[post-prebuild] abiFilters arm64-v8a');
+  }
+  if (changed) fs.writeFileSync(appGradlePath, appGradle);
 }

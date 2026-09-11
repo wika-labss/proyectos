@@ -52,6 +52,7 @@ Verificación V1: `npm run typecheck` y `npm run smoke`.
 Release autónomo (no necesita Metro):
 
 - [`iterations/v1/evaluacion-proyectos-v1-release.apk`](./iterations/v1/evaluacion-proyectos-v1-release.apk)
+- Descarga: https://wdpvlmuescstqnliorkx.supabase.co/storage/v1/object/public/eval-apk/evaluacion-proyectos-v1-release.apk
 
 ```bash
 adb install -r iterations/v1/evaluacion-proyectos-v1-release.apk
