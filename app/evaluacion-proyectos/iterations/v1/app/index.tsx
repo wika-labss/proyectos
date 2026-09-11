@@ -1,37 +1,40 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ProgressBar } from '../src/components/ProgressBar';
 import { Wordmark } from '../src/components/Wordmark';
-import { colors, spacing, splashDurationMs } from '../src/constants/theme';
+import { colors, spacing } from '../src/constants/theme';
 import { loadEvaluatorName } from '../src/modules/session';
+
+const SPLASH_MS = 5000;
 
 export default function SplashScreen() {
   const router = useRouter();
   const progress = useRef(new Animated.Value(0)).current;
-  const navigated = useRef(false);
 
   useEffect(() => {
-    const animation = Animated.timing(progress, {
-      toValue: 1,
-      duration: splashDurationMs,
-      easing: Easing.linear,
-      useNativeDriver: false,
-    });
-
-    animation.start(({ finished }) => {
-      if (!finished || navigated.current) return;
-      navigated.current = true;
+    let cancelled = false;
+    progress.setValue(0);
+    const startedAt = Date.now();
+    const barId = setInterval(() => {
+      progress.setValue(Math.min(1, (Date.now() - startedAt) / SPLASH_MS));
+    }, 50);
+    const navId = setTimeout(() => {
+      if (cancelled) return;
       void (async () => {
         const name = await loadEvaluatorName();
+        if (cancelled) return;
         router.replace(name ? '/home' : '/login');
       })();
-    });
-
+    }, SPLASH_MS);
     return () => {
-      animation.stop();
+      cancelled = true;
+      clearInterval(barId);
+      clearTimeout(navId);
     };
-  }, [progress, router]);
+    // Clock-based 5s splash; router is read at timeout fire.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const width = progress.interpolate({
     inputRange: [0, 1],

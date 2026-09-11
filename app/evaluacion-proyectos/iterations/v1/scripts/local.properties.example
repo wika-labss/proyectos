@@ -1,0 +1,8 @@
+# Copy to android/local.properties and set your Android SDK path.
+#
+# Linux/macOS:
+#   sdk.dir=/home/user/Android/Sdk
+#
+# Or export ANDROID_HOME before running scripts/build-apk.sh.
+
+sdk.dir=/path/to/Android/Sdk

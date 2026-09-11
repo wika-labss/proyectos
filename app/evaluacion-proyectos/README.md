@@ -46,3 +46,15 @@ npm start
 ```
 
 Verificación V1: `npm run typecheck` y `npm run smoke`.
+
+## APK (Android)
+
+Release autónomo (no necesita Metro):
+
+- [`iterations/v1/evaluacion-proyectos-v1-release.apk`](./iterations/v1/evaluacion-proyectos-v1-release.apk)
+
+```bash
+adb install -r iterations/v1/evaluacion-proyectos-v1-release.apk
+```
+
+Rebuild local: `cd iterations/v1 && npm run apk` (JDK 17 + Android SDK 35).
