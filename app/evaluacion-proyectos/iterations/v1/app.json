@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Evaluación Proyectos",
+    "slug": "evaluacion-proyectos",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "evaluacion-proyectos",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.vissiuss.evaluacionproyectos"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": ["expo-router", "expo-asset"],
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}
