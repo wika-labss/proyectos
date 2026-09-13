@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if is_new %}Nuevo producto{% else %}Editar {{ product.title }}{% endif %} | Portal Acolchados CD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/portales.css">
+</head>
+<body class="portal-body">
+  <header class="portal-top">
+    <a class="portal-brand" href="/admin">ACOLCHADOS CD <span>portal</span></a>
+    <nav class="portal-nav">
+      <a class="is-active" href="/admin">Catálogo</a>
+      <a href="/admin/stock">Stock</a>
+      <a href="/admin/reportes">Reportes</a>
+    </nav>
+    <div class="portal-top-links">
+      <a href="/">Sitio público</a>
+      <span class="portal-user">{{ user }}</span>
+      <a href="/admin/logout">Salir</a>
+    </div>
+  </header>
+  <main class="portal-wrap">
+    <p class="crumb"><a href="/admin">Categorías</a> · edición</p>
+    <h1 id="pageTitle">{% if is_new %}Nuevo producto{% else %}{{ product.title }}{% endif %}</h1>
+    <p class="lead" id="syncLabel">Edita la ficha. Los cambios se guardan en el catálogo público.</p>
+    <div class="editor-grid">
+      <form id="editorForm" class="panel">
+        <div class="field"><label>Título</label><input name="title" required value="{{ product.title }}"></div>
+        <div class="field">
+          <label>Categoría</label>
+          <select name="category_id" required>
+            {% for c in categories %}
+            <option value="{{ c.id }}" {% if c.id == product.category_id %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field"><label>Orden</label><input name="order" type="number" value="{{ product.order or 0 }}"></div>
+        <div class="field"><label>Descripción</label><textarea name="description" rows="3">{{ product.description }}</textarea></div>
+        <div class="field">
+          <label>Imagen</label>
+          <input type="hidden" name="imagen" id="imagenUrl" value="{{ product.imagen }}">
+          <img id="imagenPreview" src="{{ product.imagen }}" alt="" style="max-width:180px;display:{% if product.imagen %}block{% else %}none{% endif %};margin-bottom:8px;border-radius:8px">
+          <input type="file" id="imagenFile" accept="image/*">
+        </div>
+        <div class="field"><label>Colores (separados por coma)</label><input name="colors" value="{{ product.colors|join(', ') }}"></div>
+        <div class="field"><label>Notas (una por línea)</label><textarea name="notes" rows="3">{{ product.notes|join('\n') }}</textarea></div>
+        <div class="field">
+          <label>Tablas (JSON: title, headers, rows)</label>
+          <textarea name="tables" id="tablesJson" rows="10">{{ product.tables | tojson(indent=2) }}</textarea>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-primary" type="submit">Guardar</button>
+          {% if not is_new %}<button class="btn btn-danger" type="button" id="btnDelete">Eliminar</button>{% endif %}
+          <a class="btn" href="{% if product.category_id %}/admin/c/{{ product.category_id }}{% else %}/admin{% endif %}">Volver</a>
+        </div>
+      </form>
+      <aside class="panel preview-card">
+        <p class="crumb">Vista previa</p>
+        <h2 id="prevTitle">{{ product.title or 'Producto' }}</h2>
+        <p class="muted" id="prevCat">{{ product.category }}</p>
+        <p id="prevDesc">{{ product.description }}</p>
+      </aside>
+    </div>
+  </main>
+  <script>
+    const IS_NEW = {{ 'true' if is_new else 'false' }};
+    const PID = {{ product.id|tojson }};
+    const CAT_NAMES = {{ categories|tojson }};
+    const form = document.getElementById('editorForm');
+    const sync = document.getElementById('syncLabel');
+    function payload() {
+      let tables = [];
+      try { tables = JSON.parse(document.getElementById('tablesJson').value || '[]'); } catch (e) { throw new Error('JSON de tablas inválido'); }
+      const colors = form.colors.value.split(',').map(s => s.trim()).filter(Boolean);
+      const notes = form.notes.value.split('\n').map(s => s.trim()).filter(Boolean);
+      return {
+        title: form.title.value.trim(),
+        category_id: form.category_id.value,
+        order: Number(form.order.value || 0),
+        description: form.description.value,
+        imagen: document.getElementById('imagenUrl').value,
+        colors, notes, tables
+      };
+    }
+    function categoryName(id) {
+      const found = (CAT_NAMES || []).find(c => c.id === id);
+      return found ? found.name : id;
+    }
+    form.title.addEventListener('input', () => { document.getElementById('prevTitle').textContent = form.title.value; });
+    form.category_id.addEventListener('change', () => { document.getElementById('prevCat').textContent = categoryName(form.category_id.value); });
+    form.description.addEventListener('input', () => { document.getElementById('prevDesc').textContent = form.description.value; });
+    document.getElementById('imagenFile').addEventListener('change', async (ev) => {
+      const file = ev.target.files[0];
+      if (!file) return;
+      const data = new FormData();
+      data.append('image', file);
+      const res = await fetch('/admin/api/uploads', { method: 'POST', body: data });
+      const json = await res.json();
+      if (!res.ok) { sync.textContent = json.error || 'Error al subir'; return; }
+      document.getElementById('imagenUrl').value = json.url;
+      const img = document.getElementById('imagenPreview');
+      img.src = json.url; img.style.display = 'block';
+    });
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      let body;
+      try { body = payload(); } catch (e) { sync.textContent = e.message; return; }
+      sync.textContent = 'Guardando…';
+      const url = IS_NEW ? '/admin/api/products' : '/admin/api/products/' + encodeURIComponent(PID);
+      const res = await fetch(url, { method: IS_NEW ? 'POST' : 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const json = await res.json();
+      if (!res.ok) { sync.textContent = json.error || 'No se pudo guardar'; return; }
+      if (IS_NEW) { location.href = '/admin/p/' + encodeURIComponent(json.id); return; }
+      sync.textContent = 'Guardado';
+      document.getElementById('pageTitle').textContent = json.title;
+    });
+    const del = document.getElementById('btnDelete');
+    if (del) del.addEventListener('click', async () => {
+      if (!confirm('¿Eliminar este producto?')) return;
+      const res = await fetch('/admin/api/products/' + encodeURIComponent(PID), { method: 'DELETE' });
+      if (res.ok) location.href = form.category_id.value ? '/admin/c/' + encodeURIComponent(form.category_id.value) : '/admin';
+      else sync.textContent = 'No se pudo eliminar';
+    });
+  </script>
+</body>
+</html>

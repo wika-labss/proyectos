@@ -6,7 +6,8 @@ Proyecto WIKA **web** (excepción al stack Expo/Android). Catálogo de [Acolchad
 |---|---|
 | Docs oficiales | [`idea/`](./idea/) (01–05) |
 | Auditorías | [`audits/`](./audits/) — pendiente de firma |
-| Sitio público + admin Flask | [`iterations/v1/`](./iterations/v1/) |
+| Sitio + portal V2 | [`iterations/v2/`](./iterations/v2/) |
+| Sitio + admin único V1 | [`iterations/v1/`](./iterations/v1/) |
 | Admin HTML → Supabase | [`index.html`](./index.html) |
 | Schema / seed | [`supabase/migrations/`](./supabase/migrations/) |
 
@@ -22,18 +23,19 @@ Hay **dos superficies** en V1 (aún no unificadas; sync = `FEAT-08`):
 
 ---
 
-## Sitio V1 (Flask)
+## Sitio V2 (Flask — usar este)
 
 ```bash
-cd iterations/v1
+cd iterations/v2
 python3 -m pip install -r requirements.txt
 python3 app.py --host 0.0.0.0 --port 5003
 ```
 
 - Público: http://127.0.0.1:5003/
-- Admin Flask: http://127.0.0.1:5003/admin
+- Portal: http://127.0.0.1:5003/admin (`admin` / `cambiar123`) — Catálogo / Stock / Reportes
+- `/portal` redirige a `/admin`
 
-Detalle: `iterations/v1/README.md`.
+Detalle: `iterations/v2/README.md`. V1 queda en `iterations/v1/`.
 
 ---
 

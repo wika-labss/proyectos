@@ -1,8 +1,8 @@
 ---
 id: "BUILD-001"
-title: "Plan de Construcción V1 — Ramon David (web)"
+title: "Plan de Construcción V1–V2 — Ramon David (web)"
 status: "EN_REVISION"
-version: "1.0.0"
+version: "1.1.0"
 owner: "Vissiuss / Arquitecto WIKA"
 created_at: "2026-09-07"
 updated_at: "2026-09-07"
@@ -56,15 +56,19 @@ Entregable: sitio web servido por Flask, **no** APK.
 | `09` | MOD-05 | FEAT-04 | uploads | 5 MB / whitelist | COMPLETADO | — |
 | `10` | integración | BDD | smoke HTTP | NFR-01 | COMPLETADO | — |
 
-Pasos v2 (bloqueados hasta gates): extraer CSS admin, tokenizar hex residuales, `FEAT-08` Supabase.
+| `11` | MOD-10 | FEAT-12 | `users.json`, login `/admin`, `/portal` → `/admin` | un portal | V2 |
+| `12` | MOD-11 | FEAT-13 | Catálogo: categorías + productos + editor | VIEW-07–09 | V2 |
+| `13` | MOD-12 | FEAT-14 | Stock + Reportes + CSV | VIEW-10–11 | V2 |
+
+`FEAT-08` Supabase sigue fuera. V1 no se modifica.
 
 ---
 
 ## 4. Orden de Implementación y Justificación
 
-1. **Ya hecho (V1):** servidor + páginas + JSON + admin.
-2. **Ahora (este PR):** docs WIKA + mover a `app/ramon-david/`.
-3. **Después (v2):** solo con flags en `true`.
+1. **V1:** servidor + páginas + JSON + admin único.
+2. **V2 (este corte):** un portal `/admin` (Catálogo / Stock / Reportes) en `iterations/v2/` (pedido de producto; gates V1 siguen sin firma).
+3. **Después:** `FEAT-08` Supabase.
 
 ---
 

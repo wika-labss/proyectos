@@ -3,16 +3,18 @@ Ramon David — Acolchados CD (proyecto WIKA **web**)
 Fuente: wika-fundaments templates 01–05
 Excepción: no Expo / no APK. Stack = Flask + HTML/CSS/JS.
 
-Producto V1:
-- Sitio público (home, nosotros, productos, contacto) en iterations/v1/
-- Panel Flask /admin (JSON) + admin HTML Supabase (index.html)
-- Catálogo JSON 19 productos; Supabase 22 SKU / 103 variantes
-- Entregable: servidor web, no APK
+Producto V1 (iterations/v1/):
+- Sitio público + un /admin CRUD sobre products.json
+
+Producto V2 (iterations/v2/):
+- Sitio público sin login (un enlace Portal → /admin)
+- Un portal /admin: Catálogo · Stock · Reportes
+- Catálogo: categorías y productos editables
+- Stock: consultas y +/− unidades; Reportes + CSV
+- /portal redirige a /admin
 
 Estado:
-- idea/ 01–05 documentados (EN_REVISION, excepcion_web: true)
-- audits/ documentación + módulos + ensamblado → PENDIENTE DE FIRMA
-- iterations/v1/ as-built (importado 2026-09-07)
+- idea/ 01–05 actualizados (ERR-07–09 / FEAT-12–14 = portal único)
+- audits/ V1 PENDIENTE DE FIRMA
+- iterations/v2/ en construcción
 - final/ vacío
-
-Siguiente: firmar audits (audit_1/2/3 + visual) → review.md → v2 solo con gates

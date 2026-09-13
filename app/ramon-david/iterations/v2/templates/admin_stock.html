@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stock | Portal Acolchados CD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/portales.css">
+</head>
+<body class="portal-body">
+  <header class="portal-top">
+    <a class="portal-brand" href="/admin">ACOLCHADOS CD <span>portal</span></a>
+    <nav class="portal-nav">
+      <a href="/admin">Catálogo</a>
+      <a class="is-active" href="/admin/stock">Stock</a>
+      <a href="/admin/reportes">Reportes</a>
+    </nav>
+    <div class="portal-top-links">
+      <a href="/">Sitio público</a>
+      <span class="portal-user">{{ user }}</span>
+      <a href="/admin/logout">Salir</a>
+    </div>
+  </header>
+  <main class="portal-wrap">
+    <p class="crumb">Stock</p>
+    <h1>Consultas de stock</h1>
+    <p class="lead">Filtra existencias. Stock bajo: {{ low_stock }} unidades o menos. Los movimientos no dejan saldo negativo.</p>
+    <div class="filters">
+      <select id="fCategoria">
+        <option value="">Todas las categorías</option>
+        {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+      <input id="fProducto" placeholder="Producto">
+      <input id="fTalla" placeholder="Talla">
+      <label class="muted"><input type="checkbox" id="fBajo"> Solo stock bajo</label>
+      <button class="btn" type="button" id="btnFiltrar">Filtrar</button>
+    </div>
+    <div class="panel">
+      <h2 style="margin:0 0 12px;font-family:var(--serif);font-size:20px">Mover stock</h2>
+      <div class="filters">
+        <select id="mProducto"></select>
+        <select id="mTalla"></select>
+        <input id="mCantidad" type="number" min="1" value="1" style="width:90px">
+        <input id="mMotivo" placeholder="Motivo" style="min-width:180px">
+        <button class="btn btn-primary" type="button" id="btnSumar">Sumar</button>
+        <button class="btn btn-danger" type="button" id="btnRestar">Descontar</button>
+      </div>
+      <p class="muted" id="moveMsg"></p>
+    </div>
+    <div class="table-wrap panel">
+      <table class="data" id="stockTable">
+        <thead><tr><th>Categoría</th><th>Producto</th><th>Talla</th><th>Unidades</th><th>Último movimiento</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+  <script>
+    const rows = {{ rows|tojson }};
+    const byProduct = {};
+    rows.forEach(r => {
+      (byProduct[r.product_id] ||= { title: r.title, sizes: [] }).sizes.push(r.size);
+    });
+    const prodSel = document.getElementById('mProducto');
+    const sizeSel = document.getElementById('mTalla');
+    Object.keys(byProduct).sort((a,b) => byProduct[a].title.localeCompare(byProduct[b].title)).forEach(id => {
+      const opt = document.createElement('option');
+      opt.value = id; opt.textContent = byProduct[id].title;
+      prodSel.appendChild(opt);
+    });
+    function fillSizes() {
+      sizeSel.innerHTML = '';
+      (byProduct[prodSel.value]?.sizes || []).forEach(s => {
+        const opt = document.createElement('option'); opt.value = s; opt.textContent = s; sizeSel.appendChild(opt);
+      });
+    }
+    prodSel.addEventListener('change', fillSizes);
+    fillSizes();
+
+    function render(list) {
+      const tb = document.querySelector('#stockTable tbody');
+      tb.innerHTML = list.map(r => `<tr>
+        <td>${r.category}</td><td>${r.title}</td><td>${r.size}</td>
+        <td class="${r.low ? 'low' : 'ok'}">${r.qty}</td>
+        <td>${r.last_at ? `${r.last_delta} · ${r.last_motivo || ''} · ${r.last_at.slice(0,16)}` : '—'}</td>
+      </tr>`).join('') || '<tr><td colspan="5">Sin resultados</td></tr>';
+    }
+    render(rows);
+
+    document.getElementById('btnFiltrar').addEventListener('click', async () => {
+      const q = new URLSearchParams();
+      if (document.getElementById('fCategoria').value) q.set('categoria', document.getElementById('fCategoria').value);
+      if (document.getElementById('fProducto').value.trim()) q.set('producto', document.getElementById('fProducto').value.trim());
+      if (document.getElementById('fTalla').value.trim()) q.set('talla', document.getElementById('fTalla').value.trim());
+      if (document.getElementById('fBajo').checked) q.set('bajo', '1');
+      const res = await fetch('/admin/api/stock?' + q.toString());
+      const json = await res.json();
+      render(json.rows || []);
+    });
+
+    async function move(sign) {
+      const qty = Number(document.getElementById('mCantidad').value);
+      const msg = document.getElementById('moveMsg');
+      if (!qty || qty < 1) { msg.textContent = 'Cantidad inválida'; return; }
+      const res = await fetch('/admin/api/stock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: prodSel.value,
+          size: sizeSel.value,
+          delta: sign * qty,
+          motivo: document.getElementById('mMotivo').value.trim()
+        })
+      });
+      const json = await res.json();
+      if (!res.ok) { msg.textContent = json.error || 'Error'; return; }
+      msg.textContent = 'Saldo: ' + json.qty;
+      location.reload();
+    }
+    document.getElementById('btnSumar').addEventListener('click', () => move(1));
+    document.getElementById('btnRestar').addEventListener('click', () => move(-1));
+  </script>
+</body>
+</html>
