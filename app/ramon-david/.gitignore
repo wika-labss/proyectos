@@ -1,1 +1,4 @@
 .env
+iterations/v1/.env
+iterations/v1/data/meli_tokens.json
+iterations/v1/data/meli_notifications.jsonl

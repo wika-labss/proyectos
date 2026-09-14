@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ventas Mercado Libre | Acolchados CD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--ink:#17302c;--ink-soft:#5a6d67;--bg:#f6f2ea;--surface:#fff;--teal:#148d94;--teal-dark:#0f6a6f;--sand:#b98a4a;--border:#e2d8c2;--danger:#a8432d;--ok:#0f6a6f}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px}
+    h1,h2{font-family:'Fraunces',Georgia,serif;font-weight:600;margin:0}
+    a{color:var(--teal-dark)}
+    .topbar{display:flex;align-items:center;gap:16px;padding:14px 22px;background:var(--surface);border-bottom:1px solid var(--border)}
+    .topbar h1{font-size:17px}
+    .topbar-links{margin-left:auto;display:flex;gap:16px;font-size:12.5px}
+    .topbar-links a{color:var(--ink-soft);text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 22px 80px}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#efe7d8;font-size:12px;font-weight:600}
+    .pill.ok{background:#dcefec;color:var(--ok)}
+    .pill.warn{background:#f6e2db;color:var(--danger)}
+    .btn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:9px 13px;font-weight:600;cursor:pointer}
+    .btn-primary{background:var(--teal);border-color:var(--teal);color:#fff}
+    .btn-primary:hover{background:var(--teal-dark)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border);vertical-align:top}
+    th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft)}
+    .muted{color:var(--ink-soft);font-size:13px;line-height:1.5}
+    .err{color:var(--danger);white-space:pre-wrap}
+    .okmsg{color:var(--ok)}
+    code{font-size:12px;background:#efe7d8;padding:1px 5px;border-radius:4px}
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <h1>Ventas · Mercado Libre</h1>
+  <div class="topbar-links">
+    <a href="/admin">Panel de precios</a>
+    <a href="/productos.html" target="_blank" rel="noreferrer">Catálogo público</a>
+    <a href="/admin/logout">Cerrar sesión</a>
+  </div>
+</header>
+<main class="wrap">
+  <section class="panel">
+    <h2>Conexión</h2>
+    <p class="muted" id="statusLine">Cargando estado…</p>
+    <div class="row" id="statusPills"></div>
+    <p class="muted">Antes de conectar, en el navegador entra a Mercado Libre con el <strong>vendedor test</strong> (no el comprador ni tu cuenta personal). El 404 del callback es normal si aún no está el DNS; igual guarda el token si esta app recibe <code>/oauth/callback</code>.</p>
+    <div class="row">
+      <a class="btn btn-primary" id="btnConnect" href="/admin/meli/connect">Conectar vendedor</a>
+      <button class="btn" id="btnOrders" type="button">Actualizar pedidos</button>
+    </div>
+    <p class="muted">Si MeLi te deja en un 404 de vissiuss.lat, copia el <code>code=</code> de la URL y pégalo aquí:</p>
+    <div class="row">
+      <input id="codeInput" placeholder="TG-…" style="flex:1;min-width:220px;padding:8px 10px;border:1px solid var(--border);border-radius:8px">
+      <button class="btn" id="btnCode" type="button">Guardar code</button>
+    </div>
+    <p id="connectHint" class="muted"></p>
+  </section>
+
+  <section class="panel">
+    <h2>Publicar desde catálogo</h2>
+    <p class="muted">Modo prueba: el título en MeLi será <code>Item de Prueba - Por favor, NO OFERTAR</code>. No uses Gold Premium. Evita el formulario web de domicilio; esta vía es API.</p>
+    <p id="publishMsg"></p>
+    <table>
+      <thead><tr><th>Producto</th><th>Categoría</th><th>MeLi</th><th></th></tr></thead>
+      <tbody id="productRows"></tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>Pedidos</h2>
+    <p id="ordersMsg" class="muted">Aún no se consultan.</p>
+    <table>
+      <thead><tr><th>ID</th><th>Estado</th><th>Total</th><th>Fecha</th></tr></thead>
+      <tbody id="orderRows"></tbody>
+    </table>
+  </section>
+</main>
+<script>
+(function () {
+  var $status = document.getElementById("statusLine");
+  var $pills = document.getElementById("statusPills");
+  var $products = document.getElementById("productRows");
+  var $orders = document.getElementById("orderRows");
+  var $ordersMsg = document.getElementById("ordersMsg");
+  var $publishMsg = document.getElementById("publishMsg");
+  var $hint = document.getElementById("connectHint");
+
+  function pill(text, ok) {
+    var s = document.createElement("span");
+    s.className = "pill " + (ok ? "ok" : "warn");
+    s.textContent = text;
+    return s;
+  }
+
+  function loadStatus() {
+    return fetch("/admin/api/meli/status")
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        var s = res.j || {};
+        if (!res.ok) {
+          $status.textContent = s.error || "No se pudo leer el estado (¿sesión admin?)";
+          return s;
+        }
+        $pills.innerHTML = "";
+        $pills.appendChild(pill(s.configured ? "App configurada" : "Faltan MELI_CLIENT_ID / SECRET", s.configured));
+        $pills.appendChild(pill(s.connected ? "Vendedor conectado" : "Sin token", s.connected));
+        $pills.appendChild(pill(s.test_mode ? "Modo prueba" : "Modo producción", s.test_mode));
+        $pills.appendChild(pill(s.has_refresh ? "Refresh token" : "Sin refresh", s.has_refresh));
+        $status.textContent = s.connected
+          ? ("User ID " + (s.user_id || "—") + " · redirect " + s.redirect_uri)
+          : ("Redirect URI registrada: " + s.redirect_uri);
+        if (!s.configured) {
+          $hint.textContent = "Copia Client ID y Secret en variables de entorno (ver env.example) y reinicia Flask.";
+          document.getElementById("btnConnect").removeAttribute("href");
+        } else if (s.connected) {
+          $hint.textContent = "Token local listo. Puedes publicar; el nickname de MeLi se consulta aparte.";
+          fetch("/admin/api/meli/me").then(function (r) { return r.json(); }).then(function (me) {
+            if (me && me.nickname) {
+              $hint.textContent = "Conectado como " + me.nickname + " (id " + me.id + ").";
+            }
+          }).catch(function () {});
+        }
+        return s;
+      })
+      .catch(function (e) {
+        $status.textContent = "Error de estado: " + e;
+        return {};
+      });
+  }
+
+  function loadProducts() {
+    return fetch("/api/products").then(function (r) { return r.json(); }).then(function (data) {
+      $products.innerHTML = "";
+      (data.products || []).forEach(function (p) {
+        var tr = document.createElement("tr");
+        var meli = p.meli || {};
+        var status = meli.item_id
+          ? ('<a href="' + (meli.permalink || "#") + '" target="_blank" rel="noreferrer">' + meli.item_id + "</a>")
+          : "—";
+        tr.innerHTML = "<td>" + (p.title || p.id) + "</td><td>" + (p.category || "") + "</td><td>" + status + "</td>";
+        var td = document.createElement("td");
+        var btn = document.createElement("button");
+        btn.className = "btn btn-primary";
+        btn.type = "button";
+        btn.textContent = meli.item_id ? "Volver a publicar" : "Publicar en MeLi";
+        btn.addEventListener("click", function () { publish(p.id, btn); });
+        td.appendChild(btn);
+        tr.appendChild(td);
+        $products.appendChild(tr);
+      });
+    });
+  }
+
+  function publish(pid, btn) {
+    btn.disabled = true;
+    $publishMsg.className = "muted";
+    $publishMsg.textContent = "Publicando " + pid + "…";
+    fetch("/admin/api/meli/publish/" + encodeURIComponent(pid), { method: "POST" })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (res.ok && res.j.item_id) {
+          $publishMsg.className = "okmsg";
+          $publishMsg.textContent = "Publicado " + res.j.item_id + (res.j.permalink ? " · " + res.j.permalink : "");
+          loadProducts();
+        } else {
+          $publishMsg.className = "err";
+          $publishMsg.textContent = (res.j.message || res.j.error || "No se pudo publicar") + "\n" + JSON.stringify(res.j, null, 2);
+        }
+      })
+      .catch(function (e) {
+        $publishMsg.className = "err";
+        $publishMsg.textContent = String(e);
+      })
+      .finally(function () { btn.disabled = false; });
+  }
+
+  function loadOrders() {
+    $ordersMsg.textContent = "Consultando…";
+    fetch("/admin/api/meli/orders")
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        $orders.innerHTML = "";
+        if (!res.ok) {
+          $ordersMsg.className = "err";
+          $ordersMsg.textContent = res.j.message || res.j.error || "No se pudieron leer pedidos";
+          return;
+        }
+        var results = (res.j.results || res.j.orders || []);
+        $ordersMsg.className = "muted";
+        $ordersMsg.textContent = results.length ? (results.length + " pedidos") : "Sin pedidos todavía. Compra el ítem test con el usuario comprador.";
+        results.forEach(function (o) {
+          var tr = document.createElement("tr");
+          var total = o.total_amount != null ? o.total_amount : "";
+          tr.innerHTML = "<td>" + (o.id || "") + "</td><td>" + (o.status || "") + "</td><td>" + total + "</td><td>" + (o.date_created || "") + "</td>";
+          $orders.appendChild(tr);
+        });
+      })
+      .catch(function (e) {
+        $ordersMsg.className = "err";
+        $ordersMsg.textContent = String(e);
+      });
+  }
+
+  document.getElementById("btnOrders").addEventListener("click", loadOrders);
+  document.getElementById("btnCode").addEventListener("click", function () {
+    var code = (document.getElementById("codeInput").value || "").trim();
+    if (!code) return;
+    if (code.indexOf("code=") !== -1) {
+      var match = code.match(/code=([^&]+)/);
+      if (match) code = decodeURIComponent(match[1]);
+    }
+    code = code.split("&")[0].trim();
+    $hint.textContent = "Canjeando code…";
+    fetch("/admin/api/meli/exchange", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: code })
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (res.ok) {
+          $hint.textContent = "Token guardado.";
+          loadStatus().then(function (s) { if (s && s.connected) loadOrders(); });
+        } else {
+          $hint.textContent = res.j.message || res.j.error || "No se pudo canjear el code";
+        }
+      })
+      .catch(function (e) {
+        $hint.textContent = String(e);
+      });
+  });
+  loadStatus().then(function (s) { if (s.connected) loadOrders(); });
+  loadProducts();
+})();
+</script>
+</body>
+</html>

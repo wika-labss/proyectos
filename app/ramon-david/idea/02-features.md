@@ -161,7 +161,7 @@ excepcion_web: true
 | `FEAT-08` | Sync Supabase `ramon-david` | `Alta` | Una sola fuente; hoy JSON ≠ tablas remotas |
 | `FEAT-09` | Envío real de contacto | `Media` | Email / ticket |
 | `FEAT-10` | Deploy producción (gunicorn + HTTPS) | `Alta` | Sustituye servidor de desarrollo Flask |
-| `FEAT-11` | Auth fuerte / 2FA admin | `Media` | Reemplazar default `cambiar123` |
+| `FEAT-12` | Publicar catálogo en Mercado Libre | `Alta` | V2; MOD-10; modo prueba; OAuth vendedor; no usar cuenta personal |
 
 ---
 

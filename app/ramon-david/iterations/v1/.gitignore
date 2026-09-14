@@ -2,6 +2,8 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+data/meli_tokens.json
+data/meli_notifications.jsonl
 *.json.tmp
 .venv/
 venv/

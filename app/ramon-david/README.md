@@ -32,6 +32,7 @@ python3 app.py --host 0.0.0.0 --port 5003
 
 - Público: http://127.0.0.1:5003/
 - Admin Flask: http://127.0.0.1:5003/admin
+- Ventas Mercado Libre (V2): http://127.0.0.1:5003/admin/meli
 
 Detalle: `iterations/v1/README.md`.
 
