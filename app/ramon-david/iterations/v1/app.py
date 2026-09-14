@@ -6,10 +6,13 @@ import re
 import secrets
 import threading
 import unicodedata
+import urllib.parse
 import uuid
 import webbrowser
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+import mod_meli
 
 from flask import Flask, abort, jsonify, redirect, render_template_string, request, send_from_directory, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -23,6 +26,20 @@ products_lock = threading.Lock()
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 UPLOAD_FILENAME_RE = re.compile(r"^[0-9a-f]{32}\.(?:png|jpg|jpeg|webp|gif)$")
+
+def load_dotenv():
+    path = PROJECT_ROOT / ".env"
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+load_dotenv()
 
 app = Flask(__name__, static_folder=str(PROJECT_ROOT), static_url_path="")
 
@@ -54,7 +71,7 @@ ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH")
 if not ADMIN_PASSWORD_HASH:
     ADMIN_PASSWORD_HASH = generate_password_hash(DEFAULT_ADMIN_PASSWORD)
     print(
-        "\n⚠  No se definió ADMIN_PASSWORD_HASH: usando credenciales de prueba "
+        "\n[aviso] No se definio ADMIN_PASSWORD_HASH: usando credenciales de prueba "
         f"(usuario: {DEFAULT_ADMIN_USERNAME} / contraseña: {DEFAULT_ADMIN_PASSWORD}).\n"
         "   Antes de publicar el sitio, genera tu propia contraseña con:\n"
         "     python app.py --hash-password\n"
@@ -126,7 +143,8 @@ def sanitize_product(payload):
         return out
 
     order = payload.get("order")
-    return {
+    meli = payload.get("meli") if isinstance(payload.get("meli"), dict) else {}
+    clean = {
         "order": order if isinstance(order, (int, float)) else 0,
         "category": as_str(payload.get("category"), "Sin categoría"),
         "title": as_str(payload.get("title"), "Nuevo producto"),
@@ -136,6 +154,15 @@ def sanitize_product(payload):
         "notes": as_str_list(payload.get("notes")),
         "tables": as_tables(payload.get("tables")),
     }
+    item_id = as_str(meli.get("item_id"))
+    if item_id:
+        clean["meli"] = {
+            "item_id": item_id,
+            "permalink": as_str(meli.get("permalink")),
+            "status": as_str(meli.get("status")),
+            "published_at": as_str(meli.get("published_at")),
+        }
+    return clean
 
 
 def require_admin_json():
@@ -206,11 +233,14 @@ def api_products_update(pid):
     err = require_admin_json()
     if err:
         return err
-    product = sanitize_product(request.get_json(silent=True))
+    incoming = request.get_json(silent=True) or {}
+    product = sanitize_product(incoming)
     with products_lock:
         products = load_products()
         if pid not in products:
             return jsonify({"error": "Producto no encontrado"}), 404
+        if not product.get("meli") and products[pid].get("meli"):
+            product["meli"] = products[pid]["meli"]
         old_imagen = products[pid].get("imagen")
         products[pid] = product
         save_products(products)
@@ -411,6 +441,7 @@ ADMIN_PAGE = """<!doctype html><html lang="es"><head><meta charset="utf-8">
 <header class="topbar">
   <h1>Panel de precios · Acolchados CD</h1>
   <div class="topbar-links">
+    <a href="/admin/meli">Ventas Mercado Libre</a>
     <a href="/productos.html" target="_blank" rel="noreferrer">Ver catálogo público ↗</a>
     <a href="/admin/logout">Cerrar sesión</a>
   </div>
@@ -759,6 +790,133 @@ def admin_home():
     return ADMIN_PAGE
 
 
+@app.get("/admin/meli")
+def admin_meli():
+    if not is_logged_in():
+        return redirect(url_for("admin_login", next="/admin/meli"))
+    return send_from_directory(PROJECT_ROOT, "admin_meli.html")
+
+
+@app.get("/admin/meli/connect")
+def admin_meli_connect():
+    if not is_logged_in():
+        return redirect(url_for("admin_login", next="/admin/meli"))
+    if not mod_meli.configured():
+        return (
+            "Faltan MELI_CLIENT_ID y MELI_CLIENT_SECRET. Cópialos en iterations/v1/.env y reinicia Flask.",
+            500,
+            {"Content-Type": "text/plain; charset=utf-8"},
+        )
+    state = secrets.token_urlsafe(16)
+    session["meli_oauth_state"] = state
+    return redirect(mod_meli.authorization_url(state))
+
+
+@app.get("/oauth/callback")
+@app.get("/meli/callback")
+def meli_oauth_callback():
+    error = request.args.get("error")
+    if error:
+        return f"Mercado Libre denegó la autorización: {error}", 400
+    code = request.args.get("code")
+    expected = session.get("meli_oauth_state")
+    state = request.args.get("state")
+    if expected and state and state != expected:
+        return "State OAuth inválido. Vuelve a conectar desde el panel.", 400
+    if not code:
+        return "Falta el parámetro code.", 400
+    status, body = mod_meli.exchange_code(code)
+    if status != 200:
+        return jsonify(body), status
+    return redirect("/admin/meli")
+
+
+@app.post("/admin/api/meli/exchange")
+def meli_exchange():
+    err = require_admin_json()
+    if err:
+        return err
+    payload = request.get_json(silent=True) or {}
+    code = (payload.get("code") or "").strip()
+    if "code=" in code:
+        parsed = urllib.parse.urlparse(code if "://" in code else "https://local/?" + code)
+        found = urllib.parse.parse_qs(parsed.query).get("code") or []
+        if found:
+            code = found[0]
+    code = code.split("&")[0].strip()
+    if not code:
+        return jsonify({"error": "missing_code", "message": "Pega el code de la URL de callback."}), 400
+    status, body = mod_meli.exchange_code(code)
+    if status != 200:
+        return jsonify(body), status
+    return jsonify({"ok": True, "user_id": body.get("user_id")})
+
+
+@app.get("/admin/api/meli/status")
+def meli_status():
+    err = require_admin_json()
+    if err:
+        return err
+    return jsonify(mod_meli.public_status())
+
+
+@app.get("/admin/api/meli/me")
+def meli_me():
+    err = require_admin_json()
+    if err:
+        return err
+    if not mod_meli.access_token():
+        return jsonify({"error": "not_connected"}), 400
+    status, body = mod_meli.me()
+    if status != 200:
+        return jsonify(body), status
+    return jsonify({"id": body.get("id"), "nickname": body.get("nickname")})
+
+
+@app.post("/admin/api/meli/publish/<pid>")
+def meli_publish(pid):
+    err = require_admin_json()
+    if err:
+        return err
+    with products_lock:
+        products = load_products()
+        product = products.get(pid)
+        if not product:
+            return jsonify({"error": "not_found", "message": "Producto no existe"}), 404
+        try:
+            status, body = mod_meli.publish_product(product, pid)
+        except ValueError as exc:
+            return jsonify({"error": "invalid_product", "message": str(exc)}), 400
+        if status in (200, 201) and body.get("id"):
+            product = dict(product)
+            product["meli"] = {
+                "item_id": body.get("id"),
+                "permalink": body.get("permalink") or "",
+                "status": body.get("status") or "",
+                "published_at": datetime.now(timezone.utc).isoformat(),
+            }
+            products[pid] = sanitize_product(product)
+            save_products(products)
+            return jsonify(products[pid].get("meli") or {})
+        return jsonify(body), status
+
+
+@app.get("/admin/api/meli/orders")
+def meli_orders():
+    err = require_admin_json()
+    if err:
+        return err
+    status, body = mod_meli.search_orders()
+    return jsonify(body), (status if status != 200 else 200)
+
+
+@app.route("/meli/notifications", methods=["GET", "POST"])
+def meli_notifications():
+    payload = request.get_json(silent=True) or dict(request.args)
+    mod_meli.append_notification({"method": request.method, "payload": payload})
+    return jsonify({"ok": True}), 200
+
+
 @app.get("/admin/login")
 def admin_login():
     if is_logged_in():
@@ -837,6 +995,7 @@ def main():
     url = f"http://127.0.0.1:{args.port}/"
     print(f"Acolchados CD disponible en {url}")
     print(f"Admin / precios: {url}admin")
+    print(f"Ventas Mercado Libre: {url}admin/meli")
     if args.open:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     app.run(host=args.host, port=args.port, debug=False, use_reloader=False, threaded=True)

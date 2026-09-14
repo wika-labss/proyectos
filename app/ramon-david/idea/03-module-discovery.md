@@ -37,7 +37,7 @@ excepcion_web: true
 | `MOD-06` | `FEAT-01`, `FEAT-05` | `ERR-01`, `ERR-05` | `mod-public-site` | UI | `index`, `nosotros`, `contacto` + `js/main.js` |
 | `MOD-07` | `FEAT-02` | `ERR-02` | `mod-catalog-ui` | UI | `productos.html` + `js/product.js` |
 | `MOD-08` | `FEAT-01` | `ERR-01` | `mod-theme` | tokens | `css/main.css`, `css/componentes.css` |
-| `MOD-09` | `FEAT-07` | `ERR-01` | `mod-web-serve` | serve | Flask static + `main()` host/port |
+| `MOD-10` | `FEAT-12` | — | `mod-meli` | HTTP + persist | OAuth, publicar ítems test, órdenes y notificaciones MeLi |
 
 ---
 
@@ -154,6 +154,20 @@ excepcion_web: true
 
 ---
 
+### Módulo `MOD-10`: `mod-meli`
+
+**Patrón:** Integración HTTP + token store  
+**Ruta:** `iterations/v1/mod_meli.py` · `admin_meli.html` · rutas `/admin/meli`, `/oauth/callback`, `/meli/notifications`
+
+#### Contrato
+
+- **Entradas:** producto del catálogo (MOD-01), OAuth code, notificaciones MeLi
+- **Salidas:** ítem MeLi (`meli.item_id` en el producto), listado de órdenes
+- **Dependencias:** MOD-03 (panel), MOD-01 (catálogo), env `MELI_*`
+- En `MELI_TEST_MODE=1` fuerza título de prueba y categoría sábanas MLC
+
+---
+
 ## 4. Grafo de Dependencias y Reglas de Importación
 
 ```text
@@ -165,13 +179,14 @@ excepcion_web: true
     │
     └─ /admin ──► MOD-03 ──► MOD-04 ──► MOD-01
                          └──► MOD-05
+                         └──► MOD-10 (MeLi)
 [proceso]
     MOD-09 sirve todo
 ```
 
 **Reglas:**
 
-- Sin ciclos: UI pública no escribe JSON; solo MOD-04/05 escriben.
+- Sin ciclos: UI pública no escribe JSON; solo MOD-04/05/10 escriben.
 - `/data/` no es descargable.
 - No hay capa Expo. Equivalente web a `src/engine/` = funciones de MOD-01 en `app.py`.
 
