@@ -1,0 +1,25 @@
+{
+  "$schema": "wika-tokens/v1",
+  "project": "arkanoid",
+  "version": "v4",
+  "syncedFrom": "design-system/tokens/arkanoid-v4/overrides.json",
+  "colors": {
+    "night": "#100828",
+    "panel": "#1C0C40",
+    "pink": "#F878F8",
+    "cyan": "#78B8F8",
+    "purple": "#B878F8",
+    "gold": "#F8D878",
+    "hot": "#F83878",
+    "ink": "#F8F8F8",
+    "muted": "#A078B8",
+    "outline": "#000000",
+    "peach": "#F8B878",
+    "blue": "#3878F8"
+  },
+  "motion": {
+    "railExpandMs": 240,
+    "paddleLerpMs": 70,
+    "pressOpacity": 0.8
+  }
+}
