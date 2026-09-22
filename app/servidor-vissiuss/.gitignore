@@ -1,0 +1,12 @@
+# ─── NUNCA subir secretos ───────────────────────────────
+.env
+*.env
+!*.env.ejemplo
+!.env.ejemplo
+
+# El mediamtx real lleva la clave de la cámara dentro de la URL
+mediamtx.yml
+
+grabaciones/
+__pycache__/
+*.pyc

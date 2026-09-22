@@ -1,0 +1,15 @@
+# ─── NUNCA subir secretos ───────────────────────────────
+.env
+*.env
+!*.env.ejemplo
+!.env.ejemplo
+
+# ─── Datos, no código ───────────────────────────────────
+datos/
+*.db
+*.db-wal
+*.db-shm
+respaldo*.tar.gz
+
+__pycache__/
+*.pyc

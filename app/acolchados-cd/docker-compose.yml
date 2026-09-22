@@ -1,0 +1,14 @@
+services:
+  tienda:
+    build: ./servidor
+    container_name: tienda
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./datos:/datos          # base de datos + fotos subidas
+    networks: [proxy]
+    # Sin 'ports': solo Caddy puede hablar con este contenedor.
+
+networks:
+  proxy:
+    external: true
