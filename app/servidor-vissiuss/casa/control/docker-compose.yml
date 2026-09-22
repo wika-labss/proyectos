@@ -1,0 +1,8 @@
+services:
+  control:
+    build: .
+    container_name: control
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "100.124.78.13:8000:8000"

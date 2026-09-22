@@ -1,0 +1,31 @@
+logLevel: info
+
+api: yes
+apiAddress: :9997
+
+playback: yes
+playbackAddress: :9996
+
+rtsp: yes
+rtspAddress: :8554
+rtspTransports: [tcp]
+
+hls: yes
+hlsAddress: :8888
+hlsVariant: mpegts
+
+rtmp: no
+webrtc: no
+srt: no
+
+paths:
+  camara:
+    source: rtsp://USUARIO:CLAVE@192.168.100.101:554/live/ch00_0
+    rtspTransport: tcp
+    sourceOnDemand: no
+
+    record: yes
+    recordPath: /grabaciones/%path/%Y-%m-%d_%H-%M-%S-%f
+    recordFormat: fmp4
+    recordSegmentDuration: 1h
+    recordDeleteAfter: 72h

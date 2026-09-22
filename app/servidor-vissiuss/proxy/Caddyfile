@@ -1,0 +1,26 @@
+{
+	auto_https off
+	servers {
+		trusted_proxies static private_ranges
+		client_ip_headers Cf-Connecting-Ip
+	}
+}
+
+http://vissiuss.lat, http://www.vissiuss.lat {
+	encode gzip
+	root * /srv/static/principal
+
+	# Si el archivo existe en disco lo sirve Caddy: la página, el logo, etc.
+	@archivo file {
+		try_files {path} {path}/index.html
+	}
+	handle @archivo {
+		file_server
+	}
+
+	# Todo lo demás va al backend: /api, /media y el panel de administración.
+	# La URL secreta del panel no se escribe aquí, vive solo en el .env.
+	handle {
+		reverse_proxy tienda:8080
+	}
+}
