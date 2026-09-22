@@ -44,8 +44,8 @@ Hex en `app.json` splash/adaptive = token `night` (Expo JSON no importa TS).
 
 ## Verify
 
-- `npm run typecheck` — a correr en esta entrega
-- `npm run smoke` — a correr en esta entrega
+- `npm run typecheck` — PASS
+- `npm run smoke` — PASS
 - `npm run verify` / APK — no ejecutado (SDK Android / JDK)
 
 ## Honestidad vs 100%

@@ -1,3 +1,3 @@
 # Runtime — arkanoid-castle
 
-Copia de `recursos/inspiration/arkanoid-castle/dracula-castle-playfield.png` (4× nearest-neighbor).
+Pack Castillo de v4. **No es VE.** El PNG se eliminó en v5 (look vaporwave). Este README queda como nota histórica.
