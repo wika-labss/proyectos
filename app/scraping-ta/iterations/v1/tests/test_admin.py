@@ -38,10 +38,10 @@ def test_targets_roundtrip(tmp_path, monkeypatch):
     import targets_store as store
 
     monkeypatch.setattr(store, "TARGETS_PATH", tmp_path / "targets.json")
-    saved = store.save_targets({"justo": "https://www.tarragona.cl/pedir", "peya": "https://example.com/peya"})
-    assert saved["justo"].endswith("/pedir")
+    saved = store.save_targets({"peya": "https://example.com/peya", "uber": "https://example.com/uber"})
+    assert "justo" not in saved
     assert saved["peya"].endswith("/peya")
-    assert store.load_targets()["peya"].endswith("/peya")
+    assert store.load_targets()["uber"].endswith("/uber")
 
 
 def test_admin_pages_exist():

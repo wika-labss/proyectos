@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from schema import ChannelResult, ProductRow, utc_now
-
 INGEST_KEY = "test-ingest-key"
 
 
@@ -119,16 +117,19 @@ def test_ingest_peya_creates_run_and_xlsx(tmp_path, monkeypatch):
     assert peya["skipped"] is False
     assert peya["items"][0]["name"] == "Promo Box"
     assert (tmp_path / f"{data['run_id']}.json").exists()
-    assert (tmp_path / f"{data['run_id']}.xlsx").exists()
-    xlsx = client.get(f"/api/report/{data['run_id']}.xlsx")
+    assert (tmp_path / f"{data['run_id']}-pedidosya.xlsx").exists()
+    assert not (tmp_path / f"{data['run_id']}.xlsx").exists()
+    xlsx = client.get(f"/api/report/{data['run_id']}/pedidosya.xlsx")
     assert xlsx.status_code == 200
     assert xlsx.content[:2] == b"PK"
+    assert data["xlsx"]["pedidosya"] is True
+    assert data["xlsx"]["ubereats"] is False
     assert appmod.JOBS[data["run_id"]]["status"] == "collecting"
 
 
 def test_create_job_and_ingest_into_run(tmp_path, monkeypatch):
     client, _appmod = _client(tmp_path, monkeypatch)
-    created = client.post("/api/jobs", json={"justo": "https://www.tarragona.cl/pedir"})
+    created = client.post("/api/jobs", json={})
     assert created.status_code == 200
     job = created.json()
     assert job["status"] == "collecting"
@@ -155,7 +156,9 @@ def test_create_job_and_ingest_into_run(tmp_path, monkeypatch):
     rappi = next(ch for ch in data["channels"] if ch["platform"] == "rappi")
     assert rappi["item_count"] == 1
     platforms = [ch["platform"] for ch in data["channels"]]
-    assert platforms[:4] == ["pedidosya", "ubereats", "rappi", "justo"]
+    assert platforms == ["pedidosya", "ubereats", "rappi"]
+    assert (tmp_path / f"{run_id}-rappi.xlsx").exists()
+    assert not (tmp_path / f"{run_id}-justo.xlsx").exists()
 
 
 def test_ingest_uber_react_query(tmp_path, monkeypatch):
@@ -211,37 +214,11 @@ def test_jobs_active_404_when_empty(tmp_path, monkeypatch):
     assert res.status_code == 404
 
 
-def test_justo_cdn_merges_into_collecting(tmp_path, monkeypatch):
-    client, appmod = _client(tmp_path, monkeypatch)
-
-    def fake_justo(url: str) -> ChannelResult:
-        return ChannelResult(
-            platform="justo",
-            store="Tarragona test",
-            source_url=url,
-            native_source="cdn-test",
-            items=[ProductRow(
-                platform="justo",
-                store="Tarragona test",
-                section="Promos",
-                name="Promo Box Justo",
-                description="",
-                price_clp=3990,
-                price_original_clp=9990,
-                available=True,
-                source_url=url,
-                scraped_at=utc_now(),
-            )],
-        )
-
-    monkeypatch.setattr(appmod, "_audit_justo", fake_justo)
+def test_justo_endpoint_gone(tmp_path, monkeypatch):
+    client, _appmod = _client(tmp_path, monkeypatch)
     created = client.post("/api/jobs").json()
     res = client.post(f"/api/jobs/{created['run_id']}/justo", json={"justo": "https://www.tarragona.cl/pedir"})
-    assert res.status_code == 200
-    data = res.json()
-    assert data["status"] == "collecting"
-    justo = next(ch for ch in data["channels"] if ch["platform"] == "justo")
-    assert justo["item_count"] == 1
+    assert res.status_code == 404
 
 
 def test_ingest_works_without_admin_cookie(tmp_path, monkeypatch):
@@ -297,3 +274,7 @@ def test_three_extension_channels_mark_done(tmp_path, monkeypatch):
     assert last.status_code == 200
     assert last.json()["status"] == "done"
     assert client.get("/api/jobs/active").status_code == 404
+    assert (tmp_path / f"{run_id}-pedidosya.xlsx").exists()
+    assert (tmp_path / f"{run_id}-ubereats.xlsx").exists()
+    assert (tmp_path / f"{run_id}-rappi.xlsx").exists()
+    assert not (tmp_path / f"{run_id}.xlsx").exists()

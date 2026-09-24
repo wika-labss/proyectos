@@ -121,7 +121,8 @@
       font-size: 14px;
     }
     .channel strong { font-weight: 400; letter-spacing: 0.06em; }
-    .channel .meta { color: var(--muted); }
+    .channel .meta { color: var(--muted); margin-right: 12px; }
+    .channel .ghost { padding: 8px 14px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td { text-align: left; padding: 12px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
     th { color: var(--muted); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; }
@@ -158,11 +159,10 @@
     <main>
       <section id="view-pages">
         <h2>Generar informe</h2>
-        <p class="hint">Un click crea el run. Justo se trae por CDN. PedidosYa, Uber y Rappi llegan cuando enviás el menú desde la extensión.</p>
+        <p class="hint">Un click abre el run. Cada agregador genera su propio Excel cuando enviás el menú desde la extensión.</p>
         <div class="row">
           <button class="cta" type="button" id="new-run">Generar informe</button>
           <button class="ghost" type="button" id="copy-run" disabled>Copiar run_id</button>
-          <button class="ghost" type="button" id="download-latest" disabled>Descargar .xlsx</button>
         </div>
         <p class="run-id" id="run-id">—</p>
         <p class="hint" id="run-step" style="margin:0">Todavía no hay un informe en recolección.</p>
@@ -172,7 +172,7 @@
 
       <section id="view-reports" class="hidden">
         <h2>Historial</h2>
-        <p class="hint">Excel de cada corrida: resumen, productos y comparación.</p>
+        <p class="hint">Un Excel por agregador: PedidosYa, Uber Eats y Rappi.</p>
         <div class="row">
           <button class="ghost" type="button" id="refresh-reports">Actualizar</button>
         </div>
@@ -194,12 +194,10 @@
   </div>
   <script>
     const $ = (id) => document.getElementById(id);
-    const JUSTO_URL = "https://www.tarragona.cl/pedir";
     const CHANNELS = [
-      { field: "peya", platform: "pedidosya", label: "PedidosYa", via: "extension" },
-      { field: "uber", platform: "ubereats", label: "Uber Eats", via: "extension" },
-      { field: "rappi", platform: "rappi", label: "Rappi", via: "extension" },
-      { field: "justo", platform: "justo", label: "Justo", via: "cdn" },
+      { field: "peya", platform: "pedidosya", label: "PedidosYa" },
+      { field: "uber", platform: "ubereats", label: "Uber Eats" },
+      { field: "rappi", platform: "rappi", label: "Rappi" },
     ];
     let runId = null;
     let lastJob = null;
@@ -231,7 +229,6 @@
       runId = id || null;
       $("run-id").textContent = runId || "—";
       $("copy-run").disabled = !runId;
-      $("download-latest").disabled = !runId;
       $("run-step").textContent = step || (runId
         ? "Abrí el menú en Chrome y enviá desde la extensión."
         : "Todavía no hay un informe en recolección.");
@@ -241,25 +238,32 @@
       if (!job) return;
       lastJob = job;
       setRunDisplay(job.run_id, job.step || job.status);
-      paintChannelMeta(job.channels);
+      paintChannelMeta(job.channels, job.xlsx);
     }
 
     function renderCards() {
       $("channel-cards").innerHTML = CHANNELS.map((ch) => `
         <div class="channel">
           <strong>${ch.label}</strong>
-          <span class="meta" id="meta-${ch.field}">${ch.via === "cdn" ? "CDN" : "Extensión"}</span>
+          <span>
+            <span class="meta" id="meta-${ch.field}">Esperando extensión</span>
+            <button class="ghost hidden" type="button" id="dl-${ch.field}" data-platform="${ch.platform}">Descargar</button>
+          </span>
         </div>
       `).join("");
     }
 
-    function paintChannelMeta(channels) {
+    function paintChannelMeta(channels, xlsx) {
+      const flags = xlsx || (lastJob && lastJob.xlsx) || {};
       CHANNELS.forEach((ch) => {
         const found = (channels || []).find((c) => c.platform === ch.platform);
         const node = $("meta-" + ch.field);
+        const dl = $("dl-" + ch.field);
         if (!node) return;
+        const canDownload = Boolean((found && found.has_xlsx) || flags[ch.platform]);
+        if (dl) dl.classList.toggle("hidden", !canDownload);
         if (!found || found.skipped) {
-          node.textContent = ch.via === "cdn" ? "CDN" : "Esperando extensión";
+          node.textContent = "Esperando extensión";
           node.className = "meta";
         } else if (found.error) {
           node.textContent = "Error";
@@ -308,32 +312,31 @@
             .filter((c) => !c.skipped)
             .map((c) => c.platform + " " + (c.error ? "err" : (c.item_count + "p")))
             .join(" · ") || "—";
-          const dl = r.has_xlsx
-            ? `<button class="ghost" type="button" data-dl="${r.run_id}">Descargar</button>`
-            : "—";
+          const downloads = CHANNELS.map((ch) => {
+            const ready = (r.xlsx && r.xlsx[ch.platform]) || (r.channels || []).some((c) => c.platform === ch.platform && c.has_xlsx);
+            return ready
+              ? `<button class="ghost" type="button" data-dl="${r.run_id}" data-platform="${ch.platform}">${ch.label}</button>`
+              : "";
+          }).join(" ") || "—";
           return `<tr>
             <td>${r.run_id}</td>
             <td>${r.updated_at.replace("T", " ").replace("+00:00", " UTC")}</td>
             <td>${r.status}</td>
             <td>${counts}</td>
-            <td>${dl}</td>
+            <td class="row">${downloads}</td>
           </tr>`;
         }).join("");
         box.innerHTML = rows
-          ? `<table><thead><tr><th>Run</th><th>Fecha</th><th>Estado</th><th>Canales</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+          ? `<table><thead><tr><th>Run</th><th>Fecha</th><th>Estado</th><th>Canales</th><th>Excel</th></tr></thead><tbody>${rows}</tbody></table>`
           : `<p class="hint">Todavía no hay informes.</p>`;
-        if ((data.reports || []).some((r) => r.has_xlsx) && !runId) {
-          runId = data.reports[0].run_id;
-          $("download-latest").disabled = false;
-        }
       } catch (err) {
         box.innerHTML = `<p class="err">${err.message || err}</p>`;
       }
     }
 
-    function downloadRun(id) {
-      if (!id) return;
-      window.location = "/api/report/" + id + ".xlsx";
+    function downloadRun(id, platform) {
+      if (!id || !platform) return;
+      window.location = "/api/report/" + id + "/" + platform + ".xlsx";
     }
 
     $("new-run").onclick = async () => {
@@ -343,21 +346,14 @@
         const res = await fetch("/api/jobs", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ justo: JUSTO_URL }),
+          body: JSON.stringify({}),
         });
         const data = await readJson(res);
         if (!res.ok) throw new Error(errDetail(data, "No se pudo crear el informe."));
         applyJob(data);
         startPolling();
-        const cdn = await fetch("/api/jobs/" + data.run_id + "/justo", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ justo: JUSTO_URL }),
-        });
-        const justoJob = await readJson(cdn);
-        if (cdn.ok) applyJob(justoJob);
         refreshReports();
-        $("audit-status").textContent = "Informe listo para la extensión. Justo ya viene por CDN.";
+        $("audit-status").textContent = "Run listo. Enviá cada agregador desde la extensión; cada uno baja su Excel.";
         $("audit-status").className = "status ok";
       } catch (err) {
         $("audit-status").textContent = String(err.message || err);
@@ -396,11 +392,14 @@
       $("token-status").className = "status ok";
     };
 
-    $("download-latest").onclick = () => downloadRun(runId);
     $("refresh-reports").onclick = refreshReports;
+    $("channel-cards").addEventListener("click", (ev) => {
+      const btn = ev.target.closest("[data-platform]");
+      if (btn) downloadRun(runId, btn.dataset.platform);
+    });
     $("reports-table").addEventListener("click", (ev) => {
       const btn = ev.target.closest("[data-dl]");
-      if (btn) downloadRun(btn.dataset.dl);
+      if (btn) downloadRun(btn.dataset.dl, btn.dataset.platform);
     });
     document.querySelectorAll("nav .tab").forEach((btn) => {
       btn.onclick = () => showView(btn.dataset.view);

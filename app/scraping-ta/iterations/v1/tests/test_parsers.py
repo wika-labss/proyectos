@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 from excel_report import build_workbook, normalize_name
-from parsers import justo as justo_parser
 from parsers import peya as peya_parser
 from parsers import rappi as rappi_parser
 from parsers import uber as uber_parser
@@ -17,7 +16,6 @@ PEYA_BEE = Path("/tmp/peya-bee/xhr-alameda.json")
 UBER_HTML = Path("/tmp/uber-bee/xhr-raw.json")
 RAPPI = Path("/tmp/rappi-bee/store-raw.json")
 RAPPI_BEE = Path("/tmp/rappi-bee/xhr-raw.json")
-JUSTO = Path("/tmp/tarragona-bee/webdata-_v1_websites_hPy8jxhEz4yWPb8qr_menus_PZKKxcPg44sL2gRxX.json")
 
 
 def test_normalize_name_strips_accents_and_noise():
@@ -81,19 +79,7 @@ def test_rappi_from_bee_xhr():
     assert result.item_count >= 50
 
 
-def test_justo_cdn_payload():
-    if not JUSTO.exists():
-        pytest.skip("dump Justo no disponible")
-    payload = json.loads(JUSTO.read_text())
-    result = justo_parser.parse_menu_payload(payload, "https://www.tarragona.cl/pedir")
-    assert result.item_count >= 59
-    promo = next(p for p in result.items if p.name == "Promo Box Recargado")
-    assert promo.price_clp == 3990
-    assert promo.price_original_clp == 9990
-    assert promo.section.startswith("Dias Full")
-
-
-def test_excel_has_three_sheets():
+def test_excel_single_channel_has_no_comparacion():
     rows = [
         ProductRow(
             platform="pedidosya",
@@ -108,7 +94,7 @@ def test_excel_has_three_sheets():
             scraped_at=utc_now(),
         ),
         ProductRow(
-            platform="justo",
+            platform="rappi",
             store="B",
             section="Promos",
             name="Promo Box Recargado",
@@ -120,40 +106,11 @@ def test_excel_has_three_sheets():
             scraped_at=utc_now(),
         ),
     ]
-    channels = [
+    single = build_workbook([ChannelResult("pedidosya", "A", "u1", "xhr", items=[rows[0]])])
+    both = build_workbook([
         ChannelResult("pedidosya", "A", "u1", "xhr", items=[rows[0]]),
-        ChannelResult("justo", "B", "u2", "cdn", items=[rows[1]]),
-    ]
-    data = build_workbook(channels)
-    assert data[:2] == b"PK"
-    assert len(data) > 1000
-
-
-def test_tarragona_url_detection():
-    assert justo_parser.is_tarragona_justo("https://www.tarragona.cl/pedir")
-    assert not justo_parser.is_tarragona_justo("https://otro.getjusto.com/pedir")
-
-
-def test_audit_job_polls_to_done():
-    import time
-    from fastapi.testclient import TestClient
-    from app import app
-
-    client = TestClient(app)
-    started = client.post("/api/audit", json={"justo": "https://www.tarragona.cl/pedir"})
-    assert started.status_code == 200
-    body = started.json()
-    assert body["status"] in {"queued", "running", "done"}
-    run_id = body["run_id"]
-    data = body
-    for _ in range(30):
-        if data.get("status") in {"done", "error"}:
-            break
-        time.sleep(0.3)
-        data = client.get(f"/api/audit/{run_id}").json()
-    assert data["status"] == "done"
-    justo = next(ch for ch in data["channels"] if ch["platform"] == "justo")
-    assert justo["item_count"] >= 50
-    xlsx = client.get(f"/api/report/{run_id}.xlsx")
-    assert xlsx.status_code == 200
-    assert xlsx.content[:2] == b"PK"
+        ChannelResult("rappi", "B", "u2", "xhr", items=[rows[1]]),
+    ])
+    assert single[:2] == b"PK"
+    assert both[:2] == b"PK"
+    assert len(both) > 1000

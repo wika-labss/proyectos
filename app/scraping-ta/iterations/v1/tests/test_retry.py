@@ -66,7 +66,7 @@ def test_retry_merges_into_existing_run(monkeypatch):
             store="Tarragona test",
             source_url=url,
             native_source="test",
-            credits_used=0 if platform == "justo" else 75,
+            credits_used=75,
             items=[_row(platform, url, f"Item {platform}", 3990)],
         )
 
@@ -74,13 +74,13 @@ def test_retry_merges_into_existing_run(monkeypatch):
     monkeypatch.setattr(appmod, "load_token", lambda: "test-token")
     client = TestClient(appmod.app)
 
-    started = client.post("/api/audit", json={"justo": "https://www.tarragona.cl/pedir"})
+    started = client.post("/api/audit", json={"rappi": "https://www.rappi.cl/restaurantes/x"})
     assert started.status_code == 200
     data = _wait_done(client, started.json())
     assert data["status"] == "done"
     run_id = data["run_id"]
-    justo = next(ch for ch in data["channels"] if ch["platform"] == "justo")
-    assert justo["item_count"] == 1
+    rappi = next(ch for ch in data["channels"] if ch["platform"] == "rappi")
+    assert rappi["item_count"] == 1
     assert not any(ch["platform"] == "pedidosya" and not ch["skipped"] for ch in data["channels"])
 
     retry = client.post(
@@ -96,18 +96,19 @@ def test_retry_merges_into_existing_run(monkeypatch):
     assert merged["status"] == "done"
     assert merged["run_id"] == run_id
     platforms = [ch["platform"] for ch in merged["channels"]]
-    assert platforms[:4] == ["pedidosya", "ubereats", "rappi", "justo"]
+    assert platforms == ["pedidosya", "ubereats", "rappi"]
     peya = next(ch for ch in merged["channels"] if ch["platform"] == "pedidosya")
-    justo = next(ch for ch in merged["channels"] if ch["platform"] == "justo")
+    rappi = next(ch for ch in merged["channels"] if ch["platform"] == "rappi")
     assert peya["item_count"] == 1
     assert peya["skipped"] is False
-    assert justo["item_count"] == 1
-    assert merged["credits_used"] == 75
+    assert rappi["item_count"] == 1
+    assert merged["credits_used"] == 150
     assert ("pedidosya", "https://www.pedidosya.cl/restaurantes/tarragona-menu") in calls
 
-    xlsx = client.get(f"/api/report/{run_id}.xlsx")
+    xlsx = client.get(f"/api/report/{run_id}/pedidosya.xlsx")
     assert xlsx.status_code == 200
     assert xlsx.content[:2] == b"PK"
+    assert client.get(f"/api/report/{run_id}/rappi.xlsx").status_code == 200
 
 
 def test_retry_while_running_returns_409(monkeypatch):
@@ -120,13 +121,13 @@ def test_retry_while_running_returns_409(monkeypatch):
         appmod.JOBS[run_id] = {
             "run_id": run_id,
             "status": "running",
-            "step": "Consultando justo…",
+            "step": "Consultando rappi…",
             "channels": [],
-            "urls": {"justo": "https://www.tarragona.cl/pedir"},
+            "urls": {"rappi": "https://www.rappi.cl/restaurantes/x"},
             "error": None,
         }
     res = client.post(
         "/api/audit/retry",
-        json={"platform": "justo", "url": "https://www.tarragona.cl/pedir", "run_id": run_id},
+        json={"platform": "peya", "url": "https://www.pedidosya.cl/restaurantes/x", "run_id": run_id},
     )
     assert res.status_code == 409
