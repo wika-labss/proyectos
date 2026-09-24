@@ -10,7 +10,7 @@ Justo / tarragona.cl no usa esta extensión: el servidor tira del CDN.
 2. Activá **Modo de desarrollador**
 3. **Cargar extensión sin empaquetar** → esta carpeta (`app/scraping-ta/extension`)
 4. Abrí el popup, pegá `INGEST_KEY` (una vez; queda en `chrome.storage.local`)
-5. API por defecto: `https://ta.vissiuss.com`. Para uvicorn local: `http://127.0.0.1:8000`
+5. API por defecto: `https://ta.vissiuss.com`. Local: `http://127.0.0.1:8000`. Túnel de prueba: `https://….trycloudflare.com`
 
 ## Uso
 
