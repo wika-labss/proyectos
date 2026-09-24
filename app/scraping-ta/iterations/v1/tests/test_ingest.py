@@ -53,7 +53,7 @@ def _uber_html() -> str:
         '"title":"Local Test",'
         '"catalogSectionsMap":{"s1":{"catalogName":"Promos","catalogItems":['
         '{"uuid":"u1","title":"Promo Box Uber","itemDescription":"","price":500000,"isAvailable":true}'
-        "]}}}}]}"
+        "]}}}}}]}"
     )
     return (
         "<html><head></head><body>"

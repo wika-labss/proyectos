@@ -519,7 +519,7 @@ def _ordered_channel_dicts(channels: list[dict[str, Any]]) -> list[dict[str, Any
     return [by_plat[name] for name in CHANNEL_ORDER if name in by_plat] + extras
 
 
-def _persist_job(run_id: str, payload: dict[str, Any]) -> None:
+def _persist_job(run_id: str, payload: dict[str, Any]) -> dict[str, Any]:
     RUNS_DIR.mkdir(exist_ok=True)
     payload = dict(payload)
     payload["channels"] = _ordered_channel_dicts(list(payload.get("channels") or []))
@@ -531,6 +531,7 @@ def _persist_job(run_id: str, payload: dict[str, Any]) -> None:
     )
     with JOBS_LOCK:
         JOBS[run_id] = payload
+    return payload
 
 
 def _placeholder_channels() -> list[dict[str, Any]]:
@@ -549,8 +550,7 @@ def _new_collecting_job(urls: dict[str, str] | None = None) -> dict[str, Any]:
         "urls": urls or {"peya": "", "uber": "", "rappi": "", "justo": ""},
         "error": None,
     }
-    _persist_job(run_id, payload)
-    return payload
+    return _persist_job(run_id, payload)
 
 
 def _latest_collecting() -> dict[str, Any] | None:
@@ -643,8 +643,7 @@ def _merge_result(run_id: str, result: ChannelResult, url_field: str, url: str) 
             "urls": urls,
             "error": None,
         }
-        _persist_job(run_id, payload)
-        return payload
+        return _persist_job(run_id, payload)
 
 
 def _run_one_channel(platform: str, url: str) -> ChannelResult:
