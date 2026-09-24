@@ -3,6 +3,6 @@
 **/.next/
 **/.env
 **/.env.local
-**/android/
-**/ios/
+iterations/v1/android/
+iterations/v1/ios/
 **/dist/
