@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scraping TA</title>
+  <style>
+    :root {
+      --bg: #0B1220;
+      --card: #172033;
+      --ink: #F4F7FB;
+      --muted: #93A0B5;
+      --line: #2A3548;
+      --accent: #C9A227;
+      --brand: #E8D48B;
+      --ok: #3D9B6E;
+      --danger: #C2413B;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 340px;
+      background: var(--bg);
+      color: var(--ink);
+      font: 13px/1.4 "IBM Plex Sans", system-ui, sans-serif;
+      padding: 14px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      color: var(--brand);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .hint { color: var(--muted); margin: 0 0 12px; }
+    label { display: block; color: var(--muted); margin: 8px 0 4px; font-size: 11px; }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--line);
+      background: #121A2B;
+      color: var(--ink);
+      font: inherit;
+    }
+    button {
+      width: 100%;
+      margin-top: 12px;
+      border: 0;
+      padding: 10px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: #0B1220;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .meta { margin-top: 10px; color: var(--muted); }
+    .ok { color: var(--ok); }
+    .err { color: var(--danger); }
+    code { color: var(--brand); }
+  </style>
+</head>
+<body>
+  <h1>Scraping TA</h1>
+  <p class="hint">Abrí el menú en Chrome. Si solo ves un captcha, recargá el menú.</p>
+  <p class="meta" id="page">Canal: …</p>
+  <p class="meta" id="xhr">XHR capturados: …</p>
+  <label for="run-id">run_id (opcional)</label>
+  <input id="run-id" type="text" placeholder="Se rellena con el informe activo" autocomplete="off" />
+  <label for="ingest-key">INGEST_KEY (una vez)</label>
+  <input id="ingest-key" type="password" placeholder="Pega la clave del servidor" autocomplete="off" />
+  <label for="api-base">API</label>
+  <input id="api-base" type="url" value="https://ta.vissiuss.com" />
+  <button type="button" id="send">Enviar a Scraping TA</button>
+  <p class="meta" id="status"></p>
+  <script src="popup.js"></script>
+</body>
+</html>

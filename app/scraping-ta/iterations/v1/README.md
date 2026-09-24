@@ -1,6 +1,6 @@
 # Scraping TA — V1 (web)
 
-Auditoría de menú vista cliente. Proceso de parsers: [docs/PROCESO.md](docs/PROCESO.md). Docs de producto: [`../../idea/`](../../idea/).
+Auditoría de menú vista cliente. Proceso de parsers: [docs/PROCESO.md](docs/PROCESO.md). Docs de producto: [`../../idea/`](../../idea/). Extensión Chrome: [`../../extension/`](../../extension/).
 
 ## Levantar
 
@@ -10,27 +10,34 @@ Python 3.11+ (venv).
 python -m venv .venv
 source .venv/bin/activate   # Windows: .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+export INGEST_KEY=$(openssl rand -hex 32)   # la misma se pega en la extensión
+export SCRAPING_TA_AUTH=0                   # tests / local sin login
 python -m uvicorn app:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Abrir [http://127.0.0.1:8000/login](http://127.0.0.1:8000/login) (`admin` / `cambiar123`). Consola: `/admin`.
 
-## Uso lun–vie
+## Uso (extensión, camino principal)
 
-1. Pegar token ScrapingBee y **Guardar** (`.scrapingbee_key`, gitignored). Justo no lo necesita.
-2. Pegar las 4 URLs del **mismo local**. Vacío = se salta.
-3. Créditos estimados: 75 × Peya/Uber/Rappi. Justo `tarragona.cl` = 0.
-4. **Auditar**. Si un canal falla: **Reintentar** solo esa app (1 request). Sin loop.
-5. **Descargar .xlsx** — `resumen`, `productos`, `comparacion`.
+1. En admin: **Nuevo informe** — copiá el `run_id`.
+2. Cargá la extensión unpacked (`../../extension/`, ver su README).
+3. Popup: INGEST_KEY, API `http://127.0.0.1:8000` (local) o `https://ta.vissiuss.com`.
+4. Abrí el menú en Chrome (Peya / Uber / Rappi) → **Enviar a Scraping TA**.
+5. Justo: **Traer CDN** (servidor, 0 créditos).
+6. **Informes** → descargar `.xlsx`.
 
-Costo típico 1 local × 3 Bee: **225 créditos/día**, **1.125/semana** (lun–vie).
+## Fallback ScrapingBee
 
-## Tests (sin gastar Bee en parsers)
+En **Ajustes**. 1 request ≈ 75 créditos. No es el camino primario.
+
+## Tests
 
 ```bash
-python -m pytest tests -q
+SCRAPING_TA_AUTH=0 python -m pytest tests -q
 ```
 
-## Token
+`conftest.py` ya pone `SCRAPING_TA_AUTH=0`. Los tests de ingest usan un dump Bee sintético (sin red).
 
-Nunca commitear la key.
+## Token / secretos
+
+Nunca commitear `INGEST_KEY` ni la key Bee.

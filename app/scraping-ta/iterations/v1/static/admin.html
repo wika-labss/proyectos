@@ -107,6 +107,22 @@
       font-size: 12px;
     }
     .channel .meta { margin-top: 8px; font-size: 12px; color: var(--muted); }
+    .run-box {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      background: #121A2B;
+    }
+    .run-id {
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: var(--brand);
+    }
     label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
     input[type="password"], input[type="text"], input[type="url"] {
       width: 100%;
@@ -177,7 +193,7 @@
   <header>
     <div>
       <p class="wordmark">Vissiuss</p>
-      <p class="sub">Scraping TA · consola admin · auditoría vista cliente</p>
+      <p class="sub">Scraping TA · consola admin · extensión + Justo CDN</p>
     </div>
     <div class="who">
       <span id="who">Sesión…</span>
@@ -194,15 +210,22 @@
     <main>
       <section id="view-pages">
         <div class="panel">
-          <h2>Páginas a scrapear</h2>
-          <p class="hint">Elegí un canal para ver la página. Vacío se omite. Un click de Auditar = 1 request Bee por URL (~75). Justo tarragona.cl = 0.</p>
-          <div class="grid-4" id="channel-cards"></div>
-          <div class="row" style="margin-top:14px">
-            <span class="status" id="estimate">Créditos estimados: 0</span>
-            <button class="cta" type="button" id="audit">Auditar local</button>
-            <button class="gold" type="button" id="retry-selected">Reintentar canal</button>
-            <button class="ghost" type="button" id="save-targets">Guardar URLs</button>
+          <h2>Nuevo informe</h2>
+          <p class="hint">Creá un <code>run_id</code>, abrí el menú en Chrome y pulsá <strong>Enviar a Scraping TA</strong> en la extensión. Justo se trae acá con CDN (sin extensión).</p>
+          <div class="run-box">
+            <div>
+              <h3>Informe activo</h3>
+              <p class="run-id" id="run-id">—</p>
+              <p class="hint" id="run-step" style="margin:6px 0 0">Todavía no hay un informe en recolección.</p>
+            </div>
+            <div class="row">
+              <button class="cta" type="button" id="new-run">Nuevo informe</button>
+              <button class="ghost" type="button" id="copy-run" disabled>Copiar run_id</button>
+              <button class="gold" type="button" id="justo-cdn">Traer CDN</button>
+              <button class="ghost" type="button" id="save-targets">Guardar URLs</button>
+            </div>
           </div>
+          <div class="grid-4" id="channel-cards"></div>
           <p class="status" id="audit-status"></p>
         </div>
         <div class="panel">
@@ -213,11 +236,11 @@
           <div class="split">
             <div>
               <iframe id="page-frame" title="Vista de la página a scrapear" sandbox="allow-scripts allow-same-origin allow-popups" referrerpolicy="no-referrer"></iframe>
-              <p class="hint" id="frame-note">Si el marketplace bloquea el embed, usá Abrir página. La extracción sigue por Bee, no por este iframe.</p>
+              <p class="hint" id="frame-note">Si el marketplace bloquea el embed, usá Abrir página. La extracción llega por la extensión, no por este iframe.</p>
             </div>
             <div>
               <h3>Vista extraída</h3>
-              <div class="products" id="extracted">Sin auditoría todavía.</div>
+              <div class="products" id="extracted">Esperando dumps de la extensión.</div>
             </div>
           </div>
         </div>
@@ -238,13 +261,22 @@
       <section id="view-settings" class="hidden">
         <div class="panel">
           <h2>Ajustes</h2>
+          <p class="hint" id="ingest-status">Ingest de extensión: …</p>
+          <p class="hint">La <code>INGEST_KEY</code> vive en el servidor (<code>.env</code>). Se pega una vez en el popup de la extensión, no acá.</p>
+          <h3>Fallback ScrapingBee</h3>
+          <p class="hint">Solo si la extensión no puede capturar el menú. 1 request ≈ 75 créditos. Justo tarragona.cl no lo necesita.</p>
           <label for="token">Token ScrapingBee</label>
           <div class="row">
             <input id="token" type="password" placeholder="Pega un token nuevo" autocomplete="off" />
             <button class="cta" type="button" id="save-token">Guardar token</button>
           </div>
           <p class="status" id="token-status">Comprobando…</p>
-          <p class="hint">Se guarda en <code>.scrapingbee_key</code> (no va a git). Justo/tarragona.cl no lo necesita.</p>
+          <div class="row" style="margin-top:12px">
+            <span class="status" id="estimate">Créditos estimados: 0</span>
+            <button class="gold" type="button" id="bee-audit">Auditar con Bee</button>
+            <button class="ghost" type="button" id="bee-retry">Reintentar canal con Bee</button>
+          </div>
+          <p class="status" id="bee-status"></p>
           <p class="hint" id="agent-note">Esta consola es la interfaz web del agente Cursor de Scraping TA.</p>
         </div>
       </section>
@@ -253,15 +285,16 @@
   <script>
     const $ = (id) => document.getElementById(id);
     const CHANNELS = [
-      { field: "peya", platform: "pedidosya", label: "PedidosYa", placeholder: "https://www.pedidosya.cl/restaurantes/…" },
-      { field: "uber", platform: "ubereats", label: "Uber Eats", placeholder: "https://www.ubereats.com/cl/store/…" },
-      { field: "rappi", platform: "rappi", label: "Rappi", placeholder: "https://www.rappi.cl/restaurantes/…" },
-      { field: "justo", platform: "justo", label: "Justo / tarragona.cl", placeholder: "https://www.tarragona.cl/pedir" },
+      { field: "peya", platform: "pedidosya", label: "PedidosYa", placeholder: "https://www.pedidosya.cl/restaurantes/…", via: "extension" },
+      { field: "uber", platform: "ubereats", label: "Uber Eats", placeholder: "https://www.ubereats.com/cl/store/…", via: "extension" },
+      { field: "rappi", platform: "rappi", label: "Rappi", placeholder: "https://www.rappi.cl/restaurantes/…", via: "extension" },
+      { field: "justo", platform: "justo", label: "Justo / tarragona.cl", placeholder: "https://www.tarragona.cl/pedir", via: "cdn" },
     ];
     let runId = null;
     let busy = false;
     let selected = "justo";
     let lastJob = null;
+    let pollTimer = null;
 
     function errDetail(data, fallback) {
       if (!data) return fallback;
@@ -292,12 +325,6 @@
       return node ? node.value.trim() : "";
     }
 
-    function setBusy(on) {
-      busy = on;
-      $("audit").disabled = on;
-      $("retry-selected").disabled = on;
-    }
-
     function showView(name) {
       ["pages", "reports", "settings"].forEach((id) => {
         $("view-" + id).classList.toggle("hidden", id !== name);
@@ -307,17 +334,38 @@
       });
     }
 
+    function setRunDisplay(id, step) {
+      runId = id || null;
+      $("run-id").textContent = runId || "—";
+      $("copy-run").disabled = !runId;
+      $("run-step").textContent = step || (runId
+        ? "Abrí el menú en Chrome y pulsá Enviar a Scraping TA."
+        : "Todavía no hay un informe en recolección.");
+      $("download-latest").disabled = !runId;
+    }
+
+    function applyJob(job) {
+      if (!job) return;
+      lastJob = job;
+      setRunDisplay(job.run_id, job.step || job.status);
+      CHANNELS.forEach((ch) => {
+        const url = (job.urls || {})[ch.field];
+        if (url && $(ch.field) && !$(ch.field).value) $(ch.field).value = url;
+      });
+      paintChannelMeta(job.channels);
+      renderExtracted();
+    }
+
     function renderCards() {
       $("channel-cards").innerHTML = CHANNELS.map((ch) => `
         <div class="channel ${selected === ch.field ? "selected" : ""}" data-field="${ch.field}">
           <strong>${ch.label}</strong>
           <input id="${ch.field}" type="url" placeholder="${ch.placeholder}" />
-          <div class="meta" id="meta-${ch.field}">Sin extraer</div>
+          <div class="meta" id="meta-${ch.field}">${ch.via === "cdn" ? "Esperando CDN" : "Esperando extensión"}</div>
         </div>
       `).join("");
       CHANNELS.forEach((ch) => {
         $(ch.field).addEventListener("input", () => {
-          refreshEstimate();
           if (selected === ch.field) updatePreview();
         });
         $(ch.field).addEventListener("focus", () => selectChannel(ch.field));
@@ -344,8 +392,10 @@
       $("open-page").style.visibility = url ? "visible" : "hidden";
       $("page-frame").src = url || "about:blank";
       $("frame-note").textContent = url
-        ? "Si el marketplace bloquea el embed, usá Abrir página. La extracción sigue por Bee, no por este iframe."
-        : "Pegá la URL del canal para previsualizar la página a scrapear.";
+        ? (ch && ch.via === "cdn"
+          ? "Justo se extrae con Traer CDN (servidor). El iframe es solo preview."
+          : "Si el marketplace bloquea el embed, usá Abrir página. La extracción llega por la extensión, no por este iframe.")
+        : "Pegá la URL del canal para previsualizar la página.";
       renderExtracted();
     }
 
@@ -353,7 +403,9 @@
       const platform = (CHANNELS.find((c) => c.field === selected) || {}).platform;
       const channel = ((lastJob && lastJob.channels) || []).find((c) => c.platform === platform);
       if (!channel || channel.skipped) {
-        $("extracted").textContent = "Sin extracción para este canal.";
+        $("extracted").textContent = platform === "justo"
+          ? "Sin extracción. Usá Traer CDN."
+          : "Esperando dumps de la extensión.";
         return;
       }
       if (channel.error) {
@@ -362,7 +414,7 @@
       }
       const items = channel.items || [];
       if (!items.length) {
-        $("extracted").textContent = (channel.item_count || 0) + " productos (detalle no cargado).";
+        $("extracted").textContent = "ok " + (channel.item_count || 0) + " productos (detalle no cargado).";
         return;
       }
       $("extracted").innerHTML = items.map((item) => `
@@ -380,9 +432,16 @@
         const found = (channels || []).find((c) => c.platform === ch.platform);
         const node = $("meta-" + ch.field);
         if (!node) return;
-        if (!found || found.skipped) node.textContent = "Sin extraer";
-        else if (found.error) node.textContent = "Error";
-        else node.textContent = (found.item_count || 0) + " productos · " + (found.credits_used || 0) + " cr.";
+        if (!found || found.skipped) {
+          node.textContent = ch.via === "cdn" ? "Esperando CDN" : "Esperando extensión";
+          node.className = "meta";
+        } else if (found.error) {
+          node.textContent = "Error";
+          node.className = "meta err";
+        } else {
+          node.textContent = "ok " + (found.item_count || 0) + " productos";
+          node.className = "meta ok";
+        }
       });
     }
 
@@ -403,27 +462,49 @@
 
     function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
+    function stopPolling() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }
+
+    async function refreshJob() {
+      if (!runId) return null;
+      const res = await fetch("/api/audit/" + runId);
+      const data = await readJson(res);
+      if (!res.ok) throw new Error(errDetail(data, "No se pudo leer el informe."));
+      applyJob(data);
+      return data;
+    }
+
+    function startPolling() {
+      stopPolling();
+      if (!runId) return;
+      pollTimer = setInterval(async () => {
+        try {
+          const data = await refreshJob();
+          if (data && data.status === "done") refreshReports();
+        } catch { /* sigue el intervalo */ }
+      }, 2000);
+    }
+
     async function pollUntilDone(started) {
       runId = started.run_id;
       let data = started;
+      applyJob(data);
       while (data.status === "queued" || data.status === "running") {
-        $("audit-status").textContent = data.step || "Auditando…";
-        lastJob = data;
-        paintChannelMeta(data.channels);
-        renderExtracted();
+        $("bee-status").textContent = data.step || "Auditando…";
         await sleep(1000);
         const st = await fetch("/api/audit/" + runId);
         data = await readJson(st);
         if (!st.ok) throw new Error(errDetail(data, "No se pudo leer el estado."));
+        applyJob(data);
       }
       if (data.status === "error") throw new Error(data.error || "Falló la auditoría.");
-      lastJob = data;
-      $("download-latest").disabled = !data.run_id;
-      $("audit-status").textContent =
+      $("bee-status").textContent =
         "Listo. Créditos usados: " + data.credits_used + " (estimados " + data.credits_estimated + ").";
-      $("audit-status").className = "status ok";
-      paintChannelMeta(data.channels);
-      renderExtracted();
+      $("bee-status").className = "status ok";
       refreshReports();
       return data;
     }
@@ -452,7 +533,7 @@
         }).join("");
         box.innerHTML = rows
           ? `<table><thead><tr><th>Run</th><th>Fecha</th><th>Estado</th><th>Créditos</th><th>Canales</th><th>Informe</th></tr></thead><tbody>${rows}</tbody></table>`
-          : `<p class="hint">Todavía no hay informes. Audita un local desde Páginas.</p>`;
+          : `<p class="hint">Todavía no hay informes. Creá un informe y enviá dumps desde la extensión.</p>`;
         if ((data.reports || []).some((r) => r.has_xlsx)) {
           if (!runId) runId = data.reports[0].run_id;
           $("download-latest").disabled = !runId;
@@ -467,48 +548,77 @@
       window.location = "/api/report/" + id + ".xlsx";
     }
 
-    $("audit").onclick = async () => {
-      $("audit-status").textContent = "Encolando auditoría…";
+    async function ensureRun() {
+      if (runId) return runId;
+      const res = await fetch("/api/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      const data = await readJson(res);
+      if (!res.ok) throw new Error(errDetail(data, "No se pudo crear el informe."));
+      applyJob(data);
+      startPolling();
+      return runId;
+    }
+
+    $("new-run").onclick = async () => {
+      $("audit-status").textContent = "Creando informe…";
       $("audit-status").className = "status";
-      setBusy(true);
       try {
-        const start = await fetch("/api/audit", {
+        const res = await fetch("/api/jobs", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload()),
         });
-        const started = await readJson(start);
-        if (!start.ok) throw new Error(errDetail(started, "No se pudo iniciar."));
-        await pollUntilDone(started);
+        const data = await readJson(res);
+        if (!res.ok) throw new Error(errDetail(data, "No se pudo crear el informe."));
+        applyJob(data);
+        startPolling();
+        $("audit-status").textContent = "run_id listo. Copialo en la extensión o dejalo vacío: usa este informe.";
+        $("audit-status").className = "status ok";
       } catch (err) {
         $("audit-status").textContent = String(err.message || err);
         $("audit-status").className = "status err";
-      } finally { setBusy(false); }
+      }
     };
 
-    $("retry-selected").onclick = async () => {
-      const url = currentUrl();
-      if (!url && !runId) {
-        $("audit-status").textContent = "Pegá la URL de ese canal antes de reintentar.";
-        $("audit-status").className = "status err";
-        return;
-      }
-      $("audit-status").textContent = "Reintentando " + selected + " (1 request)…";
-      $("audit-status").className = "status";
-      setBusy(true);
+    $("copy-run").onclick = async () => {
+      if (!runId) return;
       try {
-        const res = await fetch("/api/audit/retry", {
+        await navigator.clipboard.writeText(runId);
+        $("audit-status").textContent = "run_id copiado.";
+        $("audit-status").className = "status ok";
+      } catch {
+        $("audit-status").textContent = "No se pudo copiar. Seleccioná el run_id a mano.";
+        $("audit-status").className = "status err";
+      }
+    };
+
+    $("justo-cdn").onclick = async () => {
+      $("audit-status").textContent = "Trayendo Justo CDN…";
+      $("audit-status").className = "status";
+      try {
+        await ensureRun();
+        const url = $("justo").value.trim() || "https://www.tarragona.cl/pedir";
+        $("justo").value = url;
+        const res = await fetch("/api/jobs/" + runId + "/justo", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ platform: selected, url, run_id: runId }),
+          body: JSON.stringify({ justo: url }),
         });
-        const started = await readJson(res);
-        if (!res.ok) throw new Error(errDetail(started, "No se pudo reintentar."));
-        await pollUntilDone(started);
+        const data = await readJson(res);
+        if (!res.ok) throw new Error(errDetail(data, "No se pudo traer el CDN."));
+        applyJob(data);
+        refreshReports();
+        const justo = (data.channels || []).find((c) => c.platform === "justo");
+        if (justo && justo.error) throw new Error(justo.error);
+        $("audit-status").textContent = "Justo CDN listo · " + ((justo && justo.item_count) || 0) + " productos.";
+        $("audit-status").className = "status ok";
       } catch (err) {
         $("audit-status").textContent = String(err.message || err);
         $("audit-status").className = "status err";
-      } finally { setBusy(false); }
+      }
     };
 
     $("save-targets").onclick = async () => {
@@ -537,8 +647,64 @@
         return;
       }
       $("token").value = "";
-      $("token-status").textContent = "Token configurado.";
+      $("token-status").textContent = "Token configurado (fallback).";
       $("token-status").className = "status ok";
+    };
+
+    $("bee-audit").onclick = async () => {
+      $("bee-status").textContent = "Encolando auditoría Bee…";
+      $("bee-status").className = "status";
+      busy = true;
+      $("bee-audit").disabled = true;
+      $("bee-retry").disabled = true;
+      try {
+        const start = await fetch("/api/audit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload()),
+        });
+        const started = await readJson(start);
+        if (!start.ok) throw new Error(errDetail(started, "No se pudo iniciar."));
+        await pollUntilDone(started);
+      } catch (err) {
+        $("bee-status").textContent = String(err.message || err);
+        $("bee-status").className = "status err";
+      } finally {
+        busy = false;
+        $("bee-audit").disabled = false;
+        $("bee-retry").disabled = false;
+      }
+    };
+
+    $("bee-retry").onclick = async () => {
+      const url = currentUrl();
+      if (!url && !runId) {
+        $("bee-status").textContent = "Pegá la URL de ese canal antes de reintentar.";
+        $("bee-status").className = "status err";
+        return;
+      }
+      $("bee-status").textContent = "Reintentando " + selected + " con Bee…";
+      $("bee-status").className = "status";
+      busy = true;
+      $("bee-audit").disabled = true;
+      $("bee-retry").disabled = true;
+      try {
+        const res = await fetch("/api/audit/retry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ platform: selected, url, run_id: runId }),
+        });
+        const started = await readJson(res);
+        if (!res.ok) throw new Error(errDetail(started, "No se pudo reintentar."));
+        await pollUntilDone(started);
+      } catch (err) {
+        $("bee-status").textContent = String(err.message || err);
+        $("bee-status").className = "status err";
+      } finally {
+        busy = false;
+        $("bee-audit").disabled = false;
+        $("bee-retry").disabled = false;
+      }
     };
 
     $("download-latest").onclick = () => downloadRun(runId);
@@ -566,9 +732,12 @@
           link.classList.remove("hidden");
         }
         $("token-status").textContent = me.token_configured
-          ? "Token configurado en este equipo."
-          : "No hay token. Pega uno para Peya / Uber / Rappi.";
-        $("token-status").className = "status " + (me.token_configured ? "ok" : "err");
+          ? "Token Bee configurado (fallback)."
+          : "No hay token Bee. Solo hace falta si usás el fallback.";
+        $("token-status").className = "status " + (me.token_configured ? "ok" : "");
+        $("ingest-status").textContent = me.ingest_configured
+          ? "Ingest de extensión: configurado en este servidor."
+          : "Ingest de extensión: falta INGEST_KEY en el entorno del servidor.";
       } catch (err) {
         if (String(err.message || err).includes("Sesión")) window.location.href = "/login";
       }
@@ -578,6 +747,13 @@
           if (saved.targets && saved.targets[ch.field]) $(ch.field).value = saved.targets[ch.field];
         });
       } catch { /* primera carga */ }
+      try {
+        const active = await fetch("/api/jobs/active");
+        if (active.ok) {
+          applyJob(await readJson(active));
+          startPolling();
+        }
+      } catch { /* no hay run activo */ }
       selectChannel(selected);
       refreshEstimate();
       refreshReports();

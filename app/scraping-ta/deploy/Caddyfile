@@ -2,12 +2,8 @@
 	email {$ACME_EMAIL}
 }
 
-{$DOMAIN:vissiuss.com} {
+# Subdominio: no redirigir www (no hay registro www.ta…).
+{$DOMAIN:ta.vissiuss.com} {
 	encode gzip
 	reverse_proxy app:8000
-}
-
-# Quita este bloque si DOMAIN es un subdominio (ta.vissiuss.com) sin registro www.
-www.{$DOMAIN:vissiuss.com} {
-	redir https://{$DOMAIN:vissiuss.com}{uri} permanent
 }

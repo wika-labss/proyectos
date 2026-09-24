@@ -7,4 +7,7 @@ if [ ! -f data/.scrapingbee_key ]; then
   : > data/.scrapingbee_key
 fi
 echo "Listo: data/runs y data/.scrapingbee_key"
-echo "Siguiente: cp .env.example .env && docker compose up -d --build"
+echo "DNS: A  ta  → IP del VPS  (ta.vissiuss.com)"
+echo "Siguiente: cp .env.example .env"
+echo "  INGEST_KEY=\$(openssl rand -hex 32)  # no commitear"
+echo "  docker compose up -d --build"

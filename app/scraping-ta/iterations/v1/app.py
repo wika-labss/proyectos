@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import secrets
 import threading
 import traceback
 import uuid
@@ -40,27 +42,63 @@ RUNS_DIR = ROOT / "runs"
 STATIC_DIR = ROOT / "static"
 CREDITS_PER_BEE = 75
 
-app = FastAPI(title="Scraping TA", version="1.1.0")
+app = FastAPI(title="Scraping TA", version="1.2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_origin_regex=r"chrome-extension://.*",
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 OPEN_PATHS = {"/login", "/api/login", "/api/health"}
+# Bearer INGEST_KEY (not admin cookie). Validated in the route.
+INGEST_OPEN_PATHS = {"/api/ingest"}
+# Session cookie or Bearer INGEST_KEY (extension autofill).
+INGEST_OR_SESSION_PATHS = {"/api/jobs/active"}
+
+
+def ingest_key() -> str:
+    return (os.environ.get("INGEST_KEY") or "").strip()
+
+
+def _bearer_token(request: Request) -> str | None:
+    header = request.headers.get("Authorization") or ""
+    if header.lower().startswith("bearer "):
+        token = header[7:].strip()
+        return token or None
+    return None
+
+
+def valid_ingest_bearer(request: Request) -> bool:
+    key = ingest_key()
+    token = _bearer_token(request)
+    if not key or not token:
+        return False
+    return secrets.compare_digest(token, key)
+
+
+def require_ingest(request: Request) -> None:
+    if not ingest_key():
+        raise HTTPException(status_code=503, detail="INGEST_KEY no configurada en el servidor.")
+    if not valid_ingest_bearer(request):
+        raise HTTPException(status_code=401, detail="Bearer INGEST_KEY inválido.")
 
 
 class AuthGate(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
         if not auth_enabled():
             return await call_next(request)
+        if request.method == "OPTIONS":
+            return await call_next(request)
         path = request.url.path
-        if path in OPEN_PATHS:
+        if path in OPEN_PATHS or path in INGEST_OPEN_PATHS:
             return await call_next(request)
         user = read_session(request.cookies.get(COOKIE_NAME))
         if user:
             request.state.user = user
+            return await call_next(request)
+        if path in INGEST_OR_SESSION_PATHS and valid_ingest_bearer(request):
             return await call_next(request)
         if path.startswith("/api/"):
             return Response(
@@ -75,6 +113,7 @@ app.add_middleware(AuthGate)
 
 JOBS: dict[str, dict[str, Any]] = {}
 JOBS_LOCK = threading.Lock()
+MERGE_LOCK = threading.Lock()
 
 
 class TokenBody(BaseModel):
@@ -104,6 +143,15 @@ class TargetsBody(BaseModel):
     uber: str = ""
     rappi: str = ""
     justo: str = ""
+
+
+class IngestBody(BaseModel):
+    job_id: str | None = None
+    run_id: str | None = None
+    platform: str
+    source_url: str = ""
+    body: str = ""
+    xhr: list[Any] = Field(default_factory=list)
 
 
 FIELD_BY_PLATFORM = {
@@ -261,7 +309,12 @@ def login_page(request: Request):
 
 @app.get("/api/health")
 def health() -> dict[str, Any]:
-    return {"ok": True, "token_configured": token_configured(), "auth": auth_enabled()}
+    return {
+        "ok": True,
+        "token_configured": token_configured(),
+        "auth": auth_enabled(),
+        "ingest_configured": bool(ingest_key()),
+    }
 
 
 @app.get("/api/me")
@@ -273,6 +326,7 @@ def me(request: Request) -> dict[str, Any]:
         "username": user or "local",
         "auth": auth_enabled(),
         "token_configured": token_configured(),
+        "ingest_configured": bool(ingest_key()),
         "agent_url": agent_url(),
     }
 
@@ -479,6 +533,120 @@ def _persist_job(run_id: str, payload: dict[str, Any]) -> None:
         JOBS[run_id] = payload
 
 
+def _placeholder_channels() -> list[dict[str, Any]]:
+    return [_channel_dict(_skipped(name)) for name in CHANNEL_ORDER]
+
+
+def _new_collecting_job(urls: dict[str, str] | None = None) -> dict[str, Any]:
+    run_id = uuid.uuid4().hex[:12]
+    payload = {
+        "run_id": run_id,
+        "status": "collecting",
+        "step": "Esperando dumps de la extensión",
+        "credits_estimated": 0,
+        "credits_used": 0,
+        "channels": _placeholder_channels(),
+        "urls": urls or {"peya": "", "uber": "", "rappi": "", "justo": ""},
+        "error": None,
+    }
+    _persist_job(run_id, payload)
+    return payload
+
+
+def _latest_collecting() -> dict[str, Any] | None:
+    RUNS_DIR.mkdir(exist_ok=True)
+    seen: set[str] = set()
+    jobs: list[dict[str, Any]] = []
+    with JOBS_LOCK:
+        for job in JOBS.values():
+            if job.get("status") == "collecting":
+                jobs.append(job)
+                seen.add(str(job.get("run_id") or ""))
+    for path in RUNS_DIR.glob("*.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        rid = str(data.get("run_id") or path.stem)
+        if data.get("status") == "collecting" and rid not in seen:
+            jobs.append(data)
+            seen.add(rid)
+    if not jobs:
+        return None
+
+    def sort_key(job: dict[str, Any]) -> float:
+        rid = str(job.get("run_id") or "")
+        path = RUNS_DIR / f"{rid}.json"
+        try:
+            return path.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    return max(jobs, key=sort_key)
+
+
+def _extension_waiting(channels: list[dict[str, Any]]) -> bool:
+    filled = 0
+    for channel in channels:
+        if channel.get("platform") not in {"pedidosya", "ubereats", "rappi"}:
+            continue
+        if not channel.get("skipped"):
+            filled += 1
+    return filled < 3
+
+
+def _parse_ingest(platform: str, source_url: str, bee: dict[str, Any]) -> ChannelResult:
+    if platform == "pedidosya":
+        try:
+            return peya_parser.from_bee(bee, source_url)
+        except peya_parser.ParseError as exc:
+            return _failed("pedidosya", source_url, 0, str(exc))
+    if platform == "ubereats":
+        try:
+            return uber_parser.from_html(bee.get("body") or "", source_url)
+        except uber_parser.ParseError as exc:
+            return _failed("ubereats", source_url, 0, str(exc))
+    if platform == "rappi":
+        try:
+            return rappi_parser.from_bee(bee, source_url)
+        except rappi_parser.ParseError as exc:
+            return _failed("rappi", source_url, 0, str(exc))
+    return _failed(platform, source_url, 0, "Canal no soportado por ingest.")
+
+
+def _merge_result(run_id: str, result: ChannelResult, url_field: str, url: str) -> dict[str, Any]:
+    with MERGE_LOCK:
+        job = _load_job(run_id)
+        channels = [ch for ch in (job.get("channels") or []) if ch.get("platform") != result.platform]
+        channels.append(_channel_dict(result))
+        present = {ch.get("platform") for ch in channels}
+        for name in CHANNEL_ORDER:
+            if name not in present:
+                channels.append(_channel_dict(_skipped(name)))
+        urls = dict(job.get("urls") or {})
+        if url:
+            urls[url_field] = url
+        if job.get("status") == "collecting":
+            waiting = _extension_waiting(channels)
+            status = "collecting" if waiting else "done"
+            step = "Esperando dumps de la extensión" if waiting else "Listo"
+        else:
+            status = "done"
+            step = f"Listo ({result.platform})"
+        payload = {
+            "run_id": run_id,
+            "status": status,
+            "step": step,
+            "credits_estimated": int(job.get("credits_estimated") or 0) or _estimate_credits(_body_from_urls(urls)),
+            "credits_used": sum(int(ch.get("credits_used") or 0) for ch in channels),
+            "channels": channels,
+            "urls": urls,
+            "error": None,
+        }
+        _persist_job(run_id, payload)
+        return payload
+
+
 def _run_one_channel(platform: str, url: str) -> ChannelResult:
     fn = {name: func for name, func in AUDITORS.values()}.get(platform)
     if not fn:
@@ -557,27 +725,8 @@ def _run_audit_job(run_id: str, body: AuditBody) -> None:
 def _run_retry_job(run_id: str, platform: str, url: str) -> None:
     try:
         result = _run_one_channel(platform, url)
-        job = _load_job(run_id)
-        channels = [ch for ch in (job.get("channels") or []) if ch.get("platform") != platform]
-        channels.append(_channel_dict(result))
-        present = {ch.get("platform") for ch in channels}
-        for _field, (name, _fn) in AUDITORS.items():
-            if name not in present:
-                channels.append(_channel_dict(_skipped(name)))
-        urls = dict(job.get("urls") or {})
         field = PLATFORM_FIELD.get(platform, platform)
-        urls[field] = url
-        payload = {
-            "run_id": run_id,
-            "status": "done",
-            "step": f"Listo ({platform} reintentado)",
-            "credits_estimated": _estimate_credits(_body_from_urls(urls)),
-            "credits_used": sum(int(ch.get("credits_used") or 0) for ch in channels),
-            "channels": channels,
-            "urls": urls,
-            "error": None,
-        }
-        _persist_job(run_id, payload)
+        _merge_result(run_id, result, field, url)
     except Exception as exc:
         traceback.print_exc()
         with JOBS_LOCK:
@@ -647,6 +796,64 @@ def retry_channel(body: RetryBody) -> dict[str, Any]:
 def audit_status(run_id: str) -> dict[str, Any]:
     job = _load_job(run_id)
     return _public_job(job)
+
+
+@app.post("/api/jobs")
+def create_job(body: TargetsBody | None = None) -> dict[str, Any]:
+    urls = _urls_from_body(_body_from_urls((body or TargetsBody()).model_dump()))
+    if any(urls.values()):
+        save_targets(urls)
+    return _public_job(_new_collecting_job(urls))
+
+
+@app.get("/api/jobs/active")
+def active_job() -> dict[str, Any]:
+    job = _latest_collecting()
+    if not job:
+        raise HTTPException(status_code=404, detail="No hay un informe en recolección.")
+    return _public_job(job)
+
+
+@app.post("/api/jobs/{run_id}/justo")
+def fetch_justo_cdn(run_id: str, body: TargetsBody | None = None) -> dict[str, Any]:
+    job = _load_job(run_id)
+    url = _clean_url((body.justo if body else "") or (job.get("urls") or {}).get("justo") or "")
+    if not url:
+        url = "https://www.tarragona.cl/pedir"
+    try:
+        result = _audit_justo(url)
+    except HTTPException as exc:
+        detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+        result = _failed("justo", url, 0, detail)
+    except Exception as exc:
+        traceback.print_exc()
+        result = _failed("justo", url, 0, f"Error inesperado: {exc}")
+    return _public_job(_merge_result(run_id, result, "justo", url))
+
+
+@app.post("/api/ingest")
+def ingest(body: IngestBody, request: Request) -> dict[str, Any]:
+    require_ingest(request)
+    platform = FIELD_BY_PLATFORM.get((body.platform or "").strip().lower())
+    if not platform:
+        raise HTTPException(status_code=400, detail="Canal inválido. Usa peya, uber o rappi.")
+    if platform == "justo":
+        raise HTTPException(status_code=400, detail="Justo no usa la extensión. Usá Traer CDN.")
+    source_url = _clean_url(body.source_url)
+    bee = {"body": body.body or "", "xhr": list(body.xhr or [])}
+    result = _parse_ingest(platform, source_url, bee)
+    run_id = (body.job_id or body.run_id or "").strip() or None
+    if run_id:
+        _load_job(run_id)
+    else:
+        existing = _latest_collecting()
+        if existing:
+            run_id = str(existing["run_id"])
+        else:
+            created = _new_collecting_job()
+            run_id = str(created["run_id"])
+    field = PLATFORM_FIELD[platform]
+    return _public_job(_merge_result(run_id, result, field, source_url))
 
 
 @app.get("/api/report/{run_id}.xlsx")

@@ -8,6 +8,10 @@ services:
       - .env
     environment:
       SCRAPINGBEE_API_KEY: ${SCRAPINGBEE_API_KEY:-}
+      INGEST_KEY: ${INGEST_KEY:-}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-cambiar123}
+      SCRAPING_TA_AUTH: ${SCRAPING_TA_AUTH:-1}
     volumes:
       - ./data/runs:/app/runs
       - ./data/.scrapingbee_key:/app/.scrapingbee_key
@@ -28,7 +32,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      DOMAIN: ${DOMAIN:-vissiuss.com}
+      DOMAIN: ${DOMAIN:-ta.vissiuss.com}
       ACME_EMAIL: ${ACME_EMAIL:-ops@vissiuss.com}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
