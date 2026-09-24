@@ -17,7 +17,11 @@ export default function LoginPage() {
     setError(null);
     try {
       const supabase = createBrowserSupabase();
-      const { error: signError } = await supabase.auth.signInWithPassword({ email, password });
+      const loginEmail = email.includes('@') ? email : `${email}@geo-empresa.local`;
+      const { error: signError } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password,
+      });
       if (signError) throw signError;
       router.replace('/');
       router.refresh();
@@ -31,7 +35,12 @@ export default function LoginPage() {
   return (
     <main className="wrap">
       <h1>Geo Empresa TI</h1>
-      <p className="muted">Solo cuentas con rol TI.</p>
+      <p className="muted">
+        Usuario TI: <code>pureba</code> o <code>pureba@geo-empresa.local</code>
+      </p>
+      <p className="muted">
+        <a href="/geo-empresa-v1.apk">Descargar APK agente</a>
+      </p>
       <form className="card" onSubmit={(e) => void onSubmit(e)} style={{ maxWidth: 400 }}>
         <label className="muted">Email</label>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />

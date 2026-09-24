@@ -4,19 +4,16 @@ group = 'com.wika.geoempresa.devicepolicy'
 version = '1.0.0'
 
 def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
-if (expoModulesCorePlugin.exists()) {
-  apply from: expoModulesCorePlugin
-  applyKotlinExpoModulesCorePlugin()
-  useDefaultAndroidSdkVersions()
-}
+apply from: expoModulesCorePlugin
+applyKotlinExpoModulesCorePlugin()
+useCoreDependencies()
+useDefaultAndroidSdkVersions()
+useExpoPublishing()
 
 android {
   namespace "com.wika.geoempresa.devicepolicy"
   defaultConfig {
     versionCode 1
     versionName "1.0.0"
-  }
-  lintOptions {
-    abortOnError false
   }
 }
