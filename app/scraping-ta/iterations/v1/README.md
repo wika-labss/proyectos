@@ -13,7 +13,7 @@ pip install -r requirements.txt
 python -m uvicorn app:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Abrir [http://127.0.0.1:8000](http://127.0.0.1:8000).
+Abrir [http://127.0.0.1:8000/login](http://127.0.0.1:8000/login) (`admin` / `cambiar123`). Consola: `/admin`.
 
 ## Uso lun–vie
 

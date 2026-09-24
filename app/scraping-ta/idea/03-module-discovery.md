@@ -36,7 +36,8 @@ audit_2_passed: true
 | `MOD-07` | `FEAT-04`, `FEAT-05` | `ERR-02`, `ERR-03` | `mod-schema` | engine | ProductRow / ChannelResult |
 | `MOD-08` | `FEAT-05` | `ERR-03` | `mod-excel` | reportes | Workbook 3 hojas |
 | `MOD-09` | `FEAT-02`, `FEAT-03`, `FEAT-06`, `FEAT-08` | `ERR-05`, `ERR-07` | `mod-jobs` | orquestación | Audit/retry async, persist runs |
-| `MOD-10` | `FEAT-01`–`FEAT-08` | `ERR-05` | `mod-ui` | presentación | Página única HTML |
+| `MOD-10` | `FEAT-01`–`FEAT-08`, `FEAT-11` | `ERR-05` | `mod-ui` | presentación | Admin empresarial HTML |
+| `MOD-11` | `FEAT-11` | `ERR-06` | `mod-auth` | seguridad | Sesión admin (cookie HMAC) |
 
 ---
 

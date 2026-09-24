@@ -169,7 +169,7 @@ Uber: JSON-LD es fallback sin tachado. Deduplicar por `uuid`.
 | :--- | :--- | :--- | :--- |
 | `FEAT-09` | Forzar mismo local (validar mall) | `Media` | Fuera de V1 |
 | `FEAT-10` | Histórico de runs en UI | `Baja` | Hoy `runs/` en disco |
-| `FEAT-11` | Auth / multi-usuario | `Baja` | V1 localhost |
+| `FEAT-11` | Auth admin + consola empresarial | `Alta` | V1.1: login, páginas a scrapear, informes |
 | `FEAT-12` | Hosting fijo (no trycloudflare) | `Media` | Carpeta `deploy/` (Docker + Caddy + `vissiuss.com`). No está en producción hasta DNS/VPS. |
 
 ---
@@ -200,12 +200,12 @@ Uber: JSON-LD es fallback sin tachado. Deduplicar por `uuid`.
 
 | Componente UI | Vista | Tokens (`04-application-design.md`) | Estado |
 | :--- | :--- | :--- | :--- |
-| Token row | VIEW-01 | `--accent`, `--card` | Aprobado |
-| URL + Reintentar × 4 | VIEW-01 | `--ink` secondary | Aprobado |
-| Tabla canales + Reintentar | VIEW-01 | `--line`, `--muted` | Aprobado |
-| Descargar xlsx | VIEW-01 | `--ink` | Aprobado |
+| Login admin | VIEW-02 | `--bg`, `--brand` | V1.1 |
+| Páginas a scrapear + preview | VIEW-03 | `--card`, `--accent` | V1.1 |
+| Informes + descargar xlsx | VIEW-03 | `--brand`, `--line` | V1.1 |
+| Token / ajustes | VIEW-03 | `--accent` | V1.1 |
 
-Una sola página. Sin expo-router.
+Rutas web: `/login`, `/admin`. Sin expo-router.
 
 ---
 

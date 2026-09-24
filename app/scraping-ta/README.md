@@ -12,7 +12,7 @@ Pegas las URLs públicas del **mismo local**. Extrae productos, descripciones y 
 - Justo `tarragona.cl`: CDN, **0** créditos.
 - **Reintentar** por canal: un click = un request.
 
-## Levantar V1
+## Levantar V1.1 (admin Vissiuss)
 
 ```bash
 cd app/scraping-ta/iterations/v1
@@ -22,7 +22,9 @@ pip install -r requirements.txt
 python -m uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
-Abrir http://127.0.0.1:8000 — pegar token ScrapingBee (Justo no lo necesita).
+Abrir http://127.0.0.1:8000/login — usuario `admin` / clave `cambiar123` (override: `ADMIN_USERNAME`, `ADMIN_PASSWORD`). En el admin: páginas a scrapear, preview, informes Excel.
+
+Tests locales sin login: `SCRAPING_TA_AUTH=0`.
 
 ## Documentación WIKA
 

@@ -4,14 +4,27 @@ import json
 import threading
 import traceback
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
+from auth import (
+    COOKIE_NAME,
+    SESSION_TTL_S,
+    admin_username,
+    agent_url,
+    auth_enabled,
+    make_session,
+    read_session,
+    verify_credentials,
+)
 from bee import BeeError, credits_of, scrape_once
 from excel_report import build_workbook
 from parsers import justo as justo_parser
@@ -19,6 +32,7 @@ from parsers import peya as peya_parser
 from parsers import rappi as rappi_parser
 from parsers import uber as uber_parser
 from schema import ChannelResult, ProductRow
+from targets_store import load_targets, save_targets
 from token_store import load_token, save_token, token_configured
 
 ROOT = Path(__file__).resolve().parent
@@ -26,13 +40,38 @@ RUNS_DIR = ROOT / "runs"
 STATIC_DIR = ROOT / "static"
 CREDITS_PER_BEE = 75
 
-app = FastAPI(title="Scraping TA", version="1.0.0")
+app = FastAPI(title="Scraping TA", version="1.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+OPEN_PATHS = {"/login", "/api/login", "/api/health"}
+
+
+class AuthGate(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next) -> Response:
+        if not auth_enabled():
+            return await call_next(request)
+        path = request.url.path
+        if path in OPEN_PATHS:
+            return await call_next(request)
+        user = read_session(request.cookies.get(COOKIE_NAME))
+        if user:
+            request.state.user = user
+            return await call_next(request)
+        if path.startswith("/api/"):
+            return Response(
+                content='{"detail":"Sesión requerida."}',
+                status_code=401,
+                media_type="application/json",
+            )
+        return RedirectResponse("/login", status_code=303)
+
+
+app.add_middleware(AuthGate)
 
 JOBS: dict[str, dict[str, Any]] = {}
 JOBS_LOCK = threading.Lock()
@@ -53,6 +92,18 @@ class RetryBody(BaseModel):
     platform: str
     url: str = ""
     run_id: str | None = None
+
+
+class LoginBody(BaseModel):
+    username: str
+    password: str
+
+
+class TargetsBody(BaseModel):
+    peya: str = ""
+    uber: str = ""
+    rappi: str = ""
+    justo: str = ""
 
 
 FIELD_BY_PLATFORM = {
@@ -186,15 +237,114 @@ AUDITORS = {
 }
 
 
+def _html(name: str) -> HTMLResponse:
+    path = STATIC_DIR / name
+    return HTMLResponse(path.read_text(encoding="utf-8"))
+
+
 @app.get("/", response_class=HTMLResponse)
 def index() -> HTMLResponse:
-    html_path = STATIC_DIR / "index.html"
-    return HTMLResponse(html_path.read_text(encoding="utf-8"))
+    return _html("admin.html")
+
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_page() -> HTMLResponse:
+    return _html("admin.html")
+
+
+@app.get("/login", response_model=None)
+def login_page(request: Request):
+    if auth_enabled() and read_session(request.cookies.get(COOKIE_NAME)):
+        return RedirectResponse("/", status_code=303)
+    return _html("login.html")
 
 
 @app.get("/api/health")
 def health() -> dict[str, Any]:
-    return {"ok": True, "token_configured": token_configured()}
+    return {"ok": True, "token_configured": token_configured(), "auth": auth_enabled()}
+
+
+@app.get("/api/me")
+def me(request: Request) -> dict[str, Any]:
+    user = getattr(request.state, "user", None) or read_session(request.cookies.get(COOKIE_NAME))
+    if auth_enabled() and not user:
+        raise HTTPException(status_code=401, detail="Sesión requerida.")
+    return {
+        "username": user or "local",
+        "auth": auth_enabled(),
+        "token_configured": token_configured(),
+        "agent_url": agent_url(),
+    }
+
+
+@app.post("/api/login")
+def login(body: LoginBody) -> JSONResponse:
+    if not verify_credentials(body.username, body.password):
+        raise HTTPException(status_code=401, detail="Usuario o clave incorrectos.")
+    response = JSONResponse({"ok": True, "username": admin_username()})
+    response.set_cookie(
+        COOKIE_NAME,
+        make_session(admin_username()),
+        httponly=True,
+        samesite="lax",
+        max_age=SESSION_TTL_S,
+        path="/",
+    )
+    return response
+
+
+@app.post("/api/logout")
+def logout() -> JSONResponse:
+    response = JSONResponse({"ok": True})
+    response.delete_cookie(COOKIE_NAME, path="/")
+    return response
+
+
+@app.get("/api/targets")
+def get_targets() -> dict[str, Any]:
+    return {"targets": load_targets()}
+
+
+@app.post("/api/targets")
+def post_targets(body: TargetsBody) -> dict[str, Any]:
+    return {"targets": save_targets(body.model_dump())}
+
+
+@app.get("/api/reports")
+def list_reports() -> dict[str, Any]:
+    RUNS_DIR.mkdir(exist_ok=True)
+    reports: list[dict[str, Any]] = []
+    paths = sorted(RUNS_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    for path in paths[:50]:
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        run_id = str(data.get("run_id") or path.stem)
+        channels = []
+        for channel in data.get("channels") or []:
+            channels.append({
+                "platform": channel.get("platform"),
+                "store": channel.get("store"),
+                "item_count": channel.get("item_count") or len(channel.get("items") or []),
+                "credits_used": channel.get("credits_used") or 0,
+                "error": channel.get("error"),
+                "skipped": bool(channel.get("skipped")),
+                "source_url": channel.get("source_url") or "",
+            })
+        mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+        reports.append({
+            "run_id": run_id,
+            "status": data.get("status"),
+            "step": data.get("step"),
+            "credits_used": data.get("credits_used") or 0,
+            "credits_estimated": data.get("credits_estimated") or 0,
+            "urls": data.get("urls") or {},
+            "channels": channels,
+            "has_xlsx": (RUNS_DIR / f"{run_id}.xlsx").exists(),
+            "updated_at": mtime.replace(microsecond=0).isoformat(),
+        })
+    return {"reports": reports}
 
 
 @app.get("/api/token")
@@ -439,6 +589,7 @@ def _run_retry_job(run_id: str, platform: str, url: str) -> None:
 @app.post("/api/audit")
 def audit(body: AuditBody) -> dict[str, Any]:
     _prepare_jobs(body)
+    save_targets(_urls_from_body(body))
     run_id = uuid.uuid4().hex[:12]
     snapshot = {
         "run_id": run_id,

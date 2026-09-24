@@ -23,13 +23,13 @@ audit_3_passed: true
 - **Nombre del Proyecto:** `Scraping TA`
 - **Documentos base:** `01-problem.md` | `02-features.md` | `03-module-discovery.md`
 - **Estado de gatekeeping:** `ENSAMBLADO_APROBADO`
-- **Navegación:** una sola ruta web `/` (no expo-router)
+- **Navegación:** `/login` + `/admin` (no expo-router)
 
 ---
 
 ## 2. Arquitectura General
 
-Página HTML servida por FastAPI. El browser habla JSON con `/api/*`. Los parsers y Bee corren en el servidor. Theme local: variables CSS en `static/index.html` (V1; design-system repo queda para V3+).
+Páginas HTML servidas por FastAPI (`login.html`, `admin.html`). El browser habla JSON con `/api/*`. Los parsers y Bee corren en el servidor. Theme local: variables CSS Vissiuss (navy + oro) en `:root` (V1.1; design-system repo queda para V3+).
 
 ---
 
@@ -72,8 +72,12 @@ Estados: idle, queued, running (`step` por canal), done, error. Canal: ok / erro
 
 | Ruta | Pantalla | Módulos | Feature |
 | :--- | :--- | :--- | :--- |
-| `/` | `VIEW-01` Scraping TA | `MOD-10` + API | `FEAT-01`–`FEAT-08` |
+| `/login` | `VIEW-02` Acceso admin | `MOD-11` | `FEAT-11` |
+| `/` · `/admin` | `VIEW-03` Consola Vissiuss | `MOD-10` + API | `FEAT-01`–`FEAT-08`, `FEAT-11` |
 | `/api/health` | JSON | `MOD-09` | ops |
+| `/api/login` `/api/logout` `/api/me` | sesión | `MOD-11` | `FEAT-11` |
+| `/api/targets` | URLs persistidas | `MOD-10` | `FEAT-02` |
+| `/api/reports` | lista de runs | `MOD-08`, `MOD-09` | `FEAT-05` |
 | `/api/token` | JSON | `MOD-01` | `FEAT-01` |
 | `/api/audit` | JSON job | `MOD-09` | `FEAT-03`, `FEAT-08` |
 | `/api/audit/retry` | JSON job | `MOD-09` | `FEAT-06` |
@@ -84,23 +88,26 @@ Estados: idle, queued, running (`step` por canal), done, error. Canal: ok / erro
 
 ## 7. Consumo de Tokens y Theme
 
-Hex **solo** en `:root` de `static/index.html`. Componentes usan `var(--…)`.
+Hex **solo** en `:root` de `static/admin.html` y `static/login.html`. Componentes usan `var(--…)`.
 
-### Tokens clave V1
+### Tokens clave V1.1 — familia Vissiuss enterprise
 
 | Token semántico | Uso | Valor |
 | :--- | :--- | :--- |
-| `--bg` | Fondo página | `#f6f3ee` |
-| `--ink` | Texto / botones secondary | `#1c1917` |
-| `--muted` | Hints, labels | `#57534e` |
-| `--card` | Secciones | `#fffdf9` |
-| `--line` | Bordes | `#e7e0d6` |
-| `--accent` | CTA Auditar / Guardar | `#b42318` |
-| `--accent-dark` | Hover CTA | `#8f1d14` |
-| `--ok` | Status listo | `#166534` |
-| `--warn` | Avisos | `#9a3412` |
+| `--bg` | Fondo consola | `#0B1220` |
+| `--bg-elevated` | Header / nav | `#121A2B` |
+| `--ink` | Texto principal | `#F4F7FB` |
+| `--muted` | Hints, labels | `#93A0B5` |
+| `--card` | Paneles | `#172033` |
+| `--line` | Bordes | `#2A3548` |
+| `--accent` | CTA | `#C9A227` |
+| `--accent-dark` | Hover CTA | `#A6861C` |
+| `--brand` | Wordmark Vissiuss | `#E8D48B` |
+| `--ok` | Status listo | `#3D9B6E` |
+| `--warn` | Avisos | `#D97706` |
+| `--danger` | Errores | `#C2413B` |
 
-Alineados a semántica WIKA `background` / `text` / `accent` / `surface` (familia local “papel + rojo TA”).
+Alineados a semántica WIKA `background` / `text` / `accent` / `surface` (familia local “navy + oro Vissiuss”).
 
 ---
 
@@ -108,31 +115,27 @@ Alineados a semántica WIKA `background` / `text` / `accent` / `surface` (famili
 
 | ID Vista | ID Módulo | Componente / Pantalla | Tokens | Referencia |
 | :--- | :--- | :--- | :--- | :--- |
-| `VIEW-01` | `MOD-10` | Header “Scraping TA” | `--ink` | ASCII §9 |
-| `VIEW-01` | `MOD-10` | Sección token | `--accent`, `--card` | |
-| `VIEW-01` | `MOD-10` | 4 filas URL + Reintentar | `--ink` | |
-| `VIEW-01` | `MOD-10` | Tabla resultados + Reintentar | `--line` | |
-| `VIEW-01` | `MOD-10` | Descargar .xlsx | `--ink` | |
+| `VIEW-02` | `MOD-11` | Login Vissiuss | `--bg`, `--brand` | ASCII §9 |
+| `VIEW-03` | `MOD-10` | Páginas a scrapear + iframe | `--card`, `--accent` | ASCII §9 |
+| `VIEW-03` | `MOD-10` | Informes + Descargar .xlsx | `--brand` | |
+| `VIEW-03` | `MOD-10` | Ajustes token | `--accent` | |
 
 ---
 
 ## 9. Layout Visual (wireframe / ASCII)
 
 ```text
-┌─────────────────────────────────────────────────────────┐
-│ Scraping TA                          auditoría de menú  │  --ink header
-├─────────────────────────────────────────────────────────┤
-│ 1. Token ScrapingBee   [••••] [Guardar]                 │
-│ 2. URLs del local                                       │
-│    PedidosYa  [________________] [Reintentar]           │
-│    Uber Eats  [________________] [Reintentar]           │
-│    Rappi      [________________] [Reintentar]           │
-│    Justo      [________________] [Reintentar]           │
-│    créditos estimados: N   [Auditar]                    │
-│ 3. Informe Excel                                        │
-│    Canal | Local | Créditos | Resultado | Reintentar    │
-│    [Descargar .xlsx]                                    │
+┌ login ──────────────────────────────────────────────────┐
+│ VISSIUSS                                                │
+│ Admin Scraping TA     [usuario] [clave] [Entrar]        │
 └─────────────────────────────────────────────────────────┘
+┌ admin ──────────────────────────────────────────────────┐
+│ VISSIUSS  Scraping TA                      admin [Salir]│
+├ nav ─────┬──────────────────────────────────────────────┤
+│ Páginas  │  4 cards URL · preview iframe · extraídos    │
+│ Informes │  tabla runs · [Descargar .xlsx]              │
+│ Ajustes  │  token Bee                                   │
+└──────────┴──────────────────────────────────────────────┘
 ```
 
 ---

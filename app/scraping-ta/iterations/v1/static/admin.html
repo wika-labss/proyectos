@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vissiuss — Admin Scraping TA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0B1220;
+      --bg-elevated: #121A2B;
+      --card: #172033;
+      --ink: #F4F7FB;
+      --muted: #93A0B5;
+      --line: #2A3548;
+      --accent: #C9A227;
+      --accent-dark: #A6861C;
+      --brand: #E8D48B;
+      --ok: #3D9B6E;
+      --warn: #D97706;
+      --danger: #C2413B;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 24px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--line);
+    }
+    .wordmark {
+      font-family: "Cormorant Garamond", Georgia, serif;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      font-size: 20px;
+      color: var(--brand);
+      margin: 0;
+    }
+    header .sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .who { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 73px);
+    }
+    nav {
+      background: var(--bg-elevated);
+      border-right: 1px solid var(--line);
+      padding: 18px 12px;
+    }
+    nav button {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: var(--ink);
+      border: 0;
+      padding: 10px 12px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      font: inherit;
+    }
+    nav button.active {
+      background: #1d2a42;
+      border-left: 3px solid var(--accent);
+      color: var(--brand);
+    }
+    main { padding: 22px 24px 40px; display: grid; gap: 16px; }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 18px 20px;
+    }
+    h2 { margin: 0 0 6px; font-size: 18px; }
+    h3 { margin: 0 0 10px; font-size: 14px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+    .hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; line-height: 1.45; }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .channel {
+      border: 1px solid var(--line);
+      background: #121A2B;
+      padding: 12px;
+      cursor: pointer;
+      min-height: 132px;
+    }
+    .channel.selected { border-color: var(--accent); }
+    .channel strong { display: block; margin-bottom: 8px; font-size: 13px; }
+    .channel input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 12px;
+    }
+    .channel .meta { margin-top: 8px; font-size: 12px; color: var(--muted); }
+    label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+    input[type="password"], input[type="text"], input[type="url"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink);
+      font: inherit;
+    }
+    button.cta, button.ghost, button.gold {
+      border: 0;
+      padding: 10px 16px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.cta { background: var(--accent); color: #0B1220; }
+    button.cta:hover { background: var(--accent-dark); color: var(--ink); }
+    button.ghost { background: #1d2a42; color: var(--ink); }
+    button.gold { background: transparent; color: var(--brand); border: 1px solid var(--accent); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .split {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 12px;
+    }
+    iframe {
+      width: 100%;
+      height: 420px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .preview-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .preview-bar a { color: var(--brand); }
+    .products { display: grid; gap: 8px; max-height: 420px; overflow: auto; }
+    .product {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+      font-size: 13px;
+    }
+    .product b { display: block; }
+    .price { color: var(--brand); }
+    .old { color: var(--muted); text-decoration: line-through; margin-left: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 9px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; }
+    .ok { color: var(--ok); }
+    .err { color: var(--danger); }
+    .status { font-size: 13px; min-height: 18px; }
+    .hidden { display: none; }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { display: flex; gap: 8px; overflow: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .grid-4, .split { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <p class="wordmark">Vissiuss</p>
+      <p class="sub">Scraping TA · consola admin · auditoría vista cliente</p>
+    </div>
+    <div class="who">
+      <span id="who">Sesión…</span>
+      <a id="agent-link" class="hidden" href="#" target="_blank" rel="noreferrer">Agente</a>
+      <button class="ghost" type="button" id="logout">Salir</button>
+    </div>
+  </header>
+  <div class="layout">
+    <nav>
+      <button type="button" class="tab active" data-view="pages">Páginas</button>
+      <button type="button" class="tab" data-view="reports">Informes</button>
+      <button type="button" class="tab" data-view="settings">Ajustes</button>
+    </nav>
+    <main>
+      <section id="view-pages">
+        <div class="panel">
+          <h2>Páginas a scrapear</h2>
+          <p class="hint">Elegí un canal para ver la página. Vacío se omite. Un click de Auditar = 1 request Bee por URL (~75). Justo tarragona.cl = 0.</p>
+          <div class="grid-4" id="channel-cards"></div>
+          <div class="row" style="margin-top:14px">
+            <span class="status" id="estimate">Créditos estimados: 0</span>
+            <button class="cta" type="button" id="audit">Auditar local</button>
+            <button class="gold" type="button" id="retry-selected">Reintentar canal</button>
+            <button class="ghost" type="button" id="save-targets">Guardar URLs</button>
+          </div>
+          <p class="status" id="audit-status"></p>
+        </div>
+        <div class="panel">
+          <div class="preview-bar">
+            <h3 id="preview-title">Vista de la página</h3>
+            <a id="open-page" href="#" target="_blank" rel="noreferrer">Abrir página</a>
+          </div>
+          <div class="split">
+            <div>
+              <iframe id="page-frame" title="Vista de la página a scrapear" sandbox="allow-scripts allow-same-origin allow-popups" referrerpolicy="no-referrer"></iframe>
+              <p class="hint" id="frame-note">Si el marketplace bloquea el embed, usá Abrir página. La extracción sigue por Bee, no por este iframe.</p>
+            </div>
+            <div>
+              <h3>Vista extraída</h3>
+              <div class="products" id="extracted">Sin auditoría todavía.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-reports" class="hidden">
+        <div class="panel">
+          <h2>Informes de scraping</h2>
+          <p class="hint">Descargá el Excel (resumen / productos / comparación) de cada corrida. El cruce solo vale si las 4 URLs son del mismo local.</p>
+          <div class="row">
+            <button class="cta" type="button" id="download-latest" disabled>Descargar último .xlsx</button>
+            <button class="ghost" type="button" id="refresh-reports">Actualizar lista</button>
+          </div>
+          <div id="reports-table"></div>
+        </div>
+      </section>
+
+      <section id="view-settings" class="hidden">
+        <div class="panel">
+          <h2>Ajustes</h2>
+          <label for="token">Token ScrapingBee</label>
+          <div class="row">
+            <input id="token" type="password" placeholder="Pega un token nuevo" autocomplete="off" />
+            <button class="cta" type="button" id="save-token">Guardar token</button>
+          </div>
+          <p class="status" id="token-status">Comprobando…</p>
+          <p class="hint">Se guarda en <code>.scrapingbee_key</code> (no va a git). Justo/tarragona.cl no lo necesita.</p>
+          <p class="hint" id="agent-note">Esta consola es la interfaz web del agente Cursor de Scraping TA.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const CHANNELS = [
+      { field: "peya", platform: "pedidosya", label: "PedidosYa", placeholder: "https://www.pedidosya.cl/restaurantes/…" },
+      { field: "uber", platform: "ubereats", label: "Uber Eats", placeholder: "https://www.ubereats.com/cl/store/…" },
+      { field: "rappi", platform: "rappi", label: "Rappi", placeholder: "https://www.rappi.cl/restaurantes/…" },
+      { field: "justo", platform: "justo", label: "Justo / tarragona.cl", placeholder: "https://www.tarragona.cl/pedir" },
+    ];
+    let runId = null;
+    let busy = false;
+    let selected = "justo";
+    let lastJob = null;
+
+    function errDetail(data, fallback) {
+      if (!data) return fallback;
+      if (typeof data.detail === "string") return data.detail;
+      if (Array.isArray(data.detail)) return data.detail.map((x) => x.msg || JSON.stringify(x)).join("; ");
+      return data.error || fallback;
+    }
+
+    async function readJson(res) {
+      const text = await res.text();
+      try { return JSON.parse(text); }
+      catch {
+        throw new Error("El servidor devolvió HTML en vez de JSON. Recargá e intentá de nuevo.");
+      }
+    }
+
+    function payload() {
+      return {
+        peya: $("peya").value.trim(),
+        uber: $("uber").value.trim(),
+        rappi: $("rappi").value.trim(),
+        justo: $("justo").value.trim(),
+      };
+    }
+
+    function currentUrl() {
+      const node = $(selected);
+      return node ? node.value.trim() : "";
+    }
+
+    function setBusy(on) {
+      busy = on;
+      $("audit").disabled = on;
+      $("retry-selected").disabled = on;
+    }
+
+    function showView(name) {
+      ["pages", "reports", "settings"].forEach((id) => {
+        $("view-" + id).classList.toggle("hidden", id !== name);
+      });
+      document.querySelectorAll("nav .tab").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.view === name);
+      });
+    }
+
+    function renderCards() {
+      $("channel-cards").innerHTML = CHANNELS.map((ch) => `
+        <div class="channel ${selected === ch.field ? "selected" : ""}" data-field="${ch.field}">
+          <strong>${ch.label}</strong>
+          <input id="${ch.field}" type="url" placeholder="${ch.placeholder}" />
+          <div class="meta" id="meta-${ch.field}">Sin extraer</div>
+        </div>
+      `).join("");
+      CHANNELS.forEach((ch) => {
+        $(ch.field).addEventListener("input", () => {
+          refreshEstimate();
+          if (selected === ch.field) updatePreview();
+        });
+        $(ch.field).addEventListener("focus", () => selectChannel(ch.field));
+      });
+      $("channel-cards").onclick = (ev) => {
+        const card = ev.target.closest(".channel");
+        if (card) selectChannel(card.dataset.field);
+      };
+    }
+
+    function selectChannel(field) {
+      selected = field;
+      document.querySelectorAll(".channel").forEach((el) => {
+        el.classList.toggle("selected", el.dataset.field === field);
+      });
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const url = currentUrl();
+      const ch = CHANNELS.find((c) => c.field === selected);
+      $("preview-title").textContent = "Vista · " + (ch ? ch.label : selected);
+      $("open-page").href = url || "#";
+      $("open-page").style.visibility = url ? "visible" : "hidden";
+      $("page-frame").src = url || "about:blank";
+      $("frame-note").textContent = url
+        ? "Si el marketplace bloquea el embed, usá Abrir página. La extracción sigue por Bee, no por este iframe."
+        : "Pegá la URL del canal para previsualizar la página a scrapear.";
+      renderExtracted();
+    }
+
+    function renderExtracted() {
+      const platform = (CHANNELS.find((c) => c.field === selected) || {}).platform;
+      const channel = ((lastJob && lastJob.channels) || []).find((c) => c.platform === platform);
+      if (!channel || channel.skipped) {
+        $("extracted").textContent = "Sin extracción para este canal.";
+        return;
+      }
+      if (channel.error) {
+        $("extracted").innerHTML = `<p class="err">${channel.error}</p>`;
+        return;
+      }
+      const items = channel.items || [];
+      if (!items.length) {
+        $("extracted").textContent = (channel.item_count || 0) + " productos (detalle no cargado).";
+        return;
+      }
+      $("extracted").innerHTML = items.map((item) => `
+        <div class="product">
+          <b>${item.name || "Sin nombre"}</b>
+          <span class="price">${item.price_clp != null ? "$" + item.price_clp : "—"}</span>
+          ${item.price_original_clp && item.price_original_clp !== item.price_clp
+            ? `<span class="old">$${item.price_original_clp}</span>` : ""}
+        </div>
+      `).join("");
+    }
+
+    function paintChannelMeta(channels) {
+      CHANNELS.forEach((ch) => {
+        const found = (channels || []).find((c) => c.platform === ch.platform);
+        const node = $("meta-" + ch.field);
+        if (!node) return;
+        if (!found || found.skipped) node.textContent = "Sin extraer";
+        else if (found.error) node.textContent = "Error";
+        else node.textContent = (found.item_count || 0) + " productos · " + (found.credits_used || 0) + " cr.";
+      });
+    }
+
+    async function refreshEstimate() {
+      try {
+        const res = await fetch("/api/audit/estimate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload()),
+        });
+        const data = await readJson(res);
+        $("estimate").textContent = "Créditos estimados: " + data.credits_estimated
+          + (data.justo_cdn ? " · Justo CDN 0" : "");
+      } catch {
+        $("estimate").textContent = "No se pudo estimar créditos.";
+      }
+    }
+
+    function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+    async function pollUntilDone(started) {
+      runId = started.run_id;
+      let data = started;
+      while (data.status === "queued" || data.status === "running") {
+        $("audit-status").textContent = data.step || "Auditando…";
+        lastJob = data;
+        paintChannelMeta(data.channels);
+        renderExtracted();
+        await sleep(1000);
+        const st = await fetch("/api/audit/" + runId);
+        data = await readJson(st);
+        if (!st.ok) throw new Error(errDetail(data, "No se pudo leer el estado."));
+      }
+      if (data.status === "error") throw new Error(data.error || "Falló la auditoría.");
+      lastJob = data;
+      $("download-latest").disabled = !data.run_id;
+      $("audit-status").textContent =
+        "Listo. Créditos usados: " + data.credits_used + " (estimados " + data.credits_estimated + ").";
+      $("audit-status").className = "status ok";
+      paintChannelMeta(data.channels);
+      renderExtracted();
+      refreshReports();
+      return data;
+    }
+
+    async function refreshReports() {
+      const box = $("reports-table");
+      try {
+        const res = await fetch("/api/reports");
+        const data = await readJson(res);
+        const rows = (data.reports || []).map((r) => {
+          const counts = (r.channels || [])
+            .filter((c) => !c.skipped)
+            .map((c) => c.platform + " " + (c.error ? "err" : (c.item_count + "p")))
+            .join(" · ") || "—";
+          const dl = r.has_xlsx
+            ? `<button class="gold" type="button" data-dl="${r.run_id}">Descargar</button>`
+            : "—";
+          return `<tr>
+            <td><code>${r.run_id}</code></td>
+            <td>${r.updated_at.replace("T", " ").replace("+00:00", " UTC")}</td>
+            <td>${r.status}</td>
+            <td>${r.credits_used}</td>
+            <td>${counts}</td>
+            <td>${dl}</td>
+          </tr>`;
+        }).join("");
+        box.innerHTML = rows
+          ? `<table><thead><tr><th>Run</th><th>Fecha</th><th>Estado</th><th>Créditos</th><th>Canales</th><th>Informe</th></tr></thead><tbody>${rows}</tbody></table>`
+          : `<p class="hint">Todavía no hay informes. Audita un local desde Páginas.</p>`;
+        if ((data.reports || []).some((r) => r.has_xlsx)) {
+          if (!runId) runId = data.reports[0].run_id;
+          $("download-latest").disabled = !runId;
+        }
+      } catch (err) {
+        box.innerHTML = `<p class="err">${err.message || err}</p>`;
+      }
+    }
+
+    function downloadRun(id) {
+      if (!id) return;
+      window.location = "/api/report/" + id + ".xlsx";
+    }
+
+    $("audit").onclick = async () => {
+      $("audit-status").textContent = "Encolando auditoría…";
+      $("audit-status").className = "status";
+      setBusy(true);
+      try {
+        const start = await fetch("/api/audit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload()),
+        });
+        const started = await readJson(start);
+        if (!start.ok) throw new Error(errDetail(started, "No se pudo iniciar."));
+        await pollUntilDone(started);
+      } catch (err) {
+        $("audit-status").textContent = String(err.message || err);
+        $("audit-status").className = "status err";
+      } finally { setBusy(false); }
+    };
+
+    $("retry-selected").onclick = async () => {
+      const url = currentUrl();
+      if (!url && !runId) {
+        $("audit-status").textContent = "Pegá la URL de ese canal antes de reintentar.";
+        $("audit-status").className = "status err";
+        return;
+      }
+      $("audit-status").textContent = "Reintentando " + selected + " (1 request)…";
+      $("audit-status").className = "status";
+      setBusy(true);
+      try {
+        const res = await fetch("/api/audit/retry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ platform: selected, url, run_id: runId }),
+        });
+        const started = await readJson(res);
+        if (!res.ok) throw new Error(errDetail(started, "No se pudo reintentar."));
+        await pollUntilDone(started);
+      } catch (err) {
+        $("audit-status").textContent = String(err.message || err);
+        $("audit-status").className = "status err";
+      } finally { setBusy(false); }
+    };
+
+    $("save-targets").onclick = async () => {
+      const res = await fetch("/api/targets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload()),
+      });
+      const data = await readJson(res);
+      $("audit-status").textContent = res.ok ? "URLs guardadas en este servidor." : errDetail(data, "No se guardó.");
+      $("audit-status").className = "status " + (res.ok ? "ok" : "err");
+    };
+
+    $("save-token").onclick = async () => {
+      const token = $("token").value.trim();
+      if (!token) return;
+      const res = await fetch("/api/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      const data = await readJson(res);
+      if (!res.ok) {
+        $("token-status").textContent = errDetail(data, "No se pudo guardar.");
+        $("token-status").className = "status err";
+        return;
+      }
+      $("token").value = "";
+      $("token-status").textContent = "Token configurado.";
+      $("token-status").className = "status ok";
+    };
+
+    $("download-latest").onclick = () => downloadRun(runId);
+    $("refresh-reports").onclick = refreshReports;
+    $("reports-table").addEventListener("click", (ev) => {
+      const btn = ev.target.closest("[data-dl]");
+      if (btn) downloadRun(btn.dataset.dl);
+    });
+    document.querySelectorAll("nav .tab").forEach((btn) => {
+      btn.onclick = () => showView(btn.dataset.view);
+    });
+    $("logout").onclick = async () => {
+      await fetch("/api/logout", { method: "POST" });
+      window.location.href = "/login";
+    };
+
+    async function boot() {
+      renderCards();
+      try {
+        const me = await readJson(await fetch("/api/me"));
+        $("who").textContent = me.username + (me.auth ? " · admin" : " · local");
+        if (me.agent_url) {
+          const link = $("agent-link");
+          link.href = me.agent_url;
+          link.classList.remove("hidden");
+        }
+        $("token-status").textContent = me.token_configured
+          ? "Token configurado en este equipo."
+          : "No hay token. Pega uno para Peya / Uber / Rappi.";
+        $("token-status").className = "status " + (me.token_configured ? "ok" : "err");
+      } catch (err) {
+        if (String(err.message || err).includes("Sesión")) window.location.href = "/login";
+      }
+      try {
+        const saved = await readJson(await fetch("/api/targets"));
+        CHANNELS.forEach((ch) => {
+          if (saved.targets && saved.targets[ch.field]) $(ch.field).value = saved.targets[ch.field];
+        });
+      } catch { /* primera carga */ }
+      selectChannel(selected);
+      refreshEstimate();
+      refreshReports();
+    }
+
+    boot();
+  </script>
+</body>
+</html>
