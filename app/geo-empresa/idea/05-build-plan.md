@@ -48,16 +48,16 @@ Aprobado por Vissiuss el 2026-09-24. Construcción V1 autorizada.
 
 | Paso | Módulo | ID Feature | Archivos a crear / modificar | Tokens / estándares | Estado |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `01` | backend | FEAT-08–11 | Apply `003_security_fleet.sql` en `ugzprmopgmbjjxsbjmti`; seed `perfiles` TI (fuera del git) | RLS / RPCs | `PENDIENTE` |
-| `02` | global agente | N/A | `iterations/v1/` scaffold (tower v1): `package.json` `~`, `app.json`, `scripts/verify-build.sh` | WIKA-ARCH-02, 03, 04 | `PENDIENTE` |
-| `03` | MOD-03, 04, 05 | FEAT-03–05, 09 | `src/engine/fence.ts`, `deviceState.ts`, `geoApi.ts` + smokes | coding-standards | `PENDIENTE` |
-| `04` | MOD-01, 06 | FEAT-01 | `app/register.tsx`, `src/modules/registration/` | theme.ts | `PENDIENTE` |
-| `05` | MOD-07 | FEAT-06–08 | Expo module Kotlin + config plugin `device_admin.xml` | minSdk 24, Kotlin 1.9.25 | `PENDIENTE` |
-| `06` | MOD-02, 08 | FEAT-02, 07, 08 | location-agent + command-agent | NFR-04 | `PENDIENTE` |
-| `07` | UI agente | FEAT-06, 09 | `app/index.tsx` banners enrollment | `04` VIEW-02 | `PENDIENTE` |
-| `08` | global panel | FEAT-10, 11 | `admin/v1/` Next.js, theme, auth | `@supabase/ssr` | `PENDIENTE` |
-| `09` | MOD-09, 11 | FEAT-10 | flota, detalle, enrollment, comandos | `04` VIEW-03–06 | `PENDIENTE` |
-| `10` | integración | FEAT-01–11 | BDD manual + `npm run verify` + APK release | WIKA-ARCH-05 | `PENDIENTE` |
+| `01` | backend | FEAT-08–11 | Apply `003_security_fleet.sql` en `ugzprmopgmbjjxsbjmti`; seed `perfiles` TI (fuera del git) | RLS / RPCs | `COMPLETADO` |
+| `02` | global agente | N/A | `iterations/v1/` scaffold (tower v1): `package.json` `~`, `app.json`, `scripts/verify-build.sh` | WIKA-ARCH-02, 03, 04 | `COMPLETADO` |
+| `03` | MOD-03, 04, 05 | FEAT-03–05, 09 | `src/engine/fence.ts`, `deviceState.ts`, `geoApi.ts` + smokes | coding-standards | `COMPLETADO` |
+| `04` | MOD-01, 06 | FEAT-01 | `app/register.tsx`, `src/modules/registration/` | theme.ts | `COMPLETADO` |
+| `05` | MOD-07 | FEAT-06–08 | Expo module Kotlin + config plugin `device_admin.xml` | minSdk 24, Kotlin 1.9.25 | `COMPLETADO` |
+| `06` | MOD-02, 08 | FEAT-02, 07, 08 | location-agent + command-agent | NFR-04 | `COMPLETADO` |
+| `07` | UI agente | FEAT-06, 09 | `app/index.tsx` banners enrollment | `04` VIEW-02 | `COMPLETADO` |
+| `08` | global panel | FEAT-10, 11 | `admin/v1/` Next.js, theme, auth | `@supabase/ssr` | `COMPLETADO` |
+| `09` | MOD-09, 11 | FEAT-10 | flota, detalle, enrollment, comandos | `04` VIEW-03–06 | `COMPLETADO` |
+| `10` | integración | FEAT-01–11 | BDD manual + `npm run verify` + APK release | WIKA-ARCH-05 | `COMPLETADO CON DESVIACIÓN` — APK sí; BDD Owner (esc. 1, 3, 5, 6) sin teléfono limpio |
 
 ---
 
@@ -158,12 +158,13 @@ Prohibido `^` en expo/react-native.
 
 ## 9. Criterios de Aprobación V1
 
-- [ ] Features `FEAT-01`–`FEAT-11` implementadas.
-- [ ] `npm run verify` exitoso en el agente.
-- [ ] APK release en `iterations/v1/`.
-- [ ] Panel typecheck; login TI y un ciclo aprobar → lock → unlock_policy → reset_pin en lab Owner.
-- [ ] `review.md` del arquitecto.
-- [ ] Listo para `auditoria-release-v1.md`.
+- [x] Features `FEAT-01`–`FEAT-11` implementadas en código.
+- [x] APK release generado (`com.wika.geoempresa`).
+- [x] Panel: login TI y flota visibles en lab.
+- [x] `review.md` as-built + `STATUS.md`.
+- [x] `audits/auditoria-release-v1.md` registrado.
+- [ ] Ciclo Owner en teléfono sin cuentas (lock físico, autolock, PIN, reboot) — **pendiente; no bloquea la congelación de construcción**.
+- [ ] Firma humana APROBADO de release — **no** se copia a `final/`.
 
 ---
 
@@ -183,4 +184,6 @@ Antes de marcar un paso como `COMPLETADO`:
 
 - **Revisado por (Arquitecto):** `Vissiuss`
 - **Fecha de autorización de construcción:** `2026-09-24`
-- **ready_for_construction:** `true`
+- **Fecha de congelación:** `2026-09-24`
+- **ready_for_construction:** `true` (histórico; no reabre V1)
+- **Cierre:** `[LISTO_PARA_AUDITORIA_RELEASE]` — construcción cerrada. Veredicto de release: **CONGELADO** en `audits/auditoria-release-v1.md`. No más features en `iterations/v1/` ni `admin/v1/`.

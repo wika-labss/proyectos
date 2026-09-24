@@ -1,10 +1,13 @@
 # Geo Empresa
 
-Seguridad de flota: teléfonos Android **propiedad de la empresa**, geocerca 120 m, Device Owner y panel web para TI.
+**Estado: CONGELADO (2026-09-24).** Construcción V1 cerrada. Ver [STATUS.md](./STATUS.md).
 
+Seguridad de flota: teléfonos Android **propiedad de la empresa**, geocerca 120 m, Device Policy y panel web para TI.
+
+- **Estado as-built:** [STATUS.md](./STATUS.md)
 - **Backend:** Supabase `geo-empresa` — [supabase/README.md](./supabase/README.md)
 - **Documentación WIKA (v2.0.0, APROBADO):** [idea/](./idea/)
-- **Auditorías:** [audits/](./audits/) — Gates 1–3B firmados por Vissiuss (2026-09-24)
+- **Auditorías:** [audits/](./audits/) — Gates 1–3B firmados. Release: **congelado, no APROBADO** (`auditoria-release-v1.md`)
 - **Agente Android:** [iterations/v1/](./iterations/v1/)
 - **Panel TI:** [admin/v1/](./admin/v1/)
 
@@ -13,23 +16,35 @@ Seguridad de flota: teléfonos Android **propiedad de la empresa**, geocerca 120
 El contrato anterior solo monitoreaba GPS (`telefono_encendido`, `dentro_perimetro`).  
 v2.0.0 reformula el V1 a **seguridad de equipos**:
 
-- Agente Device Owner (`DeviceAdminReceiver` + `DevicePolicyManager`)
+- Agente con `DeviceAdminReceiver` + `DevicePolicyManager`
 - TI aprueba enrollment, monitorea, bloquea, libera política, resetea PIN y reinicia
 - Auth TI (`perfiles.rol = ti`); el agente no usa esas RPCs
 
-`lockNow()` no quita el PIN del usuario. Desbloqueo TI = `unlock_policy` + `reset_pin`.
+`lockNow()` no quita el PIN del usuario. Desbloqueo TI = `unlock_policy` + `reset_pin` (PIN exige Device Owner).
 
-## Gates (aprobados 2026-09-24)
+## Lab 2026-09-24 (as-built)
 
-| Gate | Flag | Doc |
-|------|------|-----|
-| 1 Documentación | `audit_1_passed` | `idea/01`, `idea/02`, `audits/auditoria-documentacion.md` |
-| 2 Módulos | `audit_2_passed` | `idea/03`, `audits/auditoria-modulos.md` |
-| 3A Visual | `visual_approval_passed` | `idea/04` |
-| 3B Ensamblado | `audit_3_passed` | `idea/04`, `idea/05`, `audits/auditoria-ensamblado.md` |
-| Construcción | `ready_for_construction` | `idea/05` |
+| Hecho | Valor |
+|---|---|
+| GPS + flota | Operativo (`Verox`, `Joaquin`) |
+| Device Admin | Activo en el Galaxy de prueba |
+| Device Owner | Bloqueado: hay cuentas en el teléfono |
+| Panel | Home = resumen. Acciones en `/dispositivos/<id>` (clic en el nombre) |
 
-Un agente IA no activa estos flags.
+Device Admin ≠ Device Owner. Sin Owner no hay autolock, reboot, reset PIN ni anti-desinstalación.
+
+## Gates
+
+| Gate | Flag | Doc | Estado |
+|------|------|-----|--------|
+| 1 Documentación | `audit_1_passed` | `idea/01`, `idea/02`, `audits/auditoria-documentacion.md` | Firmado 2026-09-24 |
+| 2 Módulos | `audit_2_passed` | `idea/03`, `audits/auditoria-modulos.md` | Firmado |
+| 3A Visual | `visual_approval_passed` | `idea/04` | Firmado |
+| 3B Ensamblado | `audit_3_passed` | `idea/04`, `idea/05`, `audits/auditoria-ensamblado.md` | Firmado |
+| Construcción | `ready_for_construction` | `idea/05` | Autorizada; **cerrada** |
+| Release | registro en `audits/` | `audits/auditoria-release-v1.md` | CONGELADO — no `final/` |
+
+Un agente IA no activa flags ni escribe APROBADO de release.
 
 ## Campos clave (Supabase)
 
@@ -41,6 +56,7 @@ Un agente IA no activa estos flags.
 | `dentro_perimetro` | boolean | Dentro de 120 m |
 | `estado_enrollment` | text | `pendiente` / `aprobado` / `rechazado` |
 | `es_device_owner` | boolean | Owner reportado |
+| `admin_activo` | boolean | Device Admin activo |
 | `politica_autolock` | boolean | Lock al salir de base |
 
 ## RPCs

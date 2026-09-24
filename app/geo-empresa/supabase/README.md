@@ -10,7 +10,8 @@
 > Anon key del **agente**: `EXPO_PUBLIC_SUPABASE_ANON_KEY` (no commitear).  
 > Panel TI: Auth email/password + JWT; no usar `service_role` en el browser.
 
-**Contrato v2.0.0:** seguridad de flota. Las migraciones `001`–`003` viven en `migrations/`. **No aplicar `003` al remoto** hasta `ready_for_construction: true` en `idea/05-build-plan.md`.
+**Contrato v2.0.0:** seguridad de flota. Las migraciones `001`–`003` viven en `migrations/`.  
+`003` aplicado en remoto (2026-09-24). Proyecto **congelado**: ver `../STATUS.md`.
 
 ---
 
@@ -122,12 +123,14 @@ El agente **no** llama RPCs TI.
 
 ## Provisionamiento Device Owner (operativo, no SQL)
 
-El panel documenta el payload. No reemplaza Android Enterprise:
+El panel documenta el payload. No reemplaza Android Enterprise. Lab 2026-09-24: un Galaxy con cuentas quedó en Device Admin; Owner exige wipe.
 
-1. Factory reset del teléfono corporativo.
-2. QR / `adb shell dpm set-device-owner com.wika.geoempresa/.…DeviceAdminReceiver` (componente exacto = módulo nativo).
+1. Teléfono corporativo **sin cuentas** (factory reset o asistente offline).
+2. APK + `adb shell dpm set-device-owner com.wika.geoempresa/com.wika.geoempresa.devicepolicy.GeoDeviceAdminReceiver`.
 3. El agente registra fingerprint → `pendiente`.
-4. TI aprueba en el panel.
+4. TI abre la **ficha** del dispositivo (clic en el nombre) y aprueba.
+
+`dpm` con cuentas existentes → `IllegalStateException`. No se borran cuentas por ADB/PowerShell.
 
 ---
 
