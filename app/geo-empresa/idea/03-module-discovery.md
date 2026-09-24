@@ -1,27 +1,25 @@
 ---
 id: "MOD-001"
 title: "Geo Empresa — Módulos V1 seguridad de flota"
-status: "BORRADOR"
+status: "APROBADO"
 version: "2.0.0"
 owner: "Vissiuss / Equipo WIKA"
 created_at: "2026-08-27"
 updated_at: "2026-09-24"
-audit_1_passed: false
-audit_2_passed: false
+audit_1_passed: true
+audit_2_passed: true
 ---
 
 # [03] Descubrimiento y Especificación de Arquitectura Modular
 
 > **Pre-requisito:** `audit_1_passed: true` en `01-problem.md` y `02-features.md`.  
-> Hoy ambos flags están en `false` (reformulación v2). Este documento es **borrador de arquitectura**, no Gate 2 aprobado.  
-> **Equivalencia:** Auditoría de Módulos → `audits/auditoria-modulos.md`.  
-> Un agente IA no activa `audit_2_passed`.
+> **Equivalencia:** Auditoría de Módulos → `audits/auditoria-modulos.md`.
 
 ## 1. Identificación y Documentos Base
 
 - **Nombre del Proyecto:** Geo Empresa
 - **Especificaciones base:** `01-problem.md` (`PROB-001`) | `02-features.md` (`FEAT-001`)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_MODULOS` (bloqueado a Gate 1)
+- **Estado de gatekeeping:** `AUDIT_2_APROBADO`
 - **Backend:** ver `supabase/README.md` y `supabase/migrations/003_security_fleet.sql`
 
 ---
@@ -336,11 +334,11 @@ Fuente de verdad de `dentro_perimetro` = Postgres. Este módulo es validación c
 - [x] Dependencias y riesgos documentados.
 - [x] Reutilización WIKA evaluada.
 - [x] Grafo sin ciclos.
-- [ ] `audits/auditoria-modulos.md` en estado `[APROBADO]`.
-- [ ] `audit_1_passed: true` como pre-requisito real (hoy `false`).
+- [x] `audits/auditoria-modulos.md` en estado `[APROBADO]`.
+- [x] `audit_1_passed: true` como pre-requisito.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha:** `YYYY-MM-DD`
-- **audit_2_passed:** `false` → `true` al aprobar (solo arquitecto humano)
+- **Aprobado por (Arquitecto):** `Vissiuss`
+- **Fecha:** `2026-09-24`
+- **audit_2_passed:** `true`

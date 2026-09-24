@@ -137,4 +137,4 @@ El panel documenta el payload. No reemplaza Android Enterprise:
 |---------|-----------|--------|
 | `001_create_geo_empresa_schema.sql` | Tablas monitoreo + `distancia_metros` | Contrato de lo ya aplicado en remoto |
 | `002_create_geo_empresa_rpcs_and_rls.sql` | 3 RPCs monitoreo + RLS | Contrato de lo ya aplicado; **reemplazado** por 003 |
-| `003_security_fleet.sql` | Columnas policy, `perfiles`, `comandos_*`, RPCs agente+TI | **Pendiente** de apply remoto post-Gate V1 |
+| `003_security_fleet.sql` | Columnas policy, `perfiles`, `comandos_*`, RPCs agente+TI | Aplicado en remoto 2026-09-24 (`security_fleet`, `security_fleet_rpcs`, `security_fleet_commands`, `security_fleet_admin_rpcs`) |

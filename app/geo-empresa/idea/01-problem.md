@@ -1,12 +1,12 @@
 ---
 id: "PROB-001"
 title: "Geo Empresa — Seguridad de flota corporativa"
-status: "BORRADOR"
+status: "APROBADO"
 version: "2.0.0"
 owner: "Vissiuss / Equipo WIKA"
 created_at: "2026-08-27"
 updated_at: "2026-09-24"
-audit_1_passed: false
+audit_1_passed: true
 ---
 
 # [01] Definición del Problema, Alcance y Metas
@@ -22,7 +22,7 @@ audit_1_passed: false
 - **Repositorio de aplicación:** `proyectos/app/geo-empresa/`
 - **Backend:** Supabase `geo-empresa` (`ugzprmopgmbjjxsbjmti`, región `sa-east-1`)
 - **Stakeholders clave:** Vissiuss (producto / ingeniería), administrador de flota (TI), colaborador con teléfono corporativo
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDIT_1_APROBADO`
 
 ---
 
@@ -165,7 +165,7 @@ audit_1_passed: false
   - Polling, no push: el comando llega en el siguiente ciclo del agente (hasta 60 s).
   - `lockNow()` no quita el lock screen; “desbloqueo” es política + PIN nuevo.
   - Apagado total no existe como API pública.
-- **Plan de mitigación:** UI “no enrolado” si no hay Owner; RPCs de comando exigen Owner reportado; documentar QR / `dpm set-device-owner` en el panel; PIN solo por RPC SECURITY DEFINER al fingerprint dueño; no aplicar migraciones remotas ni construir `iterations/v1/` hasta `ready_for_construction: true`.
+- **Plan de mitigación:** UI “no enrolado” si no hay Owner; RPCs de comando exigen Owner reportado; documentar QR / `dpm set-device-owner` en el panel; PIN solo por RPC SECURITY DEFINER al fingerprint dueño. Construcción autorizada el 2026-09-24.
 
 ---
 
@@ -178,10 +178,10 @@ audit_1_passed: false
 - [x] Criterios de éxito en formato BDD (Dado / Cuando / Entonces).
 - [x] Out-of-scope explícito documentado.
 - [x] Restricciones técnicas alineadas a `standards/coding-standards.md`.
-- [ ] Auditoría registrada en `audits/auditoria-documentacion.md` con resultado `[APROBADO]`.
+- [x] Auditoría registrada en `audits/auditoria-documentacion.md` con resultado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha de aprobación:** `YYYY-MM-DD`
-- **audit_1_passed:** `false` → cambiar a `true` al aprobar (solo arquitecto humano)
+- **Aprobado por (Arquitecto):** `Vissiuss`
+- **Fecha de aprobación:** `2026-09-24`
+- **audit_1_passed:** `true`

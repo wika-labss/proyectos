@@ -1,12 +1,12 @@
 ---
 id: "FEAT-001"
 title: "Geo Empresa — Features V1 seguridad de flota"
-status: "BORRADOR"
+status: "APROBADO"
 version: "2.0.0"
 owner: "Vissiuss / Equipo WIKA"
 created_at: "2026-08-27"
 updated_at: "2026-09-24"
-audit_1_passed: false
+audit_1_passed: true
 ---
 
 # [02] Especificación de Características y Requerimientos Funcionales
@@ -20,7 +20,7 @@ audit_1_passed: false
 
 - **Nombre del Proyecto:** Geo Empresa
 - **Documento base:** `idea/01-problem.md` (ID: `PROB-001`)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDIT_1_APROBADO`
 
 ---
 
@@ -336,10 +336,10 @@ El PIN viaja en `payload` y **solo** lo lee la RPC agente SECURITY DEFINER acota
 - [x] Escenarios BDD por feature obligatoria.
 - [x] NFRs con métricas verificables.
 - [x] Deseables y fuera de alcance diferenciados.
-- [ ] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
+- [x] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha:** `YYYY-MM-DD`
-- **audit_1_passed:** `false` → `true` al aprobar (solo arquitecto humano)
+- **Aprobado por (Arquitecto):** `Vissiuss`
+- **Fecha:** `2026-09-24`
+- **audit_1_passed:** `true`

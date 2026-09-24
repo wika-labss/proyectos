@@ -1,15 +1,15 @@
 ---
 id: "DES-001"
 title: "Geo Empresa — Diseño V1 agente + panel TI"
-status: "BORRADOR"
+status: "APROBADO"
 version: "2.0.0"
 owner: "Vissiuss / Arquitecto WIKA"
 created_at: "2026-09-24"
 updated_at: "2026-09-24"
-audit_1_passed: false
-audit_2_passed: false
-visual_approval_passed: false
-audit_3_passed: false
+audit_1_passed: true
+audit_2_passed: true
+visual_approval_passed: true
+audit_3_passed: true
 ---
 
 # [04] Diseño de Aplicación, Navegación y Aprobación Visual
@@ -23,7 +23,7 @@ audit_3_passed: false
 
 - **Nombre del Proyecto:** Geo Empresa
 - **Documentos base:** `01-problem.md` | `02-features.md` | `03-module-discovery.md`
-- **Estado de gatekeeping:** `PENDIENTE_APROBACION_VISUAL`
+- **Estado de gatekeeping:** `VISUAL_Y_ENSAMBLADO_APROBADO`
 - **Dos superficies:** agente Android (`iterations/v1/`) y panel web TI (`admin/v1/`)
 
 ---
@@ -301,21 +301,21 @@ Nuevo PIN: modal (input + confirmar). El valor no se re-lista.
 - [x] Navegación y flujo principal definidos (agente + panel).
 - [x] Todos los módulos V1 incorporados sin huérfanos.
 - [x] Tokens/theme documentados (local V1).
-- [ ] Wireframe revisado por arquitecto (`visual_approval_passed`).
+- [x] Wireframe revisado por arquitecto (`visual_approval_passed`).
 - [x] Sin dependencias circulares (grafo en `03`).
 
 ### Checklist auditoría de ensamblado (Gate 3B)
 
-- [ ] `05-build-plan.md` coherente con este diseño.
-- [ ] Estrategia de build y riesgos alineados.
-- [ ] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
+- [x] `05-build-plan.md` coherente con este diseño.
+- [x] Estrategia de build y riesgos alineados.
+- [x] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobación visual (Arquitecto / Stakeholder):** `________________________`
-- **Fecha visual:** `YYYY-MM-DD`
-- **visual_approval_passed:** `false` → `true` al aprobar preview (solo humano)
+- **Aprobación visual (Arquitecto / Stakeholder):** `Vissiuss`
+- **Fecha visual:** `2026-09-24`
+- **visual_approval_passed:** `true`
 
-- **Aprobación ensamblado (Arquitecto):** `________________________`
-- **Fecha ensamblado:** `YYYY-MM-DD`
-- **audit_3_passed:** `false` → `true` al aprobar ensamblado (solo humano)
+- **Aprobación ensamblado (Arquitecto):** `Vissiuss`
+- **Fecha ensamblado:** `2026-09-24`
+- **audit_3_passed:** `true`

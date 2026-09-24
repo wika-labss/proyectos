@@ -3,10 +3,10 @@
 Seguridad de flota: teléfonos Android **propiedad de la empresa**, geocerca 120 m, Device Owner y panel web para TI.
 
 - **Backend:** Supabase `geo-empresa` — [supabase/README.md](./supabase/README.md)
-- **Documentación WIKA (v2.0.0, BORRADOR):** [idea/](./idea/)
-- **Auditorías:** [audits/](./audits/) — veredictos **pendientes de arquitecto**
-- **Agente Android:** `iterations/v1/` — **no construir** hasta `ready_for_construction: true`
-- **Panel TI:** `admin/v1/` — **no construir** hasta el mismo flag
+- **Documentación WIKA (v2.0.0, APROBADO):** [idea/](./idea/)
+- **Auditorías:** [audits/](./audits/) — Gates 1–3B firmados por Vissiuss (2026-09-24)
+- **Agente Android:** [iterations/v1/](./iterations/v1/)
+- **Panel TI:** [admin/v1/](./admin/v1/)
 
 ## Qué cambió respecto de v1.0.0
 
@@ -19,7 +19,7 @@ v2.0.0 reformula el V1 a **seguridad de equipos**:
 
 `lockNow()` no quita el PIN del usuario. Desbloqueo TI = `unlock_policy` + `reset_pin`.
 
-## Gates (todos en false)
+## Gates (aprobados 2026-09-24)
 
 | Gate | Flag | Doc |
 |------|------|-----|
@@ -49,4 +49,4 @@ Un agente IA no activa estos flags.
 
 **TI (JWT + rol `ti`):** `listar_flota`, `obtener_dispositivo_admin`, `aprobar_dispositivo`, `solicitar_comando`, `listar_comandos`.
 
-Migración `003_security_fleet.sql`: contrato listo; apply remoto solo post-gate.
+Migración `003` aplicada en remoto (2026-09-24). Seed del usuario TI: Auth + `insert into perfiles`.
