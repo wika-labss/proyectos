@@ -3,21 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Vissiuss — acceso admin</title>
+  <title>Vissiuss — acceso</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0B1220;
-      --card: #172033;
-      --ink: #F4F7FB;
-      --muted: #93A0B5;
-      --line: #2A3548;
-      --accent: #C9A227;
-      --accent-dark: #A6861C;
-      --brand: #E8D48B;
-      --danger: #C2413B;
+      --bg: #0A0A0A;
+      --card: #111111;
+      --ink: #F4EFE6;
+      --muted: #A39A8C;
+      --line: #2A2620;
+      --accent: #E8DFD0;
+      --danger: #C45C4E;
     }
     * { box-sizing: border-box; }
     body {
@@ -25,80 +23,83 @@
       min-height: 100vh;
       display: grid;
       place-items: center;
-      background:
-        radial-gradient(1200px 500px at 10% -10%, rgba(201, 162, 39, 0.16), transparent 50%),
-        linear-gradient(180deg, #0B1220 0%, #121A2B 100%);
+      background: var(--bg);
       color: var(--ink);
-      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      font-family: Outfit, system-ui, sans-serif;
+      font-weight: 300;
     }
     .card {
-      width: min(420px, calc(100vw - 32px));
-      background: var(--card);
-      border: 1px solid var(--line);
-      padding: 36px 32px 28px;
+      width: min(440px, calc(100vw - 32px));
+      padding: 48px 40px 36px;
+      border-top: 1px solid var(--line);
     }
     .brand {
-      font-family: "Cormorant Garamond", Georgia, serif;
-      letter-spacing: 0.28em;
+      font-family: "Playfair Display", Georgia, serif;
+      letter-spacing: 0.42em;
       text-transform: uppercase;
-      font-size: 22px;
-      color: var(--brand);
-      margin: 0 0 6px;
+      font-size: 13px;
+      margin: 0 0 28px;
+      color: var(--ink);
     }
     h1 {
-      margin: 0 0 8px;
-      font-size: 22px;
-      font-weight: 600;
+      font-family: "Playfair Display", Georgia, serif;
+      font-weight: 500;
+      font-size: 40px;
+      margin: 0 0 12px;
+      letter-spacing: -0.02em;
     }
     p {
-      margin: 0 0 22px;
+      margin: 0 0 28px;
       color: var(--muted);
       font-size: 14px;
-      line-height: 1.45;
+      line-height: 1.6;
     }
     label {
       display: block;
-      font-size: 12px;
-      letter-spacing: 0.06em;
+      font-size: 11px;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--muted);
-      margin: 0 0 6px;
+      margin: 0 0 8px;
     }
     input {
       width: 100%;
-      margin-bottom: 14px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      background: #0B1220;
+      margin-bottom: 18px;
+      padding: 12px 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
       color: var(--ink);
       font: inherit;
     }
-    input:focus { outline: 1px solid var(--accent); }
+    input:focus { outline: none; border-bottom-color: var(--accent); }
     button {
       width: 100%;
-      margin-top: 8px;
-      padding: 12px 16px;
+      margin-top: 12px;
+      padding: 14px 16px;
       border: 0;
       background: var(--accent);
-      color: #0B1220;
-      font-weight: 600;
-      letter-spacing: 0.04em;
+      color: var(--bg);
+      font-family: Outfit, sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 12px;
       cursor: pointer;
     }
-    button:hover { background: var(--accent-dark); color: var(--ink); }
-    .err { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 12px; }
+    .err { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 14px; }
   </style>
 </head>
 <body>
   <form class="card" id="login-form">
     <p class="brand">Vissiuss</p>
     <h1>Admin Scraping TA</h1>
-    <p>Consola empresarial para auditar la vista cliente de PedidosYa, Uber Eats, Rappi y Justo.</p>
+    <p>Acceso a la consola de informes de menú.</p>
     <label for="username">Usuario</label>
     <input id="username" name="username" autocomplete="username" required />
     <label for="password">Clave</label>
     <input id="password" name="password" type="password" autocomplete="current-password" required />
-    <button type="submit">Entrar al admin</button>
+    <button type="submit">Entrar</button>
     <p class="err" id="error"></p>
   </form>
   <script>

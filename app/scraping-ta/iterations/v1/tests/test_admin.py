@@ -51,8 +51,7 @@ def test_admin_pages_exist():
     home = client.get("/", follow_redirects=True)
     assert home.status_code == 200
     assert "Vissiuss" in home.text
-    assert "Nuevo informe" in home.text
-    assert "Traer CDN" in home.text
+    assert "Generar informe" in home.text
     login = client.get("/login")
     assert login.status_code == 200
     assert "Admin Scraping TA" in login.text

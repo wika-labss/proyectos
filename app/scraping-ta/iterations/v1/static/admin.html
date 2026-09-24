@@ -6,21 +6,18 @@
   <title>Vissiuss — Admin Scraping TA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0B1220;
-      --bg-elevated: #121A2B;
-      --card: #172033;
-      --ink: #F4F7FB;
-      --muted: #93A0B5;
-      --line: #2A3548;
-      --accent: #C9A227;
-      --accent-dark: #A6861C;
-      --brand: #E8D48B;
-      --ok: #3D9B6E;
-      --warn: #D97706;
-      --danger: #C2413B;
+      --bg: #0A0A0A;
+      --bg-elevated: #111111;
+      --card: #141414;
+      --ink: #F4EFE6;
+      --muted: #A39A8C;
+      --line: #2A2620;
+      --accent: #E8DFD0;
+      --ok: #8A9A7B;
+      --danger: #C45C4E;
     }
     * { box-sizing: border-box; }
     body {
@@ -28,164 +25,115 @@
       min-height: 100vh;
       background: var(--bg);
       color: var(--ink);
-      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      font-family: Outfit, system-ui, sans-serif;
+      font-weight: 300;
     }
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 16px 24px;
-      background: var(--bg-elevated);
+      padding: 22px 40px;
       border-bottom: 1px solid var(--line);
     }
     .wordmark {
-      font-family: "Cormorant Garamond", Georgia, serif;
-      letter-spacing: 0.32em;
+      font-family: "Playfair Display", Georgia, serif;
+      letter-spacing: 0.42em;
       text-transform: uppercase;
-      font-size: 20px;
-      color: var(--brand);
+      font-size: 14px;
       margin: 0;
     }
-    header .sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
-    .who { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+    header .sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .who { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--muted); }
     .layout {
       display: grid;
       grid-template-columns: 220px 1fr;
-      min-height: calc(100vh - 73px);
+      min-height: calc(100vh - 81px);
     }
-    nav {
-      background: var(--bg-elevated);
-      border-right: 1px solid var(--line);
-      padding: 18px 12px;
-    }
+    nav { padding: 28px 20px; border-right: 1px solid var(--line); }
     nav button {
       width: 100%;
       text-align: left;
       background: transparent;
-      color: var(--ink);
+      color: var(--muted);
       border: 0;
-      padding: 10px 12px;
+      padding: 10px 8px;
       margin-bottom: 4px;
       cursor: pointer;
       font: inherit;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 11px;
     }
-    nav button.active {
-      background: #1d2a42;
-      border-left: 3px solid var(--accent);
-      color: var(--brand);
+    nav button.active { color: var(--ink); }
+    main { padding: 40px 48px 64px; display: grid; gap: 28px; max-width: 920px; }
+    h2 {
+      font-family: "Playfair Display", Georgia, serif;
+      font-weight: 500;
+      font-size: 40px;
+      margin: 0 0 10px;
+      letter-spacing: -0.02em;
     }
-    main { padding: 22px 24px 40px; display: grid; gap: 16px; }
-    .panel {
-      background: var(--card);
-      border: 1px solid var(--line);
-      padding: 18px 20px;
+    .hint { color: var(--muted); font-size: 14px; margin: 0 0 24px; line-height: 1.65; max-width: 520px; }
+    .run-id {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 28px;
+      margin: 0 0 8px;
     }
-    h2 { margin: 0 0 6px; font-size: 18px; }
-    h3 { margin: 0 0 10px; font-size: 14px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-    .hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; line-height: 1.45; }
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .channel {
-      border: 1px solid var(--line);
-      background: #121A2B;
-      padding: 12px;
-      cursor: pointer;
-      min-height: 132px;
-    }
-    .channel.selected { border-color: var(--accent); }
-    .channel strong { display: block; margin-bottom: 8px; font-size: 13px; }
-    .channel input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid var(--line);
-      background: var(--bg);
+    label { display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 16px 0 8px; }
+    input[type="password"] {
+      width: min(420px, 100%);
+      padding: 10px 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
       color: var(--ink);
-      font-size: 12px;
+      font: inherit;
     }
-    .channel .meta { margin-top: 8px; font-size: 12px; color: var(--muted); }
-    .run-box {
+    input:focus { outline: none; border-bottom-color: var(--accent); }
+    button.cta, button.ghost {
+      border: 0;
+      padding: 14px 28px;
+      font-family: Outfit, sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    button.cta { background: var(--accent); color: var(--bg); }
+    button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+    button:disabled { opacity: 0.35; cursor: not-allowed; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .channels { display: grid; gap: 0; margin-top: 28px; border-top: 1px solid var(--line); }
+    .channel {
       display: flex;
       justify-content: space-between;
       gap: 16px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      background: #121A2B;
-    }
-    .run-id {
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      color: var(--brand);
-    }
-    label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
-    input[type="password"], input[type="text"], input[type="url"] {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      background: var(--bg);
-      color: var(--ink);
-      font: inherit;
-    }
-    button.cta, button.ghost, button.gold {
-      border: 0;
-      padding: 10px 16px;
-      font: inherit;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button.cta { background: var(--accent); color: #0B1220; }
-    button.cta:hover { background: var(--accent-dark); color: var(--ink); }
-    button.ghost { background: #1d2a42; color: var(--ink); }
-    button.gold { background: transparent; color: var(--brand); border: 1px solid var(--accent); }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
-    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .split {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 12px;
-    }
-    iframe {
-      width: 100%;
-      height: 420px;
-      border: 1px solid var(--line);
-      background: #fff;
-    }
-    .preview-bar {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 8px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .preview-bar a { color: var(--brand); }
-    .products { display: grid; gap: 8px; max-height: 420px; overflow: auto; }
-    .product {
+      padding: 14px 0;
       border-bottom: 1px solid var(--line);
-      padding-bottom: 8px;
-      font-size: 13px;
+      font-size: 14px;
     }
-    .product b { display: block; }
-    .price { color: var(--brand); }
-    .old { color: var(--muted); text-decoration: line-through; margin-left: 8px; }
+    .channel strong { font-weight: 400; letter-spacing: 0.06em; }
+    .channel .meta { color: var(--muted); }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { text-align: left; padding: 9px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th { color: var(--muted); font-weight: 600; }
+    th, td { text-align: left; padding: 12px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; }
     .ok { color: var(--ok); }
     .err { color: var(--danger); }
-    .status { font-size: 13px; min-height: 18px; }
+    .status { font-size: 13px; min-height: 18px; margin-top: 16px; }
     .hidden { display: none; }
-    @media (max-width: 980px) {
+    @media (max-width: 860px) {
       .layout { grid-template-columns: 1fr; }
-      nav { display: flex; gap: 8px; overflow: auto; border-right: 0; border-bottom: 1px solid var(--line); }
-      .grid-4, .split { grid-template-columns: 1fr; }
+      nav { display: flex; gap: 8px; border-right: 0; border-bottom: 1px solid var(--line); }
+      main { padding: 28px 20px 48px; }
+      h2 { font-size: 32px; }
     }
   </style>
 </head>
@@ -193,7 +141,7 @@
   <header>
     <div>
       <p class="wordmark">Vissiuss</p>
-      <p class="sub">Scraping TA · consola admin · extensión + Justo CDN</p>
+      <p class="sub">Scraping TA</p>
     </div>
     <div class="who">
       <span id="who">Sesión…</span>
@@ -203,96 +151,57 @@
   </header>
   <div class="layout">
     <nav>
-      <button type="button" class="tab active" data-view="pages">Páginas</button>
-      <button type="button" class="tab" data-view="reports">Informes</button>
+      <button type="button" class="tab active" data-view="pages">Informe</button>
+      <button type="button" class="tab" data-view="reports">Historial</button>
       <button type="button" class="tab" data-view="settings">Ajustes</button>
     </nav>
     <main>
       <section id="view-pages">
-        <div class="panel">
-          <h2>Nuevo informe</h2>
-          <p class="hint">Creá un <code>run_id</code>, abrí el menú en Chrome y pulsá <strong>Enviar a Scraping TA</strong> en la extensión. Justo se trae acá con CDN (sin extensión).</p>
-          <div class="run-box">
-            <div>
-              <h3>Informe activo</h3>
-              <p class="run-id" id="run-id">—</p>
-              <p class="hint" id="run-step" style="margin:6px 0 0">Todavía no hay un informe en recolección.</p>
-            </div>
-            <div class="row">
-              <button class="cta" type="button" id="new-run">Nuevo informe</button>
-              <button class="ghost" type="button" id="copy-run" disabled>Copiar run_id</button>
-              <button class="gold" type="button" id="justo-cdn">Traer CDN</button>
-              <button class="ghost" type="button" id="save-targets">Guardar URLs</button>
-            </div>
-          </div>
-          <div class="grid-4" id="channel-cards"></div>
-          <p class="status" id="audit-status"></p>
+        <h2>Generar informe</h2>
+        <p class="hint">Un click crea el run. Justo se trae por CDN. PedidosYa, Uber y Rappi llegan cuando enviás el menú desde la extensión.</p>
+        <div class="row">
+          <button class="cta" type="button" id="new-run">Generar informe</button>
+          <button class="ghost" type="button" id="copy-run" disabled>Copiar run_id</button>
+          <button class="ghost" type="button" id="download-latest" disabled>Descargar .xlsx</button>
         </div>
-        <div class="panel">
-          <div class="preview-bar">
-            <h3 id="preview-title">Vista de la página</h3>
-            <a id="open-page" href="#" target="_blank" rel="noreferrer">Abrir página</a>
-          </div>
-          <div class="split">
-            <div>
-              <iframe id="page-frame" title="Vista de la página a scrapear" sandbox="allow-scripts allow-same-origin allow-popups" referrerpolicy="no-referrer"></iframe>
-              <p class="hint" id="frame-note">Si el marketplace bloquea el embed, usá Abrir página. La extracción llega por la extensión, no por este iframe.</p>
-            </div>
-            <div>
-              <h3>Vista extraída</h3>
-              <div class="products" id="extracted">Esperando dumps de la extensión.</div>
-            </div>
-          </div>
-        </div>
+        <p class="run-id" id="run-id">—</p>
+        <p class="hint" id="run-step" style="margin:0">Todavía no hay un informe en recolección.</p>
+        <div class="channels" id="channel-cards"></div>
+        <p class="status" id="audit-status"></p>
       </section>
 
       <section id="view-reports" class="hidden">
-        <div class="panel">
-          <h2>Informes de scraping</h2>
-          <p class="hint">Descargá el Excel (resumen / productos / comparación) de cada corrida. El cruce solo vale si las 4 URLs son del mismo local.</p>
-          <div class="row">
-            <button class="cta" type="button" id="download-latest" disabled>Descargar último .xlsx</button>
-            <button class="ghost" type="button" id="refresh-reports">Actualizar lista</button>
-          </div>
-          <div id="reports-table"></div>
+        <h2>Historial</h2>
+        <p class="hint">Excel de cada corrida: resumen, productos y comparación.</p>
+        <div class="row">
+          <button class="ghost" type="button" id="refresh-reports">Actualizar</button>
         </div>
+        <div id="reports-table"></div>
       </section>
 
       <section id="view-settings" class="hidden">
-        <div class="panel">
-          <h2>Ajustes</h2>
-          <p class="hint" id="ingest-status">Ingest de extensión: …</p>
-          <p class="hint">La <code>INGEST_KEY</code> vive en el servidor (<code>.env</code>). Se pega una vez en el popup de la extensión, no acá.</p>
-          <h3>Fallback ScrapingBee</h3>
-          <p class="hint">Solo si la extensión no puede capturar el menú. 1 request ≈ 75 créditos. Justo tarragona.cl no lo necesita.</p>
-          <label for="token">Token ScrapingBee</label>
-          <div class="row">
-            <input id="token" type="password" placeholder="Pega un token nuevo" autocomplete="off" />
-            <button class="cta" type="button" id="save-token">Guardar token</button>
-          </div>
-          <p class="status" id="token-status">Comprobando…</p>
-          <div class="row" style="margin-top:12px">
-            <span class="status" id="estimate">Créditos estimados: 0</span>
-            <button class="gold" type="button" id="bee-audit">Auditar con Bee</button>
-            <button class="ghost" type="button" id="bee-retry">Reintentar canal con Bee</button>
-          </div>
-          <p class="status" id="bee-status"></p>
-          <p class="hint" id="agent-note">Esta consola es la interfaz web del agente Cursor de Scraping TA.</p>
+        <h2>Ajustes</h2>
+        <p class="hint" id="ingest-status">Ingest de extensión: …</p>
+        <p class="hint">La INGEST_KEY vive en el servidor. Se pega una vez en el popup de la extensión.</p>
+        <label for="token">Token ScrapingBee (opcional)</label>
+        <div class="row">
+          <input id="token" type="password" placeholder="Solo fallback" autocomplete="off" />
+          <button class="cta" type="button" id="save-token">Guardar</button>
         </div>
+        <p class="status" id="token-status">Comprobando…</p>
       </section>
     </main>
   </div>
   <script>
     const $ = (id) => document.getElementById(id);
+    const JUSTO_URL = "https://www.tarragona.cl/pedir";
     const CHANNELS = [
-      { field: "peya", platform: "pedidosya", label: "PedidosYa", placeholder: "https://www.pedidosya.cl/restaurantes/…", via: "extension" },
-      { field: "uber", platform: "ubereats", label: "Uber Eats", placeholder: "https://www.ubereats.com/cl/store/…", via: "extension" },
-      { field: "rappi", platform: "rappi", label: "Rappi", placeholder: "https://www.rappi.cl/restaurantes/…", via: "extension" },
-      { field: "justo", platform: "justo", label: "Justo / tarragona.cl", placeholder: "https://www.tarragona.cl/pedir", via: "cdn" },
+      { field: "peya", platform: "pedidosya", label: "PedidosYa", via: "extension" },
+      { field: "uber", platform: "ubereats", label: "Uber Eats", via: "extension" },
+      { field: "rappi", platform: "rappi", label: "Rappi", via: "extension" },
+      { field: "justo", platform: "justo", label: "Justo", via: "cdn" },
     ];
     let runId = null;
-    let busy = false;
-    let selected = "justo";
     let lastJob = null;
     let pollTimer = null;
 
@@ -306,23 +215,7 @@
     async function readJson(res) {
       const text = await res.text();
       try { return JSON.parse(text); }
-      catch {
-        throw new Error("El servidor devolvió HTML en vez de JSON. Recargá e intentá de nuevo.");
-      }
-    }
-
-    function payload() {
-      return {
-        peya: $("peya").value.trim(),
-        uber: $("uber").value.trim(),
-        rappi: $("rappi").value.trim(),
-        justo: $("justo").value.trim(),
-      };
-    }
-
-    function currentUrl() {
-      const node = $(selected);
-      return node ? node.value.trim() : "";
+      catch { throw new Error("El servidor devolvió HTML en vez de JSON."); }
     }
 
     function showView(name) {
@@ -338,91 +231,24 @@
       runId = id || null;
       $("run-id").textContent = runId || "—";
       $("copy-run").disabled = !runId;
-      $("run-step").textContent = step || (runId
-        ? "Abrí el menú en Chrome y pulsá Enviar a Scraping TA."
-        : "Todavía no hay un informe en recolección.");
       $("download-latest").disabled = !runId;
+      $("run-step").textContent = step || (runId
+        ? "Abrí el menú en Chrome y enviá desde la extensión."
+        : "Todavía no hay un informe en recolección.");
     }
 
     function applyJob(job) {
       if (!job) return;
       lastJob = job;
       setRunDisplay(job.run_id, job.step || job.status);
-      CHANNELS.forEach((ch) => {
-        const url = (job.urls || {})[ch.field];
-        if (url && $(ch.field) && !$(ch.field).value) $(ch.field).value = url;
-      });
       paintChannelMeta(job.channels);
-      renderExtracted();
     }
 
     function renderCards() {
       $("channel-cards").innerHTML = CHANNELS.map((ch) => `
-        <div class="channel ${selected === ch.field ? "selected" : ""}" data-field="${ch.field}">
+        <div class="channel">
           <strong>${ch.label}</strong>
-          <input id="${ch.field}" type="url" placeholder="${ch.placeholder}" />
-          <div class="meta" id="meta-${ch.field}">${ch.via === "cdn" ? "Esperando CDN" : "Esperando extensión"}</div>
-        </div>
-      `).join("");
-      CHANNELS.forEach((ch) => {
-        $(ch.field).addEventListener("input", () => {
-          if (selected === ch.field) updatePreview();
-        });
-        $(ch.field).addEventListener("focus", () => selectChannel(ch.field));
-      });
-      $("channel-cards").onclick = (ev) => {
-        const card = ev.target.closest(".channel");
-        if (card) selectChannel(card.dataset.field);
-      };
-    }
-
-    function selectChannel(field) {
-      selected = field;
-      document.querySelectorAll(".channel").forEach((el) => {
-        el.classList.toggle("selected", el.dataset.field === field);
-      });
-      updatePreview();
-    }
-
-    function updatePreview() {
-      const url = currentUrl();
-      const ch = CHANNELS.find((c) => c.field === selected);
-      $("preview-title").textContent = "Vista · " + (ch ? ch.label : selected);
-      $("open-page").href = url || "#";
-      $("open-page").style.visibility = url ? "visible" : "hidden";
-      $("page-frame").src = url || "about:blank";
-      $("frame-note").textContent = url
-        ? (ch && ch.via === "cdn"
-          ? "Justo se extrae con Traer CDN (servidor). El iframe es solo preview."
-          : "Si el marketplace bloquea el embed, usá Abrir página. La extracción llega por la extensión, no por este iframe.")
-        : "Pegá la URL del canal para previsualizar la página.";
-      renderExtracted();
-    }
-
-    function renderExtracted() {
-      const platform = (CHANNELS.find((c) => c.field === selected) || {}).platform;
-      const channel = ((lastJob && lastJob.channels) || []).find((c) => c.platform === platform);
-      if (!channel || channel.skipped) {
-        $("extracted").textContent = platform === "justo"
-          ? "Sin extracción. Usá Traer CDN."
-          : "Esperando dumps de la extensión.";
-        return;
-      }
-      if (channel.error) {
-        $("extracted").innerHTML = `<p class="err">${channel.error}</p>`;
-        return;
-      }
-      const items = channel.items || [];
-      if (!items.length) {
-        $("extracted").textContent = "ok " + (channel.item_count || 0) + " productos (detalle no cargado).";
-        return;
-      }
-      $("extracted").innerHTML = items.map((item) => `
-        <div class="product">
-          <b>${item.name || "Sin nombre"}</b>
-          <span class="price">${item.price_clp != null ? "$" + item.price_clp : "—"}</span>
-          ${item.price_original_clp && item.price_original_clp !== item.price_clp
-            ? `<span class="old">$${item.price_original_clp}</span>` : ""}
+          <span class="meta" id="meta-${ch.field}">${ch.via === "cdn" ? "CDN" : "Extensión"}</span>
         </div>
       `).join("");
     }
@@ -433,34 +259,17 @@
         const node = $("meta-" + ch.field);
         if (!node) return;
         if (!found || found.skipped) {
-          node.textContent = ch.via === "cdn" ? "Esperando CDN" : "Esperando extensión";
+          node.textContent = ch.via === "cdn" ? "CDN" : "Esperando extensión";
           node.className = "meta";
         } else if (found.error) {
           node.textContent = "Error";
           node.className = "meta err";
         } else {
-          node.textContent = "ok " + (found.item_count || 0) + " productos";
+          node.textContent = (found.item_count || 0) + " productos";
           node.className = "meta ok";
         }
       });
     }
-
-    async function refreshEstimate() {
-      try {
-        const res = await fetch("/api/audit/estimate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload()),
-        });
-        const data = await readJson(res);
-        $("estimate").textContent = "Créditos estimados: " + data.credits_estimated
-          + (data.justo_cdn ? " · Justo CDN 0" : "");
-      } catch {
-        $("estimate").textContent = "No se pudo estimar créditos.";
-      }
-    }
-
-    function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
     function stopPolling() {
       if (pollTimer) {
@@ -485,28 +294,8 @@
         try {
           const data = await refreshJob();
           if (data && data.status === "done") refreshReports();
-        } catch { /* sigue el intervalo */ }
+        } catch { /* sigue */ }
       }, 2000);
-    }
-
-    async function pollUntilDone(started) {
-      runId = started.run_id;
-      let data = started;
-      applyJob(data);
-      while (data.status === "queued" || data.status === "running") {
-        $("bee-status").textContent = data.step || "Auditando…";
-        await sleep(1000);
-        const st = await fetch("/api/audit/" + runId);
-        data = await readJson(st);
-        if (!st.ok) throw new Error(errDetail(data, "No se pudo leer el estado."));
-        applyJob(data);
-      }
-      if (data.status === "error") throw new Error(data.error || "Falló la auditoría.");
-      $("bee-status").textContent =
-        "Listo. Créditos usados: " + data.credits_used + " (estimados " + data.credits_estimated + ").";
-      $("bee-status").className = "status ok";
-      refreshReports();
-      return data;
     }
 
     async function refreshReports() {
@@ -520,23 +309,22 @@
             .map((c) => c.platform + " " + (c.error ? "err" : (c.item_count + "p")))
             .join(" · ") || "—";
           const dl = r.has_xlsx
-            ? `<button class="gold" type="button" data-dl="${r.run_id}">Descargar</button>`
+            ? `<button class="ghost" type="button" data-dl="${r.run_id}">Descargar</button>`
             : "—";
           return `<tr>
-            <td><code>${r.run_id}</code></td>
+            <td>${r.run_id}</td>
             <td>${r.updated_at.replace("T", " ").replace("+00:00", " UTC")}</td>
             <td>${r.status}</td>
-            <td>${r.credits_used}</td>
             <td>${counts}</td>
             <td>${dl}</td>
           </tr>`;
         }).join("");
         box.innerHTML = rows
-          ? `<table><thead><tr><th>Run</th><th>Fecha</th><th>Estado</th><th>Créditos</th><th>Canales</th><th>Informe</th></tr></thead><tbody>${rows}</tbody></table>`
-          : `<p class="hint">Todavía no hay informes. Creá un informe y enviá dumps desde la extensión.</p>`;
-        if ((data.reports || []).some((r) => r.has_xlsx)) {
-          if (!runId) runId = data.reports[0].run_id;
-          $("download-latest").disabled = !runId;
+          ? `<table><thead><tr><th>Run</th><th>Fecha</th><th>Estado</th><th>Canales</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+          : `<p class="hint">Todavía no hay informes.</p>`;
+        if ((data.reports || []).some((r) => r.has_xlsx) && !runId) {
+          runId = data.reports[0].run_id;
+          $("download-latest").disabled = false;
         }
       } catch (err) {
         box.innerHTML = `<p class="err">${err.message || err}</p>`;
@@ -548,34 +336,28 @@
       window.location = "/api/report/" + id + ".xlsx";
     }
 
-    async function ensureRun() {
-      if (runId) return runId;
-      const res = await fetch("/api/jobs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload()),
-      });
-      const data = await readJson(res);
-      if (!res.ok) throw new Error(errDetail(data, "No se pudo crear el informe."));
-      applyJob(data);
-      startPolling();
-      return runId;
-    }
-
     $("new-run").onclick = async () => {
-      $("audit-status").textContent = "Creando informe…";
+      $("audit-status").textContent = "Generando…";
       $("audit-status").className = "status";
       try {
         const res = await fetch("/api/jobs", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload()),
+          body: JSON.stringify({ justo: JUSTO_URL }),
         });
         const data = await readJson(res);
         if (!res.ok) throw new Error(errDetail(data, "No se pudo crear el informe."));
         applyJob(data);
         startPolling();
-        $("audit-status").textContent = "run_id listo. Copialo en la extensión o dejalo vacío: usa este informe.";
+        const cdn = await fetch("/api/jobs/" + data.run_id + "/justo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ justo: JUSTO_URL }),
+        });
+        const justoJob = await readJson(cdn);
+        if (cdn.ok) applyJob(justoJob);
+        refreshReports();
+        $("audit-status").textContent = "Informe listo para la extensión. Justo ya viene por CDN.";
         $("audit-status").className = "status ok";
       } catch (err) {
         $("audit-status").textContent = String(err.message || err);
@@ -590,46 +372,9 @@
         $("audit-status").textContent = "run_id copiado.";
         $("audit-status").className = "status ok";
       } catch {
-        $("audit-status").textContent = "No se pudo copiar. Seleccioná el run_id a mano.";
+        $("audit-status").textContent = "No se pudo copiar.";
         $("audit-status").className = "status err";
       }
-    };
-
-    $("justo-cdn").onclick = async () => {
-      $("audit-status").textContent = "Trayendo Justo CDN…";
-      $("audit-status").className = "status";
-      try {
-        await ensureRun();
-        const url = $("justo").value.trim() || "https://www.tarragona.cl/pedir";
-        $("justo").value = url;
-        const res = await fetch("/api/jobs/" + runId + "/justo", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ justo: url }),
-        });
-        const data = await readJson(res);
-        if (!res.ok) throw new Error(errDetail(data, "No se pudo traer el CDN."));
-        applyJob(data);
-        refreshReports();
-        const justo = (data.channels || []).find((c) => c.platform === "justo");
-        if (justo && justo.error) throw new Error(justo.error);
-        $("audit-status").textContent = "Justo CDN listo · " + ((justo && justo.item_count) || 0) + " productos.";
-        $("audit-status").className = "status ok";
-      } catch (err) {
-        $("audit-status").textContent = String(err.message || err);
-        $("audit-status").className = "status err";
-      }
-    };
-
-    $("save-targets").onclick = async () => {
-      const res = await fetch("/api/targets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload()),
-      });
-      const data = await readJson(res);
-      $("audit-status").textContent = res.ok ? "URLs guardadas en este servidor." : errDetail(data, "No se guardó.");
-      $("audit-status").className = "status " + (res.ok ? "ok" : "err");
     };
 
     $("save-token").onclick = async () => {
@@ -647,64 +392,8 @@
         return;
       }
       $("token").value = "";
-      $("token-status").textContent = "Token configurado (fallback).";
+      $("token-status").textContent = "Token guardado.";
       $("token-status").className = "status ok";
-    };
-
-    $("bee-audit").onclick = async () => {
-      $("bee-status").textContent = "Encolando auditoría Bee…";
-      $("bee-status").className = "status";
-      busy = true;
-      $("bee-audit").disabled = true;
-      $("bee-retry").disabled = true;
-      try {
-        const start = await fetch("/api/audit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload()),
-        });
-        const started = await readJson(start);
-        if (!start.ok) throw new Error(errDetail(started, "No se pudo iniciar."));
-        await pollUntilDone(started);
-      } catch (err) {
-        $("bee-status").textContent = String(err.message || err);
-        $("bee-status").className = "status err";
-      } finally {
-        busy = false;
-        $("bee-audit").disabled = false;
-        $("bee-retry").disabled = false;
-      }
-    };
-
-    $("bee-retry").onclick = async () => {
-      const url = currentUrl();
-      if (!url && !runId) {
-        $("bee-status").textContent = "Pegá la URL de ese canal antes de reintentar.";
-        $("bee-status").className = "status err";
-        return;
-      }
-      $("bee-status").textContent = "Reintentando " + selected + " con Bee…";
-      $("bee-status").className = "status";
-      busy = true;
-      $("bee-audit").disabled = true;
-      $("bee-retry").disabled = true;
-      try {
-        const res = await fetch("/api/audit/retry", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ platform: selected, url, run_id: runId }),
-        });
-        const started = await readJson(res);
-        if (!res.ok) throw new Error(errDetail(started, "No se pudo reintentar."));
-        await pollUntilDone(started);
-      } catch (err) {
-        $("bee-status").textContent = String(err.message || err);
-        $("bee-status").className = "status err";
-      } finally {
-        busy = false;
-        $("bee-audit").disabled = false;
-        $("bee-retry").disabled = false;
-      }
     };
 
     $("download-latest").onclick = () => downloadRun(runId);
@@ -725,37 +414,26 @@
       renderCards();
       try {
         const me = await readJson(await fetch("/api/me"));
-        $("who").textContent = me.username + (me.auth ? " · admin" : " · local");
+        $("who").textContent = me.username;
         if (me.agent_url) {
           const link = $("agent-link");
           link.href = me.agent_url;
           link.classList.remove("hidden");
         }
-        $("token-status").textContent = me.token_configured
-          ? "Token Bee configurado (fallback)."
-          : "No hay token Bee. Solo hace falta si usás el fallback.";
-        $("token-status").className = "status " + (me.token_configured ? "ok" : "");
+        $("token-status").textContent = me.token_configured ? "Token Bee guardado." : "Sin token Bee.";
         $("ingest-status").textContent = me.ingest_configured
-          ? "Ingest de extensión: configurado en este servidor."
-          : "Ingest de extensión: falta INGEST_KEY en el entorno del servidor.";
+          ? "Ingest de extensión: configurado."
+          : "Ingest de extensión: falta INGEST_KEY.";
       } catch (err) {
         if (String(err.message || err).includes("Sesión")) window.location.href = "/login";
       }
-      try {
-        const saved = await readJson(await fetch("/api/targets"));
-        CHANNELS.forEach((ch) => {
-          if (saved.targets && saved.targets[ch.field]) $(ch.field).value = saved.targets[ch.field];
-        });
-      } catch { /* primera carga */ }
       try {
         const active = await fetch("/api/jobs/active");
         if (active.ok) {
           applyJob(await readJson(active));
           startPolling();
         }
-      } catch { /* no hay run activo */ }
-      selectChannel(selected);
-      refreshEstimate();
+      } catch { /* no hay run */ }
       refreshReports();
     }
 
