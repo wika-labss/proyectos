@@ -1,0 +1,44 @@
+services:
+  app:
+    build:
+      context: ../iterations/v1
+      dockerfile: ../deploy/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SCRAPINGBEE_API_KEY: ${SCRAPINGBEE_API_KEY:-}
+      INGEST_KEY: ${INGEST_KEY:-}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-cambiar123}
+      SCRAPING_TA_AUTH: ${SCRAPING_TA_AUTH:-1}
+    volumes:
+      - ./data/runs:/app/runs
+      - ./data/.scrapingbee_key:/app/.scrapingbee_key
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-ta.vissiuss.com}
+      ACME_EMAIL: ${ACME_EMAIL:-ops@vissiuss.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

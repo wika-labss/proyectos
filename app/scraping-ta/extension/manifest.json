@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "Scraping TA",
+  "version": "1.0.0",
+  "description": "Captura el XHR nativo del menú (PedidosYa, Uber Eats, Rappi) y lo envía a Scraping TA.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "https://*.pedidosya.cl/*",
+    "https://pedidosya.cl/*",
+    "https://*.ubereats.com/*",
+    "https://ubereats.com/*",
+    "https://*.rappi.cl/*",
+    "https://rappi.cl/*",
+    "https://ta.vissiuss.com/*",
+    "http://127.0.0.1:8000/*",
+    "http://localhost:8000/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.pedidosya.cl/*",
+        "https://pedidosya.cl/*",
+        "https://*.ubereats.com/*",
+        "https://ubereats.com/*",
+        "https://*.rappi.cl/*",
+        "https://rappi.cl/*"
+      ],
+      "js": ["injected.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://*.pedidosya.cl/*",
+        "https://pedidosya.cl/*",
+        "https://*.ubereats.com/*",
+        "https://ubereats.com/*",
+        "https://*.rappi.cl/*",
+        "https://rappi.cl/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "world": "ISOLATED",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Scraping TA"
+  }
+}

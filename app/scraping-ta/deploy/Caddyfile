@@ -1,0 +1,9 @@
+{
+	email {$ACME_EMAIL}
+}
+
+# Subdominio: no redirigir www (no hay registro www.ta…).
+{$DOMAIN:ta.vissiuss.com} {
+	encode gzip
+	reverse_proxy app:8000
+}

@@ -1,0 +1,11 @@
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+runs/
+.scrapingbee_key
+*.xlsx
+.DS_Store
+*.md
+tests/
