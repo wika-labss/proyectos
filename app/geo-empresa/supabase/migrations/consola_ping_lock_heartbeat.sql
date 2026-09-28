@@ -152,3 +152,9 @@ GRANT EXECUTE ON FUNCTION public.heartbeat_agente(text) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.ti_listar_flota(text) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.ti_solicitar_comando(text, uuid, text) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.ti_heartbeat_admin(text, uuid) TO anon, authenticated;
+
+ALTER TABLE public.comandos_dispositivo DROP CONSTRAINT IF EXISTS comandos_dispositivo_tipo_check;
+ALTER TABLE public.comandos_dispositivo ADD CONSTRAINT comandos_dispositivo_tipo_check
+  CHECK (tipo = ANY (ARRAY['lock'::text, 'unlock_policy'::text, 'reset_pin'::text, 'reboot'::text, 'ping'::text]));
+
+
