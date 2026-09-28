@@ -1,6 +1,6 @@
 # Device Owner — Geo Empresa V2.2
 
-El agente corre un **servicio en primer plano** (`GeoLockService`) que vigila modo avión (broadcast + watchdog 4 s), arranca al boot y entra a **Lock Task** (kiosco) con PIN `1312`.
+PIN `1312` (snooze **1 minuto** en avión, geocerca e inactivo).
 
 Geocerca: **20 m**.
 
