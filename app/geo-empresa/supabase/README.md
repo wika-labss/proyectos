@@ -13,6 +13,10 @@
 
 ## RPCs
 
+## Radio de geocerca
+
+Default vivo: **20 m** (`dispositivos.radio_metros` y `registrar_dispositivo`).
+
 ### `registrar_dispositivo` (V2 — registro único)
 
 - INSERT único; **no** `ON CONFLICT DO UPDATE`
@@ -39,6 +43,7 @@ NOT v_dentro OR NOT COALESCE(p_telefono_encendido, true)
 | ID | Descripción |
 |----|-------------|
 | `v2_registro_unico_y_historial_anomalias` | Registro único + histórico solo anomalías |
+| `radio_geocerca_20m` | Default y filas existentes a 20 m |
 
 Ver SQL en `migrations/v2_registro_unico_y_historial_anomalias.sql`.
 
@@ -46,10 +51,10 @@ Ver SQL en `migrations/v2_registro_unico_y_historial_anomalias.sql`.
 
 ```sql
 -- 1. Registro OK
-SELECT registrar_dispositivo('Test A', 'android-smoke-v2-001', -33.4489, -70.6693, NULL, 120);
+SELECT registrar_dispositivo('Test A', 'android-smoke-v2-001', -33.4489, -70.6693, NULL, 20);
 
 -- 2. Duplicado → error
-SELECT registrar_dispositivo('Test B', 'android-smoke-v2-001', -33.4489, -70.6693, NULL, 120);
+SELECT registrar_dispositivo('Test B', 'android-smoke-v2-001', -33.4489, -70.6693, NULL, 20);
 
 -- 3. Ping dentro + encendido → historial_registrado false
 SELECT reportar_ubicacion('android-smoke-v2-001', -33.4489, -70.6693, 10, true);
