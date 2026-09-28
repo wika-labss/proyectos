@@ -1,10 +1,11 @@
 # Geo Empresa
 
-Monitoreo de teléfonos corporativos con geocerca Supabase.
+Monitoreo de teléfonos corporativos con geocerca, enrollment y comandos de flota.
 
-- **Backend:** Supabase `geo-empresa` — ver [supabase/README.md](./supabase/README.md)
+- **Backend:** Supabase `geo-empresa` (`ACTIVE_HEALTHY`) — [supabase/README.md](./supabase/README.md)
 - **Documentación WIKA:** [idea/](./idea/)
-- **App móvil:** pendiente V1 (Android agente + registro único + background)
+- **Diseño de pantallas:** [idea/04-application-design.md](./idea/04-application-design.md) — Gate 3A pendiente
+- **App móvil:** pendiente V1. El siguiente paso, tras el visto bueno visual, es `05-build-plan.md` y `iterations/v1/`
 
 ## Campos clave (Supabase)
 
@@ -17,6 +18,6 @@ Monitoreo de teléfonos corporativos con geocerca Supabase.
 
 ## RPCs
 
-- `registrar_dispositivo` — registro único
-- `reportar_ubicacion` — ping background
-- `obtener_dispositivo` — consulta estado
+Agente: `registrar_dispositivo`, `reportar_ubicacion`, `obtener_dispositivo`, `reportar_politica`, `obtener_comando_pendiente`, `acusar_comando`.
+
+Consola TI: `listar_flota`, `obtener_dispositivo_admin`, `aprobar_dispositivo`, `solicitar_comando`, `listar_comandos`.
