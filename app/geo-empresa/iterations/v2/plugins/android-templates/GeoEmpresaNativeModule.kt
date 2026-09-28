@@ -143,18 +143,18 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
   }
 
   @ReactMethod
-  fun showSecurityLock(title: String, message: String, promise: Promise) {
+  fun lockDevice(title: String, message: String, promise: Promise) {
     try {
-      val intent = Intent(reactContext, SecurityLockActivity::class.java).apply {
-        putExtra(SecurityLockActivity.EXTRA_TITLE, title)
-        putExtra(SecurityLockActivity.EXTRA_MESSAGE, message)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-      }
-      reactContext.startActivity(intent)
+      GeoLockController.applyFullLock(reactContext, title, message)
       promise.resolve(null)
     } catch (error: Exception) {
-      promise.reject("security_lock_error", error)
+      promise.reject("lock_device_error", error)
     }
+  }
+
+  @ReactMethod
+  fun showSecurityLock(title: String, message: String, promise: Promise) {
+    lockDevice(title, message, promise)
   }
 
   @ReactMethod
@@ -162,7 +162,7 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
     try {
       val activity = currentActivity()
       if (activity is SecurityLockActivity) {
-        activity.finish()
+        GeoLockController.clearLock(activity)
       }
       promise.resolve(null)
     } catch (error: Exception) {
@@ -173,10 +173,11 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
   @ReactMethod
   fun startLockTask(promise: Promise) {
     try {
-      val activity = currentActivity()
-      if (activity != null && devicePolicyManager().isDeviceOwnerApp(reactContext.packageName)) {
-        activity.startLockTask()
-      }
+      GeoLockController.applyFullLock(
+        reactContext,
+        "Teléfono bloqueado",
+        "Política corporativa activa. Ingresa el PIN corporativo.",
+      )
       promise.resolve(null)
     } catch (error: Exception) {
       promise.reject("start_lock_task_error", error)
@@ -187,7 +188,11 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
   fun stopLockTask(promise: Promise) {
     try {
       val activity = currentActivity()
-      activity?.stopLockTask()
+      if (activity is SecurityLockActivity) {
+        GeoLockController.clearLock(activity)
+      } else {
+        activity?.stopLockTask()
+      }
       promise.resolve(null)
     } catch (error: Exception) {
       promise.reject("stop_lock_task_error", error)

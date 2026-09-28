@@ -1,23 +1,37 @@
-# Device Owner — Geo Empresa V2
+# Device Owner — Geo Empresa V2.1
 
-## Bloqueo total de Inicio
+Con Device Owner el agente bloquea el teléfono completo:
 
-`startLockTask()` solo impide el botón Home cuando la app es **Device Owner**.
+- `setLockTaskPackages` + `startLockTask` (kiosco, sin Inicio)
+- `lockNow()` (bloqueo de sistema)
+- receptor nativo de modo avión (no depende de JS ni de Supabase)
+- geocerca **20 m**
 
-### Prueba ADB (1 dispositivo)
+El PIN de prueba es `1312` (15 minutos de snooze).
 
-```bash
-adb install geo-empresa-v2-release.apk
-adb shell dpm set-device-owner com.wika.geoempresa/.GeoDeviceAdminReceiver
-adb shell dpm get-device-owner
+## Instalar sobre un teléfono que ya es Owner
+
+No desinstalar el paquete. Reemplazar el APK:
+
+```powershell
+adb install -r geo-empresa-v2.apk
+adb shell dpm list-owners
 ```
 
-Requiere factory reset o dispositivo sin cuentas configuradas.
+`list-owners` debe seguir mostrando `com.wika.geoempresa`.
 
-### Producción
+## Primer provisionamiento
 
-Generar QR Android Enterprise apuntando a `com.wika.geoempresa` tras reset IT.
+```powershell
+adb install geo-empresa-v2.apk
+adb shell dpm set-device-owner com.wika.geoempresa/.GeoDeviceAdminReceiver
+adb shell dpm list-owners
+```
 
-## Flota legacy
+Requiere factory reset o dispositivo sin cuentas.
 
-Sin Device Owner, la pantalla de bloqueo RN + `SecurityLockActivity` nativa aplican presión visual; el usuario aún puede ir a Inicio si no concedió overlay.
+## Probar
+
+1. Abrir Geo Empresa y registrar (base = GPS actual, radio 20 m).
+2. Activar modo avión: debe aparecer la pantalla de PIN y no se puede ir a Inicio.
+3. Salir a más de 20 m: mismo lock.

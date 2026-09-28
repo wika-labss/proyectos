@@ -1,16 +1,6 @@
-# Geo Empresa V2
+# Geo Empresa V2.1
 
-Agente Android corporativo con bloqueo PIN, registro único y Supabase selectivo.
-
-## V2 vs V1
-
-| Feature | V2 |
-|---------|-----|
-| Registro único por `android-{ANDROID_ID}` | Si |
-| Histórico Supabase solo anomalías | Si |
-| Post-registro solo splash vissiuss | Si |
-| Pantalla bloqueo PIN `1312` | Si |
-| Lock Task si Device Owner | Si |
+Agente Android corporativo. Device Owner bloquea el teléfono completo (kiosco + `lockNow`) ante modo avión o salida de **20 m**. PIN de prueba `1312`.
 
 Ver [DEVICE-OWNER.md](./DEVICE-OWNER.md) y [DS-IMPLEMENTATION.md](./DS-IMPLEMENTATION.md).
 

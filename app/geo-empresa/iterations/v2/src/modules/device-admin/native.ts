@@ -9,6 +9,7 @@ type GeoEmpresaNativeModule = {
   requestIgnoreBatteryOptimizations: () => Promise<void>;
   requestOverlayPermission: () => Promise<void>;
   showSecurityLock: (title: string, message: string) => Promise<void>;
+  lockDevice: (title: string, message: string) => Promise<void>;
   hideSecurityLock: () => Promise<void>;
   startLockTask: () => Promise<void>;
   stopLockTask: () => Promise<void>;
@@ -56,7 +57,15 @@ export async function requestOverlayPermission(): Promise<void> {
 
 export async function showSecurityLock(title: string, message: string): Promise<void> {
   if (!Native) return;
+  if (Native.lockDevice) {
+    await Native.lockDevice(title, message);
+    return;
+  }
   await Native.showSecurityLock(title, message);
+}
+
+export async function lockDevice(title: string, message: string): Promise<void> {
+  await showSecurityLock(title, message);
 }
 
 export async function hideSecurityLock(): Promise<void> {

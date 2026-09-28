@@ -6,7 +6,7 @@ export const appConfig = {
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnenBybW9wZ21iamp4c2JqbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NzA1OTQsImV4cCI6MjEwMzQ0NjU5NH0.p9dukYuXqgvp5QdlW8PEaCuBKRQnhfPuwsVdht6bEkw',
   defaultPin: '1312',
-  fenceRadiusM: 120,
+  fenceRadiusM: 20,
   pingIntervalMs: 5 * 60 * 1000,
   splashDurationMs: 3000,
   lockSnoozeMs: 15 * 60 * 1000,

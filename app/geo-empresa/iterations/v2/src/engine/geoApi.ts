@@ -87,7 +87,7 @@ export async function registrarDispositivo(input: {
     p_base_lat: input.baseLat,
     p_base_lng: input.baseLng,
     p_modelo: input.modelo ?? null,
-    p_radio_metros: input.radioMetros ?? 120,
+    p_radio_metros: input.radioMetros ?? 20,
   });
 
   return mapDevice(result);
@@ -118,7 +118,7 @@ function mapDevice(value: Record<string, unknown>): DeviceRegistration {
     device_fingerprint: String(value.device_fingerprint ?? ''),
     base_lat: Number(value.base_lat ?? 0),
     base_lng: Number(value.base_lng ?? 0),
-    radio_metros: Number(value.radio_metros ?? 120),
+    radio_metros: Number(value.radio_metros ?? 20),
     telefono_encendido: Boolean(value.telefono_encendido ?? true),
     dentro_perimetro: Boolean(value.dentro_perimetro ?? true),
     registrado_at: value.registrado_at ? String(value.registrado_at) : undefined,
@@ -132,7 +132,7 @@ function mapReport(value: Record<string, unknown>): LocationReport {
     telefono_encendido: Boolean(value.telefono_encendido ?? true),
     dentro_perimetro: Boolean(value.dentro_perimetro ?? true),
     distancia_base_m: Number(value.distancia_base_m ?? 0),
-    radio_metros: Number(value.radio_metros ?? 120),
+    radio_metros: Number(value.radio_metros ?? 20),
     ultimo_ping_at: String(value.ultimo_ping_at ?? new Date().toISOString()),
     historial_registrado: Boolean(value.historial_registrado ?? false),
   };

@@ -3,9 +3,7 @@ import * as TaskManager from 'expo-task-manager';
 import { appConfig } from '../../constants/config';
 import { reportarUbicacion } from '../../engine';
 import {
-  bringAppToForeground,
   showSecurityLock,
-  startLockTask,
 } from '../device-admin/native';
 import { evaluateLockState, lockReasonMessage } from '../lock-engine/evaluate';
 import {
@@ -33,9 +31,7 @@ async function applyLockSideEffects(
   }
 
   const message = lockReasonMessage(state.reason, state.distanciaBaseM, registration.radioMetros);
-  await bringAppToForeground();
-  await showSecurityLock('Alerta Geo Empresa', message);
-  await startLockTask();
+  await showSecurityLock('Teléfono bloqueado', message);
 }
 
 export async function sendLocationPing(telefonoEncendido: boolean, airplaneMode = false): Promise<void> {
@@ -68,23 +64,27 @@ export async function sendLocationPing(telefonoEncendido: boolean, airplaneMode 
     }
   }
 
-  const report = await reportarUbicacion({
-    deviceFingerprint: registration.deviceFingerprint,
-    lat,
-    lng,
-    precisionM: accuracyM,
-    telefonoEncendido,
-  });
-
   const lockState = evaluateLockState({
     registration,
     lat,
     lng,
-    telefonoEncendido: report.telefono_encendido,
+    telefonoEncendido,
     airplaneMode,
   });
 
   await applyLockSideEffects(lockState, registration);
+
+  try {
+    await reportarUbicacion({
+      deviceFingerprint: registration.deviceFingerprint,
+      lat,
+      lng,
+      precisionM: accuracyM,
+      telefonoEncendido,
+    });
+  } catch (error) {
+    console.warn('[geo-empresa] reportar_ubicacion failed', error);
+  }
 }
 
 export async function sendPowerStateReport(

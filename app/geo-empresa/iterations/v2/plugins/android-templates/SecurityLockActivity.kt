@@ -1,15 +1,14 @@
 package com.wika.geoempresa
 
 import android.app.Activity
-import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.graphics.Color
-import android.view.Gravity
 
 class SecurityLockActivity : Activity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,8 +21,8 @@ class SecurityLockActivity : Activity() {
         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON,
     )
 
-    val title = intent.getStringExtra(EXTRA_TITLE) ?: "Alerta Geo Empresa"
-    val message = intent.getStringExtra(EXTRA_MESSAGE) ?: "Ingresa el PIN corporativo en la app."
+    val title = intent.getStringExtra(EXTRA_TITLE) ?: "Teléfono bloqueado"
+    val message = intent.getStringExtra(EXTRA_MESSAGE) ?: "Ingresa el PIN corporativo para continuar."
 
     val layout = LinearLayout(this).apply {
       orientation = LinearLayout.VERTICAL
@@ -48,14 +47,17 @@ class SecurityLockActivity : Activity() {
       hint = "PIN corporativo"
       setTextColor(Color.parseColor("#F8FAFC"))
       setHintTextColor(Color.parseColor("#94A3B8"))
-      inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
+      inputType = android.text.InputType.TYPE_CLASS_NUMBER or
+        android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
     }
 
     val unlockButton = Button(this).apply {
       text = "Desbloquear"
       setOnClickListener {
-        if (pinInput.text.toString() == DEFAULT_PIN) {
-          finish()
+        if (pinInput.text.toString() == GeoLockController.PIN) {
+          GeoLockController.clearLock(this@SecurityLockActivity)
+        } else {
+          pinInput.error = "PIN incorrecto"
         }
       }
     }
@@ -67,13 +69,18 @@ class SecurityLockActivity : Activity() {
     setContentView(layout)
   }
 
+  override fun onResume() {
+    super.onResume()
+    GeoLockController.onLockActivityReady(this)
+  }
+
+  @Deprecated("Deprecated in Java")
   override fun onBackPressed() {
-    // Block back navigation while locked.
+    // Block back while kiosk-locked.
   }
 
   companion object {
     const val EXTRA_TITLE = "geo_title"
     const val EXTRA_MESSAGE = "geo_message"
-    private const val DEFAULT_PIN = "1312"
   }
 }

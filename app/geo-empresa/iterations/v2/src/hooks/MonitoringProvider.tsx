@@ -13,7 +13,7 @@ import { validatePin } from '../engine';
 import {
   hideSecurityLock,
   isAirplaneModeOnNative,
-  startLockTask,
+  lockDevice,
   stopLockTask,
 } from '../modules/device-admin/native';
 import { evaluateLockState } from '../modules/lock-engine/evaluate';
@@ -68,7 +68,13 @@ export function MonitoringProvider({ children }: { children: React.ReactNode }) 
     setDistanciaBaseM(distance);
 
     if (shouldLock) {
-      await startLockTask();
+      const message =
+        reason === 'airplane_mode'
+          ? 'Modo avión detectado. Ingresa el PIN corporativo.'
+          : reason === 'phone_off'
+            ? 'El teléfono reporta estado apagado o inactivo.'
+            : `Fuera del perímetro autorizado (${Math.round(distance)} m / máx ${appConfig.fenceRadiusM} m).`;
+      await lockDevice('Teléfono bloqueado', message);
     } else {
       await stopLockTask();
       await hideSecurityLock();

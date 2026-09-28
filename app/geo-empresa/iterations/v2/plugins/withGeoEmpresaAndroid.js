@@ -46,10 +46,16 @@ function patchMainApplication(projectRoot) {
   }
 
   let content = fs.readFileSync(mainAppPath, 'utf8');
-  if (!content.includes('GeoEmpresaNativePackage')) {
+      if (!content.includes('GeoEmpresaNativePackage')) {
     content = content.replace(
       'PackageList(this).packages.apply {',
       'PackageList(this).packages.apply {\n              add(GeoEmpresaNativePackage())',
+    );
+  }
+  if (!content.includes('GeoLockController.ensurePolicies')) {
+    content = content.replace(
+      'super.onCreate()',
+      'super.onCreate()\n    GeoLockController.ensurePolicies(this)',
     );
   }
   fs.writeFileSync(mainAppPath, content);
@@ -103,6 +109,18 @@ const withGeoEmpresaAndroid = (config) => {
           },
         ],
       },
+      {
+        $: {
+          'android:name': '.GeoAirplaneReceiver',
+          'android:exported': 'true',
+          'android:enabled': 'true',
+        },
+        'intent-filter': [
+          {
+            action: [{ $: { 'android:name': 'android.intent.action.AIRPLANE_MODE' } }],
+          },
+        ],
+      },
     ];
 
     for (const receiver of receivers) {
@@ -122,9 +140,11 @@ const withGeoEmpresaAndroid = (config) => {
       $: {
         'android:name': '.SecurityLockActivity',
         'android:exported': 'false',
-        'android:launchMode': 'singleTop',
+        'android:launchMode': 'singleTask',
         'android:excludeFromRecents': 'true',
-        'android:taskAffinity': '',
+        'android:showOnLockScreen': 'true',
+        'android:turnScreenOn': 'true',
+        'android:taskAffinity': 'com.wika.geoempresa.lock',
       },
     };
 
