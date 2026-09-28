@@ -222,9 +222,6 @@ section{padding:clamp(78px,10vw,150px) 0;position:relative}
 .ficha .cerrar{position:absolute;top:14px;right:14px;z-index:3;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(17,17,18,.75);color:var(--fg);font-size:18px;cursor:pointer;line-height:1}
 .ficha .cerrar:hover{border-color:var(--gold);color:var(--gold)}
 .ficha .acc{margin-top:28px;display:flex;gap:10px;flex-wrap:wrap}
-.ficha td.cot,.ficha th.cot{text-align:right;white-space:nowrap}
-.ficha .agregar{font-family:var(--body);font-size:10px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--gold);color:var(--gold);background:transparent;padding:7px 10px;cursor:pointer;border-radius:var(--r)}
-.ficha .agregar.on{background:var(--gold);color:#141414}
 .coti-btn{position:fixed;right:22px;bottom:90px;z-index:90;display:flex;align-items:center;gap:8px;height:44px;padding:0 12px 0 16px;border:1px solid var(--gold);border-radius:22px;background:rgba(17,17,18,.92);color:var(--gold);cursor:pointer;font-family:var(--body);font-size:11px;letter-spacing:.16em;text-transform:uppercase;box-shadow:0 16px 40px -18px rgba(0,0,0,.8)}
 .coti-btn b{min-width:22px;height:22px;border-radius:50%;background:var(--gold);color:#141414;display:grid;place-items:center;font-size:12px;letter-spacing:0}
 .coti-panel{position:fixed;right:22px;bottom:146px;z-index:91;width:min(360px,calc(100vw - 32px));background:var(--bg-2);border:1px solid var(--line);padding:16px 16px 14px;box-shadow:0 24px 60px -24px rgba(0,0,0,.75)}
@@ -746,22 +743,19 @@ footer li a:hover{color:var(--gold)}
     }).join('');
     var hayPrecios=p.tamanos.some(function(t){return t.precio>0});
     var etiquetas=(p.columnas&&p.columnas.length)?p.columnas:['Medida'];
-    var tallas=p.tamanos.map(function(t,n){
+    var tallas=p.tamanos.map(function(t){
       var vals=[t.medida].concat(t.extras||[]);
       var celdas=etiquetas.map(function(_,i){
         return '<td class="med">'+esc(vals[i]||'')+'</td>';
       }).join('');
-      var ya=enCoti(p,t.tamano);
       return '<tr><td>'+esc(t.tamano||'—')+'</td>'+celdas+
-             '<td class="val">'+(t.precio>0?pesos(t.precio):'A cotizar')+'</td>'+
-             '<td class="cot"><button class="agregar'+(ya?' on':'')+'" type="button" data-talla="'+n+'">'+
-             '<span>'+(ya?'Agregado':'Agregar')+'</span></button></td></tr>';
+             '<td class="val">'+(t.precio>0?pesos(t.precio):'A cotizar')+'</td></tr>';
     }).join('');
     var tabla=tallas
       ? '<h4>Tamaños y valores</h4><table>'+
         '<thead><tr><th>Tamaño</th>'+
         etiquetas.map(function(e){return '<th class="med">'+esc(e)+'</th>'}).join('')+
-        '<th class="val">Valor neto</th><th class="cot"></th></tr></thead>'+
+        '<th class="val">Valor neto</th></tr></thead>'+
         '<tbody>'+tallas+'</tbody></table>'+
         (hayPrecios?'<p class="nota-val">Valores netos por unidad, no incluyen IVA. '+
           'Las medidas y colores especiales se cotizan aparte.</p>':'')
@@ -777,20 +771,14 @@ footer li a:hover{color:var(--gold)}
         (cols?'<h4>Colores disponibles</h4><div class="cols">'+cols+'</div>':'')+
         tabla+
         '<div class="acc"><button class="cta cta-solid" type="button" data-cotizar>'+
-          '<span>'+(enCoti(p,'')?'Agregado':'Agregar a cotización')+'</span></button></div>'+
+          '<span>'+(enCoti(p)?'Agregado':'Agregar a cotización')+'</span></button></div>'+
       '</div>'+
       '<button class="cerrar" type="button" aria-label="Cerrar ficha">&times;</button>'+
     '</div>';
     d._producto=p;
     d.addEventListener('click',function(e){
       if(e.target===d||e.target.closest('.cerrar'))return cerrarFicha();
-      var talla=e.target.closest('[data-talla]');
-      if(talla){
-        var item=p.tamanos[+talla.dataset.talla];
-        if(item)agregarCoti(p,item);
-        return;
-      }
-      if(e.target.closest('[data-cotizar]'))agregarCoti(p,null);
+      if(e.target.closest('[data-cotizar]'))agregarCoti(p);
     });
     document.body.appendChild(d);
     document.body.style.overflow='hidden';
@@ -857,25 +845,19 @@ footer li a:hover{color:var(--gold)}
   rvTimer=setInterval(reveal,400);
   setTimeout(function(){clearInterval(rvTimer);rvEls.forEach(function(el){el.classList.add('in')})},20000);
 
-  /* cotización: varios productos, el producto entero o un tamaño */
+  /* cotización: varios productos completos */
   var COTI=[];
   try{COTI=JSON.parse(sessionStorage.getItem('acd-coti')||'[]')||[]}catch(err){COTI=[]}
   if(!Array.isArray(COTI))COTI=[];
   function guardarCoti(){
     try{sessionStorage.setItem('acd-coti',JSON.stringify(COTI))}catch(err){}
   }
-  function enCoti(p,tamano){
-    return COTI.some(function(x){return x.id===p.id&&x.tamano===(tamano||'')});
+  function enCoti(p){
+    return COTI.some(function(x){return x.id===p.id&&!x.tamano});
   }
-  function agregarCoti(p,t){
-    var tamano=t?t.tamano||'':'';
-    if(enCoti(p,tamano))return;
-    COTI.push({
-      id:p.id,
-      nombre:p.nombre,
-      tamano:tamano,
-      medida:t?t.medida||'':''
-    });
+  function agregarCoti(p){
+    if(enCoti(p))return;
+    COTI.push({id:p.id,nombre:p.nombre,tamano:'',medida:''});
     guardarCoti();
     pintarCoti();
   }
@@ -899,13 +881,7 @@ footer li a:hover{color:var(--gold)}
     if(fichaAbierta&&fichaAbierta._producto){
       var p=fichaAbierta._producto;
       var principal=fichaAbierta.querySelector('[data-cotizar] span');
-      if(principal)principal.textContent=enCoti(p,'')?'Agregado':'Agregar a cotización';
-      Array.prototype.forEach.call(fichaAbierta.querySelectorAll('[data-talla]'),function(b){
-        var item=p.tamanos[+b.dataset.talla];
-        var on=item&&enCoti(p,item.tamano);
-        b.classList.toggle('on',!!on);
-        b.querySelector('span').textContent=on?'Agregado':'Agregar';
-      });
+      if(principal)principal.textContent=enCoti(p)?'Agregado':'Agregar a cotización';
     }
   }
   document.getElementById('cotiBtn').addEventListener('click',function(){
