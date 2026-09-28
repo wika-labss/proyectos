@@ -244,3 +244,8 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
       promise.reject("lock_task_state_error", error)
     }
   }
+
+  companion object {
+    private const val DEFAULT_PIN = "1312"
+  }
+}
