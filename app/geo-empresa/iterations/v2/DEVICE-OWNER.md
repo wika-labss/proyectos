@@ -1,37 +1,28 @@
-# Device Owner — Geo Empresa V2.1
+# Device Owner — Geo Empresa V2.2
 
-Con Device Owner el agente bloquea el teléfono completo:
+El agente corre un **servicio en primer plano** (`GeoLockService`) que vigila modo avión (broadcast + watchdog 4 s), arranca al boot y entra a **Lock Task** (kiosco) con PIN `1312`.
 
-- `setLockTaskPackages` + `startLockTask` (kiosco, sin Inicio)
-- `lockNow()` (bloqueo de sistema)
-- receptor nativo de modo avión (no depende de JS ni de Supabase)
-- geocerca **20 m**
+Geocerca: **20 m**.
 
-El PIN de prueba es `1312` (15 minutos de snooze).
-
-## Instalar sobre un teléfono que ya es Owner
-
-No desinstalar el paquete. Reemplazar el APK:
+## Instalar sin perder Owner
 
 ```powershell
 adb install -r geo-empresa-v2.apk
+adb shell dumpsys package com.wika.geoempresa | findstr versionName
 adb shell dpm list-owners
 ```
 
-`list-owners` debe seguir mostrando `com.wika.geoempresa`.
+`versionName` = `2.2.0`. No desinstalar el paquete.
 
-## Primer provisionamiento
+## Prueba interna de kiosco (ADB)
+
+Con Device Owner ya puesto:
 
 ```powershell
-adb install geo-empresa-v2.apk
-adb shell dpm set-device-owner com.wika.geoempresa/.GeoDeviceAdminReceiver
-adb shell dpm list-owners
+adb shell am start -n com.wika.geoempresa/.SecurityLockActivity
+adb shell dumpsys activity lock-task
 ```
 
-Requiere factory reset o dispositivo sin cuentas.
+`SecurityLockActivity` tiene que verse. Home no debe sacar. PIN `1312`.
 
-## Probar
-
-1. Abrir Geo Empresa y registrar (base = GPS actual, radio 20 m).
-2. Activar modo avión: debe aparecer la pantalla de PIN y no se puede ir a Inicio.
-3. Salir a más de 20 m: mismo lock.
+Modo avión: dejar la notificación “Geo Empresa” visible, avión OFF → ON. En logcat: `GeoEmpresa`.

@@ -14,6 +14,7 @@ import {
   requestDeviceAdmin,
   requestIgnoreBatteryOptimizations,
   requestOverlayPermission,
+  startWatchdog,
 } from '../src/modules/device-admin/native';
 import { startBackgroundMonitoring } from '../src/modules/location-agent/task';
 import {
@@ -89,6 +90,7 @@ export default function RegisterScreen() {
       });
 
       await startBackgroundMonitoring();
+      await startWatchdog();
       await refreshRegistration();
       router.replace('/splash');
     } catch (error) {

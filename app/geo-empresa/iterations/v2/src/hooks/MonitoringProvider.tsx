@@ -14,6 +14,7 @@ import {
   hideSecurityLock,
   isAirplaneModeOnNative,
   lockDevice,
+  startWatchdog,
   stopLockTask,
 } from '../modules/device-admin/native';
 import { evaluateLockState } from '../modules/lock-engine/evaluate';
@@ -131,6 +132,13 @@ export function MonitoringProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     void refreshRegistration();
   }, [refreshRegistration]);
+
+  useEffect(() => {
+    if (!registration) {
+      return;
+    }
+    void startWatchdog();
+  }, [registration]);
 
   useEffect(() => {
     const onAppStateChange = (next: AppStateStatus) => {

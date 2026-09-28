@@ -5,7 +5,7 @@ import { VissiussSplash } from '../src/components/VissiussSplash';
 import { appConfig } from '../src/constants/config';
 import { colors } from '../src/constants/theme';
 import { useMonitoring } from '../src/hooks/MonitoringProvider';
-import { moveAppToBackground } from '../src/modules/device-admin/native';
+import { moveAppToBackground, startWatchdog } from '../src/modules/device-admin/native';
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -22,7 +22,9 @@ export default function SplashScreen() {
     }
 
     const timer = setTimeout(() => {
-      void moveAppToBackground();
+      void startWatchdog().finally(() => {
+        void moveAppToBackground();
+      });
     }, appConfig.splashDurationMs);
 
     return () => {

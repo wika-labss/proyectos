@@ -1,6 +1,7 @@
 package com.wika.geoempresa
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -39,13 +40,6 @@ object GeoLockController {
       .apply()
   }
 
-  fun clearSnooze(context: Context) {
-    context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-      .edit()
-      .remove(KEY_SNOOZE)
-      .apply()
-  }
-
   fun ensurePolicies(context: Context) {
     val dpm = devicePolicyManager(context)
     val admin = adminComponent(context)
@@ -55,8 +49,22 @@ object GeoLockController {
     }
     try {
       dpm.setLockTaskPackages(admin, arrayOf(PACKAGE))
+      Log.i(TAG, "setLockTaskPackages ok")
     } catch (error: Exception) {
       Log.e(TAG, "setLockTaskPackages failed", error)
+    }
+  }
+
+  fun lockActivityIntent(context: Context, title: String, message: String): Intent {
+    return Intent(context, SecurityLockActivity::class.java).apply {
+      putExtra(SecurityLockActivity.EXTRA_TITLE, title)
+      putExtra(SecurityLockActivity.EXTRA_MESSAGE, message)
+      addFlags(
+        Intent.FLAG_ACTIVITY_NEW_TASK or
+          Intent.FLAG_ACTIVITY_CLEAR_TOP or
+          Intent.FLAG_ACTIVITY_SINGLE_TOP or
+          Intent.FLAG_ACTIVITY_REORDER_TO_FRONT,
+      )
     }
   }
 
@@ -65,26 +73,12 @@ object GeoLockController {
       Log.i(TAG, "lock skipped: snoozed")
       return
     }
+    if (isLockTaskActive(context)) {
+      Log.i(TAG, "lock skipped: already kiosk")
+      return
+    }
     ensurePolicies(context)
-    val intent = Intent(context, SecurityLockActivity::class.java).apply {
-      putExtra(SecurityLockActivity.EXTRA_TITLE, title)
-      putExtra(SecurityLockActivity.EXTRA_MESSAGE, message)
-      addFlags(
-        Intent.FLAG_ACTIVITY_NEW_TASK or
-          Intent.FLAG_ACTIVITY_CLEAR_TOP or
-          Intent.FLAG_ACTIVITY_SINGLE_TOP or
-          Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS,
-      )
-    }
-    context.startActivity(intent)
-    try {
-      val dpm = devicePolicyManager(context)
-      if (dpm.isDeviceOwnerApp(context.packageName)) {
-        dpm.lockNow()
-      }
-    } catch (error: Exception) {
-      Log.e(TAG, "lockNow failed", error)
-    }
+    GeoLockService.requestKiosk(context, title, message)
   }
 
   fun onLockActivityReady(activity: Activity) {
@@ -101,8 +95,18 @@ object GeoLockController {
     }
     try {
       activity.startLockTask()
+      Log.i(TAG, "startLockTask ok")
     } catch (error: Exception) {
       Log.e(TAG, "startLockTask failed", error)
+    }
+  }
+
+  fun isLockTaskActive(context: Context): Boolean {
+    val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    return try {
+      am.lockTaskModeState != ActivityManager.LOCK_TASK_MODE_NONE
+    } catch (_: Exception) {
+      false
     }
   }
 

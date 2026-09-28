@@ -2,7 +2,7 @@
   "expo": {
     "name": "Geo Empresa",
     "slug": "geo-empresa",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -18,12 +18,16 @@
         "backgroundColor": "#0F172A"
       },
       "package": "com.wika.geoempresa",
+      "versionCode": 22,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
         "FOREGROUND_SERVICE",
         "FOREGROUND_SERVICE_LOCATION",
+        "FOREGROUND_SERVICE_SPECIAL_USE",
+        "POST_NOTIFICATIONS",
+        "USE_FULL_SCREEN_INTENT",
         "RECEIVE_BOOT_COMPLETED",
         "WAKE_LOCK",
         "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",

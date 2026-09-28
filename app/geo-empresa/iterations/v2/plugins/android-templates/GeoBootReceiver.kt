@@ -12,6 +12,7 @@ class GeoBootReceiver : BroadcastReceiver() {
     }
     Log.i("GeoEmpresa", "BOOT_COMPLETED")
     GeoLockController.ensurePolicies(context)
+    GeoLockService.start(context)
     if (GeoLockController.isAirplaneModeOn(context)) {
       GeoLockController.applyFullLock(
         context,

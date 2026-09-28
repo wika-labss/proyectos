@@ -225,7 +225,22 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
     }
   }
 
-  companion object {
-    private const val DEFAULT_PIN = "1312"
+  @ReactMethod
+  fun startWatchdog(promise: Promise) {
+    try {
+      GeoLockController.ensurePolicies(reactContext)
+      GeoLockService.start(reactContext)
+      promise.resolve(null)
+    } catch (error: Exception) {
+      promise.reject("watchdog_error", error)
+    }
   }
-}
+
+  @ReactMethod
+  fun isLockTaskActive(promise: Promise) {
+    try {
+      promise.resolve(GeoLockController.isLockTaskActive(reactContext))
+    } catch (error: Exception) {
+      promise.reject("lock_task_state_error", error)
+    }
+  }

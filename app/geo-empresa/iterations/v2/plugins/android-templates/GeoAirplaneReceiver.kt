@@ -11,7 +11,8 @@ class GeoAirplaneReceiver : BroadcastReceiver() {
       return
     }
     val airplaneOn = intent.getBooleanExtra("state", GeoLockController.isAirplaneModeOn(context))
-    Log.i("GeoEmpresa", "AIRPLANE_MODE state=$airplaneOn")
+    Log.i("GeoEmpresa", "manifest AIRPLANE_MODE state=$airplaneOn")
+    GeoLockService.start(context)
     if (!airplaneOn) {
       return
     }

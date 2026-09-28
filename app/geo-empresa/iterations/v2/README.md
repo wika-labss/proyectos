@@ -1,10 +1,8 @@
-# Geo Empresa V2.1
+# Geo Empresa V2.2
 
-Agente Android corporativo. Device Owner bloquea el teléfono completo (kiosco + `lockNow`) ante modo avión o salida de **20 m**. PIN de prueba `1312`.
+Servicio en primer plano + kiosco Device Owner (Lock Task) ante modo avión, inactividad o salida de **20 m**. PIN `1312`.
 
-Ver [DEVICE-OWNER.md](./DEVICE-OWNER.md) y [DS-IMPLEMENTATION.md](./DS-IMPLEMENTATION.md).
-
-## Comandos
+Ver [DEVICE-OWNER.md](./DEVICE-OWNER.md).
 
 ```bash
 npm install

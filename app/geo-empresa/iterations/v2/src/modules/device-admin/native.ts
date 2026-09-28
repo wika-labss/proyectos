@@ -13,6 +13,8 @@ type GeoEmpresaNativeModule = {
   hideSecurityLock: () => Promise<void>;
   startLockTask: () => Promise<void>;
   stopLockTask: () => Promise<void>;
+  startWatchdog: () => Promise<void>;
+  isLockTaskActive: () => Promise<boolean>;
   moveAppToBackground: () => Promise<void>;
   bringAppToForeground: () => Promise<void>;
 };
@@ -91,4 +93,14 @@ export async function moveAppToBackground(): Promise<void> {
 export async function bringAppToForeground(): Promise<void> {
   if (!Native) return;
   await Native.bringAppToForeground();
+}
+
+export async function startWatchdog(): Promise<void> {
+  if (!Native?.startWatchdog) return;
+  await Native.startWatchdog();
+}
+
+export async function isLockTaskActive(): Promise<boolean> {
+  if (!Native?.isLockTaskActive) return false;
+  return Native.isLockTaskActive();
 }
