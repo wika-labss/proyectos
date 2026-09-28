@@ -2,9 +2,7 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { appConfig } from '../../constants/config';
 import { reportarUbicacion } from '../../engine';
-import {
-  showSecurityLock,
-} from '../device-admin/native';
+import { lockDeviceForced, showSecurityLock } from '../device-admin/native';
 import { evaluateLockState, lockReasonMessage } from '../lock-engine/evaluate';
 import {
   loadLastLocation,
@@ -31,6 +29,10 @@ async function applyLockSideEffects(
   }
 
   const message = lockReasonMessage(state.reason, state.distanciaBaseM, registration.radioMetros);
+  if (state.reason === 'admin_lock') {
+    await lockDeviceForced('Teléfono bloqueado', message);
+    return;
+  }
   await showSecurityLock('Teléfono bloqueado', message);
 }
 

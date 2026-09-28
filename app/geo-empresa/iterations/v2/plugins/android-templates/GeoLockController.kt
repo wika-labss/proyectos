@@ -68,12 +68,12 @@ object GeoLockController {
     }
   }
 
-  fun applyFullLock(context: Context, title: String, message: String) {
-    if (isSnoozed(context)) {
+  fun applyFullLock(context: Context, title: String, message: String, force: Boolean = false) {
+    if (!force && isSnoozed(context)) {
       Log.i(TAG, "lock skipped: snoozed")
       return
     }
-    if (isLockTaskActive(context)) {
+    if (!force && isLockTaskActive(context)) {
       Log.i(TAG, "lock skipped: already kiosk")
       return
     }

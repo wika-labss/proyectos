@@ -46,6 +46,7 @@ class GeoLockService : Service() {
           "Modo avión detectado. Ingresa el PIN corporativo.",
         )
       }
+      GeoCommandClient.maybePoll(this@GeoLockService)
       handler.postDelayed(this, WATCHDOG_MS)
     }
   }
@@ -131,7 +132,7 @@ class GeoLockService : Service() {
     }
     return builder
       .setContentTitle("Geo Empresa")
-      .setContentText("Vigilando modo avión, apagado y perímetro")
+      .setContentText("Vigilando avión, base, ping TI y perímetro")
       .setSmallIcon(android.R.drawable.ic_lock_lock)
       .setOngoing(true)
       .build()

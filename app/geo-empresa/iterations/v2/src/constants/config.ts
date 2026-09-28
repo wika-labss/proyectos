@@ -10,6 +10,8 @@ export const appConfig = {
   pingIntervalMs: 5 * 60 * 1000,
   splashDurationMs: 3000,
   lockSnoozeMs: 60 * 1000,
+  commandPollMs: 8 * 1000,
+  adminHeartbeatStaleMs: 45 * 1000,
   backgroundLocationTask: 'GEO_EMPRESA_LOCATION_PING',
   storageKeys: {
     registration: '@geo-empresa:v2:registration',
@@ -29,7 +31,13 @@ export type RegistrationRecord = {
   registeredAt: string;
 };
 
-export type LockReason = 'outside_fence' | 'airplane_mode' | 'phone_off';
+export type LockReason =
+  | 'outside_fence'
+  | 'airplane_mode'
+  | 'phone_off'
+  | 'no_backend'
+  | 'admin_ping'
+  | 'admin_lock';
 
 export type LockState = {
   active: boolean;

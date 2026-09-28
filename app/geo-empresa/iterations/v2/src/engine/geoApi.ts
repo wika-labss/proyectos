@@ -141,3 +141,58 @@ function mapReport(value: Record<string, unknown>): LocationReport {
 export function validatePin(input: string, expectedPin: string): boolean {
   return input.trim() === expectedPin.trim();
 }
+
+export type PendingCommand = {
+  id: string;
+  tipo: string;
+  solicitado_at?: string;
+};
+
+export type HeartbeatAgente = {
+  ok: boolean;
+  admin_stale: boolean;
+  dentro_perimetro: boolean;
+  politica_autolock: boolean;
+  distancia_base_m: number;
+  radio_metros: number;
+  comando: PendingCommand | null;
+};
+
+export async function heartbeatAgente(deviceFingerprint: string): Promise<HeartbeatAgente> {
+  const result = await postRpc<Record<string, unknown>>('heartbeat_agente', {
+    p_device_fingerprint: deviceFingerprint,
+  });
+  const rawCommand = result.comando;
+  let comando: PendingCommand | null = null;
+  if (rawCommand && typeof rawCommand === 'object') {
+    const cmd = rawCommand as Record<string, unknown>;
+    comando = {
+      id: String(cmd.id ?? ''),
+      tipo: String(cmd.tipo ?? ''),
+      solicitado_at: cmd.solicitado_at ? String(cmd.solicitado_at) : undefined,
+    };
+  }
+  return {
+    ok: Boolean(result.ok ?? true),
+    admin_stale: Boolean(result.admin_stale),
+    dentro_perimetro: Boolean(result.dentro_perimetro ?? true),
+    politica_autolock: Boolean(result.politica_autolock ?? true),
+    distancia_base_m: Number(result.distancia_base_m ?? 0),
+    radio_metros: Number(result.radio_metros ?? 20),
+    comando,
+  };
+}
+
+export async function acusarComando(input: {
+  comandoId: string;
+  deviceFingerprint: string;
+  ok: boolean;
+  error?: string;
+}): Promise<void> {
+  await postRpc('acusar_comando', {
+    p_comando_id: input.comandoId,
+    p_device_fingerprint: input.deviceFingerprint,
+    p_ok: input.ok,
+    p_error: input.error ?? null,
+  });
+}

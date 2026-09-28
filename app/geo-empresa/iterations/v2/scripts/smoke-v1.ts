@@ -69,4 +69,37 @@ const off = evaluateLockState({
 assert(off.active, 'apagado/inactivo bloquea');
 assert(off.reason === 'phone_off', 'reason phone_off');
 
-console.log('[ok] geo-empresa smoke v2.2');
+const noBackend = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  backendReachable: false,
+});
+assert(noBackend.active, 'sin base corporativa bloquea');
+assert(noBackend.reason === 'no_backend', 'reason no_backend');
+
+const noAdmin = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  adminPingFresh: false,
+});
+assert(noAdmin.active, 'sin ping admin bloquea');
+assert(noAdmin.reason === 'admin_ping', 'reason admin_ping');
+
+const adminLock = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  adminLock: true,
+});
+assert(adminLock.active, 'lock TI bloquea');
+assert(adminLock.reason === 'admin_lock', 'reason admin_lock');
+
+console.log('[ok] geo-empresa smoke v2.3');

@@ -143,12 +143,40 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
   }
 
   @ReactMethod
+  fun configureAgent(url: String, anonKey: String, fingerprint: String, promise: Promise) {
+    try {
+      reactContext.getSharedPreferences(GeoLockController.PREFS, Context.MODE_PRIVATE)
+        .edit()
+        .putString(GeoCommandClient.KEY_URL, url)
+        .putString(GeoCommandClient.KEY_ANON, anonKey)
+        .putString(GeoCommandClient.KEY_FP, fingerprint)
+        .apply()
+      GeoLockController.ensurePolicies(reactContext)
+      GeoLockService.start(reactContext)
+      GeoCommandClient.maybePoll(reactContext)
+      promise.resolve(null)
+    } catch (error: Exception) {
+      promise.reject("configure_agent_error", error)
+    }
+  }
+
+  @ReactMethod
   fun lockDevice(title: String, message: String, promise: Promise) {
     try {
-      GeoLockController.applyFullLock(reactContext, title, message)
+      GeoLockController.applyFullLock(reactContext, title, message, false)
       promise.resolve(null)
     } catch (error: Exception) {
       promise.reject("lock_device_error", error)
+    }
+  }
+
+  @ReactMethod
+  fun lockDeviceForced(title: String, message: String, promise: Promise) {
+    try {
+      GeoLockController.applyFullLock(reactContext, title, message, true)
+      promise.resolve(null)
+    } catch (error: Exception) {
+      promise.reject("lock_device_forced_error", error)
     }
   }
 
@@ -177,6 +205,7 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
         reactContext,
         "Teléfono bloqueado",
         "Política corporativa activa. Ingresa el PIN corporativo.",
+        true,
       )
       promise.resolve(null)
     } catch (error: Exception) {

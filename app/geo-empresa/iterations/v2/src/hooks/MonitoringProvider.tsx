@@ -9,13 +9,15 @@ import React, {
 import { AppState, BackHandler, type AppStateStatus } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { appConfig, type LockReason, type RegistrationRecord } from '../constants/config';
-import { validatePin } from '../engine';
+import { acusarComando, heartbeatAgente, validatePin } from '../engine';
 import {
   hideSecurityLock,
   isAirplaneModeOnNative,
   lockDevice,
+  lockDeviceForced,
   startWatchdog,
   stopLockTask,
+  configureAgent,
 } from '../modules/device-admin/native';
 import { evaluateLockState } from '../modules/lock-engine/evaluate';
 import { sendPowerStateReport } from '../modules/location-agent/task';
@@ -74,8 +76,18 @@ export function MonitoringProvider({ children }: { children: React.ReactNode }) 
           ? 'Modo avión detectado. Ingresa el PIN corporativo.'
           : reason === 'phone_off'
             ? 'El teléfono reporta estado apagado o inactivo.'
-            : `Fuera del perímetro autorizado (${Math.round(distance)} m / máx ${appConfig.fenceRadiusM} m).`;
-      await lockDevice('Teléfono bloqueado', message);
+            : reason === 'no_backend'
+              ? 'Sin conexión con la base corporativa. Ingresa el PIN corporativo.'
+              : reason === 'admin_ping'
+                ? 'Sin ping del administrador. Ingresa el PIN corporativo.'
+                : reason === 'admin_lock'
+                  ? 'Bloqueo enviado por el administrador. Ingresa el PIN corporativo.'
+                  : `Fuera del perímetro autorizado (${Math.round(distance)} m / máx ${appConfig.fenceRadiusM} m).`;
+      if (reason === 'admin_lock') {
+        await lockDeviceForced('Teléfono bloqueado', message);
+      } else {
+        await lockDevice('Teléfono bloqueado', message);
+      }
     } else {
       await stopLockTask();
       await hideSecurityLock();
@@ -138,7 +150,56 @@ export function MonitoringProvider({ children }: { children: React.ReactNode }) 
       return;
     }
     void startWatchdog();
+    void configureAgent(appConfig.supabaseUrl, appConfig.supabaseAnonKey, registration.deviceFingerprint);
   }, [registration]);
+
+  useEffect(() => {
+    if (!registration) {
+      return;
+    }
+
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const beat = await heartbeatAgente(registration.deviceFingerprint);
+        if (cancelled) {
+          return;
+        }
+        if (beat.comando?.tipo === 'lock') {
+          await lockDeviceForced(
+            'Teléfono bloqueado',
+            'Bloqueo enviado por el administrador. Ingresa el PIN corporativo.',
+          );
+          await acusarComando({
+            comandoId: beat.comando.id,
+            deviceFingerprint: registration.deviceFingerprint,
+            ok: true,
+          });
+        } else if (beat.comando?.tipo === 'ping') {
+          await sendPowerStateReport(true, false);
+          await acusarComando({
+            comandoId: beat.comando.id,
+            deviceFingerprint: registration.deviceFingerprint,
+            ok: true,
+          });
+        }
+        if (beat.admin_stale) {
+          await applyLockState(true, 'admin_ping', beat.distancia_base_m);
+        }
+      } catch (error) {
+        console.warn('[geo-empresa] heartbeat_agente failed', error);
+      }
+    };
+
+    void poll();
+    const timer = setInterval(() => {
+      void poll();
+    }, appConfig.commandPollMs);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [registration, applyLockState]);
 
   useEffect(() => {
     const onAppStateChange = (next: AppStateStatus) => {
