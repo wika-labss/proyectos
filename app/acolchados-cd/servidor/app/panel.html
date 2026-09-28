@@ -34,6 +34,8 @@ label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase
 .btn.gris:hover{background:var(--bg3);color:var(--fg)}
 .btn.mal{border-color:rgba(226,105,95,.5);color:var(--mal)}
 .btn.mal:hover{background:var(--mal);color:#fff}
+.btn.azul{border-color:var(--teal);color:#8fd4e0;background:rgba(24,142,158,.18)}
+.btn.azul:hover{background:var(--teal);color:#fff}
 .mini{padding:5px 10px;font-size:11px;letter-spacing:.06em;text-transform:none}
 
 /* ---- login ---- */
@@ -108,6 +110,9 @@ legend{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--
 .interruptor input{width:auto;accent-color:var(--gold)}
 .interruptor span{font-size:13px;color:var(--fg)}
 .nota{font-size:11.5px;color:var(--dim);margin-top:6px;line-height:1.5}
+#listaVariantes{overflow-x:auto}
+#listaVariantes th input{text-transform:none;letter-spacing:.02em;font-size:12px;padding:6px 8px;min-width:108px}
+.acc-campos{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .vacio{text-align:center;padding:60px 20px;color:var(--dim)}
 @media (max-width:700px){
   .rejilla{grid-template-columns:1fr}
@@ -340,11 +345,12 @@ function pintarProductos() {
       : `<div class="foto vacia">SIN FOTO</div>`;
     const colores = p.colores.map(c =>
       `<span class="chip"><i class="punto" style="background:${esc(c.hex)}"></i>${esc(c.nombre)}</span>`).join('');
+    const colsTxt = (p.columnas && p.columnas.length) ? p.columnas : ['Medida'];
     const tallas = p.variantes.length
-      ? `<table><tr><th>Tamaño</th><th>Medida</th><th class="num">Precio</th><th class="num">Stock</th></tr>` +
+      ? `<table><tr><th>Tamaño</th>${colsTxt.map(c => `<th>${esc(c)}</th>`).join('')}<th class="num">Precio</th><th class="num">Stock</th></tr>` +
         p.variantes.map(v => `<tr>
             <td>${esc(v.tamano) || '—'}</td>
-            <td style="color:var(--dim)">${esc(v.medida) || '—'}</td>
+            ${colsTxt.map((_, i) => `<td style="color:var(--dim)">${esc(i ? ((v.extras || [])[i - 1] || '') : v.medida) || '—'}</td>`).join('')}
             <td class="num">${plata(v.precio)}</td>
             <td class="num"><span class="stock">
               <button class="btn gris mini" data-stock="${v.id}" data-delta="-1">−</button>
@@ -548,7 +554,10 @@ function abrirEditor(p) {
         <fieldset>
           <legend>Tamaños, precios y stock <span style="color:var(--dim);letter-spacing:0;text-transform:none"> — precio y stock son internos</span></legend>
           <div id="listaVariantes"></div>
-          <button class="btn gris mini" id="bVariante" style="margin-top:10px">+ Añadir tamaño</button>
+          <div class="acc-campos">
+            <button class="btn gris mini" id="bVariante" type="button">+ Añadir tamaño</button>
+            <button class="btn azul mini" id="bCampo" type="button">+ Añadir campo</button>
+          </div>
         </fieldset>
 
         <div class="campo">
@@ -574,6 +583,8 @@ function abrirEditor(p) {
 
   let colores = JSON.parse(JSON.stringify(p.colores || []));
   let variantes = JSON.parse(JSON.stringify(p.variantes || []));
+  let columnas = (p.columnas && p.columnas.length) ? p.columnas.slice() : ['Medida'];
+  variantes.forEach(v => { if (!Array.isArray(v.extras)) v.extras = []; });
 
   const pintarColores = () => {
     $('#listaColores').innerHTML = colores.length
@@ -583,16 +594,21 @@ function abrirEditor(p) {
   };
 
   const pintarVariantes = () => {
-    $('#listaVariantes').innerHTML = variantes.length
-      ? `<table><tr><th>Tamaño</th><th>Medida</th><th>Precio neto</th><th>Stock</th><th>Mínimo</th><th></th></tr>` +
-        variantes.map((v, i) => `<tr>
+    const cabezas = columnas.map((nombre, k) => `<th>
+        <input data-col="${k}" value="${esc(nombre)}" maxlength="40" placeholder="${k ? 'Bajera' : 'Medida'}">
+        ${k ? `<button class="btn mal mini" type="button" data-quitarcol="${k}" title="Quitar campo">×</button>` : ''}
+      </th>`).join('');
+    const filas = variantes.map((v, i) => `<tr>
           <td><input data-v="${i}" data-c="tamano" value="${esc(v.tamano)}" placeholder="2 plazas"></td>
           <td><input data-v="${i}" data-c="medida" value="${esc(v.medida)}" placeholder="230 x 240 cm"></td>
+          ${columnas.slice(1).map((_, k) => `<td><input data-v="${i}" data-c="extra" data-x="${k}" value="${esc((v.extras || [])[k] || '')}" placeholder="150 x 245 cm"></td>`).join('')}
           <td><input data-v="${i}" data-c="precio" type="number" min="0" value="${v.precio || 0}"></td>
           <td><input data-v="${i}" data-c="stock" type="number" min="0" value="${v.stock || 0}"></td>
           <td><input data-v="${i}" data-c="minimo" type="number" min="0" value="${v.minimo || 0}"></td>
-          <td><button class="btn mal mini" data-quitarv="${i}">×</button></td></tr>`).join('') + `</table>`
-      : `<p class="nota">Sin tamaños. Añade al menos uno para poder llevar stock.</p>`;
+          <td><button class="btn mal mini" type="button" data-quitarv="${i}">×</button></td></tr>`).join('');
+    $('#listaVariantes').innerHTML =
+      `<table><tr><th>Tamaño</th>${cabezas}<th>Precio neto</th><th>Stock</th><th>Mínimo</th><th></th></tr>${filas}</table>` +
+      (variantes.length ? '' : `<p class="nota">Sin tamaños. Añade al menos uno para poder llevar stock.</p>`);
   };
 
   pintarColores(); pintarVariantes();
@@ -612,7 +628,23 @@ function abrirEditor(p) {
       return pintarColores();
     }
     if (b.dataset.quitarc !== undefined) { colores.splice(+b.dataset.quitarc, 1); return pintarColores(); }
-    if (b.id === 'bVariante') { variantes.push({ tamano: '', medida: '', precio: 0, stock: 0, minimo: 0 }); return pintarVariantes(); }
+    if (b.id === 'bVariante') {
+      variantes.push({ tamano: '', medida: '', extras: columnas.slice(1).map(() => ''), precio: 0, stock: 0, minimo: 0 });
+      return pintarVariantes();
+    }
+    if (b.id === 'bCampo') {
+      if (columnas.length >= 6) return;
+      columnas.push('');
+      variantes.forEach(v => { v.extras = v.extras || []; v.extras.push(''); });
+      return pintarVariantes();
+    }
+    if (b.dataset.quitarcol !== undefined) {
+      const k = +b.dataset.quitarcol;
+      if (k < 1) return;
+      columnas.splice(k, 1);
+      variantes.forEach(v => { if (v.extras) v.extras.splice(k - 1, 1); });
+      return pintarVariantes();
+    }
     if (b.dataset.quitarv !== undefined) { variantes.splice(+b.dataset.quitarv, 1); return pintarVariantes(); }
     if (b.id === 'bGuardar') return enviar(b);
   });
@@ -624,9 +656,18 @@ function abrirEditor(p) {
   });
 
   velo.addEventListener('input', e => {
+    if (e.target.dataset.col !== undefined) {
+      columnas[+e.target.dataset.col] = e.target.value;
+      return;
+    }
     const i = e.target.dataset.v;
     if (i === undefined) return;
     const campo = e.target.dataset.c;
+    if (campo === 'extra') {
+      if (!variantes[i].extras) variantes[i].extras = [];
+      variantes[i].extras[+e.target.dataset.x] = e.target.value;
+      return;
+    }
     variantes[i][campo] = ['precio', 'stock', 'minimo'].includes(campo)
       ? Math.max(parseInt(e.target.value, 10) || 0, 0)
       : e.target.value;
@@ -657,7 +698,8 @@ function abrirEditor(p) {
       notas: $('#eNotas').value.trim(),
       visible: $('#eVisible').checked,
       orden: parseInt($('#eOrden').value, 10) || 0,
-      colores, variantes
+      colores, variantes,
+      columnas: columnas.map((c, i) => c.trim() || (i ? 'Campo' : 'Medida'))
     };
     if (!cuerpo.nombre) return mostrarErrorEditor('El producto necesita un nombre.');
     boton.disabled = true;
@@ -685,7 +727,7 @@ function guardarProducto(datos, id) {
     nombre: datos.nombre, descripcion: datos.descripcion, categoria: datos.categoria,
     etiqueta: datos.etiqueta, imagen: datos.imagen, notas: datos.notas,
     visible: datos.visible, orden: datos.orden,
-    colores: datos.colores, variantes: datos.variantes
+    colores: datos.colores, columnas: datos.columnas, variantes: datos.variantes
   };
   return id
     ? pedir(`productos/${id}`, { method: 'PUT', cuerpo: limpio })

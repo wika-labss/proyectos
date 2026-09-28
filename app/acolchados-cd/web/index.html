@@ -205,7 +205,7 @@ section{padding:clamp(78px,10vw,150px) 0;position:relative}
 .ficha .lado img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
 .ficha .lado.sin img{position:static;width:52%;margin:auto;height:auto;opacity:.22;object-fit:contain}
 .ficha .lado.sin{display:grid;place-items:center}
-.ficha .txt{padding:clamp(24px,3.4vw,42px);overflow-y:auto}
+.ficha .txt{padding:clamp(24px,3.4vw,42px);overflow:auto}
 .ficha .txt h3{font-size:clamp(22px,2.6vw,30px);margin:10px 0 12px}
 .ficha .txt>p{color:rgba(242,239,234,.66);font-size:14.5px}
 .ficha h4{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin:26px 0 12px;font-family:var(--body);font-weight:400}
@@ -712,14 +712,20 @@ footer li a:hover{color:var(--gold)}
       return '<span><i style="background:'+esc(c.hex)+'"></i>'+esc(c.nombre)+'</span>';
     }).join('');
     var hayPrecios=p.tamanos.some(function(t){return t.precio>0});
+    var etiquetas=(p.columnas&&p.columnas.length)?p.columnas:['Medida'];
     var tallas=p.tamanos.map(function(t){
-      return '<tr><td>'+esc(t.tamano||'—')+'</td>'+
-             '<td class="med">'+esc(t.medida||'')+'</td>'+
+      var vals=[t.medida].concat(t.extras||[]);
+      var celdas=etiquetas.map(function(_,i){
+        return '<td class="med">'+esc(vals[i]||'')+'</td>';
+      }).join('');
+      return '<tr><td>'+esc(t.tamano||'—')+'</td>'+celdas+
              '<td class="val">'+(t.precio>0?pesos(t.precio):'A cotizar')+'</td></tr>';
     }).join('');
     var tabla=tallas
       ? '<h4>Tamaños y valores</h4><table>'+
-        '<thead><tr><th>Tamaño</th><th class="med">Medida</th><th class="val">Valor neto</th></tr></thead>'+
+        '<thead><tr><th>Tamaño</th>'+
+        etiquetas.map(function(e){return '<th class="med">'+esc(e)+'</th>'}).join('')+
+        '<th class="val">Valor neto</th></tr></thead>'+
         '<tbody>'+tallas+'</tbody></table>'+
         (hayPrecios?'<p class="nota-val">Valores netos por unidad, no incluyen IVA. '+
           'Las medidas y colores especiales se cotizan aparte.</p>':'')

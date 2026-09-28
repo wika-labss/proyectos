@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS productos (
   etiqueta    TEXT NOT NULL DEFAULT '',
   imagen      TEXT NOT NULL DEFAULT '',
   colores     TEXT NOT NULL DEFAULT '[]',
+  columnas    TEXT NOT NULL DEFAULT '["Medida"]',
   notas       TEXT NOT NULL DEFAULT '',
   visible     INTEGER NOT NULL DEFAULT 1,
   orden       INTEGER NOT NULL DEFAULT 0,
@@ -122,6 +123,7 @@ CREATE TABLE IF NOT EXISTS variantes (
   producto_id INTEGER NOT NULL REFERENCES productos(id) ON DELETE CASCADE,
   tamano      TEXT NOT NULL DEFAULT '',
   medida      TEXT NOT NULL DEFAULT '',
+  extras      TEXT NOT NULL DEFAULT '[]',
   precio      INTEGER NOT NULL DEFAULT 0,
   stock       INTEGER NOT NULL DEFAULT 0,
   minimo      INTEGER NOT NULL DEFAULT 0,
@@ -166,6 +168,21 @@ def preparar():
     MEDIA.mkdir(parents=True, exist_ok=True)
     with bd() as cx:
         cx.executescript(ESQUEMA)
+        # Bases ya creadas: la medida original sigue en `medida`.
+        # `columnas` nombra los textos entre tamaño y precio; `extras` guarda
+        # los que se agregan después del primero.
+        tener = {f["name"] for f in cx.execute("PRAGMA table_info(productos)").fetchall()}
+        if "columnas" not in tener:
+            cx.execute(
+                "ALTER TABLE productos ADD COLUMN columnas TEXT NOT NULL DEFAULT '[\"Medida\"]'"
+            )
+        tener_v = {
+            f["name"] for f in cx.execute("PRAGMA table_info(variantes)").fetchall()
+        }
+        if "extras" not in tener_v:
+            cx.execute(
+                "ALTER TABLE variantes ADD COLUMN extras TEXT NOT NULL DEFAULT '[]'"
+            )
 
         if not cx.execute("SELECT 1 FROM categorias LIMIT 1").fetchone():
             cx.executemany(
@@ -261,6 +278,7 @@ class Color(BaseModel):
 class Variante(BaseModel):
     tamano: str = Field(default="", max_length=60)
     medida: str = Field(default="", max_length=80)
+    extras: list[str] = []
     precio: int = Field(default=0, ge=0, le=99_000_000)
     stock: int = Field(default=0, ge=0, le=1_000_000)
     minimo: int = Field(default=0, ge=0, le=1_000_000)
@@ -276,6 +294,7 @@ class ProductoEntrada(BaseModel):
     visible: bool = True
     orden: int = 0
     colores: list[Color] = []
+    columnas: list[str] = []
     variantes: list[Variante] = []
 
 
@@ -356,17 +375,48 @@ def leer_productos(cx, solo_visibles: bool):
             p["colores"] = json.loads(p["colores"])
         except (ValueError, TypeError):
             p["colores"] = []
+        p["columnas"] = lista_json(p.get("columnas"), ["Medida"]) or ["Medida"]
         p["variantes"] = por_producto.get(p["id"], [])
+        for v in p["variantes"]:
+            v["extras"] = lista_json(v.get("extras"), [])
     return productos
 
 
-def guardar_variantes(cx, producto_id: int, variantes: list[Variante]):
+def lista_json(texto, vacio: list) -> list:
+    try:
+        dato = json.loads(texto) if texto else vacio
+    except (ValueError, TypeError):
+        return list(vacio)
+    return dato if isinstance(dato, list) else list(vacio)
+
+
+def columnas_de(nombres: list[str]) -> list[str]:
+    """Títulos de los textos entre tamaño y precio. El primero es la medida de siempre."""
+    limpias = []
+    for i, nombre in enumerate(nombres[:6]):
+        nombre = " ".join(nombre.split())[:40]
+        limpias.append(nombre or ("Medida" if i == 0 else "Campo"))
+    return limpias or ["Medida"]
+
+
+def guardar_variantes(cx, producto_id: int, variantes: list[Variante], n_extras: int):
     cx.execute("DELETE FROM variantes WHERE producto_id = ?", (producto_id,))
     for i, v in enumerate(variantes):
+        extras = [" ".join(e.split())[:80] for e in v.extras][:n_extras]
+        extras += [""] * (n_extras - len(extras))
         cx.execute(
-            "INSERT INTO variantes (producto_id, tamano, medida, precio, stock, minimo, orden) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (producto_id, v.tamano.strip(), v.medida.strip(), v.precio, v.stock, v.minimo, i),
+            "INSERT INTO variantes (producto_id, tamano, medida, extras, precio, stock, minimo, orden) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                producto_id,
+                v.tamano.strip(),
+                v.medida.strip(),
+                json.dumps(extras, ensure_ascii=False),
+                v.precio,
+                v.stock,
+                v.minimo,
+                i,
+            ),
         )
 
 
@@ -426,10 +476,16 @@ def productos_publicos():
                 "etiqueta": p["etiqueta"] or nombres.get(p["categoria"], ""),
                 "imagen": p["imagen"],
                 "colores": p["colores"],
+                "columnas": p["columnas"],
                 "tamanos": [
-                    {"tamano": v["tamano"], "medida": v["medida"], "precio": v["precio"]}
+                    {
+                        "tamano": v["tamano"],
+                        "medida": v["medida"],
+                        "extras": v["extras"],
+                        "precio": v["precio"],
+                    }
                     for v in p["variantes"]
-                    if v["tamano"] or v["medida"]
+                    if v["tamano"] or v["medida"] or any(v["extras"])
                 ],
             }
         )
@@ -619,10 +675,11 @@ def borrar_categoria(clave: str, peticion: Request):
 def crear_producto(datos: ProductoEntrada):
     momento = iso(ahora())
     with bd() as cx:
+        columnas = columnas_de(datos.columnas)
         cursor = cx.execute(
             "INSERT INTO productos (nombre, descripcion, categoria, etiqueta, imagen, "
-            "colores, notas, visible, orden, creado, actualizado) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "colores, columnas, notas, visible, orden, creado, actualizado) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 datos.nombre.strip(),
                 datos.descripcion.strip(),
@@ -630,6 +687,7 @@ def crear_producto(datos: ProductoEntrada):
                 datos.etiqueta.strip(),
                 datos.imagen.strip(),
                 json.dumps([c.model_dump() for c in datos.colores], ensure_ascii=False),
+                json.dumps(columnas, ensure_ascii=False),
                 datos.notas.strip(),
                 1 if datos.visible else 0,
                 datos.orden,
@@ -638,7 +696,7 @@ def crear_producto(datos: ProductoEntrada):
             ),
         )
         nuevo = cursor.lastrowid
-        guardar_variantes(cx, nuevo, datos.variantes)
+        guardar_variantes(cx, nuevo, datos.variantes, len(columnas) - 1)
     return {"ok": True, "id": nuevo}
 
 
@@ -647,10 +705,11 @@ def editar_producto(producto_id: int, datos: ProductoEntrada):
     with bd() as cx:
         if not cx.execute("SELECT 1 FROM productos WHERE id = ?", (producto_id,)).fetchone():
             raise HTTPException(status_code=404, detail="Ese producto ya no existe")
+        columnas = columnas_de(datos.columnas)
         cx.execute(
             "UPDATE productos SET nombre = ?, descripcion = ?, categoria = ?, etiqueta = ?, "
-            "imagen = ?, colores = ?, notas = ?, visible = ?, orden = ?, actualizado = ? "
-            "WHERE id = ?",
+            "imagen = ?, colores = ?, columnas = ?, notas = ?, visible = ?, orden = ?, "
+            "actualizado = ? WHERE id = ?",
             (
                 datos.nombre.strip(),
                 datos.descripcion.strip(),
@@ -658,6 +717,7 @@ def editar_producto(producto_id: int, datos: ProductoEntrada):
                 datos.etiqueta.strip(),
                 datos.imagen.strip(),
                 json.dumps([c.model_dump() for c in datos.colores], ensure_ascii=False),
+                json.dumps(columnas, ensure_ascii=False),
                 datos.notas.strip(),
                 1 if datos.visible else 0,
                 datos.orden,
@@ -665,7 +725,7 @@ def editar_producto(producto_id: int, datos: ProductoEntrada):
                 producto_id,
             ),
         )
-        guardar_variantes(cx, producto_id, datos.variantes)
+        guardar_variantes(cx, producto_id, datos.variantes, len(columnas) - 1)
     return {"ok": True}
 
 
