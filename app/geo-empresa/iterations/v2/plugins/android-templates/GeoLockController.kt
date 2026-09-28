@@ -33,7 +33,7 @@ object GeoLockController {
     return until > System.currentTimeMillis()
   }
 
-  fun snooze(context: Context, durationMs: Long = 15 * 60 * 1000L) {
+  fun snooze(context: Context, durationMs: Long = 60 * 1000L) {
     context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
       .edit()
       .putLong(KEY_SNOOZE, System.currentTimeMillis() + durationMs)

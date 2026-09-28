@@ -9,7 +9,7 @@ export const appConfig = {
   fenceRadiusM: 20,
   pingIntervalMs: 5 * 60 * 1000,
   splashDurationMs: 3000,
-  lockSnoozeMs: 15 * 60 * 1000,
+  lockSnoozeMs: 60 * 1000,
   backgroundLocationTask: 'GEO_EMPRESA_LOCATION_PING',
   storageKeys: {
     registration: '@geo-empresa:v2:registration',
