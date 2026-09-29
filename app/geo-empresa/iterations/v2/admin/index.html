@@ -248,7 +248,7 @@
 
       async function maybeLockIfOutside() {
         if (!document.getElementById("auto").checked) return;
-        for (const device of fleet) {
+        for (const device of fleet.filter((d) => d.estado_enrollment === "aprobado")) {
           if (device.dentro_perimetro !== false) continue;
           if (lastOutsideLockByDevice[device.id] === device.ultimo_ping_at) continue;
           lastOutsideLockByDevice[device.id] = device.ultimo_ping_at;
@@ -264,7 +264,8 @@
       async function cyclePing() {
         if (!document.getElementById("auto").checked) return;
         if (!fleet.length) await refresh();
-        for (const device of fleet) {
+        const targets = fleet.filter((d) => d.estado_enrollment === "aprobado");
+        for (const device of targets) {
           await rpc("ti_heartbeat_admin", { p_clave: clave(), p_dispositivo_id: device.id });
           const result = await rpc("ti_solicitar_comando", {
             p_clave: clave(),
