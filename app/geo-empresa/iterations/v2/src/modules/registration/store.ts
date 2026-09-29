@@ -15,7 +15,12 @@ export async function loadRegistration(): Promise<RegistrationRecord | null> {
   if (!raw) {
     return null;
   }
-  return JSON.parse(raw) as RegistrationRecord;
+  const parsed = JSON.parse(raw) as RegistrationRecord;
+  if (parsed.radioMetros !== appConfig.fenceRadiusM) {
+    parsed.radioMetros = appConfig.fenceRadiusM;
+    await saveRegistration(parsed);
+  }
+  return parsed;
 }
 
 export async function saveRegistration(record: RegistrationRecord): Promise<void> {

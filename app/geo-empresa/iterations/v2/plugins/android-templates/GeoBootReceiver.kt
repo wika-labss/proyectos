@@ -10,6 +10,15 @@ class GeoBootReceiver : BroadcastReceiver() {
     if (intent?.action != Intent.ACTION_BOOT_COMPLETED) {
       return
     }
-    Log.i("GeoEmpresa", "BOOT_COMPLETED — reiniciar monitoreo desde la app al abrirse")
+    Log.i("GeoEmpresa", "BOOT_COMPLETED")
+    GeoLockController.ensurePolicies(context)
+    GeoLockService.start(context)
+    if (GeoLockController.isAirplaneModeOn(context)) {
+      GeoLockController.applyFullLock(
+        context,
+        "Teléfono bloqueado",
+        "Modo avión detectado. Ingresa el PIN corporativo.",
+      )
+    }
   }
 }

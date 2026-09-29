@@ -9,14 +9,17 @@ import React, {
 import { AppState, BackHandler, type AppStateStatus } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { appConfig, type LockReason, type RegistrationRecord } from '../constants/config';
-import { validatePin } from '../engine';
+import { acusarComando, heartbeatAgente, validatePin } from '../engine';
 import {
   hideSecurityLock,
   isAirplaneModeOnNative,
-  startLockTask,
+  lockDevice,
+  lockDeviceForced,
+  startWatchdog,
   stopLockTask,
+  configureAgent,
 } from '../modules/device-admin/native';
-import { evaluateLockState } from '../modules/lock-engine/evaluate';
+import { evaluateLockState, isHardLockReason } from '../modules/lock-engine/evaluate';
 import { sendPowerStateReport } from '../modules/location-agent/task';
 import {
   loadLockSnoozeUntil,
@@ -61,14 +64,33 @@ export function MonitoringProvider({ children }: { children: React.ReactNode }) 
   const applyLockState = useCallback(async (active: boolean, reason: LockReason, distance: number) => {
     const snoozeUntil = await loadLockSnoozeUntil();
     const snoozed = snoozeUntil !== null && Date.now() < snoozeUntil;
-    const shouldLock = active && !snoozed;
+    const hard = isHardLockReason(reason) || reason === 'admin_lock';
+    const shouldLock = active && (hard || !snoozed);
 
     setLockActive(shouldLock);
     setLockReason(reason);
     setDistanciaBaseM(distance);
 
     if (shouldLock) {
-      await startLockTask();
+      const message =
+        reason === 'airplane_mode'
+          ? 'Modo avión detectado. Ingresa el PIN corporativo.'
+          : reason === 'gps_off'
+            ? 'GPS apagado. Actívalo e ingresa el PIN corporativo.'
+            : reason === 'no_internet' || reason === 'no_backend'
+              ? 'Sin internet. Ingresa el PIN corporativo.'
+              : reason === 'phone_off'
+                ? 'El teléfono reporta estado apagado o inactivo.'
+                : reason === 'admin_ping'
+                  ? 'Sin ping del administrador. Ingresa el PIN corporativo.'
+                  : reason === 'admin_lock'
+                    ? 'Bloqueo enviado por el administrador. Ingresa el PIN corporativo.'
+                    : `Fuera del perímetro autorizado (${Math.round(distance)} m / máx ${appConfig.fenceRadiusM} m).`;
+      if (hard) {
+        await lockDeviceForced('Teléfono bloqueado', message);
+      } else {
+        await lockDevice('Teléfono bloqueado', message);
+      }
     } else {
       await stopLockTask();
       await hideSecurityLock();
@@ -127,6 +149,52 @@ export function MonitoringProvider({ children }: { children: React.ReactNode }) 
   }, [refreshRegistration]);
 
   useEffect(() => {
+    if (!registration) {
+      return;
+    }
+    void startWatchdog();
+    void configureAgent(appConfig.supabaseUrl, appConfig.supabaseAnonKey, registration.deviceFingerprint);
+  }, [registration]);
+
+  useEffect(() => {
+    if (!registration) {
+      return;
+    }
+
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const beat = await heartbeatAgente(registration.deviceFingerprint);
+        if (cancelled) {
+          return;
+        }
+        if (beat.comando?.tipo === 'ping') {
+          await sendPowerStateReport(true, false);
+          await acusarComando({
+            comandoId: beat.comando.id,
+            deviceFingerprint: registration.deviceFingerprint,
+            ok: true,
+          });
+        }
+        if (beat.admin_stale) {
+          await applyLockState(true, 'admin_ping', beat.distancia_base_m);
+        }
+      } catch (error) {
+        console.warn('[geo-empresa] heartbeat_agente failed', error);
+      }
+    };
+
+    void poll();
+    const timer = setInterval(() => {
+      void poll();
+    }, appConfig.commandPollMs);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [registration, applyLockState]);
+
+  useEffect(() => {
     const onAppStateChange = (next: AppStateStatus) => {
       const nextPhoneOn = next === 'active' || next === 'background';
       void reportPowerState(nextPhoneOn);
@@ -159,11 +227,14 @@ export function MonitoringProvider({ children }: { children: React.ReactNode }) 
           lat: record.baseLat,
           lng: record.baseLng,
           telefonoEncendido: false,
-          airplaneMode: true,
+          airplaneMode: nativeAirplane === true,
+          internetAvailable: state.isConnected !== false,
         });
         await saveLockState(lockState);
         await applyLockState(true, lockState.reason, lockState.distanciaBaseM);
-        await sendPowerStateReport(false, true);
+        if (nativeAirplane === true) {
+          await sendPowerStateReport(false, true);
+        }
         setLastReportAt(new Date().toISOString());
       }
     });

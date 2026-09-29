@@ -1,4 +1,6 @@
 import { distanceMeters, formatDistance, isInsideFence, validatePin } from '../src/engine';
+import { evaluateLockState, isHardLockReason, lockReasonMessage } from '../src/modules/lock-engine/evaluate';
+import type { RegistrationRecord } from '../src/constants/config';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -6,9 +8,18 @@ function assert(condition: boolean, message: string) {
   }
 }
 
-console.log('[smoke] fence engine v2');
-assert(isInsideFence(100, 120), '100m debe estar dentro de 120m');
-assert(!isInsideFence(150, 120), '150m debe estar fuera de 120m');
+const base: RegistrationRecord = {
+  nombreRegistrado: 'Prueba',
+  deviceFingerprint: 'android-test',
+  baseLat: -33.4489,
+  baseLng: -70.6693,
+  radioMetros: 20,
+  registeredAt: '2026-09-28T00:00:00.000Z',
+};
+
+console.log('[smoke] fence engine v2.2');
+assert(isInsideFence(10, 20), '10m debe estar dentro de 20m');
+assert(!isInsideFence(25, 20), '25m debe estar fuera de 20m');
 assert(formatDistance(85) === '85 m', 'formatDistance metros');
 assert(distanceMeters(-33.4489, -70.6693, -33.4490, -70.6693) < 20, 'distancia corta');
 
@@ -16,4 +27,105 @@ console.log('[smoke] pin');
 assert(validatePin('1312', '1312'), 'PIN test 1312 válido');
 assert(!validatePin('0000', '1312'), 'PIN incorrecto rechazado');
 
-console.log('[ok] geo-empresa smoke v2');
+console.log('[smoke] lock policy');
+const inside = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+});
+assert(!inside.active, 'dentro de 20m no bloquea');
+assert(inside.dentroPerimetro, 'flag dentro_perimetro');
+
+const outside = evaluateLockState({
+  registration: base,
+  lat: -33.4505,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+});
+assert(outside.active, 'fuera de 20m bloquea');
+assert(outside.reason === 'outside_fence', 'reason outside_fence');
+assert(lockReasonMessage(outside.reason, outside.distanciaBaseM, 20).includes('20 m'), 'mensaje radio');
+
+const airplane = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: true,
+});
+assert(airplane.active, 'avión bloquea aunque esté en base');
+assert(airplane.reason === 'airplane_mode', 'reason airplane_mode');
+
+const off = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: false,
+  airplaneMode: false,
+});
+assert(off.active, 'apagado/inactivo bloquea');
+assert(off.reason === 'phone_off', 'reason phone_off');
+
+const noBackend = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  backendReachable: false,
+});
+assert(noBackend.active, 'sin base corporativa bloquea');
+assert(noBackend.reason === 'no_backend', 'reason no_backend');
+
+const noAdmin = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  adminPingFresh: false,
+});
+assert(noAdmin.active, 'sin ping admin bloquea');
+assert(noAdmin.reason === 'admin_ping', 'reason admin_ping');
+
+const adminLock = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  adminLock: true,
+});
+assert(adminLock.active, 'lock TI bloquea');
+assert(adminLock.reason === 'admin_lock', 'reason admin_lock');
+
+const noNet = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  internetAvailable: false,
+});
+assert(noNet.active, 'sin internet bloquea');
+assert(noNet.reason === 'no_internet', 'reason no_internet');
+
+const gpsOff = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  gpsEnabled: false,
+});
+assert(gpsOff.active, 'gps off bloquea');
+assert(gpsOff.reason === 'gps_off', 'reason gps_off');
+assert(isHardLockReason('airplane_mode'), 'avión es hard lock');
+assert(isHardLockReason('no_internet'), 'sin internet es hard lock');
+assert(isHardLockReason('gps_off'), 'gps off es hard lock');
+assert(!isHardLockReason('outside_fence'), 'cerca no es hard lock (lo envía la consola)');
+
+console.log('[ok] geo-empresa smoke v2.4');

@@ -9,9 +9,14 @@ type GeoEmpresaNativeModule = {
   requestIgnoreBatteryOptimizations: () => Promise<void>;
   requestOverlayPermission: () => Promise<void>;
   showSecurityLock: (title: string, message: string) => Promise<void>;
+  lockDevice: (title: string, message: string) => Promise<void>;
+  lockDeviceForced: (title: string, message: string) => Promise<void>;
   hideSecurityLock: () => Promise<void>;
   startLockTask: () => Promise<void>;
   stopLockTask: () => Promise<void>;
+  startWatchdog: () => Promise<void>;
+  configureAgent: (url: string, anonKey: string, fingerprint: string) => Promise<void>;
+  isLockTaskActive: () => Promise<boolean>;
   moveAppToBackground: () => Promise<void>;
   bringAppToForeground: () => Promise<void>;
 };
@@ -56,7 +61,15 @@ export async function requestOverlayPermission(): Promise<void> {
 
 export async function showSecurityLock(title: string, message: string): Promise<void> {
   if (!Native) return;
+  if (Native.lockDevice) {
+    await Native.lockDevice(title, message);
+    return;
+  }
   await Native.showSecurityLock(title, message);
+}
+
+export async function lockDevice(title: string, message: string): Promise<void> {
+  await showSecurityLock(title, message);
 }
 
 export async function hideSecurityLock(): Promise<void> {
@@ -82,4 +95,28 @@ export async function moveAppToBackground(): Promise<void> {
 export async function bringAppToForeground(): Promise<void> {
   if (!Native) return;
   await Native.bringAppToForeground();
+}
+
+export async function lockDeviceForced(title: string, message: string): Promise<void> {
+  if (!Native) return;
+  if (Native.lockDeviceForced) {
+    await Native.lockDeviceForced(title, message);
+    return;
+  }
+  await showSecurityLock(title, message);
+}
+
+export async function startWatchdog(): Promise<void> {
+  if (!Native?.startWatchdog) return;
+  await Native.startWatchdog();
+}
+
+export async function configureAgent(url: string, anonKey: string, fingerprint: string): Promise<void> {
+  if (!Native?.configureAgent) return;
+  await Native.configureAgent(url, anonKey, fingerprint);
+}
+
+export async function isLockTaskActive(): Promise<boolean> {
+  if (!Native?.isLockTaskActive) return false;
+  return Native.isLockTaskActive();
 }

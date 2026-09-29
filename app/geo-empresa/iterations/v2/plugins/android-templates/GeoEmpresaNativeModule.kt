@@ -143,18 +143,46 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
   }
 
   @ReactMethod
-  fun showSecurityLock(title: String, message: String, promise: Promise) {
+  fun configureAgent(url: String, anonKey: String, fingerprint: String, promise: Promise) {
     try {
-      val intent = Intent(reactContext, SecurityLockActivity::class.java).apply {
-        putExtra(SecurityLockActivity.EXTRA_TITLE, title)
-        putExtra(SecurityLockActivity.EXTRA_MESSAGE, message)
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-      }
-      reactContext.startActivity(intent)
+      reactContext.getSharedPreferences(GeoLockController.PREFS, Context.MODE_PRIVATE)
+        .edit()
+        .putString(GeoCommandClient.KEY_URL, url)
+        .putString(GeoCommandClient.KEY_ANON, anonKey)
+        .putString(GeoCommandClient.KEY_FP, fingerprint)
+        .apply()
+      GeoLockController.ensurePolicies(reactContext)
+      GeoLockService.start(reactContext)
+      GeoCommandClient.maybePoll(reactContext)
       promise.resolve(null)
     } catch (error: Exception) {
-      promise.reject("security_lock_error", error)
+      promise.reject("configure_agent_error", error)
     }
+  }
+
+  @ReactMethod
+  fun lockDevice(title: String, message: String, promise: Promise) {
+    try {
+      GeoLockController.applyFullLock(reactContext, title, message, false)
+      promise.resolve(null)
+    } catch (error: Exception) {
+      promise.reject("lock_device_error", error)
+    }
+  }
+
+  @ReactMethod
+  fun lockDeviceForced(title: String, message: String, promise: Promise) {
+    try {
+      GeoLockController.applyFullLock(reactContext, title, message, true)
+      promise.resolve(null)
+    } catch (error: Exception) {
+      promise.reject("lock_device_forced_error", error)
+    }
+  }
+
+  @ReactMethod
+  fun showSecurityLock(title: String, message: String, promise: Promise) {
+    lockDevice(title, message, promise)
   }
 
   @ReactMethod
@@ -162,7 +190,7 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
     try {
       val activity = currentActivity()
       if (activity is SecurityLockActivity) {
-        activity.finish()
+        GeoLockController.clearLock(activity)
       }
       promise.resolve(null)
     } catch (error: Exception) {
@@ -173,10 +201,12 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
   @ReactMethod
   fun startLockTask(promise: Promise) {
     try {
-      val activity = currentActivity()
-      if (activity != null && devicePolicyManager().isDeviceOwnerApp(reactContext.packageName)) {
-        activity.startLockTask()
-      }
+      GeoLockController.applyFullLock(
+        reactContext,
+        "Teléfono bloqueado",
+        "Política corporativa activa. Ingresa el PIN corporativo.",
+        true,
+      )
       promise.resolve(null)
     } catch (error: Exception) {
       promise.reject("start_lock_task_error", error)
@@ -187,7 +217,11 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
   fun stopLockTask(promise: Promise) {
     try {
       val activity = currentActivity()
-      activity?.stopLockTask()
+      if (activity is SecurityLockActivity) {
+        GeoLockController.clearLock(activity)
+      } else {
+        activity?.stopLockTask()
+      }
       promise.resolve(null)
     } catch (error: Exception) {
       promise.reject("stop_lock_task_error", error)
@@ -217,6 +251,26 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
       promise.resolve(null)
     } catch (error: Exception) {
       promise.reject("bring_foreground_error", error)
+    }
+  }
+
+  @ReactMethod
+  fun startWatchdog(promise: Promise) {
+    try {
+      GeoLockController.ensurePolicies(reactContext)
+      GeoLockService.start(reactContext)
+      promise.resolve(null)
+    } catch (error: Exception) {
+      promise.reject("watchdog_error", error)
+    }
+  }
+
+  @ReactMethod
+  fun isLockTaskActive(promise: Promise) {
+    try {
+      promise.resolve(GeoLockController.isLockTaskActive(reactContext))
+    } catch (error: Exception) {
+      promise.reject("lock_task_state_error", error)
     }
   }
 

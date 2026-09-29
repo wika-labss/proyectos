@@ -6,10 +6,12 @@ export const appConfig = {
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnenBybW9wZ21iamp4c2JqbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NzA1OTQsImV4cCI6MjEwMzQ0NjU5NH0.p9dukYuXqgvp5QdlW8PEaCuBKRQnhfPuwsVdht6bEkw',
   defaultPin: '1312',
-  fenceRadiusM: 120,
-  pingIntervalMs: 5 * 60 * 1000,
+  fenceRadiusM: 20,
+  pingIntervalMs: 30 * 1000,
   splashDurationMs: 3000,
-  lockSnoozeMs: 15 * 60 * 1000,
+  lockSnoozeMs: 60 * 1000,
+  commandPollMs: 5 * 1000,
+  adminHeartbeatStaleMs: 90 * 1000,
   backgroundLocationTask: 'GEO_EMPRESA_LOCATION_PING',
   storageKeys: {
     registration: '@geo-empresa:v2:registration',
@@ -29,7 +31,15 @@ export type RegistrationRecord = {
   registeredAt: string;
 };
 
-export type LockReason = 'outside_fence' | 'airplane_mode' | 'phone_off';
+export type LockReason =
+  | 'outside_fence'
+  | 'airplane_mode'
+  | 'phone_off'
+  | 'no_backend'
+  | 'admin_ping'
+  | 'admin_lock'
+  | 'gps_off'
+  | 'no_internet';
 
 export type LockState = {
   active: boolean;

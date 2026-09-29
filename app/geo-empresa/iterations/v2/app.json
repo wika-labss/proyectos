@@ -2,7 +2,7 @@
   "expo": {
     "name": "Geo Empresa",
     "slug": "geo-empresa",
-    "version": "2.0.0",
+    "version": "2.4.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -18,12 +18,18 @@
         "backgroundColor": "#0F172A"
       },
       "package": "com.wika.geoempresa",
+      "versionCode": 25,
       "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
         "FOREGROUND_SERVICE",
         "FOREGROUND_SERVICE_LOCATION",
+        "FOREGROUND_SERVICE_SPECIAL_USE",
+        "POST_NOTIFICATIONS",
+        "USE_FULL_SCREEN_INTENT",
         "RECEIVE_BOOT_COMPLETED",
         "WAKE_LOCK",
         "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
@@ -37,7 +43,7 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Geo Empresa necesita ubicación permanente para verificar que el teléfono corporativo permanece en el perímetro autorizado.",
-          "locationAlwaysPermission": "Geo Empresa monitorea la ubicación en segundo plano cada 5 minutos según política corporativa.",
+          "locationAlwaysPermission": "Geo Empresa monitorea la ubicación en segundo plano cada 30 segundos según política corporativa.",
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
         }

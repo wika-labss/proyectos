@@ -46,10 +46,16 @@ function patchMainApplication(projectRoot) {
   }
 
   let content = fs.readFileSync(mainAppPath, 'utf8');
-  if (!content.includes('GeoEmpresaNativePackage')) {
+      if (!content.includes('GeoEmpresaNativePackage')) {
     content = content.replace(
       'PackageList(this).packages.apply {',
       'PackageList(this).packages.apply {\n              add(GeoEmpresaNativePackage())',
+    );
+  }
+  if (!content.includes('GeoLockController.ensurePolicies')) {
+    content = content.replace(
+      'super.onCreate()',
+      'super.onCreate()\n    GeoLockController.ensurePolicies(this)\n    GeoLockService.start(this)',
     );
   }
   fs.writeFileSync(mainAppPath, content);
@@ -103,6 +109,18 @@ const withGeoEmpresaAndroid = (config) => {
           },
         ],
       },
+      {
+        $: {
+          'android:name': '.GeoAirplaneReceiver',
+          'android:exported': 'true',
+          'android:enabled': 'true',
+        },
+        'intent-filter': [
+          {
+            action: [{ $: { 'android:name': 'android.intent.action.AIRPLANE_MODE' } }],
+          },
+        ],
+      },
     ];
 
     for (const receiver of receivers) {
@@ -121,11 +139,18 @@ const withGeoEmpresaAndroid = (config) => {
     const lockActivity = {
       $: {
         'android:name': '.SecurityLockActivity',
-        'android:exported': 'false',
-        'android:launchMode': 'singleTop',
+        'android:exported': 'true',
+        'android:launchMode': 'singleTask',
         'android:excludeFromRecents': 'true',
-        'android:taskAffinity': '',
+        'android:showOnLockScreen': 'true',
+        'android:turnScreenOn': 'true',
       },
+      'intent-filter': [
+        {
+          action: [{ $: { 'android:name': 'com.wika.geoempresa.LOCK' } }],
+          category: [{ $: { 'android:name': 'android.intent.category.DEFAULT' } }],
+        },
+      ],
     };
 
     const hasLockActivity = application.activity.some(
@@ -133,6 +158,39 @@ const withGeoEmpresaAndroid = (config) => {
     );
     if (!hasLockActivity) {
       application.activity.push(lockActivity);
+    } else {
+      const existing = application.activity.find(
+        (item) => item.$?.['android:name'] === lockActivity.$['android:name'],
+      );
+      if (existing && existing.$) {
+        existing.$['android:exported'] = 'true';
+        existing['intent-filter'] = lockActivity['intent-filter'];
+      }
+    }
+
+    if (!application.service) {
+      application.service = [];
+    }
+    const lockService = {
+      $: {
+        'android:name': '.GeoLockService',
+        'android:exported': 'false',
+        'android:foregroundServiceType': 'location|specialUse',
+      },
+      property: [
+        {
+          $: {
+            'android:name': 'android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE',
+            'android:value': 'corporate device kiosk watchdog',
+          },
+        },
+      ],
+    };
+    const hasService = application.service.some(
+      (item) => item.$?.['android:name'] === lockService.$['android:name'],
+    );
+    if (!hasService) {
+      application.service.push(lockService);
     }
 
     return config;

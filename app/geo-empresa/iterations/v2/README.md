@@ -1,20 +1,14 @@
-# Geo Empresa V2
+# Geo Empresa V2.4
 
-Agente Android corporativo con bloqueo PIN, registro único y Supabase selectivo.
+Kiosco Device Owner **inmediato** (sin snooze) si:
 
-## V2 vs V1
+- modo avión
+- GPS apagado
+- sin internet / sin Supabase
 
-| Feature | V2 |
-|---------|-----|
-| Registro único por `android-{ANDROID_ID}` | Si |
-| Histórico Supabase solo anomalías | Si |
-| Post-registro solo splash vissiuss | Si |
-| Pantalla bloqueo PIN `1312` | Si |
-| Lock Task si Device Owner | Si |
+Ping de ubicación cada **30 s** (nativo + consola). Si la consola ve **fuera de 20 m**, envía `lock`. PIN `1312`.
 
-Ver [DEVICE-OWNER.md](./DEVICE-OWNER.md) y [DS-IMPLEMENTATION.md](./DS-IMPLEMENTATION.md).
-
-## Comandos
+Consola: [admin/index.html](./admin/index.html). Clave `geo-ti-consola-1982`.
 
 ```bash
 npm install

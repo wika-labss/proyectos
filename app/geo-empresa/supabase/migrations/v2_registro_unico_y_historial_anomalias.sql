@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION public.registrar_dispositivo(
   p_base_lat double precision,
   p_base_lng double precision,
   p_modelo text DEFAULT NULL,
-  p_radio_metros integer DEFAULT 120
+  p_radio_metros integer DEFAULT 20
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -49,7 +49,7 @@ BEGIN
     NULLIF(trim(p_modelo), ''),
     p_base_lat,
     p_base_lng,
-    COALESCE(p_radio_metros, 120),
+    COALESCE(p_radio_metros, 20),
     true,
     true,
     true

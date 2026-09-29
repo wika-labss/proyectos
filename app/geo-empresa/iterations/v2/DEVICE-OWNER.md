@@ -1,23 +1,28 @@
-# Device Owner — Geo Empresa V2
+# Device Owner — Geo Empresa V2.2
 
-## Bloqueo total de Inicio
+PIN `1312` (snooze **1 minuto** en avión, geocerca e inactivo).
 
-`startLockTask()` solo impide el botón Home cuando la app es **Device Owner**.
+Geocerca: **20 m**.
 
-### Prueba ADB (1 dispositivo)
+## Instalar sin perder Owner
 
-```bash
-adb install geo-empresa-v2-release.apk
-adb shell dpm set-device-owner com.wika.geoempresa/.GeoDeviceAdminReceiver
-adb shell dpm get-device-owner
+```powershell
+adb install -r geo-empresa-v2.apk
+adb shell dumpsys package com.wika.geoempresa | findstr versionName
+adb shell dpm list-owners
 ```
 
-Requiere factory reset o dispositivo sin cuentas configuradas.
+`versionName` = `2.2.0`. No desinstalar el paquete.
 
-### Producción
+## Prueba interna de kiosco (ADB)
 
-Generar QR Android Enterprise apuntando a `com.wika.geoempresa` tras reset IT.
+Con Device Owner ya puesto:
 
-## Flota legacy
+```powershell
+adb shell am start -n com.wika.geoempresa/.SecurityLockActivity
+adb shell dumpsys activity lock-task
+```
 
-Sin Device Owner, la pantalla de bloqueo RN + `SecurityLockActivity` nativa aplican presión visual; el usuario aún puede ir a Inicio si no concedió overlay.
+`SecurityLockActivity` tiene que verse. Home no debe sacar. PIN `1312`.
+
+Modo avión: dejar la notificación “Geo Empresa” visible, avión OFF → ON. En logcat: `GeoEmpresa`.

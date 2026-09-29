@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Geo Empresa — Consola TI</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --primary: #2563eb;
+        --success: #22c55e;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --border: #334155;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 20px 28px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+      h1 { margin: 0; font-size: 22px; }
+      .muted { color: var(--muted); font-size: 13px; }
+      main { padding: 24px 28px; display: grid; gap: 20px; }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+      }
+      button {
+        background: var(--primary);
+        color: white;
+        border: 0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button.danger { background: var(--danger); }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); }
+      tr.selected { background: #1d4ed81a; }
+      tr { cursor: pointer; }
+      .ok { color: var(--success); }
+      .bad { color: var(--danger); }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      input[type="text"] {
+        background: #0f172a;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 10px;
+      }
+      #log, #cmds {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        color: var(--muted);
+        max-height: 180px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Consola TI · Geo Empresa</h1>
+        <div class="muted">
+          Ping de ubicación cada 30 s. Si está fuera de 20 m, se envía kiosco.
+          Avión / sin internet / GPS off los bloquea la APK al instante.
+        </div>
+      </div>
+      <div class="muted" id="clock"></div>
+    </header>
+    <main>
+      <section class="card row">
+        <label class="muted">Clave consola</label>
+        <input id="clave" type="text" value="geo-ti-consola-1982" size="24" />
+        <button id="refresh">Actualizar flota</button>
+        <label class="muted"><input id="auto" type="checkbox" checked /> Ping 30 s + lock si fuera</label>
+      </section>
+      <section class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Modelo</th>
+              <th>Estado</th>
+              <th>Perímetro</th>
+              <th>Distancia</th>
+              <th>Último GPS</th>
+              <th>Agente</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </section>
+      <section class="card">
+        <div class="row">
+          <strong id="selected">Ningún dispositivo</strong>
+          <button id="ping" disabled>Ping ahora</button>
+          <button id="lock" class="danger" disabled>Kiosco ahora</button>
+          <a id="map" class="muted" target="_blank" rel="noreferrer">Abrir mapa</a>
+        </div>
+        <p class="muted" id="detail"></p>
+      </section>
+      <section class="card">
+        <div class="muted">Comandos (estado real)</div>
+        <div id="cmds">—</div>
+      </section>
+      <section class="card">
+        <div class="muted">Eventos</div>
+        <div id="log"></div>
+      </section>
+    </main>
+    <script>
+      const SUPABASE_URL = "https://ugzprmopgmbjjxsbjmti.supabase.co";
+      const ANON =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnenBybW9wZ21iamp4c2JqbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NzA1OTQsImV4cCI6MjEwMzQ0NjU5NH0.p9dukYuXqgvp5QdlW8PEaCuBKRQnhfPuwsVdht6bEkw";
+      let fleet = [];
+      let selectedId = null;
+      const lastOutsideLockByDevice = {};
+
+      function log(message) {
+        const node = document.getElementById("log");
+        const line = new Date().toISOString().slice(11, 19) + "  " + message;
+        node.textContent = line + "\n" + node.textContent;
+      }
+
+      async function rpc(name, body) {
+        const response = await fetch(SUPABASE_URL + "/rest/v1/rpc/" + name, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: ANON,
+            Authorization: "Bearer " + ANON,
+          },
+          body: JSON.stringify(body),
+        });
+        const text = await response.text();
+        if (!response.ok) throw new Error(name + " " + response.status + " " + text);
+        return text ? JSON.parse(text) : null;
+      }
+
+      function clave() {
+        return document.getElementById("clave").value.trim();
+      }
+
+      function fmt(ts) {
+        if (!ts) return "—";
+        return new Date(ts).toLocaleString();
+      }
+
+      function age(ts) {
+        if (!ts) return "sin señal";
+        const sec = Math.round((Date.now() - new Date(ts).getTime()) / 1000);
+        if (sec < 60) return sec + " s";
+        return Math.round(sec / 60) + " min";
+      }
+
+      function render() {
+        const body = document.getElementById("rows");
+        body.innerHTML = fleet
+          .map((d) => {
+            const inside = d.dentro_perimetro;
+            const selected = d.id === selectedId ? "selected" : "";
+            return `<tr class="${selected}" data-id="${d.id}">
+              <td>${d.nombre_registrado}</td>
+              <td>${d.modelo || "—"}</td>
+              <td>${d.estado_enrollment}</td>
+              <td class="${inside ? "ok" : "bad"}">${inside ? "dentro" : "fuera"}</td>
+              <td>${d.distancia_base_m == null ? "—" : Math.round(d.distancia_base_m) + " m / " + d.radio_metros + " m"}</td>
+              <td>${age(d.ultimo_ping_at)}</td>
+              <td>${age(d.ultimo_agente_at)}</td>
+            </tr>`;
+          })
+          .join("");
+        body.querySelectorAll("tr").forEach((row) => {
+          row.onclick = () => select(row.dataset.id);
+        });
+        const device = fleet.find((d) => d.id === selectedId);
+        document.getElementById("ping").disabled = !device;
+        document.getElementById("lock").disabled = !device;
+        if (!device) {
+          document.getElementById("selected").textContent = "Ningún dispositivo";
+          document.getElementById("detail").textContent = "";
+          document.getElementById("map").href = "#";
+          return;
+        }
+        document.getElementById("selected").textContent = device.nombre_registrado + " · " + (device.modelo || "");
+        document.getElementById("detail").textContent =
+          (device.dentro_perimetro ? "DENTRO" : "FUERA") +
+          " · GPS " +
+          (device.ultima_lat || "—") +
+          ", " +
+          (device.ultima_lng || "—") +
+          " · ping " +
+          fmt(device.ultimo_ping_at) +
+          " · agente " +
+          fmt(device.ultimo_agente_at);
+        if (device.ultima_lat && device.ultima_lng) {
+          document.getElementById("map").href =
+            "https://maps.google.com/?q=" + device.ultima_lat + "," + device.ultima_lng;
+        }
+      }
+
+      function select(id) {
+        selectedId = id;
+        render();
+        loadCommands().catch((e) => log(e.message));
+      }
+
+      async function refresh() {
+        fleet = await rpc("ti_listar_flota", { p_clave: clave() });
+        if (!Array.isArray(fleet)) fleet = [];
+        if (!selectedId && fleet[0]) selectedId = fleet[0].id;
+        render();
+        await maybeLockIfOutside();
+        await loadCommands();
+      }
+
+      async function command(tipo) {
+        if (!selectedId) return null;
+        const result = await rpc("ti_solicitar_comando", {
+          p_clave: clave(),
+          p_dispositivo_id: selectedId,
+          p_tipo: tipo,
+        });
+        const extra = result.dedup ? " (ya pendiente)" : "";
+        log(tipo + " → " + result.estado + extra + " " + result.id);
+        await refresh();
+        return result;
+      }
+
+      async function maybeLockIfOutside() {
+        if (!document.getElementById("auto").checked) return;
+        for (const device of fleet.filter((d) => d.estado_enrollment === "aprobado")) {
+          if (device.dentro_perimetro !== false) continue;
+          if (lastOutsideLockByDevice[device.id] === device.ultimo_ping_at) continue;
+          lastOutsideLockByDevice[device.id] = device.ultimo_ping_at;
+          log((device.nombre_registrado || device.id) + " fuera de cerca — enviando kiosco");
+          await rpc("ti_solicitar_comando", {
+            p_clave: clave(),
+            p_dispositivo_id: device.id,
+            p_tipo: "lock",
+          });
+        }
+      }
+
+      async function cyclePing() {
+        if (!document.getElementById("auto").checked) return;
+        if (!fleet.length) await refresh();
+        const targets = fleet.filter((d) => d.estado_enrollment === "aprobado");
+        for (const device of targets) {
+          await rpc("ti_heartbeat_admin", { p_clave: clave(), p_dispositivo_id: device.id });
+          const result = await rpc("ti_solicitar_comando", {
+            p_clave: clave(),
+            p_dispositivo_id: device.id,
+            p_tipo: "ping",
+          });
+          const extra = result && result.dedup ? " (ya pendiente)" : "";
+          log("ping → " + (result ? result.estado : "ok") + extra + " " + (device.nombre_registrado || device.id));
+        }
+      }
+
+      async function loadCommands() {
+        if (!selectedId) return;
+        const rows = await rpc("ti_listar_comandos", { p_clave: clave(), p_dispositivo_id: selectedId });
+        const list = Array.isArray(rows) ? rows.slice(0, 12) : [];
+        document.getElementById("cmds").textContent = list.length
+          ? list
+              .map(
+                (c) =>
+                  (c.solicitado_at || "").slice(11, 19) +
+                  "  " +
+                  c.tipo +
+                  "  " +
+                  c.estado +
+                  (c.error_mensaje ? "  " + c.error_mensaje : ""),
+              )
+              .join("\n")
+          : "sin comandos";
+      }
+
+      document.getElementById("refresh").onclick = () => refresh().catch((e) => log(e.message));
+      document.getElementById("ping").onclick = () => command("ping").catch((e) => log(e.message));
+      document.getElementById("lock").onclick = () => command("lock").catch((e) => log(e.message));
+
+      setInterval(() => {
+        document.getElementById("clock").textContent = new Date().toLocaleString();
+      }, 1000);
+      setInterval(() => {
+        cyclePing().catch((e) => log("ping 30s: " + e.message));
+      }, 30000);
+      setInterval(() => {
+        refresh().catch((e) => log(e.message));
+      }, 5000);
+
+      refresh()
+        .then(() => {
+          log("flota cargada");
+          return cyclePing();
+        })
+        .catch((e) => log(e.message));
+    </script>
+  </body>
+</html>

@@ -2,12 +2,8 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { appConfig } from '../../constants/config';
 import { reportarUbicacion } from '../../engine';
-import {
-  bringAppToForeground,
-  showSecurityLock,
-  startLockTask,
-} from '../device-admin/native';
-import { evaluateLockState, lockReasonMessage } from '../lock-engine/evaluate';
+import { lockDeviceForced, showSecurityLock } from '../device-admin/native';
+import { evaluateLockState, isHardLockReason, lockReasonMessage } from '../lock-engine/evaluate';
 import {
   loadLastLocation,
   loadLockSnoozeUntil,
@@ -28,14 +24,16 @@ async function applyLockSideEffects(
   }
 
   const snoozeUntil = await loadLockSnoozeUntil();
-  if (snoozeUntil && Date.now() < snoozeUntil) {
+  if (snoozeUntil && Date.now() < snoozeUntil && !isHardLockReason(state.reason) && state.reason !== 'admin_lock') {
     return;
   }
 
   const message = lockReasonMessage(state.reason, state.distanciaBaseM, registration.radioMetros);
-  await bringAppToForeground();
-  await showSecurityLock('Alerta Geo Empresa', message);
-  await startLockTask();
+  if (isHardLockReason(state.reason) || state.reason === 'admin_lock') {
+    await lockDeviceForced('Teléfono bloqueado', message);
+    return;
+  }
+  await showSecurityLock('Teléfono bloqueado', message);
 }
 
 export async function sendLocationPing(telefonoEncendido: boolean, airplaneMode = false): Promise<void> {
@@ -68,23 +66,27 @@ export async function sendLocationPing(telefonoEncendido: boolean, airplaneMode 
     }
   }
 
-  const report = await reportarUbicacion({
-    deviceFingerprint: registration.deviceFingerprint,
-    lat,
-    lng,
-    precisionM: accuracyM,
-    telefonoEncendido,
-  });
-
   const lockState = evaluateLockState({
     registration,
     lat,
     lng,
-    telefonoEncendido: report.telefono_encendido,
+    telefonoEncendido,
     airplaneMode,
   });
 
   await applyLockSideEffects(lockState, registration);
+
+  try {
+    await reportarUbicacion({
+      deviceFingerprint: registration.deviceFingerprint,
+      lat,
+      lng,
+      precisionM: accuracyM,
+      telefonoEncendido,
+    });
+  } catch (error) {
+    console.warn('[geo-empresa] reportar_ubicacion failed', error);
+  }
 }
 
 export async function sendPowerStateReport(
@@ -126,7 +128,7 @@ export async function startBackgroundMonitoring(): Promise<void> {
     showsBackgroundLocationIndicator: true,
     foregroundService: {
       notificationTitle: 'Geo Empresa activo',
-      notificationBody: 'Monitoreo corporativo cada 5 minutos',
+      notificationBody: 'Monitoreo corporativo cada 30 segundos',
     },
     pausesUpdatesAutomatically: false,
   });

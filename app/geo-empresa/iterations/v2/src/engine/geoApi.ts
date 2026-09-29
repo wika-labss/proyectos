@@ -87,7 +87,7 @@ export async function registrarDispositivo(input: {
     p_base_lat: input.baseLat,
     p_base_lng: input.baseLng,
     p_modelo: input.modelo ?? null,
-    p_radio_metros: input.radioMetros ?? 120,
+    p_radio_metros: input.radioMetros ?? 20,
   });
 
   return mapDevice(result);
@@ -118,7 +118,7 @@ function mapDevice(value: Record<string, unknown>): DeviceRegistration {
     device_fingerprint: String(value.device_fingerprint ?? ''),
     base_lat: Number(value.base_lat ?? 0),
     base_lng: Number(value.base_lng ?? 0),
-    radio_metros: Number(value.radio_metros ?? 120),
+    radio_metros: Number(value.radio_metros ?? 20),
     telefono_encendido: Boolean(value.telefono_encendido ?? true),
     dentro_perimetro: Boolean(value.dentro_perimetro ?? true),
     registrado_at: value.registrado_at ? String(value.registrado_at) : undefined,
@@ -132,7 +132,7 @@ function mapReport(value: Record<string, unknown>): LocationReport {
     telefono_encendido: Boolean(value.telefono_encendido ?? true),
     dentro_perimetro: Boolean(value.dentro_perimetro ?? true),
     distancia_base_m: Number(value.distancia_base_m ?? 0),
-    radio_metros: Number(value.radio_metros ?? 120),
+    radio_metros: Number(value.radio_metros ?? 20),
     ultimo_ping_at: String(value.ultimo_ping_at ?? new Date().toISOString()),
     historial_registrado: Boolean(value.historial_registrado ?? false),
   };
@@ -140,4 +140,59 @@ function mapReport(value: Record<string, unknown>): LocationReport {
 
 export function validatePin(input: string, expectedPin: string): boolean {
   return input.trim() === expectedPin.trim();
+}
+
+export type PendingCommand = {
+  id: string;
+  tipo: string;
+  solicitado_at?: string;
+};
+
+export type HeartbeatAgente = {
+  ok: boolean;
+  admin_stale: boolean;
+  dentro_perimetro: boolean;
+  politica_autolock: boolean;
+  distancia_base_m: number;
+  radio_metros: number;
+  comando: PendingCommand | null;
+};
+
+export async function heartbeatAgente(deviceFingerprint: string): Promise<HeartbeatAgente> {
+  const result = await postRpc<Record<string, unknown>>('heartbeat_agente', {
+    p_device_fingerprint: deviceFingerprint,
+  });
+  const rawCommand = result.comando;
+  let comando: PendingCommand | null = null;
+  if (rawCommand && typeof rawCommand === 'object') {
+    const cmd = rawCommand as Record<string, unknown>;
+    comando = {
+      id: String(cmd.id ?? ''),
+      tipo: String(cmd.tipo ?? ''),
+      solicitado_at: cmd.solicitado_at ? String(cmd.solicitado_at) : undefined,
+    };
+  }
+  return {
+    ok: Boolean(result.ok ?? true),
+    admin_stale: Boolean(result.admin_stale),
+    dentro_perimetro: Boolean(result.dentro_perimetro ?? true),
+    politica_autolock: Boolean(result.politica_autolock ?? true),
+    distancia_base_m: Number(result.distancia_base_m ?? 0),
+    radio_metros: Number(result.radio_metros ?? 20),
+    comando,
+  };
+}
+
+export async function acusarComando(input: {
+  comandoId: string;
+  deviceFingerprint: string;
+  ok: boolean;
+  error?: string;
+}): Promise<void> {
+  await postRpc('acusar_comando', {
+    p_comando_id: input.comandoId,
+    p_device_fingerprint: input.deviceFingerprint,
+    p_ok: input.ok,
+    p_error: input.error ?? null,
+  });
 }

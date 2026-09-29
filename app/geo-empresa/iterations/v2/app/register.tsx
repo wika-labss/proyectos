@@ -10,10 +10,12 @@ import { colors, spacing } from '../src/constants/theme';
 import { GeoApiError, registrarDispositivo } from '../src/engine';
 import { useMonitoring } from '../src/hooks/MonitoringProvider';
 import {
+  configureAgent,
   isDeviceAdminActive,
   requestDeviceAdmin,
   requestIgnoreBatteryOptimizations,
   requestOverlayPermission,
+  startWatchdog,
 } from '../src/modules/device-admin/native';
 import { startBackgroundMonitoring } from '../src/modules/location-agent/task';
 import {
@@ -89,6 +91,8 @@ export default function RegisterScreen() {
       });
 
       await startBackgroundMonitoring();
+      await startWatchdog();
+      await configureAgent(appConfig.supabaseUrl, appConfig.supabaseAnonKey, fingerprint);
       await refreshRegistration();
       router.replace('/splash');
     } catch (error) {
