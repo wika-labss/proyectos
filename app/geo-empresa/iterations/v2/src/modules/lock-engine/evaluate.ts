@@ -1,6 +1,12 @@
 import type { LockReason, LockState, RegistrationRecord } from '../../constants/config';
 import { distanceMeters, isInsideFence } from '../../engine';
 
+const HARD_REASONS: LockReason[] = ['airplane_mode', 'no_internet', 'gps_off', 'no_backend'];
+
+export function isHardLockReason(reason: LockReason): boolean {
+  return HARD_REASONS.includes(reason);
+}
+
 export function evaluateLockState(input: {
   registration: RegistrationRecord;
   lat: number;
@@ -10,6 +16,8 @@ export function evaluateLockState(input: {
   backendReachable?: boolean;
   adminPingFresh?: boolean;
   adminLock?: boolean;
+  gpsEnabled?: boolean;
+  internetAvailable?: boolean;
 }): LockState {
   const distanciaBaseM = distanceMeters(
     input.lat,
@@ -21,10 +29,16 @@ export function evaluateLockState(input: {
   const backendReachable = input.backendReachable ?? true;
   const adminPingFresh = input.adminPingFresh ?? true;
   const adminLock = input.adminLock ?? false;
+  const gpsEnabled = input.gpsEnabled ?? true;
+  const internetAvailable = input.internetAvailable ?? true;
 
   let reason: LockReason = 'outside_fence';
   if (input.airplaneMode) {
     reason = 'airplane_mode';
+  } else if (!internetAvailable) {
+    reason = 'no_internet';
+  } else if (!gpsEnabled) {
+    reason = 'gps_off';
   } else if (adminLock) {
     reason = 'admin_lock';
   } else if (!backendReachable) {
@@ -39,6 +53,8 @@ export function evaluateLockState(input: {
 
   const active =
     input.airplaneMode ||
+    !internetAvailable ||
+    !gpsEnabled ||
     adminLock ||
     !backendReachable ||
     !adminPingFresh ||
@@ -59,6 +75,10 @@ export function lockReasonMessage(reason: LockReason, distanciaBaseM: number, ra
   switch (reason) {
     case 'airplane_mode':
       return 'Modo avión detectado. Desactívalo para continuar.';
+    case 'no_internet':
+      return 'Sin internet. Ingresa el PIN corporativo.';
+    case 'gps_off':
+      return 'GPS apagado. Actívalo e ingresa el PIN corporativo.';
     case 'phone_off':
       return 'El teléfono reporta estado apagado o inactivo.';
     case 'no_backend':

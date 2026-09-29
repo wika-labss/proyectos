@@ -3,7 +3,7 @@ import * as TaskManager from 'expo-task-manager';
 import { appConfig } from '../../constants/config';
 import { reportarUbicacion } from '../../engine';
 import { lockDeviceForced, showSecurityLock } from '../device-admin/native';
-import { evaluateLockState, lockReasonMessage } from '../lock-engine/evaluate';
+import { evaluateLockState, isHardLockReason, lockReasonMessage } from '../lock-engine/evaluate';
 import {
   loadLastLocation,
   loadLockSnoozeUntil,
@@ -24,12 +24,12 @@ async function applyLockSideEffects(
   }
 
   const snoozeUntil = await loadLockSnoozeUntil();
-  if (snoozeUntil && Date.now() < snoozeUntil) {
+  if (snoozeUntil && Date.now() < snoozeUntil && !isHardLockReason(state.reason) && state.reason !== 'admin_lock') {
     return;
   }
 
   const message = lockReasonMessage(state.reason, state.distanciaBaseM, registration.radioMetros);
-  if (state.reason === 'admin_lock') {
+  if (isHardLockReason(state.reason) || state.reason === 'admin_lock') {
     await lockDeviceForced('Teléfono bloqueado', message);
     return;
   }
@@ -128,7 +128,7 @@ export async function startBackgroundMonitoring(): Promise<void> {
     showsBackgroundLocationIndicator: true,
     foregroundService: {
       notificationTitle: 'Geo Empresa activo',
-      notificationBody: 'Monitoreo corporativo cada 5 minutos',
+      notificationBody: 'Monitoreo corporativo cada 30 segundos',
     },
     pausesUpdatesAutomatically: false,
   });

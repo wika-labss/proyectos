@@ -16,7 +16,7 @@ class GeoAirplaneReceiver : BroadcastReceiver() {
     if (!airplaneOn) {
       return
     }
-    GeoLockController.applyFullLock(
+    GeoLockController.applyHardLock(
       context,
       "Teléfono bloqueado",
       "Modo avión detectado. Ingresa el PIN corporativo.",

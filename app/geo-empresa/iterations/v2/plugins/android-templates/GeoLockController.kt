@@ -28,6 +28,30 @@ object GeoLockController {
     return Settings.Global.getInt(context.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1
   }
 
+  fun isGpsEnabled(context: Context): Boolean {
+    return try {
+      val manager = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+      manager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
+    } catch (_: Exception) {
+      true
+    }
+  }
+
+  fun isInternetAvailable(context: Context): Boolean {
+    return try {
+      val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+      val network = manager.activeNetwork ?: return false
+      val caps = manager.getNetworkCapabilities(network) ?: return false
+      caps.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    } catch (_: Exception) {
+      false
+    }
+  }
+
+  fun applyHardLock(context: Context, title: String, message: String) {
+    applyFullLock(context, title, message, force = true)
+  }
+
   fun isSnoozed(context: Context): Boolean {
     val until = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(KEY_SNOOZE, 0L)
     return until > System.currentTimeMillis()
@@ -73,7 +97,7 @@ object GeoLockController {
       Log.i(TAG, "lock skipped: snoozed")
       return
     }
-    if (!force && isLockTaskActive(context)) {
+    if (isLockTaskActive(context)) {
       Log.i(TAG, "lock skipped: already kiosk")
       return
     }

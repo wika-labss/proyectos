@@ -1,5 +1,5 @@
 import { distanceMeters, formatDistance, isInsideFence, validatePin } from '../src/engine';
-import { evaluateLockState, lockReasonMessage } from '../src/modules/lock-engine/evaluate';
+import { evaluateLockState, isHardLockReason, lockReasonMessage } from '../src/modules/lock-engine/evaluate';
 import type { RegistrationRecord } from '../src/constants/config';
 
 function assert(condition: boolean, message: string) {
@@ -102,4 +102,30 @@ const adminLock = evaluateLockState({
 assert(adminLock.active, 'lock TI bloquea');
 assert(adminLock.reason === 'admin_lock', 'reason admin_lock');
 
-console.log('[ok] geo-empresa smoke v2.3');
+const noNet = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  internetAvailable: false,
+});
+assert(noNet.active, 'sin internet bloquea');
+assert(noNet.reason === 'no_internet', 'reason no_internet');
+
+const gpsOff = evaluateLockState({
+  registration: base,
+  lat: -33.4489,
+  lng: -70.6693,
+  telefonoEncendido: true,
+  airplaneMode: false,
+  gpsEnabled: false,
+});
+assert(gpsOff.active, 'gps off bloquea');
+assert(gpsOff.reason === 'gps_off', 'reason gps_off');
+assert(isHardLockReason('airplane_mode'), 'avión es hard lock');
+assert(isHardLockReason('no_internet'), 'sin internet es hard lock');
+assert(isHardLockReason('gps_off'), 'gps off es hard lock');
+assert(!isHardLockReason('outside_fence'), 'cerca no es hard lock (lo envía la consola)');
+
+console.log('[ok] geo-empresa smoke v2.4');

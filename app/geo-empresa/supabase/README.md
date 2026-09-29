@@ -45,6 +45,7 @@ NOT v_dentro OR NOT COALESCE(p_telefono_encendido, true)
 | `v2_registro_unico_y_historial_anomalias` | Registro único + histórico solo anomalías |
 | `radio_geocerca_20m` | Default y filas existentes a 20 m |
 | `consola_ping_lock_heartbeat` | Consola TI ping/lock + heartbeat agente |
+| `heartbeat_prioriza_lock_dedupe` | Lock primero en la cola; no duplicar pendientes |
 
 Ver SQL en `migrations/v2_registro_unico_y_historial_anomalias.sql`.
 

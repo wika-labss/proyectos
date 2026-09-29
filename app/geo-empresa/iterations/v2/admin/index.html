@@ -57,7 +57,6 @@
       tr { cursor: pointer; }
       .ok { color: var(--success); }
       .bad { color: var(--danger); }
-      .warn { color: var(--warning); }
       .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
       input[type="text"] {
         background: #0f172a;
@@ -66,7 +65,7 @@
         border-radius: 8px;
         padding: 8px 10px;
       }
-      #log {
+      #log, #cmds {
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 12px;
         white-space: pre-wrap;
@@ -80,7 +79,10 @@
     <header>
       <div>
         <h1>Consola TI · Geo Empresa</h1>
-        <div class="muted">Ping forzado y bloqueo kiosco. El teléfono se traba si pierde la base o el ping de esta consola (45 s).</div>
+        <div class="muted">
+          Ping de ubicación cada 30 s. Si está fuera de 20 m, se envía kiosco.
+          Avión / sin internet / GPS off los bloquea la APK al instante.
+        </div>
       </div>
       <div class="muted" id="clock"></div>
     </header>
@@ -89,7 +91,7 @@
         <label class="muted">Clave consola</label>
         <input id="clave" type="text" value="geo-ti-consola-1982" size="24" />
         <button id="refresh">Actualizar flota</button>
-        <label class="muted"><input id="vinculo" type="checkbox" checked /> Mantener vínculo TI del seleccionado</label>
+        <label class="muted"><input id="auto" type="checkbox" checked /> Ping 30 s + lock si fuera</label>
       </section>
       <section class="card">
         <table>
@@ -110,11 +112,15 @@
       <section class="card">
         <div class="row">
           <strong id="selected">Ningún dispositivo</strong>
-          <button id="ping" disabled>Enviar ping</button>
-          <button id="lock" class="danger" disabled>Bloquear</button>
+          <button id="ping" disabled>Ping ahora</button>
+          <button id="lock" class="danger" disabled>Kiosco ahora</button>
           <a id="map" class="muted" target="_blank" rel="noreferrer">Abrir mapa</a>
         </div>
         <p class="muted" id="detail"></p>
+      </section>
+      <section class="card">
+        <div class="muted">Comandos (estado real)</div>
+        <div id="cmds">—</div>
       </section>
       <section class="card">
         <div class="muted">Eventos</div>
@@ -127,6 +133,7 @@
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnenBybW9wZ21iamp4c2JqbXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NzA1OTQsImV4cCI6MjEwMzQ0NjU5NH0.p9dukYuXqgvp5QdlW8PEaCuBKRQnhfPuwsVdht6bEkw";
       let fleet = [];
       let selectedId = null;
+      const lastOutsideLockByDevice = {};
 
       function log(message) {
         const node = document.getElementById("log");
@@ -196,14 +203,13 @@
         }
         document.getElementById("selected").textContent = device.nombre_registrado + " · " + (device.modelo || "");
         document.getElementById("detail").textContent =
-          "GPS " +
+          (device.dentro_perimetro ? "DENTRO" : "FUERA") +
+          " · GPS " +
           (device.ultima_lat || "—") +
           ", " +
           (device.ultima_lng || "—") +
           " · ping " +
           fmt(device.ultimo_ping_at) +
-          " · admin " +
-          fmt(device.ultimo_admin_ping_at) +
           " · agente " +
           fmt(device.ultimo_agente_at);
         if (device.ultima_lat && device.ultima_lng) {
@@ -215,6 +221,7 @@
       function select(id) {
         selectedId = id;
         render();
+        loadCommands().catch((e) => log(e.message));
       }
 
       async function refresh() {
@@ -222,22 +229,70 @@
         if (!Array.isArray(fleet)) fleet = [];
         if (!selectedId && fleet[0]) selectedId = fleet[0].id;
         render();
+        await maybeLockIfOutside();
+        await loadCommands();
       }
 
       async function command(tipo) {
-        if (!selectedId) return;
+        if (!selectedId) return null;
         const result = await rpc("ti_solicitar_comando", {
           p_clave: clave(),
           p_dispositivo_id: selectedId,
           p_tipo: tipo,
         });
-        log(tipo + " enviado → " + result.estado + " " + result.id);
+        const extra = result.dedup ? " (ya pendiente)" : "";
+        log(tipo + " → " + result.estado + extra + " " + result.id);
         await refresh();
+        return result;
       }
 
-      async function heartbeat() {
-        if (!selectedId || !document.getElementById("vinculo").checked) return;
-        await rpc("ti_heartbeat_admin", { p_clave: clave(), p_dispositivo_id: selectedId });
+      async function maybeLockIfOutside() {
+        if (!document.getElementById("auto").checked) return;
+        for (const device of fleet) {
+          if (device.dentro_perimetro !== false) continue;
+          if (lastOutsideLockByDevice[device.id] === device.ultimo_ping_at) continue;
+          lastOutsideLockByDevice[device.id] = device.ultimo_ping_at;
+          log((device.nombre_registrado || device.id) + " fuera de cerca — enviando kiosco");
+          await rpc("ti_solicitar_comando", {
+            p_clave: clave(),
+            p_dispositivo_id: device.id,
+            p_tipo: "lock",
+          });
+        }
+      }
+
+      async function cyclePing() {
+        if (!document.getElementById("auto").checked) return;
+        if (!fleet.length) await refresh();
+        for (const device of fleet) {
+          await rpc("ti_heartbeat_admin", { p_clave: clave(), p_dispositivo_id: device.id });
+          const result = await rpc("ti_solicitar_comando", {
+            p_clave: clave(),
+            p_dispositivo_id: device.id,
+            p_tipo: "ping",
+          });
+          const extra = result && result.dedup ? " (ya pendiente)" : "";
+          log("ping → " + (result ? result.estado : "ok") + extra + " " + (device.nombre_registrado || device.id));
+        }
+      }
+
+      async function loadCommands() {
+        if (!selectedId) return;
+        const rows = await rpc("ti_listar_comandos", { p_clave: clave(), p_dispositivo_id: selectedId });
+        const list = Array.isArray(rows) ? rows.slice(0, 12) : [];
+        document.getElementById("cmds").textContent = list.length
+          ? list
+              .map(
+                (c) =>
+                  (c.solicitado_at || "").slice(11, 19) +
+                  "  " +
+                  c.tipo +
+                  "  " +
+                  c.estado +
+                  (c.error_mensaje ? "  " + c.error_mensaje : ""),
+              )
+              .join("\n")
+          : "sin comandos";
       }
 
       document.getElementById("refresh").onclick = () => refresh().catch((e) => log(e.message));
@@ -248,14 +303,17 @@
         document.getElementById("clock").textContent = new Date().toLocaleString();
       }, 1000);
       setInterval(() => {
-        heartbeat().catch((e) => log("vínculo: " + e.message));
-      }, 10000);
+        cyclePing().catch((e) => log("ping 30s: " + e.message));
+      }, 30000);
       setInterval(() => {
         refresh().catch((e) => log(e.message));
-      }, 8000);
+      }, 5000);
 
       refresh()
-        .then(() => log("flota cargada"))
+        .then(() => {
+          log("flota cargada");
+          return cyclePing();
+        })
         .catch((e) => log(e.message));
     </script>
   </body>

@@ -9,6 +9,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.Network
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -18,35 +21,54 @@ import android.util.Log
 class GeoLockService : Service() {
   private val handler = Handler(Looper.getMainLooper())
   private var receiverRegistered = false
+  private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
-  private val airplaneReceiver = object : BroadcastReceiver() {
+  private val policyReceiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-      if (intent?.action != Intent.ACTION_AIRPLANE_MODE_CHANGED) {
-        return
-      }
-      val on = intent.getBooleanExtra("state", GeoLockController.isAirplaneModeOn(this@GeoLockService))
-      Log.i(TAG, "service AIRPLANE_MODE state=$on")
-      if (on) {
-        GeoLockController.applyFullLock(
-          this@GeoLockService,
-          "Teléfono bloqueado",
-          "Modo avión detectado. Ingresa el PIN corporativo.",
-        )
+      val action = intent?.action ?: return
+      when (action) {
+        Intent.ACTION_AIRPLANE_MODE_CHANGED -> {
+          val on = intent.getBooleanExtra("state", GeoLockController.isAirplaneModeOn(this@GeoLockService))
+          Log.i(TAG, "service AIRPLANE_MODE state=$on")
+          if (on) {
+            GeoLockController.applyHardLock(
+              this@GeoLockService,
+              "Teléfono bloqueado",
+              "Modo avión detectado. Ingresa el PIN corporativo.",
+            )
+          }
+        }
+        LocationManager.PROVIDERS_CHANGED_ACTION -> {
+          val gps = GeoLockController.isGpsEnabled(this@GeoLockService)
+          Log.i(TAG, "service GPS enabled=$gps")
+          if (!gps) {
+            GeoLockController.applyHardLock(
+              this@GeoLockService,
+              "Teléfono bloqueado",
+              "GPS apagado. Actívalo e ingresa el PIN corporativo.",
+            )
+          }
+        }
+        ConnectivityManager.CONNECTIVITY_ACTION -> {
+          val online = GeoLockController.isInternetAvailable(this@GeoLockService)
+          Log.i(TAG, "service INTERNET available=$online")
+          if (!online) {
+            GeoLockController.applyHardLock(
+              this@GeoLockService,
+              "Teléfono bloqueado",
+              "Sin internet. Ingresa el PIN corporativo.",
+            )
+          }
+        }
       }
     }
   }
 
   private val watchdog = object : Runnable {
     override fun run() {
-      if (GeoLockController.isAirplaneModeOn(this@GeoLockService) && !GeoLockController.isSnoozed(this@GeoLockService)) {
-        Log.i(TAG, "watchdog airplane still on — kiosk")
-        GeoLockController.applyFullLock(
-          this@GeoLockService,
-          "Teléfono bloqueado",
-          "Modo avión detectado. Ingresa el PIN corporativo.",
-        )
-      }
+      enforceHardPolicy()
       GeoCommandClient.maybePoll(this@GeoLockService)
+      GeoCommandClient.maybeReportLocation(this@GeoLockService)
       handler.postDelayed(this, WATCHDOG_MS)
     }
   }
@@ -56,7 +78,8 @@ class GeoLockService : Service() {
     GeoLockController.ensurePolicies(this)
     createChannel()
     startForeground(NOTIF_ID, buildWatchNotification())
-    registerAirplaneReceiver()
+    registerPolicyReceiver()
+    registerNetworkCallback()
     handler.post(watchdog)
     Log.i(TAG, "GeoLockService started")
   }
@@ -73,25 +96,93 @@ class GeoLockService : Service() {
   override fun onDestroy() {
     handler.removeCallbacks(watchdog)
     if (receiverRegistered) {
-      unregisterReceiver(airplaneReceiver)
+      unregisterReceiver(policyReceiver)
       receiverRegistered = false
     }
+    unregisterNetworkCallback()
     super.onDestroy()
   }
 
   override fun onBind(intent: Intent?): IBinder? = null
 
-  private fun registerAirplaneReceiver() {
+  private fun enforceHardPolicy() {
+    when {
+      GeoLockController.isAirplaneModeOn(this) -> {
+        Log.i(TAG, "watchdog airplane — kiosk")
+        GeoLockController.applyHardLock(
+          this,
+          "Teléfono bloqueado",
+          "Modo avión detectado. Ingresa el PIN corporativo.",
+        )
+      }
+      !GeoLockController.isGpsEnabled(this) -> {
+        Log.i(TAG, "watchdog gps off — kiosk")
+        GeoLockController.applyHardLock(
+          this,
+          "Teléfono bloqueado",
+          "GPS apagado. Actívalo e ingresa el PIN corporativo.",
+        )
+      }
+      !GeoLockController.isInternetAvailable(this) -> {
+        Log.i(TAG, "watchdog no internet — kiosk")
+        GeoLockController.applyHardLock(
+          this,
+          "Teléfono bloqueado",
+          "Sin internet. Ingresa el PIN corporativo.",
+        )
+      }
+    }
+  }
+
+  private fun registerPolicyReceiver() {
     if (receiverRegistered) {
       return
     }
-    val filter = IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+    val filter = IntentFilter().apply {
+      addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+      addAction(LocationManager.PROVIDERS_CHANGED_ACTION)
+      addAction(ConnectivityManager.CONNECTIVITY_ACTION)
+    }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      registerReceiver(airplaneReceiver, filter, Context.RECEIVER_EXPORTED)
+      registerReceiver(policyReceiver, filter, Context.RECEIVER_EXPORTED)
     } else {
-      registerReceiver(airplaneReceiver, filter)
+      registerReceiver(policyReceiver, filter)
     }
     receiverRegistered = true
+  }
+
+  private fun registerNetworkCallback() {
+    val manager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val callback = object : ConnectivityManager.NetworkCallback() {
+      override fun onLost(network: Network) {
+        handler.post {
+          if (!GeoLockController.isInternetAvailable(this@GeoLockService)) {
+            Log.i(TAG, "network onLost — kiosk")
+            GeoLockController.applyHardLock(
+              this@GeoLockService,
+              "Teléfono bloqueado",
+              "Sin internet. Ingresa el PIN corporativo.",
+            )
+          }
+        }
+      }
+    }
+    networkCallback = callback
+    try {
+      manager.registerDefaultNetworkCallback(callback)
+    } catch (error: Exception) {
+      Log.w(TAG, "registerDefaultNetworkCallback failed", error)
+    }
+  }
+
+  private fun unregisterNetworkCallback() {
+    val callback = networkCallback ?: return
+    try {
+      val manager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+      manager.unregisterNetworkCallback(callback)
+    } catch (_: Exception) {
+    }
+    networkCallback = null
   }
 
   private fun launchKiosk(title: String, message: String) {
@@ -106,6 +197,7 @@ class GeoLockService : Service() {
     manager.notify(NOTIF_ID, buildLockNotification(title, message, pending))
     try {
       startActivity(lockIntent)
+      Log.i(TAG, "ACTION_KIOSK startActivity")
     } catch (error: Exception) {
       Log.e(TAG, "startActivity kiosk failed; full-screen intent posted", error)
     }
@@ -132,7 +224,7 @@ class GeoLockService : Service() {
     }
     return builder
       .setContentTitle("Geo Empresa")
-      .setContentText("Vigilando avión, base, ping TI y perímetro")
+      .setContentText("Avión, GPS, internet y ping TI cada 30 s")
       .setSmallIcon(android.R.drawable.ic_lock_lock)
       .setOngoing(true)
       .build()
@@ -161,7 +253,7 @@ class GeoLockService : Service() {
     private const val NOTIF_ID = 1312
     private const val CHANNEL_WATCH = "geo_watch"
     private const val CHANNEL_LOCK = "geo_lock"
-    private const val WATCHDOG_MS = 4000L
+    private const val WATCHDOG_MS = 2000L
     const val ACTION_KIOSK = "com.wika.geoempresa.ACTION_KIOSK"
     const val EXTRA_TITLE = "geo_title"
     const val EXTRA_MESSAGE = "geo_message"
