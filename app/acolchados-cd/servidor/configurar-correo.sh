@@ -40,8 +40,11 @@ preguntar() {
 
 echo "─── Por dónde salen los correos ─────────────────────────────────"
 
+echo "  Gmail:  usuario = la cuenta completa,     servidor smtp.gmail.com,       puerto 587"
 echo "  Brevo:  usuario = el correo de la cuenta, servidor smtp-relay.brevo.com, puerto 587"
-echo "  Resend: usuario = resend,                servidor smtp.resend.com,      puerto 465"
+echo "  Resend: usuario = resend,                servidor smtp.resend.com,      puerto 587"
+echo
+echo "  El puerto 465 está bloqueado en este servidor. Usa 587."
 echo
 USUARIO=$(preguntar "Usuario SMTP"       "")
 SERVIDOR=$(preguntar "Servidor de salida" "smtp-relay.brevo.com")
@@ -51,6 +54,24 @@ PUERTO=$(preguntar   "Puerto"             "587")
 # El remitente que ve quien recibe. No tiene por qué ser el usuario SMTP:
 # en los servicios de envío el usuario es una credencial, no una dirección.
 REMITENTE=$(preguntar "Dirección que verá el destinatario" "web@vissiuss.lat")
+
+# Gmail solo deja enviar como la cuenta autenticada (o un alias verificado
+# dentro de Gmail). Si no coinciden, el envío falla con un 5.7.x que no dice
+# claramente cuál es el problema.
+case "$SERVIDOR" in
+  *gmail*)
+    if [ "$REMITENTE" != "$USUARIO" ]; then
+      echo
+      echo "  ⚠  Estás usando Gmail y el remitente NO es la misma cuenta."
+      echo "     Google rechaza enviar en nombre de otra dirección."
+      echo "     Lo correcto acá es:  $USUARIO"
+      echo
+      read -r -p "     ¿Uso $USUARIO como remitente? [S/n]: " USAR
+      [ "${USAR,,}" = "n" ] || REMITENTE="$USUARIO"
+      echo "     Remitente: $REMITENTE"
+    fi
+    ;;
+esac
 
 echo
 printf "Contraseña o clave SMTP (no se ve al escribir): "

@@ -1,0 +1,21 @@
+# Los scripts de shell corren en Linux, dentro del servidor. Si Windows les
+# pone saltos de línea \r\n, bash falla con un "$'\r': command not found" que
+# no dice nada útil. Ya pasó una vez (30-09-2026) con configurar-correo.sh.
+*.sh text eol=lf
+
+# El Dockerfile y los archivos de compose también se leen en Linux.
+Dockerfile  text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+# Python y HTML toleran los dos, pero mantenerlos en LF evita que el
+# repositorio se llene de diferencias que son solo saltos de línea.
+*.py   text eol=lf
+*.html text eol=lf
+*.md   text eol=lf
+
+# Binarios: que git no los toque nunca.
+*.png binary
+*.jpg binary
+*.ico binary
+*.db  binary
