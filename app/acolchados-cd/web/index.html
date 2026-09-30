@@ -201,6 +201,8 @@ section{padding:clamp(78px,10vw,150px) 0;position:relative}
 /* ficha del producto */
 .ficha{position:fixed;inset:0;z-index:120;background:rgba(8,8,9,.82);backdrop-filter:blur(6px);display:grid;place-items:center;padding:20px;overflow:hidden}
 .ficha .caja{position:relative;width:100%;max-width:880px;height:min(92vh,900px);background:var(--bg-2);border:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);overflow:hidden}
+/* La foto entra COMPLETA (contain), no recortada: es el producto lo que se
+   está mirando. El alto es fijo para que el lado del texto tenga su scroll. */
 .ficha .lado{background:var(--bg-3);min-height:0;display:flex;align-items:center;justify-content:center;padding:22px;overflow:hidden}
 .ficha .lado img{width:100%;height:min(78vh,640px);object-fit:contain;object-position:center}
 .ficha .lado.sin img{width:52%;height:auto;max-height:240px;opacity:.22}
@@ -212,8 +214,19 @@ section{padding:clamp(78px,10vw,150px) 0;position:relative}
 .ficha .cols span{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:rgba(242,239,234,.75);border:1px solid var(--line);border-radius:20px;padding:5px 12px}
 .ficha .cols i{width:13px;height:13px;border-radius:50%;border:1px solid rgba(242,239,234,.32)}
 .ficha table{width:100%;border-collapse:collapse;font-size:13.5px}
-.ficha td{padding:8px 0;border-bottom:1px solid rgba(219,196,165,.09);color:rgba(242,239,234,.8)}
-.ficha th{padding:0 0 8px;border-bottom:1px solid var(--line);font-family:var(--body);font-weight:400;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:left}
+.ficha td{padding:8px 10px 8px 0;border-bottom:1px solid rgba(219,196,165,.09);color:rgba(242,239,234,.8)}
+.ficha th{padding:0 10px 8px 0;border-bottom:1px solid var(--line);font-family:var(--body);font-weight:400;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:left}
+.ficha td:last-child,.ficha th:last-child{padding-right:0}
+/* Con campos extra la tabla se aprieta: letra más chica, menos espaciado en
+   los títulos, y si aun así no cabe se desplaza en horizontal. */
+.ficha .tabla-env{overflow-x:auto;overscroll-behavior-x:contain}
+.ficha table.multi{font-size:12px}
+.ficha table.multi th{letter-spacing:.08em;padding-right:8px}
+.ficha table.multi td{padding-right:8px;white-space:nowrap}
+.ficha table.multi td.med{text-align:left}
+/* El valor es lo que se viene a mirar: se queda pegado a la derecha aunque
+   la tabla se desplace. */
+.ficha table.multi td.val,.ficha table.multi th.val{position:sticky;right:0;background:var(--bg-2);padding-left:12px;box-shadow:-10px 0 10px -8px rgba(0,0,0,.55)}
 .ficha td.med,.ficha th.med{color:var(--dim);text-align:center}
 .ficha td.val,.ficha th.val{text-align:right;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
 .ficha th.val{color:var(--dim)}
@@ -222,19 +235,18 @@ section{padding:clamp(78px,10vw,150px) 0;position:relative}
 .ficha .cerrar{position:absolute;top:14px;right:14px;z-index:3;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(17,17,18,.75);color:var(--fg);font-size:18px;cursor:pointer;line-height:1}
 .ficha .cerrar:hover{border-color:var(--gold);color:var(--gold)}
 .ficha .acc{margin-top:28px;display:flex;gap:10px;flex-wrap:wrap}
+/* botón flotante y panel de la cotización */
 .coti-btn{position:fixed;right:22px;bottom:90px;z-index:90;display:flex;align-items:center;gap:8px;height:44px;padding:0 12px 0 16px;border:1px solid var(--gold);border-radius:22px;background:rgba(17,17,18,.92);color:var(--gold);cursor:pointer;font-family:var(--body);font-size:11px;letter-spacing:.16em;text-transform:uppercase;box-shadow:0 16px 40px -18px rgba(0,0,0,.8)}
 .coti-btn b{min-width:22px;height:22px;border-radius:50%;background:var(--gold);color:#141414;display:grid;place-items:center;font-size:12px;letter-spacing:0}
 .coti-panel{position:fixed;right:22px;bottom:146px;z-index:91;width:min(360px,calc(100vw - 32px));background:var(--bg-2);border:1px solid var(--line);padding:16px 16px 14px;box-shadow:0 24px 60px -24px rgba(0,0,0,.75)}
 .coti-cab{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .coti-cab b{font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.18em;text-transform:uppercase}
 .coti-cab button,.coti-panel li button,.coti-en-form li button{color:var(--dim);font-size:18px;line-height:1;cursor:pointer;background:none;border:0}
-.coti-panel ul,.coti-en-form ul{list-style:none;display:grid;gap:8px;margin:12px 0}
+.coti-panel ul,.coti-en-form ul{list-style:none;display:grid;gap:8px;margin:12px 0;padding:0}
 .coti-panel li,.coti-en-form li{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:8px;font-size:14px}
-.coti-panel small,.coti-en-form small{display:block;color:var(--dim);font-size:12px;margin-top:2px}
-.coti-vacio{color:var(--dim);font-size:13.5px;margin:12px 0}
 .coti-panel .cta{width:100%}
-.coti-en-form{background:var(--bg-3);border:1px solid var(--line);padding:12px 14px 4px}
-.coti-btn[hidden],.coti-panel[hidden],.coti-en-form[hidden],.coti-vacio[hidden]{display:none !important}
+.coti-en-form{background:var(--bg-3);border:1px solid var(--line);padding:12px 14px 4px;margin-bottom:14px}
+.coti-btn[hidden],.coti-panel[hidden],.coti-en-form[hidden]{display:none !important}
 @media(max-width:760px){
   .ficha .caja{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
   .ficha .lado{padding:14px}
@@ -304,7 +316,23 @@ textarea{resize:vertical;min-height:120px}
 select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50%),linear-gradient(135deg,var(--gold) 50%,transparent 50%);background-position:calc(100% - 20px) 22px,calc(100% - 14px) 22px;background-size:6px 6px;background-repeat:no-repeat}
 .hint{font-size:12.5px;color:#6E6961}
 .done{display:none;background:rgba(24,142,158,.14);border:1px solid rgba(24,142,158,.5);color:#8FD3DC;padding:14px 18px;font-size:14px;border-radius:var(--r)}
-@media(max-width:940px){.ct{grid-template-columns:1fr}.g2{grid-template-columns:1fr}}
+.mal{display:none;background:rgba(176,50,44,.14);border:1px solid rgba(176,50,44,.55);color:#E9A9A4;padding:14px 18px;font-size:14px;border-radius:var(--r)}
+/* selector de varios productos */
+.elige{border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.elige-top{display:flex;align-items:baseline;gap:12px;margin-bottom:13px}
+.elige-top b{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:400}
+.elige-top span{font-size:11.5px;color:#6E6961;margin-left:auto;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px;max-height:190px;overflow-y:auto;padding-right:4px}
+.chips::-webkit-scrollbar{width:4px}
+.chips::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.chips button{background:transparent;border:1px solid var(--line);color:var(--dim);font-family:var(--body);font-weight:300;font-size:12.5px;line-height:1.2;padding:9px 15px;border-radius:999px;cursor:pointer;transition:.25s;width:auto}
+.chips button:hover{border-color:var(--gold-dk);color:var(--fg)}
+.chips button.on{border-color:var(--gold);color:var(--gold);background:rgba(219,196,165,.1)}
+.chips button.on::before{content:'✓';margin-right:7px;font-size:11px}
+.chips .cargando{color:#6E6961;font-size:12.5px;padding:9px 2px}
+/* campo trampa: invisible para las personas, los bots lo rellenan igual */
+.novis{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+@media(max-width:940px){.ct{grid-template-columns:1fr}.g2{grid-template-columns:1fr}.chips{max-height:240px}}
 
 /* footer */
 footer{border-top:1px solid var(--line);padding:clamp(56px,7vw,86px) 0 0;background:var(--bg-2)}
@@ -550,27 +578,48 @@ footer li a:hover{color:var(--gold)}
         <div><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg></span>
           <div><b>Redes sociales</b><p><a href="#">Instagram</a> · <a href="#">Facebook</a><br>@acolchadoscd</p></div></div>
       </div>
-      <form class="rv" id="form">
+      <form class="rv" id="form" novalidate>
         <div class="g2">
-          <input name="nombre" required placeholder="Nombre y apellido" aria-label="Nombre y apellido">
-          <input name="telefono" placeholder="Teléfono" aria-label="Teléfono">
+          <input name="nombre" required maxlength="80" autocomplete="name"
+                 placeholder="Nombre y apellido" aria-label="Nombre y apellido">
+          <input name="telefono" maxlength="40" autocomplete="tel"
+                 placeholder="Teléfono" aria-label="Teléfono">
         </div>
-        <input type="email" name="email" required placeholder="Correo electrónico" aria-label="Correo electrónico">
+        <input type="email" name="email" required maxlength="200" autocomplete="email"
+               placeholder="Correo electrónico" aria-label="Correo electrónico">
+
+        <!-- Lo que se fue agregando desde las fichas del catálogo -->
         <div class="coti-en-form" id="cotiEnForm" hidden>
-          <p class="hint">Productos en esta cotización</p>
+          <div class="coti-cab"><b>En su cotización</b></div>
           <ul id="cotiFormLista"></ul>
         </div>
-        <input type="hidden" name="cotizacion" id="cotizacion">
-        <select name="producto" aria-label="Producto de interés">
-          <option value="">Producto de interés…</option>
-          <option>Colchas</option><option>Pieceras</option><option>Cubrecamas</option>
-          <option>Plumones</option><option>Cojines</option><option>Respaldos</option>
-          <option>Mantelería</option><option>Bordados</option><option>Otro</option>
-        </select>
-        <textarea name="mensaje" placeholder="Cuéntenos medidas, colores, cantidad y plazo…" aria-label="Mensaje"></textarea>
-        <p class="hint">Al enviar acepta que le contactemos para responder su consulta.</p>
-        <div class="done" id="ok">Mensaje recibido. Le responderemos dentro de las próximas 24 horas hábiles.</div>
-        <div><button class="cta cta-solid" type="submit" style="width:100%"><span>Enviar solicitud</span></button></div>
+
+        <div class="elige">
+          <div class="elige-top">
+            <b>¿Qué le interesa?</b>
+            <span id="cuenta">Puede marcar varios</span>
+          </div>
+          <div class="chips" id="chips"><span class="cargando">Cargando el catálogo…</span></div>
+        </div>
+
+        <textarea name="mensaje" maxlength="1500"
+                  placeholder="Cuéntenos medidas, colores, cantidad y plazo…" aria-label="Mensaje"></textarea>
+
+        <!-- Campo trampa: las personas no lo ven, los bots lo rellenan igual -->
+        <div class="novis" aria-hidden="true">
+          <label>Deje este campo vacío
+            <input type="text" name="web" tabindex="-1" autocomplete="off">
+          </label>
+        </div>
+
+        <div id="turnstile"></div>
+
+        <p class="hint">Al enviar acepta que le contactemos para responder su consulta.
+          Le llegará una copia a su correo.</p>
+        <div class="done" id="ok"></div>
+        <div class="mal" id="err"></div>
+        <div><button class="cta cta-solid" id="bEnviar" type="submit" style="width:100%">
+          <span>Enviar solicitud</span></button></div>
       </form>
     </div>
   </div>
@@ -604,15 +653,17 @@ footer li a:hover{color:var(--gold)}
   </div>
 </footer>
 
-<button class="coti-btn" id="cotiBtn" type="button" hidden aria-label="Abrir cotización">
-  <span>Cotización</span><b id="cotiN">0</b>
-</button>
+<!-- Cuenta de la cotización. Aparece solo cuando hay algo marcado. -->
+<button class="coti-btn" id="cotiBtn" type="button" hidden>Cotización <b id="cotiN">0</b></button>
 <div class="coti-panel" id="cotiPanel" hidden>
-  <div class="coti-cab"><b>Cotización</b><button type="button" data-cerrar-coti aria-label="Cerrar cotización">&times;</button></div>
-  <p class="coti-vacio" id="cotiVacio">Todavía no agrega productos.</p>
+  <div class="coti-cab">
+    <b>Su cotización</b>
+    <button type="button" data-cerrar-coti aria-label="Cerrar">&times;</button>
+  </div>
   <ul id="cotiLista"></ul>
-  <a href="#contacto" class="cta cta-solid" id="cotiIr"><span>Enviar cotización</span></a>
+  <a class="cta cta-solid" href="#contacto" id="cotiIr"><span>Pedir la cotización</span></a>
 </div>
+
 <a class="wa" href="https://wa.me/56999194045" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm4.52 12c-.25-.13-1.47-.73-1.69-.82-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.15.16-.29.19-.53.06-.25-.12-1.05-.39-1.99-1.23-.74-.65-1.23-1.46-1.38-1.71-.14-.24-.01-.37.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07 0 1.22.89 2.4 1.02 2.56.12.17 1.75 2.67 4.23 3.75.59.25 1.05.4 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.22-.16-.47-.28Z"/></svg>
 </a>
@@ -662,7 +713,7 @@ footer li a:hover{color:var(--gold)}
   var PRODS=[],CATS=[],filtro='all',
       cajaProds=document.getElementById('prods'),
       cajaFiltros=document.getElementById('filters'),
-      selProd=document.querySelector('#form select[name="producto"]');
+      cajaChips=document.getElementById('chips');
 
   function esc(t){
     return String(t==null?'':t).replace(/[&<>"']/g,function(c){
@@ -742,21 +793,24 @@ footer li a:hover{color:var(--gold)}
       return '<span><i style="background:'+esc(c.hex)+'"></i>'+esc(c.nombre)+'</span>';
     }).join('');
     var hayPrecios=p.tamanos.some(function(t){return t.precio>0});
-    var etiquetas=(p.columnas&&p.columnas.length)?p.columnas:['Medida'];
+    /* Los títulos los pone el panel. Un producto sin columnas extra sigue
+       mostrando Tamaño · Medida · Valor neto, como siempre. */
+    var titulos=(p.columnas&&p.columnas.length)?p.columnas:['Medida'];
     var tallas=p.tamanos.map(function(t){
-      var vals=[t.medida].concat(t.extras||[]);
-      var celdas=etiquetas.map(function(_,i){
-        return '<td class="med">'+esc(vals[i]||'')+'</td>';
-      }).join('');
-      return '<tr><td>'+esc(t.tamano||'—')+'</td>'+celdas+
+      var extras=t.extras||[];
+      return '<tr><td>'+esc(t.tamano||'—')+'</td>'+
+             titulos.map(function(_,i){
+               return '<td class="med">'+esc(i?(extras[i-1]||''):(t.medida||''))+'</td>';
+             }).join('')+
              '<td class="val">'+(t.precio>0?pesos(t.precio):'A cotizar')+'</td></tr>';
     }).join('');
     var tabla=tallas
-      ? '<h4>Tamaños y valores</h4><table>'+
+      ? '<h4>Tamaños y valores</h4>'+
+        '<div class="tabla-env"><table'+(titulos.length>1?' class="multi"':'')+'>'+
         '<thead><tr><th>Tamaño</th>'+
-        etiquetas.map(function(e){return '<th class="med">'+esc(e)+'</th>'}).join('')+
+        titulos.map(function(c){return '<th class="med">'+esc(c)+'</th>'}).join('')+
         '<th class="val">Valor neto</th></tr></thead>'+
-        '<tbody>'+tallas+'</tbody></table>'+
+        '<tbody>'+tallas+'</tbody></table></div>'+
         (hayPrecios?'<p class="nota-val">Valores netos por unidad, no incluyen IVA. '+
           'Las medidas y colores especiales se cotizan aparte.</p>':'')
       : '';
@@ -771,14 +825,16 @@ footer li a:hover{color:var(--gold)}
         (cols?'<h4>Colores disponibles</h4><div class="cols">'+cols+'</div>':'')+
         tabla+
         '<div class="acc"><button class="cta cta-solid" type="button" data-cotizar>'+
-          '<span>'+(enCoti(p)?'Agregado':'Agregar a cotización')+'</span></button></div>'+
+          '<span>'+(ELEGIDOS.indexOf(p.id)>=0?'Agregado':'Agregar a cotización')+'</span></button></div>'+
       '</div>'+
       '<button class="cerrar" type="button" aria-label="Cerrar ficha">&times;</button>'+
     '</div>';
     d._producto=p;
     d.addEventListener('click',function(e){
       if(e.target===d||e.target.closest('.cerrar'))return cerrarFicha();
-      if(e.target.closest('[data-cotizar]'))agregarCoti(p);
+      /* No se cierra la ficha: se suma y se sigue mirando. El botón flotante
+         lleva la cuenta, así que no hace falta saltar al formulario. */
+      if(e.target.closest('[data-cotizar]'))elegir(p.id);
     });
     document.body.appendChild(d);
     document.body.style.overflow='hidden';
@@ -792,24 +848,169 @@ footer li a:hover{color:var(--gold)}
     abrirFicha(PRODS.filter(function(p){return String(p.id)===tarjeta.dataset.id})[0]);
   });
 
-  /* el desplegable del formulario se arma con el mismo catálogo */
-  function llenarSelect(){
-    if(!selProd)return;
-    selProd.innerHTML='<option value="">Producto de interés…</option>'+
-      PRODS.map(function(p){return '<option>'+esc(p.nombre)+'</option>'}).join('')+
-      '<option>Otro</option>';
+  /* ---- la cotización: UNA sola lista, pintada en tres lugares ----
+     Se puede agregar desde la ficha del producto o marcando abajo en el
+     formulario; las dos cosas escriben en ELEGIDOS. Lo que viaja al servidor
+     son los ID, nunca los nombres: los nombres los saca el servidor de la
+     base de datos, y por eso el correo de confirmación no puede repetir
+     texto escrito por un desconocido. */
+  var ELEGIDOS=[],MAX_ELEGIR=20;
+  var LLAVE='acd-coti';
+
+  try{
+    var guardado=JSON.parse(sessionStorage.getItem(LLAVE)||'[]');
+    if(Array.isArray(guardado))ELEGIDOS=guardado.filter(function(x){
+      return x==='otro'||typeof x==='number';
+    }).slice(0,MAX_ELEGIR);
+  }catch(err){ELEGIDOS=[];}
+
+  function guardarEleccion(){
+    try{sessionStorage.setItem(LLAVE,JSON.stringify(ELEGIDOS))}catch(err){}
   }
+
+  function nombreDe(id){
+    if(id==='otro')return 'Otra cosa';
+    var p=PRODS.filter(function(x){return x.id===id})[0];
+    return p?p.nombre:'';
+  }
+
+  function pintarElegibles(){
+    if(!cajaChips)return;
+    cajaChips.innerHTML=PRODS.map(function(p){
+      return '<button type="button" data-elegir="'+p.id+'"'+
+             (ELEGIDOS.indexOf(p.id)>=0?' class="on"':'')+'>'+esc(p.nombre)+'</button>';
+    }).join('')+
+    '<button type="button" data-elegir="otro"'+
+      (ELEGIDOS.indexOf('otro')>=0?' class="on"':'')+'>Otra cosa</button>';
+    pintarCoti();
+  }
+
+  /* Se marca el botón en su sitio en vez de repintar la lista entera: si la
+     repintáramos, la caja con scroll volvería arriba en cada clic. */
+  function marcarBoton(id,encendido){
+    var b=cajaChips&&cajaChips.querySelector('[data-elegir="'+id+'"]');
+    if(b)b.classList.toggle('on',encendido);
+  }
+
+  function pintarCoti(){
+    var n=ELEGIDOS.length;
+
+    var c=document.getElementById('cuenta');
+    if(c)c.textContent=n?n+(n===1?' seleccionado':' seleccionados'):'Puede marcar varios';
+
+    var btn=document.getElementById('cotiBtn'),
+        cuentaBola=document.getElementById('cotiN');
+    if(btn)btn.hidden=n===0;
+    if(cuentaBola)cuentaBola.textContent=String(n);
+
+    var filas=ELEGIDOS.map(function(id){
+      var nombre=nombreDe(id);
+      if(!nombre)return '';
+      return '<li><span>'+esc(nombre)+'</span>'+
+             '<button type="button" data-quitar-coti="'+id+'" aria-label="Quitar">&times;</button></li>';
+    }).join('');
+    var lista=document.getElementById('cotiLista'),
+        enForm=document.getElementById('cotiFormLista'),
+        cajaForm=document.getElementById('cotiEnForm');
+    if(lista)lista.innerHTML=filas;
+    if(enForm)enForm.innerHTML=filas;
+    if(cajaForm)cajaForm.hidden=n===0;
+
+    if(n===0){
+      var panel=document.getElementById('cotiPanel');
+      if(panel)panel.hidden=true;
+    }
+
+    /* Si la ficha está abierta, su botón refleja el estado al instante */
+    if(fichaAbierta&&fichaAbierta._producto){
+      var etiqueta=fichaAbierta.querySelector('[data-cotizar] span');
+      if(etiqueta)etiqueta.textContent=
+        ELEGIDOS.indexOf(fichaAbierta._producto.id)>=0?'Agregado':'Agregar a cotización';
+    }
+  }
+
+  function elegir(id){
+    if(ELEGIDOS.indexOf(id)>=0||ELEGIDOS.length>=MAX_ELEGIR)return;
+    ELEGIDOS.push(id);marcarBoton(id,true);guardarEleccion();pintarCoti();
+  }
+
+  function quitar(id){
+    var i=ELEGIDOS.indexOf(id);
+    if(i<0)return;
+    ELEGIDOS.splice(i,1);marcarBoton(id,false);guardarEleccion();pintarCoti();
+  }
+
+  function alternar(id){
+    return ELEGIDOS.indexOf(id)<0?elegir(id):quitar(id);
+  }
+
+  function limpiarEleccion(){
+    ELEGIDOS=[];
+    if(cajaChips)Array.prototype.forEach.call(
+      cajaChips.querySelectorAll('.on'),function(b){b.classList.remove('on')});
+    guardarEleccion();pintarCoti();
+  }
+
+  function idDelBoton(valor){
+    return valor==='otro'?'otro':Number(valor);
+  }
+
+  if(cajaChips)cajaChips.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[data-elegir]');
+    if(!b)return;
+    alternar(idDelBoton(b.dataset.elegir));
+  });
+
+  var cotiBtn=document.getElementById('cotiBtn'),
+      cotiPanel=document.getElementById('cotiPanel');
+  if(cotiBtn&&cotiPanel)cotiBtn.addEventListener('click',function(){
+    cotiPanel.hidden=!cotiPanel.hidden;
+  });
+  if(cotiPanel)cotiPanel.addEventListener('click',function(e){
+    if(e.target.closest('[data-cerrar-coti]')){cotiPanel.hidden=true;return;}
+    if(e.target.closest('#cotiIr')){cotiPanel.hidden=true;return;}
+    var q=e.target.closest&&e.target.closest('[data-quitar-coti]');
+    if(q)quitar(idDelBoton(q.dataset.quitarCoti));
+  });
+  var enFormLista=document.getElementById('cotiFormLista');
+  if(enFormLista)enFormLista.addEventListener('click',function(e){
+    var q=e.target.closest&&e.target.closest('[data-quitar-coti]');
+    if(q)quitar(idDelBoton(q.dataset.quitarCoti));
+  });
+
+  pintarCoti();
 
   fetch('/api/productos',{headers:{Accept:'application/json'}})
     .then(function(r){if(!r.ok)throw new Error('respuesta '+r.status);return r.json()})
     .then(function(d){
       CATS=d.categorias||[];PRODS=d.productos||[];
-      pintarFiltros();llenarSelect();pintar();
+      /* La lista viene de una visita anterior: puede tener productos que el
+         panel ya borró o dejó ocultos. Se sacan antes de mostrar nada. */
+      var antes=ELEGIDOS.length;
+      ELEGIDOS=ELEGIDOS.filter(function(id){return id==='otro'||!!nombreDe(id)});
+      if(ELEGIDOS.length!==antes)guardarEleccion();
+      pintarFiltros();pintarElegibles();pintar();
+      if(d.turnstile)montarTurnstile(d.turnstile);
     })
     .catch(function(){
       cajaProds.innerHTML='<p class="p-estado">No pudimos cargar el catálogo en este momento. '+
         'Escríbanos por WhatsApp y se lo enviamos completo.</p>';
+      if(cajaChips)cajaChips.innerHTML='<span class="cargando">No pudimos cargar la lista. '+
+        'Cuéntenos en el mensaje qué necesita.</span>';
     });
+
+  /* Turnstile: la barrera antibots de Cloudflare. Si no hay clave configurada
+     el formulario funciona igual, solo que sin esa capa. */
+  function montarTurnstile(clave){
+    var s=document.createElement('script');
+    s.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    s.async=true;s.defer=true;
+    s.onload=function(){
+      if(!window.turnstile)return;
+      window.turnstile.render('#turnstile',{sitekey:clave,theme:'dark',language:'es'});
+    };
+    document.head.appendChild(s);
+  }
 
   /* testimonios */
   var qs=document.querySelectorAll('#tslot blockquote'),td=document.querySelectorAll('#tdots button'),ti=0,tt;
@@ -845,85 +1046,81 @@ footer li a:hover{color:var(--gold)}
   rvTimer=setInterval(reveal,400);
   setTimeout(function(){clearInterval(rvTimer);rvEls.forEach(function(el){el.classList.add('in')})},20000);
 
-  /* cotización: varios productos completos */
-  var COTI=[];
-  try{COTI=JSON.parse(sessionStorage.getItem('acd-coti')||'[]')||[]}catch(err){COTI=[]}
-  if(!Array.isArray(COTI))COTI=[];
-  function guardarCoti(){
-    try{sessionStorage.setItem('acd-coti',JSON.stringify(COTI))}catch(err){}
-  }
-  function enCoti(p){
-    return COTI.some(function(x){return x.id===p.id&&!x.tamano});
-  }
-  function agregarCoti(p){
-    if(enCoti(p))return;
-    COTI.push({id:p.id,nombre:p.nombre,tamano:'',medida:''});
-    guardarCoti();
-    pintarCoti();
-  }
-  function pintarCoti(){
-    var n=COTI.length;
-    var btn=document.getElementById('cotiBtn');
-    btn.hidden=n===0;
-    document.getElementById('cotiN').textContent=String(n);
-    var html=COTI.map(function(x,i){
-      var det=x.tamano?(x.tamano+(x.medida?' · '+x.medida:'')):'';
-      return '<li><span>'+esc(x.nombre)+(det?'<small>'+esc(det)+'</small>':'')+
-        '</span><button type="button" data-quitar-coti="'+i+'" aria-label="Quitar">×</button></li>';
-    }).join('');
-    document.getElementById('cotiLista').innerHTML=html;
-    document.getElementById('cotiFormLista').innerHTML=html;
-    document.getElementById('cotiEnForm').hidden=n===0;
-    document.getElementById('cotiVacio').hidden=n!==0;
-    document.getElementById('cotizacion').value=COTI.map(function(x){
-      return x.nombre+(x.tamano?' | '+x.tamano:'')+(x.medida?' | '+x.medida:'');
-    }).join('\n');
-    if(fichaAbierta&&fichaAbierta._producto){
-      var p=fichaAbierta._producto;
-      var principal=fichaAbierta.querySelector('[data-cotizar] span');
-      if(principal)principal.textContent=enCoti(p)?'Agregado':'Agregar a cotización';
-    }
-  }
-  document.getElementById('cotiBtn').addEventListener('click',function(){
-    document.getElementById('cotiPanel').hidden=!document.getElementById('cotiPanel').hidden;
-  });
-  document.getElementById('cotiPanel').addEventListener('click',function(e){
-    if(e.target.closest('[data-cerrar-coti]')){
-      document.getElementById('cotiPanel').hidden=true;
-      return;
-    }
-    var q=e.target.closest('[data-quitar-coti]');
-    if(!q)return;
-    COTI.splice(+q.dataset.quitarCoti,1);
-    guardarCoti();
-    pintarCoti();
-  });
-  document.getElementById('cotiFormLista').addEventListener('click',function(e){
-    var q=e.target.closest('[data-quitar-coti]');
-    if(!q)return;
-    COTI.splice(+q.dataset.quitarCoti,1);
-    guardarCoti();
-    pintarCoti();
-  });
-  document.getElementById('cotiIr').addEventListener('click',function(){
-    document.getElementById('cotiPanel').hidden=true;
-  });
-  pintarCoti();
-
   /* form */
-  document.getElementById('form').addEventListener('submit',function(e){
+  /* ---- envío de la cotización ---- */
+  var formulario=document.getElementById('form'),
+      cajaOk=document.getElementById('ok'),
+      cajaErr=document.getElementById('err'),
+      botonEnviar=document.getElementById('bEnviar');
+
+  /* Si el widget no cargó del todo, que eso no tumbe el mensaje de éxito:
+     la cotización ya salió y el visitante tiene que verlo. */
+  function reiniciarTurnstile(){
+    try{
+      if(window.turnstile&&typeof window.turnstile.reset==='function')window.turnstile.reset();
+    }catch(_){}
+  }
+
+  function decir(caja,texto){
+    caja.textContent=texto;
+    caja.style.display=texto?'block':'none';
+  }
+
+  formulario.addEventListener('submit',function(e){
     e.preventDefault();
-    var n=COTI.length;
-    var ok=document.getElementById('ok');
-    ok.textContent=n
-      ? 'Mensaje recibido, con '+n+(n===1?' producto':' productos')+' en la cotización. Le responderemos dentro de las próximas 24 horas hábiles.'
-      : 'Mensaje recibido. Le responderemos dentro de las próximas 24 horas hábiles.';
-    ok.style.display='block';
-    COTI=[];
-    guardarCoti();
-    pintarCoti();
-    document.getElementById('cotiPanel').hidden=true;
-    this.reset();
+    decir(cajaOk,'');decir(cajaErr,'');
+
+    var d=new FormData(formulario),
+        nombre=(d.get('nombre')||'').trim(),
+        email=(d.get('email')||'').trim();
+
+    if(nombre.length<2)return decir(cajaErr,'Escriba su nombre, por favor.');
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))
+      return decir(cajaErr,'Revise el correo: ahí le enviaremos la cotización.');
+
+    var cuerpo={
+      nombre:nombre,
+      email:email,
+      telefono:(d.get('telefono')||'').trim(),
+      mensaje:(d.get('mensaje')||'').trim(),
+      web:d.get('web')||'',
+      productos:ELEGIDOS.filter(function(x){return typeof x==='number'}),
+      otro:ELEGIDOS.indexOf('otro')>=0,
+      token:(d.get('cf-turnstile-response')||'')
+    };
+
+    botonEnviar.disabled=true;
+    botonEnviar.querySelector('span').textContent='Enviando…';
+
+    fetch('/api/cotizaciones',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Accept:'application/json'},
+      body:JSON.stringify(cuerpo)
+    })
+    .then(function(r){return r.json().catch(function(){return{}}).then(function(j){
+      if(!r.ok)throw new Error(j.detail||'No pudimos enviar su solicitud.');
+      return j;
+    })})
+    .then(function(j){
+      formulario.reset();
+      limpiarEleccion();
+      /* Solo se promete la confirmación si el servidor dice que puede mandarla.
+         Prometer un correo que no llega es peor que no prometer nada. */
+      decir(cajaOk, j && j.correo===false
+        ? 'Solicitud recibida. Le respondemos dentro de las próximas 24 horas hábiles.'
+        : 'Solicitud recibida. Le enviamos una confirmación a '+email+
+          ' y le respondemos dentro de las próximas 24 horas hábiles.');
+      reiniciarTurnstile();
+    })
+    .catch(function(ex){
+      decir(cajaErr,ex.message||'No pudimos enviar su solicitud. '+
+            'Inténtelo otra vez o escríbanos por WhatsApp.');
+      reiniciarTurnstile();
+    })
+    .finally(function(){
+      botonEnviar.disabled=false;
+      botonEnviar.querySelector('span').textContent='Enviar solicitud';
+    });
   });
 
   /* scrollspy */

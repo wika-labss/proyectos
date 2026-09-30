@@ -34,8 +34,6 @@ label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase
 .btn.gris:hover{background:var(--bg3);color:var(--fg)}
 .btn.mal{border-color:rgba(226,105,95,.5);color:var(--mal)}
 .btn.mal:hover{background:var(--mal);color:#fff}
-.btn.azul{border-color:var(--teal);color:#8fd4e0;background:rgba(24,142,158,.18)}
-.btn.azul:hover{background:var(--teal);color:#fff}
 .mini{padding:5px 10px;font-size:11px;letter-spacing:.06em;text-transform:none}
 
 /* ---- login ---- */
@@ -110,10 +108,22 @@ legend{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--
 .interruptor input{width:auto;accent-color:var(--gold)}
 .interruptor span{font-size:13px;color:var(--fg)}
 .nota{font-size:11.5px;color:var(--dim);margin-top:6px;line-height:1.5}
-#listaVariantes{overflow-x:auto}
-#listaVariantes th input{text-transform:none;letter-spacing:.02em;font-size:12px;padding:6px 8px;min-width:108px}
-.acc-campos{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .vacio{text-align:center;padding:60px 20px;color:var(--dim)}
+/* cotizaciones */
+.globo{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:8px;border-radius:9px;background:var(--gold);color:#101014;font-size:11px;font-weight:700;font-style:normal;vertical-align:middle}
+.cot{border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin-bottom:12px;background:var(--bg2)}
+.cot.nueva{border-left:3px solid var(--gold)}
+.cot .top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.cot .top b{font-size:15px}
+.cot .cuando{font-size:11.5px;color:var(--dim);margin-left:auto;white-space:nowrap}
+.cot .datos{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin-bottom:10px}
+.cot .datos a{color:var(--gold)}
+.cot .pide{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.cot .pide span{border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:12px;color:var(--fg)}
+.cot .texto{background:var(--bg3);border-radius:var(--r);padding:12px 14px;font-size:13.5px;line-height:1.55;white-space:pre-wrap;margin-bottom:12px}
+.cot .pie{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.cot .sello{font-size:11px;color:var(--dim);margin-right:auto}
+.cot .sello.malo{color:#E9A9A4}
 @media (max-width:700px){
   .rejilla{grid-template-columns:1fr}
   .prod .cab{flex-wrap:wrap}
@@ -156,6 +166,7 @@ legend{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--
       <button class="on" data-t="productos">Productos</button>
       <button data-t="categorias">Categorías</button>
       <button data-t="stock">Stock</button>
+      <button data-t="cotizaciones">Cotizaciones<i class="globo oculto" id="nuevasCot"></i></button>
       <button data-t="historial">Historial</button>
     </nav>
   </header>
@@ -202,6 +213,23 @@ legend{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--
       <div id="tablaStock"></div>
     </section>
 
+    <!-- COTIZACIONES -->
+    <section data-p="cotizaciones" class="oculto">
+      <div class="fila-top">
+        <h2>Cotizaciones</h2>
+        <div class="crece"></div>
+        <label class="interruptor" style="margin:0">
+          <input type="checkbox" id="soloNuevas"><span>Solo sin atender</span>
+        </label>
+      </div>
+      <p class="nota" style="margin-bottom:18px">
+        Llegan del formulario de la página. A cada persona le sale una
+        confirmación automática al correo; esta es su copia, con todo lo que
+        escribió. Responda al correo que le llegó y le contesta directo.
+      </p>
+      <div id="listaCotizaciones"></div>
+    </section>
+
     <!-- HISTORIAL -->
     <section data-p="historial" class="oculto">
       <div class="fila-top"><h2>Últimos movimientos</h2></div>
@@ -215,6 +243,7 @@ legend{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--
 <script>
 const API = 'api';           // relativo: la URL secreta nunca se escribe aquí
 const $ = (s, d = document) => d.querySelector(s);
+const MAX_COLUMNAS = 6;   // igual que en main.py: Medida más cinco campos
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const plata = n => '$ ' + (Number(n) || 0).toLocaleString('es-CL');
@@ -295,12 +324,14 @@ document.querySelectorAll('nav.tabs button').forEach(b => {
     document.querySelectorAll('section[data-p]').forEach(s =>
       s.classList.toggle('oculto', s.dataset.p !== b.dataset.t));
     if (b.dataset.t === 'historial') cargarHistorial();
+    if (b.dataset.t === 'cotizaciones') cargarCotizaciones();
   });
 });
 
 /* ---------- carga y pintado ---------- */
 async function cargar() {
   DATOS = await pedir('productos');
+  cargarCotizaciones().catch(() => {});   // para el globo de la pestaña
   pintarProductos();
   pintarCategorias();
   pintarStock();
@@ -404,6 +435,77 @@ function pintarStock() {
         </span></td></tr>`).join('') + `</table>`
     : `<div class="vacio">Nada que mostrar aquí.</div>`;
 }
+
+/* ---------- cotizaciones ---------- */
+let COTIZACIONES = [];
+
+const cuando = iso => {
+  const fecha = new Date(iso);
+  const dias = Math.floor((Date.now() - fecha) / 86400000);
+  if (dias === 0) return 'hoy ' + fecha.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+  if (dias === 1) return 'ayer';
+  if (dias < 7) return `hace ${dias} días`;
+  return fecha.toLocaleDateString('es-CL');
+};
+
+async function cargarCotizaciones() {
+  const datos = await pedir('cotizaciones');
+  COTIZACIONES = datos.cotizaciones || [];
+  pintarCotizaciones();
+}
+
+function pintarCotizaciones() {
+  const soloNuevas = $('#soloNuevas')?.checked;
+  const lista = soloNuevas ? COTIZACIONES.filter(c => c.estado === 'nueva') : COTIZACIONES;
+
+  const pendientes = COTIZACIONES.filter(c => c.estado === 'nueva').length;
+  const globo = $('#nuevasCot');
+  globo.textContent = pendientes || '';
+  globo.classList.toggle('oculto', !pendientes);
+
+  $('#listaCotizaciones').innerHTML = lista.length
+    ? lista.map(c => {
+        const falló = c.correo.startsWith('falló');
+        return `<div class="cot ${c.estado === 'nueva' ? 'nueva' : ''}">
+        <div class="top">
+          <b>${esc(c.nombre)}</b>
+          <span class="cuando">${esc(cuando(c.creada))}</span>
+        </div>
+        <div class="datos">
+          <span>✉ <a href="mailto:${esc(c.email)}">${esc(c.email)}</a></span>
+          ${c.telefono ? `<span>☎ <a href="tel:${esc(c.telefono.replace(/\s/g, ''))}">${esc(c.telefono)}</a></span>` : ''}
+        </div>
+        <div class="pide">${(c.productos || []).map(n => `<span>${esc(n)}</span>`).join('') || '<span>Sin especificar</span>'}</div>
+        ${c.mensaje ? `<div class="texto">${esc(c.mensaje)}</div>` : ''}
+        <div class="pie">
+          <span class="sello ${falló ? 'malo' : ''}">${falló ? '⚠ el correo automático ' + esc(c.correo) : 'confirmación enviada'}</span>
+          <button class="btn gris mini" data-cotestado="${c.id}" data-valor="${c.estado === 'nueva' ? 'atendida' : 'nueva'}">
+            ${c.estado === 'nueva' ? 'Marcar atendida' : 'Volver a pendiente'}</button>
+          <button class="btn mal mini" data-cotborrar="${c.id}">Borrar</button>
+        </div>
+      </div>`;
+      }).join('')
+    : `<div class="vacio">${soloNuevas ? 'No hay cotizaciones sin atender.' : 'Todavía no ha llegado ninguna cotización.'}</div>`;
+}
+
+$('#soloNuevas').addEventListener('change', pintarCotizaciones);
+
+$('#listaCotizaciones').addEventListener('click', async e => {
+  const marcar = e.target.closest('[data-cotestado]');
+  const borrar = e.target.closest('[data-cotborrar]');
+  try {
+    if (marcar) {
+      await pedir(`cotizaciones/${marcar.dataset.cotestado}/estado`,
+        { method: 'POST', cuerpo: { estado: marcar.dataset.valor } });
+      await cargarCotizaciones();
+    } else if (borrar) {
+      if (!confirm('¿Borrar esta cotización? No se puede deshacer.')) return;
+      await pedir(`cotizaciones/${borrar.dataset.cotborrar}`, { method: 'DELETE' });
+      await cargarCotizaciones();
+      avisar('Cotización borrada');
+    }
+  } catch (ex) { avisar(ex.message, 'mal'); }
+});
 
 async function cargarHistorial() {
   const { movimientos } = await pedir('movimientos');
@@ -554,7 +656,7 @@ function abrirEditor(p) {
         <fieldset>
           <legend>Tamaños, precios y stock <span style="color:var(--dim);letter-spacing:0;text-transform:none"> — precio y stock son internos</span></legend>
           <div id="listaVariantes"></div>
-          <div class="acc-campos">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
             <button class="btn gris mini" id="bVariante" type="button">+ Añadir tamaño</button>
             <button class="btn azul mini" id="bCampo" type="button">+ Añadir campo</button>
           </div>
@@ -583,6 +685,8 @@ function abrirEditor(p) {
 
   let colores = JSON.parse(JSON.stringify(p.colores || []));
   let variantes = JSON.parse(JSON.stringify(p.variantes || []));
+  // Títulos de los textos entre Tamaño y Precio. El primero es la Medida de
+  // siempre y no se puede quitar; los demás se agregan con "+ Añadir campo".
   let columnas = (p.columnas && p.columnas.length) ? p.columnas.slice() : ['Medida'];
   variantes.forEach(v => { if (!Array.isArray(v.extras)) v.extras = []; });
 
@@ -632,20 +736,20 @@ function abrirEditor(p) {
       variantes.push({ tamano: '', medida: '', extras: columnas.slice(1).map(() => ''), precio: 0, stock: 0, minimo: 0 });
       return pintarVariantes();
     }
+    if (b.dataset.quitarv !== undefined) { variantes.splice(+b.dataset.quitarv, 1); return pintarVariantes(); }
     if (b.id === 'bCampo') {
-      if (columnas.length >= 6) return;
+      if (columnas.length >= MAX_COLUMNAS) return;
       columnas.push('');
       variantes.forEach(v => { v.extras = v.extras || []; v.extras.push(''); });
       return pintarVariantes();
     }
     if (b.dataset.quitarcol !== undefined) {
       const k = +b.dataset.quitarcol;
-      if (k < 1) return;
+      if (k === 0) return;                       // la Medida no se quita
       columnas.splice(k, 1);
       variantes.forEach(v => { if (v.extras) v.extras.splice(k - 1, 1); });
       return pintarVariantes();
     }
-    if (b.dataset.quitarv !== undefined) { variantes.splice(+b.dataset.quitarv, 1); return pintarVariantes(); }
     if (b.id === 'bGuardar') return enviar(b);
   });
 
@@ -656,6 +760,7 @@ function abrirEditor(p) {
   });
 
   velo.addEventListener('input', e => {
+    // Título de una columna: se escribe sin repintar, para no perder el foco.
     if (e.target.dataset.col !== undefined) {
       columnas[+e.target.dataset.col] = e.target.value;
       return;
@@ -699,6 +804,8 @@ function abrirEditor(p) {
       visible: $('#eVisible').checked,
       orden: parseInt($('#eOrden').value, 10) || 0,
       colores, variantes,
+      // Un título en blanco no se manda vacío: el servidor lo rellenaría igual,
+      // pero así lo que se guarda es lo mismo que se ve en pantalla.
       columnas: columnas.map((c, i) => c.trim() || (i ? 'Campo' : 'Medida'))
     };
     if (!cuerpo.nombre) return mostrarErrorEditor('El producto necesita un nombre.');

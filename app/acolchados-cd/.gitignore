@@ -4,6 +4,15 @@
 !*.env.ejemplo
 !.env.ejemplo
 
+# El mediamtx real lleva la clave de la cámara dentro de la URL
+mediamtx.yml
+
+# ─── El informe de seguridad no se comparte ─────────────
+# Describe debilidades de un sistema en producción. Si algún día quieres
+# versionarlo, que sea en un repositorio privado y no en uno de equipo.
+SEGURIDAD.md
+Revision-de-seguridad-*.docx
+
 # ─── Datos, no código ───────────────────────────────────
 datos/
 *.db
@@ -11,5 +20,8 @@ datos/
 *.db-shm
 respaldo*.tar.gz
 
+# ─── Basura del sistema ─────────────────────────────────
 __pycache__/
 *.pyc
+.DS_Store
+Thumbs.db
