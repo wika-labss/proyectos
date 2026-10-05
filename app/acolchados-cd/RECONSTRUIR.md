@@ -55,6 +55,12 @@ lo deja en la red `proxy`. No publica puertos.
 Al arrancar, el proceso revisa la base. Si faltan `columnas` y `extras`,
 las agrega. Cada producto queda con el título `Medida` y cada talla
 conserva el texto que ya tenía. Precio, stock y fotos siguen donde estaban.
+También crea, si no existen, las tablas `cotizaciones` y
+`cotizacion_lineas`. No reescribe cotizaciones ya guardadas.
+
+La imagen nueva instala `reportlab` y `pillow`, y lleva el logo dentro de
+`servidor/app/logo.png` para la marca de agua del PDF. Sin este
+`--build`, la pestaña Cotizaciones no puede generar el archivo.
 
 Comprobar que quedó en marcha:
 

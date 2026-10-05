@@ -12,19 +12,25 @@ La configuración del servidor que lo aloja está en
 
 ```
 acolchados-cd/
-├── v4/                 Versión 4 completa: copia de este punto del proyecto
+├── v4/                 Copia completa de la versión 4
 ├── web/
 │   ├── index.html      La página pública
-│   └── logo.png        Logo: barra, pie de página y favicon
+│   └── logo.png        Logo: barra, pie de página, favicon y marca de agua
 ├── servidor/
 │   ├── app/
-│   │   ├── main.py     API pública + panel de administración (FastAPI)
+│   │   ├── main.py     API pública, panel y cotizaciones
 │   │   ├── panel.html  El panel, una sola página sin dependencias
+│   │   ├── pdf_cotizacion.py   PDF formal
+│   │   ├── logo.png    El mismo logo, dentro de la imagen del contenedor
 │   │   └── semilla.py  Carga inicial del catálogo 2025
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── docker-compose.yml
 ├── .env.ejemplo
+├── CAMBIOS.md          Qué hace cada función nueva
+├── CIERRE.md           Dónde quedó la versión 4 y qué falta
+├── RECONSTRUIR.md      Cómo reconstruir el contenedor
+├── CONTACTO.md         Paso a paso del correo, todavía sin conectar
 └── MIGRACION.md        Cómo mudarlo a otro servidor
 ```
 
@@ -59,8 +65,9 @@ pública ni siquiera los incluye en la respuesta.
 
 Vive en una URL secreta que se define en el `.env` y **no aparece en ninguna
 página ni en este repositorio**. Permite crear y editar productos, subir
-fotos, definir colores, administrar categorías y llevar el stock por tamaño,
-con historial de movimientos.
+fotos, definir colores, administrar categorías, llevar el stock por tamaño
+y armar cotizaciones formales en PDF. El detalle de esas funciones está en
+[`CAMBIOS.md`](CAMBIOS.md).
 
 | Medida | Para qué |
 |---|---|

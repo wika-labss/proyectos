@@ -1,7 +1,9 @@
 # Cambios y funciones nuevas
 
-Estos cambios ya están en `main`. Cubren el catálogo (campos entre tamaño y
-precio), la ficha pública y la cotización de varios productos.
+Estos cambios ya están en `main`. Son la versión 4: campos entre tamaño y
+precio, ficha pública, carrito de varios productos y cotizaciones formales
+en PDF. La copia completa está en [`v4/`](v4/). El cierre del día está en
+[`CIERRE.md`](CIERRE.md).
 
 El correo del formulario sigue en [`CONTACTO.md`](CONTACTO.md). La
 reconstrucción del contenedor está en [`RECONSTRUIR.md`](RECONSTRUIR.md).
