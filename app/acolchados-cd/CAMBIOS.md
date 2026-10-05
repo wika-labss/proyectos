@@ -105,9 +105,50 @@ sí.
 
 ---
 
+## Cotizaciones formales (PDF)
+
+En el panel hay una pestaña **Cotizaciones**. No es el carrito de la página:
+esa lista sigue viviendo solo en el navegador. Esta se guarda en la base y
+baja un PDF.
+
+Al crear una, el servidor propone:
+
+| Campo | Valor inicial | Se puede cambiar |
+|---|---|---|
+| Número | `COT-2026-0001`, correlativo del año | Sí |
+| Fecha | Hoy, hora de Chile | Sí |
+| Validez | 15 días | Sí |
+| Nota | Valores netos, medidas especiales aparte | Sí |
+| Neto, IVA 19 %, total | Cero hasta que hay líneas. Al editar una línea se recalculan desde cantidad × precio neto | Sí. El PDF imprime los montos guardados, no los vuelve a calcular |
+
+El solicitante lleva nombre, empresa, teléfono y correo. Cada línea elige un
+producto del catálogo, un tamaño, el detalle (Medida y las columnas extra,
+por ejemplo Encimera / Bajera / Funda), la cantidad y el precio neto.
+
+El PDF usa el logo de Acolchados CD como marca de agua, tenue, en todas las
+hojas, y el pie con San José 5887, San Miguel, el teléfono y el correo.
+
+En la base: `cotizaciones` y `cotizacion_lineas`. Se crean al arrancar el
+servicio, igual que el resto de las tablas. Para verlo en el servidor hay
+que reconstruir el contenedor, como en [`RECONSTRUIR.md`](RECONSTRUIR.md):
+entran reportlab y pillow, y el logo va dentro de la imagen del servicio.
+
+### Funciones
+
+| Dónde | Qué hace |
+|---|---|
+| `numero_siguiente` | Arma el siguiente `COT-año-0001` |
+| `hoy_chile` | Fecha de hoy en `America/Santiago` |
+| `generar_pdf` | Dibuja el PDF con los totales guardados y la marca de agua |
+| `abrirCotizacion` | Editor del panel. Al cambiar una línea vuelve a proponer neto, IVA y total |
+| `bajarPdf` | Descarga el archivo con la sesión del panel |
+
+---
+
 ## Qué no hace todavía
 
-- El formulario no envía correo. Confirma en la página. El paso del SMTP
-  está en `CONTACTO.md`.
+- El formulario de la página no envía correo. Confirma en la página. El paso
+  del SMTP está en `CONTACTO.md`.
 - No hay pago, pedido ni despacho. Sigue siendo cotización, no tienda.
-- No se cotiza una talla suelta. La tabla de tamaños solo informa.
+- En la página pública no se cotiza una talla suelta. En el PDF formal sí:
+  cada línea elige un tamaño.

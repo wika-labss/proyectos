@@ -157,6 +157,7 @@ legend{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--
       <button data-t="categorias">Categorías</button>
       <button data-t="stock">Stock</button>
       <button data-t="historial">Historial</button>
+      <button data-t="cotizaciones">Cotizaciones</button>
     </nav>
   </header>
 
@@ -206,6 +207,22 @@ legend{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--
     <section data-p="historial" class="oculto">
       <div class="fila-top"><h2>Últimos movimientos</h2></div>
       <div id="tablaHistorial"></div>
+    </section>
+
+    <!-- COTIZACIONES -->
+    <section data-p="cotizaciones" class="oculto">
+      <div class="fila-top">
+        <h2>Cotizaciones</h2>
+        <div class="crece"></div>
+        <button class="btn full" id="bNuevaCoti">+ Nueva cotización</button>
+      </div>
+      <p class="nota" style="margin-bottom:18px">
+        Arma un PDF con los productos del catálogo, el contacto de quien pide
+        y los totales. El número, la fecha y los 15 días de validez salen solos
+        y se pueden cambiar. Neto, IVA y total se proponen al editar una línea
+        y también se pueden corregir a mano: el PDF imprime lo guardado.
+      </p>
+      <div id="tablaCotizaciones"></div>
     </section>
   </main>
 </div>
@@ -295,6 +312,7 @@ document.querySelectorAll('nav.tabs button').forEach(b => {
     document.querySelectorAll('section[data-p]').forEach(s =>
       s.classList.toggle('oculto', s.dataset.p !== b.dataset.t));
     if (b.dataset.t === 'historial') cargarHistorial();
+    if (b.dataset.t === 'cotizaciones') cargarCotizaciones();
   });
 });
 
@@ -468,6 +486,24 @@ document.addEventListener('click', async e => {
       return cargar();
     } catch (ex) { return avisar(ex.message, 'mal'); }
   }
+  if (b.dataset.cotieditar) {
+    try { abrirCotizacion(await pedir(`cotizaciones/${b.dataset.cotieditar}`)); }
+    catch (ex) { avisar(ex.message, 'mal'); }
+    return;
+  }
+  if (b.dataset.cotipdf) {
+    try { await bajarPdf(b.dataset.cotipdf, b.dataset.cotinum); }
+    catch (ex) { avisar(ex.message, 'mal'); }
+    return;
+  }
+  if (b.dataset.cotiborrar) {
+    if (!confirm(`¿Borrar la cotización ${b.dataset.cotinum || ''}?`.trim() + '\n\nEsto no se puede deshacer.')) return;
+    try {
+      await pedir(`cotizaciones/${b.dataset.cotiborrar}`, { method: 'DELETE' });
+      avisar('Cotización borrada');
+      return cargarCotizaciones();
+    } catch (ex) { return avisar(ex.message, 'mal'); }
+  }
   if (b.dataset.stock) {
     let cambio, motivo = '';
     if (b.dataset.delta === 'ask') {
@@ -487,6 +523,10 @@ document.addEventListener('click', async e => {
 $('#buscar').addEventListener('input', pintarProductos);
 $('#soloBajos').addEventListener('change', pintarStock);
 $('#bNuevo').addEventListener('click', () => abrirEditor(null));
+$('#bNuevaCoti').addEventListener('click', async () => {
+  try { abrirCotizacion(await pedir('cotizaciones/nueva')); }
+  catch (ex) { avisar(ex.message, 'mal'); }
+});
 
 /* ---------- editor de producto ---------- */
 function abrirEditor(p) {
@@ -767,6 +807,295 @@ $('#bClave').addEventListener('click', () => {
     } catch (ex) { falla(ex.message); }
   });
 });
+
+/* ---------- cotizaciones formales ---------- */
+const NOTA_COTI = 'Valores netos por unidad, no incluyen IVA. Las medidas y colores especiales se cotizan aparte.';
+let COTIS = [];
+
+async function cargarCotizaciones() {
+  const r = await pedir('cotizaciones');
+  COTIS = r.cotizaciones || [];
+  pintarCotizaciones();
+}
+
+function pintarCotizaciones() {
+  const caja = $('#tablaCotizaciones');
+  if (!COTIS.length) {
+    caja.innerHTML = `<div class="vacio">Todavía no hay cotizaciones. Crea la primera con “+ Nueva cotización”.</div>`;
+    return;
+  }
+  caja.innerHTML = `<table><tr><th>Número</th><th>Fecha</th><th>Solicitante</th><th class="num">Total</th><th></th></tr>` +
+    COTIS.map(c => `<tr>
+      <td>${esc(c.numero)}</td>
+      <td style="color:var(--dim)">${esc(c.fecha)}</td>
+      <td>${esc(c.solicitante)}${c.empresa ? `<div style="color:var(--dim);font-size:12px">${esc(c.empresa)}</div>` : ''}</td>
+      <td class="num">${plata(c.total)}</td>
+      <td class="num"><span class="stock">
+        <button class="btn mini" data-cotieditar="${c.id}">Editar</button>
+        <button class="btn gris mini" data-cotipdf="${c.id}" data-cotinum="${esc(c.numero)}">PDF</button>
+        <button class="btn mal mini" data-cotiborrar="${c.id}" data-cotinum="${esc(c.numero)}">Borrar</button>
+      </span></td></tr>`).join('') + `</table>`;
+}
+
+async function bajarPdf(id, numero) {
+  const r = await fetch(`${API}/cotizaciones/${id}/pdf`, {
+    credentials: 'same-origin',
+    headers: { 'X-Panel': '1' }
+  });
+  if (r.status === 401) { mostrarLogin(); throw new Error('Sesión expirada'); }
+  if (!r.ok) {
+    let msg = 'No se pudo generar el PDF';
+    try { msg = (JSON.parse(await r.text()).detail) || msg; } catch { /* sigue el mensaje */ }
+    throw new Error(msg);
+  }
+  const blob = await r.blob();
+  const enlace = document.createElement('a');
+  enlace.href = URL.createObjectURL(blob);
+  enlace.download = `${numero || 'cotizacion'}.pdf`;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  setTimeout(() => URL.revokeObjectURL(enlace.href), 1500);
+}
+
+function detalleDe(producto, variante) {
+  if (!producto || !variante) return '';
+  const cols = (producto.columnas && producto.columnas.length) ? producto.columnas : ['Medida'];
+  return cols.map((titulo, i) => {
+    const valor = i ? ((variante.extras || [])[i - 1] || '') : (variante.medida || '');
+    return String(valor).trim() ? `${titulo}: ${valor}` : '';
+  }).filter(Boolean).join(' · ');
+}
+
+function proponerTotales(lineas) {
+  const neto = lineas.reduce((s, l) => s + (Number(l.cantidad) || 0) * (Number(l.precio) || 0), 0);
+  const iva = Math.round(neto * 0.19);
+  return { neto, iva, total: neto + iva };
+}
+
+function abrirCotizacion(c) {
+  const nuevo = !c.id;
+  const productos = DATOS.productos || [];
+  const lineas = JSON.parse(JSON.stringify(c.lineas || []));
+  lineas.forEach(l => {
+    const p = productos.find(x => x.id == l.producto_id);
+    const i = p ? p.variantes.findIndex(v => v.tamano === l.tamano) : -1;
+    l._idx = i >= 0 ? String(i) : '';
+  });
+
+  const opcionesProducto = (sel, nombre) => {
+    const conocido = productos.some(p => p.id == sel);
+    const extra = sel && !conocido && nombre
+      ? `<option value="${sel}" selected>${esc(nombre)} (ya no está en el catálogo)</option>` : '';
+    return `<option value="">Producto…</option>${extra}` +
+      productos.map(p => `<option value="${p.id}" ${p.id == sel ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('');
+  };
+  const opcionesTamano = (producto, sel) => {
+    if (!producto) return `<option value="">Tamaño…</option>`;
+    return `<option value="">Tamaño…</option>` + producto.variantes.map((v, i) =>
+      `<option value="${i}" ${String(i) === String(sel) ? 'selected' : ''}>${esc(v.tamano || '—')}</option>`).join('');
+  };
+
+  $('#modales').innerHTML = `<div class="velo" id="veloCoti">
+    <div class="modal" style="max-width:980px">
+      <div class="cab"><h3>${nuevo ? 'Nueva cotización' : 'Editar cotización'}</h3>
+        <button class="btn gris mini" data-cerrar>Cerrar</button></div>
+      <div class="cuerpo">
+        <div id="errCoti" class="aviso mal oculto"></div>
+        <fieldset>
+          <legend>Documento</legend>
+          <div class="rejilla">
+            <div class="campo"><label for="cNumero">Número</label>
+              <input id="cNumero" value="${esc(c.numero || '')}" maxlength="40"></div>
+            <div class="campo"><label for="cFecha">Fecha</label>
+              <input id="cFecha" type="date" value="${esc(c.fecha || '')}"></div>
+            <div class="campo"><label for="cValidez">Validez (días)</label>
+              <input id="cValidez" type="number" min="1" max="365" value="${c.validez_dias || 15}"></div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Solicitante</legend>
+          <div class="rejilla">
+            <div class="campo"><label for="cSol">Nombre</label>
+              <input id="cSol" value="${esc(c.solicitante || '')}" maxlength="120"></div>
+            <div class="campo"><label for="cEmp">Empresa</label>
+              <input id="cEmp" value="${esc(c.empresa || '')}" maxlength="120"></div>
+            <div class="campo"><label for="cTel">Teléfono</label>
+              <input id="cTel" value="${esc(c.telefono || '')}" maxlength="40"></div>
+            <div class="campo"><label for="cMail">Correo</label>
+              <input id="cMail" value="${esc(c.correo || '')}" maxlength="200"></div>
+          </div>
+        </fieldset>
+        <div class="campo">
+          <label for="cNota">Nota</label>
+          <textarea id="cNota" maxlength="2000">${esc(c.nota != null ? c.nota : NOTA_COTI)}</textarea>
+        </div>
+        <fieldset>
+          <legend>Líneas</legend>
+          <div id="listaLineas" style="overflow-x:auto"></div>
+          <button class="btn azul mini" id="bLinea" type="button" style="margin-top:10px">+ Añadir línea</button>
+        </fieldset>
+        <fieldset>
+          <legend>Totales</legend>
+          <div class="rejilla">
+            <div class="campo"><label for="cNeto">Neto</label>
+              <input id="cNeto" type="number" min="0" value="${c.neto || 0}"></div>
+            <div class="campo"><label for="cIva">IVA 19 %</label>
+              <input id="cIva" type="number" min="0" value="${c.iva || 0}"></div>
+            <div class="campo"><label for="cTotal">Total</label>
+              <input id="cTotal" type="number" min="0" value="${c.total || 0}"></div>
+          </div>
+          <p class="nota">Al cambiar una línea se vuelven a proponer estos tres montos. Si los corriges a mano, guarda antes de tocar otra línea: el PDF usa los montos guardados.</p>
+        </fieldset>
+      </div>
+      <div class="pie">
+        <button class="btn gris" data-cerrar>Cancelar</button>
+        <button class="btn full" id="bGuardarCoti">${nuevo ? 'Crear cotización' : 'Guardar cambios'}</button>
+      </div>
+    </div></div>`;
+
+  const pintarLineas = () => {
+    const filas = lineas.map((l, i) => {
+      const p = productos.find(x => x.id == l.producto_id);
+      return `<tr>
+        <td style="min-width:180px"><select data-li="${i}" data-c="producto">${opcionesProducto(l.producto_id, l.nombre)}</select></td>
+        <td style="min-width:120px"><select data-li="${i}" data-c="tamano">${opcionesTamano(p, l._idx)}</select></td>
+        <td style="min-width:200px"><input data-li="${i}" data-c="detalle" value="${esc(l.detalle || '')}" maxlength="500"></td>
+        <td><input data-li="${i}" data-c="cantidad" type="number" min="1" value="${l.cantidad || 1}" style="width:78px"></td>
+        <td><input data-li="${i}" data-c="precio" type="number" min="0" value="${l.precio || 0}" style="width:110px"></td>
+        <td class="num" data-sub="${i}">${plata((l.cantidad || 0) * (l.precio || 0))}</td>
+        <td><button class="btn mal mini" type="button" data-quitarli="${i}">×</button></td>
+      </tr>`;
+    }).join('');
+    $('#listaLineas').innerHTML = lineas.length
+      ? `<table><tr><th>Producto</th><th>Tamaño</th><th>Detalle</th><th>Cant.</th><th>P. unit. neto</th><th class="num">Subtotal</th><th></th></tr>${filas}</table>`
+      : `<p class="nota">Sin líneas. Añade al menos un producto.</p>`;
+  };
+
+  const proponer = () => {
+    const t = proponerTotales(lineas);
+    $('#cNeto').value = t.neto;
+    $('#cIva').value = t.iva;
+    $('#cTotal').value = t.total;
+  };
+
+  pintarLineas();
+  const velo = $('#veloCoti');
+  velo.addEventListener('click', e => {
+    if (e.target === velo || e.target.closest('[data-cerrar]')) {
+      $('#modales').innerHTML = '';
+      return;
+    }
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.id === 'bLinea') {
+      lineas.push({ producto_id: null, nombre: '', tamano: '', detalle: '', cantidad: 1, precio: 0, _idx: '' });
+      pintarLineas();
+      proponer();
+      return;
+    }
+    if (b.dataset.quitarli !== undefined) {
+      lineas.splice(+b.dataset.quitarli, 1);
+      pintarLineas();
+      proponer();
+      return;
+    }
+    if (b.id === 'bGuardarCoti') return enviarCoti(b);
+  });
+
+  velo.addEventListener('change', e => {
+    const i = e.target.dataset.li;
+    if (i === undefined) return;
+    const l = lineas[+i];
+    if (e.target.dataset.c === 'producto') {
+      const prod = productos.find(x => x.id == e.target.value);
+      if (prod) {
+        l.producto_id = prod.id;
+        l.nombre = prod.nombre;
+        l._idx = '';
+        l.tamano = '';
+        l.detalle = '';
+        l.precio = 0;
+      } else if (!e.target.value) {
+        l.producto_id = null;
+        l.nombre = '';
+        l._idx = '';
+        l.tamano = '';
+        l.detalle = '';
+        l.precio = 0;
+      }
+      pintarLineas();
+      proponer();
+      return;
+    }
+    if (e.target.dataset.c === 'tamano') {
+      const prod = productos.find(x => x.id == l.producto_id);
+      const v = prod && e.target.value !== '' ? prod.variantes[+e.target.value] : null;
+      l._idx = e.target.value;
+      l.tamano = v ? (v.tamano || '') : '';
+      l.precio = v ? (v.precio || 0) : 0;
+      l.detalle = v ? detalleDe(prod, v) : '';
+      pintarLineas();
+      proponer();
+    }
+  });
+
+  velo.addEventListener('input', e => {
+    const i = e.target.dataset.li;
+    if (i === undefined) return;
+    const campo = e.target.dataset.c;
+    if (campo === 'producto' || campo === 'tamano') return;
+    const l = lineas[+i];
+    if (campo === 'cantidad') l.cantidad = Math.max(parseInt(e.target.value, 10) || 1, 1);
+    else if (campo === 'precio') l.precio = Math.max(parseInt(e.target.value, 10) || 0, 0);
+    else l[campo] = e.target.value;
+    const celda = document.querySelector(`[data-sub="${i}"]`);
+    if (celda) celda.textContent = plata((l.cantidad || 0) * (l.precio || 0));
+    proponer();
+  });
+
+  async function enviarCoti(boton) {
+    const cuerpo = {
+      numero: $('#cNumero').value.trim(),
+      fecha: $('#cFecha').value,
+      validez_dias: Math.min(Math.max(parseInt($('#cValidez').value, 10) || 15, 1), 365),
+      solicitante: $('#cSol').value.trim(),
+      empresa: $('#cEmp').value.trim(),
+      telefono: $('#cTel').value.trim(),
+      correo: $('#cMail').value.trim(),
+      nota: $('#cNota').value,
+      neto: Math.max(parseInt($('#cNeto').value, 10) || 0, 0),
+      iva: Math.max(parseInt($('#cIva').value, 10) || 0, 0),
+      total: Math.max(parseInt($('#cTotal').value, 10) || 0, 0),
+      lineas: lineas.map(l => ({
+        producto_id: l.producto_id || null,
+        nombre: (l.nombre || '').trim(),
+        tamano: l.tamano || '',
+        detalle: l.detalle || '',
+        cantidad: l.cantidad || 1,
+        precio: l.precio || 0
+      }))
+    };
+    const err = $('#errCoti');
+    const falla = t => { err.textContent = t; err.classList.remove('oculto'); err.scrollIntoView({ block: 'center' }); };
+    if (!cuerpo.numero) return falla('La cotización necesita un número.');
+    if (!cuerpo.solicitante) return falla('El solicitante necesita un nombre.');
+    if (!cuerpo.lineas.length) return falla('Agrega al menos una línea.');
+    if (cuerpo.lineas.some(l => !l.nombre)) return falla('Cada línea necesita un producto.');
+    boton.disabled = true;
+    try {
+      await pedir(nuevo ? 'cotizaciones' : `cotizaciones/${c.id}`, {
+        method: nuevo ? 'POST' : 'PUT',
+        cuerpo
+      });
+      $('#modales').innerHTML = '';
+      avisar(nuevo ? 'Cotización creada' : 'Cotización guardada');
+      await cargarCotizaciones();
+    } catch (ex) { falla(ex.message); boton.disabled = false; }
+  }
+
+  $('#cSol').focus();
+}
 
 comprobarSesion();
 </script>

@@ -16,6 +16,7 @@ import sqlite3
 import unicodedata
 from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from hashlib import pbkdf2_hmac
 from hmac import compare_digest
 from pathlib import Path
@@ -24,6 +25,8 @@ from time import time
 from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field
+
+from pdf_cotizacion import generar_pdf
 
 # ─── Configuración ────────────────────────────────────────────────────────
 RAIZ = Path(__file__).resolve().parent
@@ -142,6 +145,37 @@ CREATE TABLE IF NOT EXISTS movimientos (
 
 CREATE INDEX IF NOT EXISTS ix_var_prod ON variantes(producto_id);
 CREATE INDEX IF NOT EXISTS ix_mov_fecha ON movimientos(fecha DESC);
+
+CREATE TABLE IF NOT EXISTS cotizaciones (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  numero       TEXT NOT NULL UNIQUE,
+  fecha        TEXT NOT NULL,
+  validez_dias INTEGER NOT NULL DEFAULT 15,
+  solicitante  TEXT NOT NULL DEFAULT '',
+  empresa      TEXT NOT NULL DEFAULT '',
+  telefono     TEXT NOT NULL DEFAULT '',
+  correo       TEXT NOT NULL DEFAULT '',
+  nota         TEXT NOT NULL DEFAULT '',
+  neto         INTEGER NOT NULL DEFAULT 0,
+  iva          INTEGER NOT NULL DEFAULT 0,
+  total        INTEGER NOT NULL DEFAULT 0,
+  creado       TEXT NOT NULL,
+  actualizado  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS cotizacion_lineas (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  cotizacion_id  INTEGER NOT NULL REFERENCES cotizaciones(id) ON DELETE CASCADE,
+  producto_id    INTEGER,
+  nombre         TEXT NOT NULL DEFAULT '',
+  tamano         TEXT NOT NULL DEFAULT '',
+  detalle        TEXT NOT NULL DEFAULT '',
+  cantidad       INTEGER NOT NULL DEFAULT 1,
+  precio         INTEGER NOT NULL DEFAULT 0,
+  orden          INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS ix_cot_lineas ON cotizacion_lineas(cotizacion_id);
 """
 
 
@@ -296,6 +330,36 @@ class ProductoEntrada(BaseModel):
     colores: list[Color] = []
     columnas: list[str] = []
     variantes: list[Variante] = []
+
+
+NOTA_INICIAL = (
+    "Valores netos por unidad, no incluyen IVA. "
+    "Las medidas y colores especiales se cotizan aparte."
+)
+
+
+class LineaCotizacion(BaseModel):
+    producto_id: int | None = None
+    nombre: str = Field(default="", max_length=160)
+    tamano: str = Field(default="", max_length=80)
+    detalle: str = Field(default="", max_length=500)
+    cantidad: int = Field(default=1, ge=1, le=100_000)
+    precio: int = Field(default=0, ge=0, le=99_000_000)
+
+
+class CotizacionEntrada(BaseModel):
+    numero: str = Field(min_length=1, max_length=40)
+    fecha: str = Field(min_length=8, max_length=10)
+    validez_dias: int = Field(default=15, ge=1, le=365)
+    solicitante: str = Field(default="", max_length=120)
+    empresa: str = Field(default="", max_length=120)
+    telefono: str = Field(default="", max_length=40)
+    correo: str = Field(default="", max_length=200)
+    nota: str = Field(default="", max_length=2000)
+    neto: int = Field(default=0, ge=0, le=99_000_000)
+    iva: int = Field(default=0, ge=0, le=99_000_000)
+    total: int = Field(default=0, ge=0, le=99_000_000)
+    lineas: list[LineaCotizacion] = []
 
 
 class CategoriaEntrada(BaseModel):
@@ -770,6 +834,190 @@ def movimientos():
     with bd() as cx:
         filas = cx.execute("SELECT * FROM movimientos ORDER BY id DESC LIMIT 100").fetchall()
     return {"movimientos": [dict(f) for f in filas]}
+
+
+# ─── Cotizaciones formales ────────────────────────────────────────────────
+def hoy_chile() -> str:
+    return datetime.now(ZoneInfo("America/Santiago")).date().isoformat()
+
+
+def numero_siguiente(cx) -> str:
+    anio = datetime.now(ZoneInfo("America/Santiago")).year
+    prefijo = f"COT-{anio}-"
+    mayor = 0
+    for fila in cx.execute(
+        "SELECT numero FROM cotizaciones WHERE numero LIKE ?", (prefijo + "%",)
+    ):
+        cola = fila["numero"][len(prefijo):]
+        if cola.isdigit():
+            mayor = max(mayor, int(cola))
+    return f"{prefijo}{mayor + 1:04d}"
+
+
+def leer_cotizaciones(cx):
+    filas = cx.execute(
+        "SELECT id, numero, fecha, solicitante, empresa, total "
+        "FROM cotizaciones ORDER BY id DESC"
+    ).fetchall()
+    return [dict(f) for f in filas]
+
+
+def leer_cotizacion(cx, cotizacion_id: int):
+    fila = cx.execute("SELECT * FROM cotizaciones WHERE id = ?", (cotizacion_id,)).fetchone()
+    if not fila:
+        return None
+    lineas = cx.execute(
+        "SELECT id, producto_id, nombre, tamano, detalle, cantidad, precio "
+        "FROM cotizacion_lineas WHERE cotizacion_id = ? ORDER BY orden, id",
+        (cotizacion_id,),
+    ).fetchall()
+    datos = dict(fila)
+    datos["lineas"] = [dict(linea) for linea in lineas]
+    return datos
+
+
+def guardar_lineas(cx, cotizacion_id: int, lineas: list[LineaCotizacion]):
+    cx.execute("DELETE FROM cotizacion_lineas WHERE cotizacion_id = ?", (cotizacion_id,))
+    for orden, linea in enumerate(lineas):
+        cx.execute(
+            "INSERT INTO cotizacion_lineas "
+            "(cotizacion_id, producto_id, nombre, tamano, detalle, cantidad, precio, orden) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                cotizacion_id,
+                linea.producto_id,
+                linea.nombre.strip(),
+                linea.tamano.strip(),
+                linea.detalle.strip(),
+                linea.cantidad,
+                linea.precio,
+                orden,
+            ),
+        )
+
+
+def validar_cotizacion(datos: CotizacionEntrada):
+    if not datos.solicitante.strip():
+        raise HTTPException(status_code=400, detail="El solicitante necesita un nombre")
+    if not datos.lineas:
+        raise HTTPException(status_code=400, detail="La cotización necesita al menos una línea")
+    for linea in datos.lineas:
+        if not linea.nombre.strip():
+            raise HTTPException(status_code=400, detail="Cada línea necesita un producto")
+    try:
+        datetime.strptime(datos.fecha, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="La fecha debe ser AAAA-MM-DD")
+
+
+def _valores_cotizacion(datos: CotizacionEntrada):
+    return (
+        datos.numero.strip(),
+        datos.fecha,
+        datos.validez_dias,
+        datos.solicitante.strip(),
+        datos.empresa.strip(),
+        datos.telefono.strip(),
+        datos.correo.strip(),
+        datos.nota.strip(),
+        datos.neto,
+        datos.iva,
+        datos.total,
+    )
+
+
+@panel.get("/api/cotizaciones", dependencies=[Depends(exigir_sesion)])
+def lista_cotizaciones():
+    with bd() as cx:
+        return {"cotizaciones": leer_cotizaciones(cx)}
+
+
+@panel.get("/api/cotizaciones/nueva", dependencies=[Depends(exigir_sesion)])
+def borrador_cotizacion():
+    with bd() as cx:
+        numero = numero_siguiente(cx)
+    return {
+        "numero": numero,
+        "fecha": hoy_chile(),
+        "validez_dias": 15,
+        "solicitante": "",
+        "empresa": "",
+        "telefono": "",
+        "correo": "",
+        "nota": NOTA_INICIAL,
+        "neto": 0,
+        "iva": 0,
+        "total": 0,
+        "lineas": [],
+    }
+
+
+@panel.get("/api/cotizaciones/{cotizacion_id}", dependencies=[Depends(exigir_sesion)])
+def una_cotizacion(cotizacion_id: int):
+    with bd() as cx:
+        datos = leer_cotizacion(cx, cotizacion_id)
+    if not datos:
+        raise HTTPException(status_code=404, detail="Esa cotización ya no existe")
+    return datos
+
+
+@panel.post("/api/cotizaciones", dependencies=[Depends(exigir_sesion)])
+def crear_cotizacion(datos: CotizacionEntrada):
+    validar_cotizacion(datos)
+    momento = iso(ahora())
+    try:
+        with bd() as cx:
+            cursor = cx.execute(
+                "INSERT INTO cotizaciones (numero, fecha, validez_dias, solicitante, empresa, "
+                "telefono, correo, nota, neto, iva, total, creado, actualizado) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (*_valores_cotizacion(datos), momento, momento),
+            )
+            nuevo = cursor.lastrowid
+            guardar_lineas(cx, nuevo, datos.lineas)
+    except sqlite3.IntegrityError:
+        raise HTTPException(status_code=409, detail="Ya existe una cotización con ese número")
+    return {"ok": True, "id": nuevo}
+
+
+@panel.put("/api/cotizaciones/{cotizacion_id}", dependencies=[Depends(exigir_sesion)])
+def editar_cotizacion(cotizacion_id: int, datos: CotizacionEntrada):
+    validar_cotizacion(datos)
+    try:
+        with bd() as cx:
+            if not cx.execute("SELECT 1 FROM cotizaciones WHERE id = ?", (cotizacion_id,)).fetchone():
+                raise HTTPException(status_code=404, detail="Esa cotización ya no existe")
+            cx.execute(
+                "UPDATE cotizaciones SET numero = ?, fecha = ?, validez_dias = ?, "
+                "solicitante = ?, empresa = ?, telefono = ?, correo = ?, nota = ?, "
+                "neto = ?, iva = ?, total = ?, actualizado = ? WHERE id = ?",
+                (*_valores_cotizacion(datos), iso(ahora()), cotizacion_id),
+            )
+            guardar_lineas(cx, cotizacion_id, datos.lineas)
+    except sqlite3.IntegrityError:
+        raise HTTPException(status_code=409, detail="Ya existe una cotización con ese número")
+    return {"ok": True}
+
+
+@panel.delete("/api/cotizaciones/{cotizacion_id}", dependencies=[Depends(exigir_sesion)])
+def borrar_cotizacion(cotizacion_id: int):
+    with bd() as cx:
+        cx.execute("DELETE FROM cotizaciones WHERE id = ?", (cotizacion_id,))
+    return {"ok": True}
+
+
+@panel.get("/api/cotizaciones/{cotizacion_id}/pdf", dependencies=[Depends(exigir_sesion)])
+def pdf_de_cotizacion(cotizacion_id: int):
+    with bd() as cx:
+        datos = leer_cotizacion(cx, cotizacion_id)
+    if not datos:
+        raise HTTPException(status_code=404, detail="Esa cotización ya no existe")
+    nombre = re.sub(r"[^A-Za-z0-9._-]+", "-", datos["numero"]).strip("-") or "cotizacion"
+    return Response(
+        content=generar_pdf(datos),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{nombre}.pdf"'},
+    )
 
 
 @panel.post("/api/imagenes", dependencies=[Depends(exigir_sesion)])
