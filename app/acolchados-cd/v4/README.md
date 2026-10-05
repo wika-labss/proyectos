@@ -5,7 +5,8 @@ columnas entre tamaño y precio, ficha con scroll, carrito de cotización y
 cotizaciones formales en PDF.
 
 Se puede reconstruir desde aquí igual que desde la carpeta principal. El
-paso a paso está en `RECONSTRUIR.md`.
+paso a paso está en `RECONSTRUIR.md`. El cierre de la versión está en
+`CIERRE.md`.
 
 ---
 
