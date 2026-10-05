@@ -12,6 +12,7 @@ La configuración del servidor que lo aloja está en
 
 ```
 acolchados-cd/
+├── v4/                 Versión 4 completa: copia de este punto del proyecto
 ├── web/
 │   ├── index.html      La página pública
 │   └── logo.png        Logo: barra, pie de página y favicon
