@@ -10,16 +10,23 @@ Dos correos por cotización:
   · A la casa   — todo, incluido el texto libre. Va con Reply-To del cliente
                   para poder responderle con un clic.
 
-Los dos van en texto plano: el contenido lo escribe un desconocido y no hay
-ninguna razón para renderizarlo como HTML en el cliente de correo de nadie.
+Los dos salen en dos versiones dentro del mismo mensaje: texto plano y HTML.
+El cliente de correo elige. El que no entiende HTML, o el que lo bloquea,
+igual lee el contenido completo.
+
+**Todo lo que escribe el visitante pasa por `escapar()` antes de entrar al
+HTML.** Si no, alguien podría escribir etiquetas en el mensaje y romper el
+diseño del correo que le llega al dueño. El texto plano no necesita eso.
 """
 
 import os
 import smtplib
 import ssl
+from datetime import datetime
 from email.headerregistry import Address
 from email.message import EmailMessage
 from email.utils import formataddr, parseaddr
+from html import escape as escapar
 
 SERVIDOR = os.getenv("SMTP_HOST", "")
 PUERTO = int(os.getenv("SMTP_PUERTO", "465"))
@@ -42,6 +49,75 @@ SITIO = os.getenv("SITIO", "vissiuss.lat").strip()
 
 def configurado() -> bool:
     return bool(SERVIDOR and USUARIO and CLAVE and DESDE)
+
+
+# ─── Paleta y piezas del diseño ───────────────────────────────────────────
+# Los mismos colores de la página. En correo se usa fondo claro: es lo que
+# mejor se ve en todos los clientes, y lo que se espera de algo formal.
+TINTA = "#1A1A1C"        # texto principal
+SUAVE = "#6E6961"        # texto secundario
+ORO = "#B99A72"          # el acento de la marca
+BORDE = "#E6E1D8"
+PAPEL = "#FFFFFF"
+FONDO = "#F4F2ED"
+
+# Las tablas y los estilos en línea no son por gusto: la mitad de los
+# clientes de correo descarta <style> y ninguno entiende flex ni grid.
+_TIPO = "font-family:Helvetica,Arial,sans-serif"
+
+
+def _fila(etiqueta: str, valor: str) -> str:
+    """Una fila de la ficha de contacto. El valor ya viene escapado."""
+    if not valor:
+        return ""
+    return (
+        f'<tr>'
+        f'<td style="{_TIPO};font-size:12px;color:{SUAVE};padding:7px 16px 7px 0;'
+        f'white-space:nowrap;vertical-align:top">{etiqueta}</td>'
+        f'<td style="{_TIPO};font-size:14px;color:{TINTA};padding:7px 0;'
+        f'vertical-align:top">{valor}</td>'
+        f'</tr>'
+    )
+
+
+def _titulo(texto: str) -> str:
+    return (
+        f'<p style="{_TIPO};font-size:11px;letter-spacing:.14em;text-transform:uppercase;'
+        f'color:{ORO};margin:28px 0 10px;font-weight:bold">{texto}</p>'
+    )
+
+
+def _envoltorio(encabezado: str, cuerpo: str, pie: str) -> str:
+    """El marco común de los dos correos."""
+    return f"""<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:{FONDO};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background:{FONDO};padding:28px 12px">
+  <tr><td align="center">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+           style="width:100%;max-width:600px;background:{PAPEL};border:1px solid {BORDE}">
+
+      <tr><td style="background:{TINTA};padding:26px 32px">
+        <p style="{_TIPO};margin:0;font-size:15px;letter-spacing:.22em;
+                  text-transform:uppercase;color:#F2EFEA;font-weight:bold">
+          {escapar(NOMBRE_DESDE)}</p>
+        <p style="{_TIPO};margin:7px 0 0;font-size:13px;color:{ORO}">{encabezado}</p>
+      </td></tr>
+
+      <tr><td style="height:3px;background:{ORO};font-size:0;line-height:0">&nbsp;</td></tr>
+
+      <tr><td style="padding:10px 32px 32px">{cuerpo}</td></tr>
+
+      <tr><td style="border-top:1px solid {BORDE};padding:18px 32px;background:{PAPEL}">
+        <p style="{_TIPO};margin:0;font-size:11px;color:{SUAVE};line-height:1.6">{pie}</p>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body></html>"""
 
 
 def una_linea(texto: str, tope: int = 120) -> str:
@@ -121,6 +197,8 @@ def confirmacion_al_cliente(nombre: str, para: str, productos: list[str]) -> Non
     saludo = una_linea(nombre, 60) or "Hola"
 
     m = _base("Recibimos su solicitud de cotización", para, responder_a=INTERNO or DESDE)
+
+    # ── versión en texto plano (va primero: es la alternativa de respaldo) ──
     m.set_content(
         f"""{saludo}:
 
@@ -145,32 +223,122 @@ de cotización en {SITIO} con esta dirección de correo. Si no fue usted, puede
 ignorarlo: no le volveremos a escribir.
 """
     )
+
+    # ── versión con diseño ──
+    pedidos = "".join(
+        f'<tr><td style="{_TIPO};font-size:14px;color:{TINTA};padding:9px 0;'
+        f'border-bottom:1px solid {BORDE}">{escapar(p)}</td></tr>'
+        for p in productos
+    ) or (f'<tr><td style="{_TIPO};font-size:14px;color:{SUAVE};padding:9px 0">'
+          f'Lo conversamos con usted</td></tr>')
+
+    cuerpo = (
+        f'<p style="{_TIPO};font-size:15px;color:{TINTA};line-height:1.7;margin:24px 0 0">'
+        f'{escapar(saludo)}:</p>'
+        f'<p style="{_TIPO};font-size:15px;color:{TINTA};line-height:1.7;margin:14px 0 0">'
+        f'Recibimos su solicitud de cotización. Gracias por escribirnos.</p>'
+        + _titulo("Nos pidió información sobre")
+        + f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
+          f'width="100%">{pedidos}</table>'
+        + f'<p style="{_TIPO};font-size:15px;color:{TINTA};line-height:1.7;margin:26px 0 0">'
+          f'Estamos preparando la propuesta con telas, medidas, plazos y valores, y le '
+          f'respondemos dentro de las próximas <b>24 horas hábiles</b>.</p>'
+        + f'<p style="{_TIPO};font-size:15px;color:{TINTA};line-height:1.7;margin:14px 0 0">'
+          f'Si necesita algo antes, puede llamarnos al '
+          f'<a href="tel:{escapar(TELEFONO.replace(" ", ""))}" '
+          f'style="color:{TINTA};font-weight:bold">{escapar(TELEFONO)}</a>.</p>'
+        + f'<p style="{_TIPO};font-size:14px;color:{SUAVE};line-height:1.7;margin:26px 0 0">'
+          f'San José 5887, San Miguel &middot; Santiago</p>'
+    )
+    m.add_alternative(
+        _envoltorio(
+            "Solicitud de cotización recibida",
+            cuerpo,
+            "Este mensaje se generó automáticamente porque alguien completó el "
+            f"formulario de cotización en {escapar(SITIO)} con esta dirección de correo. "
+            "Si no fue usted, puede ignorarlo: no le volveremos a escribir.",
+        ),
+        subtype="html",
+    )
     _enviar(m)
 
 
 def aviso_interno(
-    nombre: str, correo: str, telefono: str, productos: list[str], mensaje: str, ip: str
+    nombre: str, correo: str, telefono: str, empresa: str,
+    productos: list[str], mensaje: str
 ) -> None:
     """La copia para la casa: acá sí va todo, texto libre incluido."""
     quien = una_linea(nombre, 80) or "Alguien"
+    empresa = una_linea(empresa, 120)
     resumen = resumen_corto(productos)
+    fecha = datetime.now().strftime("%d/%m/%Y a las %H:%M")
 
     m = _base(f"Cotización: {quien} — {resumen}", INTERNO, responder_a=correo)
-    m.set_content(
-        f"""{quien} quiere saber la cotización de:
 
+    # ── versión en texto plano ──
+    lineas = [f"  Nombre      {quien}"]
+    if empresa:
+        lineas.append(f"  Empresa     {empresa}")
+    lineas.append(f"  Correo      {correo}")
+    lineas.append(f"  Teléfono    {telefono or 'no lo dejó'}")
+
+    m.set_content(
+        f"""NUEVA SOLICITUD DE COTIZACIÓN
+{fecha}
+
+DATOS DE CONTACTO
+{chr(10).join(lineas)}
+
+PRODUCTOS DE INTERÉS
 {lista_bonita(productos)}
 
-Cómo contactarle
-  Correo    {correo}
-  Teléfono  {telefono or "no lo dejó"}
-
-Lo que escribió
-{(mensaje or "(no escribió nada más)")}
+MENSAJE
+{mensaje or "(no escribió nada más)"}
 
 —
-Recibido desde el formulario de {SITIO} · IP {ip}
-Responde a este correo y le llega directo a {correo}.
+{NOMBRE_DESDE} · {SITIO}
 """
+    )
+
+    # ── versión con diseño ──
+    filas = _fila("Nombre", escapar(quien))
+    if empresa:
+        filas += _fila("Empresa", escapar(empresa))
+    filas += _fila(
+        "Correo",
+        f'<a href="mailto:{escapar(correo)}" style="color:{TINTA}">{escapar(correo)}</a>',
+    )
+    filas += _fila("Teléfono", escapar(telefono) if telefono
+                   else f'<span style="color:{SUAVE}">No lo dejó</span>')
+
+    pedidos = "".join(
+        f'<tr><td style="{_TIPO};font-size:14px;color:{TINTA};padding:9px 0;'
+        f'border-bottom:1px solid {BORDE}">{escapar(p)}</td></tr>'
+        for p in productos
+    ) or (f'<tr><td style="{_TIPO};font-size:14px;color:{SUAVE};padding:9px 0">'
+          f'Sin especificar</td></tr>')
+
+    texto = escapar(mensaje).replace("\n", "<br>") if mensaje else (
+        f'<span style="color:{SUAVE}">No escribió nada más.</span>')
+
+    cuerpo = (
+        _titulo("Datos de contacto")
+        + f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
+          f'width="100%">{filas}</table>'
+        + _titulo("Productos de interés")
+        + f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
+          f'width="100%">{pedidos}</table>'
+        + _titulo("Mensaje")
+        + f'<div style="{_TIPO};font-size:14px;color:{TINTA};line-height:1.7;'
+          f'background:{FONDO};border-left:2px solid {ORO};padding:14px 16px">{texto}</div>'
+    )
+
+    m.add_alternative(
+        _envoltorio(
+            f"Nueva solicitud · {escapar(fecha)}",
+            cuerpo,
+            f"{escapar(NOMBRE_DESDE)} &middot; {escapar(SITIO)}",
+        ),
+        subtype="html",
     )
     _enviar(m)

@@ -38,6 +38,22 @@ from fastapi.testclient import TestClient  # noqa: E402
 ENVIADOS = []
 correo._enviar = lambda m: ENVIADOS.append(m)
 
+
+def texto(m):
+    """El cuerpo en texto plano. Los correos son multiparte: texto + HTML."""
+    p = m.get_body(preferencelist=("plain",))
+    return p.get_content() if p else ""
+
+
+def diseno(m):
+    """La versión con diseño."""
+    p = m.get_body(preferencelist=("html",))
+    return p.get_content() if p else ""
+
+
+def todo(m):
+    return texto(m) + "\n" + diseno(m)
+
 import main  # noqa: E402
 
 main.preparar()   # el ciclo de vida no corre con TestClient suelto
@@ -97,14 +113,14 @@ comprobar("uno va al cliente", al_cliente is not None)
 comprobar("otro va a la casa", interno is not None)
 
 if al_cliente and interno:
-    cuerpo_cliente = al_cliente.get_content()
-    cuerpo_interno = interno.get_content()
+    cuerpo_cliente = todo(al_cliente)
+    cuerpo_interno = todo(interno)
     comprobar("el remitente es nuestro, no el del visitante",
               "web@vissiuss.lat" in al_cliente["From"])
     comprobar("el cliente ve los dos productos",
               "Colcha con fundas" in cuerpo_cliente and "Plumón acolchado" in cuerpo_cliente)
     comprobar("el aviso interno dice quién y qué",
-              "María Pérez" in cuerpo_interno and "quiere saber la cotización" in cuerpo_interno)
+              "María Pérez" in cuerpo_interno and "SOLICITUD DE COTIZACIÓN" in cuerpo_interno)
     comprobar("responder al aviso interno le escribe al cliente",
               interno["Reply-To"] == "maria@ejemplo.cl")
 
@@ -116,9 +132,9 @@ r = cotizar(email="victima@ejemplo.cl",
             productos=[ids["Colcha con fundas"]])
 al_cliente = next((m for m in ENVIADOS if m["To"] == "victima@ejemplo.cl"), None)
 comprobar("el texto del visitante NO llega al correo del cliente",
-          al_cliente is not None and "estafa.ru" not in al_cliente.get_content())
+          al_cliente is not None and "estafa.ru" not in todo(al_cliente))
 comprobar("pero sí llega al aviso interno",
-          any("estafa.ru" in m.get_content() for m in ENVIADOS if m["To"] == "contacto@vissiuss.lat"))
+          any("estafa.ru" in todo(m) for m in ENVIADOS if m["To"] == "contacto@vissiuss.lat"))
 
 ENVIADOS.clear()
 r = cotizar(email="otra@ejemplo.cl", nombre="Juan\nBcc: miles@de.victimas")
@@ -142,7 +158,7 @@ r = cotizar(email="inventado@ejemplo.cl", productos=[ids["Producto oculto"], 999
 if r.status_code == 200:
     m = next((m for m in ENVIADOS if m["To"] == "inventado@ejemplo.cl"), None)
     comprobar("un producto oculto o inexistente no se puede citar",
-              m is not None and "Producto oculto" not in m.get_content())
+              m is not None and "Producto oculto" not in todo(m))
 
 print("\n=== Frenos ===")
 ENVIADOS.clear()
@@ -182,6 +198,57 @@ comprobar("sin sesión no se ven las cotizaciones", r.status_code == 401, r.stat
 r = cliente.get("/api/productos")
 comprobar("la API pública NO expone cotizaciones", "cotizaciones" not in r.text)
 
+# ─── El campo empresa y el diseño del correo ──────────────────────────────
+print("\n=== Empresa y diseño ===")
+ENVIADOS.clear()
+with main.bd() as cx:
+    cx.execute("DELETE FROM cotizaciones")
+r = cliente.post("/api/cotizaciones", json={
+    "nombre": "Ana Soto", "email": "ana@ejemplo.cl", "telefono": "+56 9 1111 2222",
+    "empresa": "Hotel Vista Mar", "productos": [ids["Colcha con fundas"]],
+    "otro": False, "mensaje": "Necesito 40 unidades.", "web": "", "token": ""})
+comprobar("se acepta la cotización con empresa", r.status_code == 200, r.text)
+
+interno = next((m for m in ENVIADOS if m["To"] == "contacto@vissiuss.lat"), None)
+cliente_m = next((m for m in ENVIADOS if m["To"] == "ana@ejemplo.cl"), None)
+comprobar("la empresa llega al aviso interno",
+          interno is not None and "Hotel Vista Mar" in todo(interno))
+comprobar("la empresa NO se le repite al cliente",
+          cliente_m is not None and "Hotel Vista Mar" not in todo(cliente_m))
+with main.bd() as cx:
+    f = cx.execute("SELECT empresa FROM cotizaciones ORDER BY id DESC LIMIT 1").fetchone()
+comprobar("la empresa queda guardada en la base", f["empresa"] == "Hotel Vista Mar", dict(f))
+
+for m, quien in ((interno, "el aviso interno"), (cliente_m, "la confirmación")):
+    comprobar(f"{quien} lleva texto plano y HTML",
+              m is not None and m.get_content_type() == "multipart/alternative",
+              m.get_content_type() if m else None)
+    comprobar(f"{quien} se lee sin HTML", bool(texto(m).strip()))
+    comprobar(f"{quien} tiene diseño", "<table" in diseno(m))
+
+comprobar("ya no dice la IP ni 'responde a este correo'",
+          "IP " not in todo(interno) and "Responde a este correo" not in todo(interno))
+comprobar("el Reply-To sigue llevando al cliente",
+          interno["Reply-To"] == "ana@ejemplo.cl", interno["Reply-To"])
+
+# Lo más delicado del HTML: que el texto del visitante no pueda inyectar
+# etiquetas en el correo que abre el dueño.
+print("\n=== Inyección de HTML en el correo ===")
+ENVIADOS.clear()
+with main.bd() as cx:
+    cx.execute("DELETE FROM cotizaciones")
+veneno = '<script>alert(1)</script><a href="http://estafa.ru">pincha</a>'
+r = cliente.post("/api/cotizaciones", json={
+    "nombre": "Mala Idea", "email": "mala@ejemplo.cl", "telefono": "",
+    "empresa": '<b>Falsa</b>', "productos": [], "otro": True,
+    "mensaje": veneno, "web": "", "token": ""})
+interno = next((m for m in ENVIADOS if m["To"] == "contacto@vissiuss.lat"), None)
+d = diseno(interno) if interno else ""
+comprobar("el <script> del visitante queda escapado", "<script>" not in d, d[-400:])
+comprobar("su <a href> no se convierte en enlace", 'href="http://estafa.ru"' not in d)
+comprobar("el <b> de la empresa tampoco pasa", "<b>Falsa</b>" not in d)
+comprobar("pero el texto sí se lee, escapado", "&lt;script&gt;" in d)
+
 # ─── Sin SMTP configurado (como está producción hoy) ──────────────────────
 print("\n=== Si el correo NO está configurado ===")
 ENVIADOS.clear()
@@ -216,7 +283,7 @@ cotizar(email="ver@ejemplo.cl", nombre="María Pérez",
         productos=[ids["Colcha con fundas"], ids["Plumón acolchado"]])
 for m in ENVIADOS:
     print(f"  ┌─ To: {m['To']}   Subject: {m['Subject']}")
-    for linea in m.get_content().splitlines():
+    for linea in texto(m).splitlines():
         print(f"  │ {linea}")
     print("  └────────────────────────────────────────\n")
 

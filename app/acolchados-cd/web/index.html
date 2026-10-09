@@ -585,8 +585,12 @@ footer li a:hover{color:var(--gold)}
           <input name="telefono" maxlength="40" autocomplete="tel"
                  placeholder="Teléfono" aria-label="Teléfono">
         </div>
-        <input type="email" name="email" required maxlength="200" autocomplete="email"
-               placeholder="Correo electrónico" aria-label="Correo electrónico">
+        <div class="g2">
+          <input type="email" name="email" required maxlength="200" autocomplete="email"
+                 placeholder="Correo electrónico" aria-label="Correo electrónico">
+          <input name="empresa" maxlength="120" autocomplete="organization"
+                 placeholder="Empresa (opcional)" aria-label="Empresa">
+        </div>
 
         <!-- Lo que se fue agregando desde las fichas del catálogo -->
         <div class="coti-en-form" id="cotiEnForm" hidden>
@@ -1082,6 +1086,7 @@ footer li a:hover{color:var(--gold)}
       nombre:nombre,
       email:email,
       telefono:(d.get('telefono')||'').trim(),
+      empresa:(d.get('empresa')||'').trim(),
       mensaje:(d.get('mensaje')||'').trim(),
       web:d.get('web')||'',
       productos:ELEGIDOS.filter(function(x){return typeof x==='number'}),

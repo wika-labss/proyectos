@@ -468,7 +468,7 @@ function pintarCotizaciones() {
         const falló = c.correo.startsWith('falló');
         return `<div class="cot ${c.estado === 'nueva' ? 'nueva' : ''}">
         <div class="top">
-          <b>${esc(c.nombre)}</b>
+          <b>${esc(c.nombre)}${c.empresa ? ` <span style="color:var(--dim);font-weight:400">· ${esc(c.empresa)}</span>` : ''}</b>
           <span class="cuando">${esc(cuando(c.creada))}</span>
         </div>
         <div class="datos">

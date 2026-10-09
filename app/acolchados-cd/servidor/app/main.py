@@ -187,6 +187,7 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
   nombre    TEXT NOT NULL,
   email     TEXT NOT NULL,
   telefono  TEXT NOT NULL DEFAULT '',
+  empresa   TEXT NOT NULL DEFAULT '',
   productos TEXT NOT NULL DEFAULT '[]',
   mensaje   TEXT NOT NULL DEFAULT '',
   ip        TEXT NOT NULL DEFAULT '',
@@ -276,6 +277,11 @@ def preparar():
             cx.execute(
                 "ALTER TABLE variantes ADD COLUMN extras TEXT NOT NULL DEFAULT '[]'"
             )
+
+        # La empresa se agregó después: las cotizaciones viejas quedan en blanco.
+        tener_c = {f["name"] for f in cx.execute("PRAGMA table_info(cotizaciones)").fetchall()}
+        if "empresa" not in tener_c:
+            cx.execute("ALTER TABLE cotizaciones ADD COLUMN empresa TEXT NOT NULL DEFAULT ''")
 
         if not cx.execute("SELECT 1 FROM categorias LIMIT 1").fetchone():
             cx.executemany(
@@ -618,6 +624,7 @@ class Cotizacion(BaseModel):
     nombre: str = Field(min_length=2, max_length=80)
     email: str = Field(min_length=5, max_length=200)
     telefono: str = Field(default="", max_length=40)
+    empresa: str = Field(default="", max_length=120)
     productos: list[int] = Field(default_factory=list, max_length=MAX_PRODUCTOS)
     otro: bool = False
     mensaje: str = Field(default="", max_length=1500)
@@ -667,7 +674,7 @@ def revisar_frenos(cx, ip: str, destino: str):
                                  "Inténtelo más tarde o llámenos.")
 
 
-def despachar(cotizacion_id: int, nombre, destino, telefono, productos, mensaje, ip):
+def despachar(cotizacion_id: int, nombre, destino, telefono, empresa, productos, mensaje):
     """Se ejecuta DESPUÉS de responderle al visitante: si el correo tarda o
     falla, la cotización ya está guardada y la página no se queda colgada."""
     estado = "enviado"
@@ -677,7 +684,7 @@ def despachar(cotizacion_id: int, nombre, destino, telefono, productos, mensaje,
         registro.error("No salió la confirmación al cliente: %s", fallo)
         estado = "falló al cliente"
     try:
-        correo.aviso_interno(nombre, destino, telefono, productos, mensaje, ip)
+        correo.aviso_interno(nombre, destino, telefono, empresa, productos, mensaje)
     except Exception as fallo:                          # noqa: BLE001
         registro.error("No salió el aviso interno: %s", fallo)
         estado = "falló interno" if estado == "enviado" else "falló"
@@ -725,19 +732,20 @@ def pedir_cotizacion(datos: Cotizacion, peticion: Request, tareas: BackgroundTas
 
         nombre = " ".join(datos.nombre.split())[:80]
         telefono = " ".join(datos.telefono.split())[:40]
+        empresa = " ".join(datos.empresa.split())[:120]
         mensaje = datos.mensaje.strip()[:1500]
 
         cursor = cx.execute(
-            "INSERT INTO cotizaciones (nombre, email, telefono, productos, mensaje, ip, creada) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (nombre, destino, telefono, json.dumps(nombres, ensure_ascii=False),
+            "INSERT INTO cotizaciones (nombre, email, telefono, empresa, productos, mensaje, ip, creada) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (nombre, destino, telefono, empresa, json.dumps(nombres, ensure_ascii=False),
              mensaje, ip, iso(ahora())),
         )
         nueva = cursor.lastrowid
 
     hay_correo = correo.configurado()
     if hay_correo:
-        tareas.add_task(despachar, nueva, nombre, destino, telefono, nombres, mensaje, ip)
+        tareas.add_task(despachar, nueva, nombre, destino, telefono, empresa, nombres, mensaje)
     else:
         registro.warning("Cotización %s guardada pero el correo no está configurado", nueva)
 
