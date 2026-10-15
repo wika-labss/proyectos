@@ -10,6 +10,7 @@ const config = require('./config');
 const { Registry, COMMAND_TYPES } = require('./registry');
 
 const ADMIN_DIR = path.resolve(__dirname, '..', 'admin');
+const APK_PATH = path.resolve(__dirname, '..', 'downloads', 'geo-empresa-exp0.apk');
 const DEVICE_ID_RE = /^[A-Za-z0-9._:-]{3,80}$/;
 const MAX_BODY_BYTES = 16 * 1024;
 
@@ -47,6 +48,23 @@ function readJsonBody(req) {
       }
     });
     req.on('error', reject);
+  });
+}
+
+function serveApk(res) {
+  fs.stat(APK_PATH, (err, stat) => {
+    if (err) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('APK aún no generada. Compila agent/ y copia a experiment-0/downloads/');
+      return;
+    }
+    res.writeHead(200, {
+      'Content-Type': 'application/vnd.android.package-archive',
+      'Content-Length': stat.size,
+      'Content-Disposition': 'attachment; filename="geo-empresa-exp0.apk"',
+      'Cache-Control': 'no-store',
+    });
+    fs.createReadStream(APK_PATH).pipe(res);
   });
 }
 
@@ -132,6 +150,10 @@ async function handleApi(req, res, url) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+
+  if (req.method === 'GET' && url.pathname === '/geo-empresa-exp0.apk') {
+    return serveApk(res);
+  }
 
   if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/admin' || url.pathname === '/admin/')) {
     return serveAdmin(res);

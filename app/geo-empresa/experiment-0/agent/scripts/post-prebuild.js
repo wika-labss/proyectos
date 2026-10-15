@@ -13,4 +13,27 @@ props = props
   .trimEnd();
 props += '\n\nandroid.kotlinVersion=1.9.25\n';
 fs.writeFileSync(gradlePropsPath, props);
-console.log('[post-prebuild] kotlin 1.9.25');
+
+const buildGradlePath = path.join(__dirname, '..', 'android', 'build.gradle');
+if (fs.existsSync(buildGradlePath)) {
+  let buildGradle = fs.readFileSync(buildGradlePath, 'utf8');
+  const patch = `
+subprojects { subproject ->
+  subproject.plugins.withId('com.android.library') {
+    subproject.android {
+      publishing {
+        singleVariant('release') {
+          withSourcesJar()
+        }
+      }
+    }
+  }
+}
+`;
+  if (!buildGradle.includes("singleVariant('release')")) {
+    buildGradle = buildGradle.trimEnd() + patch;
+    fs.writeFileSync(buildGradlePath, buildGradle);
+  }
+}
+
+console.log('[post-prebuild] kotlin 1.9.25 + expo publishing patch');
