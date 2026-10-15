@@ -4,7 +4,8 @@ Monitoreo de teléfonos corporativos con geocerca Supabase.
 
 - **Backend:** Supabase `geo-empresa` — ver [supabase/README.md](./supabase/README.md)
 - **Documentación WIKA:** [idea/](./idea/)
-- **App móvil:** pendiente V1 (Android agente + registro único + background)
+- **Experimento 0 (admin directo, sin BD):** [experiment-0/README.md](./experiment-0/README.md) — broker WebSocket, consola y APK silenciosa
+- **App móvil (Supabase):** diseño en `idea/`; comandos por RPC pausados hasta validar experimento 0
 
 ## Campos clave (Supabase)
 
