@@ -24,6 +24,22 @@ function copyNativeSources(projectRoot) {
   }
 }
 
+function writeBrokerResource(projectRoot) {
+  const valuesDir = path.join(projectRoot, 'android', 'app', 'src', 'main', 'res', 'values');
+  fs.mkdirSync(valuesDir, { recursive: true });
+  const url = (process.env.EXPO_PUBLIC_BROKER_WS_URL || '').trim();
+  const escaped = url
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  // La APK conecta con esta URL aunque JS no llame a configure(); así el servicio
+  // nativo nunca queda en "broker WS URL not configured" tras un arranque en frío.
+  const xml = `<?xml version="1.0" encoding="utf-8"?>\n<resources>\n  <string name="geo_empresa_broker_ws">${escaped}</string>\n</resources>\n`;
+  fs.writeFileSync(path.join(valuesDir, 'geo_empresa.xml'), xml);
+  console.log(`[withGeoEmpresaAndroid] broker WS por defecto: ${url || '(vacío)'}`);
+}
+
 function patchMainApplication(projectRoot) {
   const mainAppPath = path.join(
     projectRoot,
@@ -178,6 +194,7 @@ const withGeoEmpresaAndroid = (config) => {
     'android',
     async (config) => {
       copyNativeSources(config.modRequest.projectRoot);
+      writeBrokerResource(config.modRequest.projectRoot);
       patchMainApplication(config.modRequest.projectRoot);
       return config;
     },

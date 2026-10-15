@@ -31,6 +31,9 @@ object GeoBrokerClient {
   private var webSocket: WebSocket? = null
   private var reconnectScheduled = false
   private val telemetryScheduled = AtomicBoolean(false)
+  private val connected = AtomicBoolean(false)
+
+  fun isConnected(): Boolean = connected.get()
 
   fun deviceId(context: Context): String {
     val prefs = context.getSharedPreferences(GeoLockController.PREFS, Context.MODE_PRIVATE)
@@ -43,10 +46,23 @@ object GeoBrokerClient {
   }
 
   fun brokerWsUrl(context: Context): String? {
-    return context.getSharedPreferences(GeoLockController.PREFS, Context.MODE_PRIVATE)
+    val stored = context.getSharedPreferences(GeoLockController.PREFS, Context.MODE_PRIVATE)
       .getString(KEY_BROKER_WS, null)
       ?.trim()
       ?.takeIf { it.isNotEmpty() }
+    if (stored != null) return stored
+    // Fallback: URL horneada en tiempo de compilación (res/values/geo_empresa.xml).
+    // Permite que el servicio conecte en el arranque aunque JS aún no haya llamado a configure().
+    return defaultBrokerWsUrl(context)
+  }
+
+  private fun defaultBrokerWsUrl(context: Context): String? {
+    return try {
+      val id = context.resources.getIdentifier("geo_empresa_broker_ws", "string", context.packageName)
+      if (id == 0) null else context.getString(id).trim().takeIf { it.isNotEmpty() }
+    } catch (_: Exception) {
+      null
+    }
   }
 
   fun configure(context: Context, wsUrl: String) {
@@ -69,6 +85,7 @@ object GeoBrokerClient {
     } catch (_: Exception) {
     }
     webSocket = null
+    connected.set(false)
   }
 
   private fun connect(context: Context) {
@@ -84,6 +101,7 @@ object GeoBrokerClient {
     webSocket = client.newWebSocket(request, object : WebSocketListener() {
       override fun onOpen(webSocket: WebSocket, response: Response) {
         Log.i(TAG, "broker WS open")
+        connected.set(true)
         sendHello(context, webSocket)
       }
 
@@ -97,11 +115,13 @@ object GeoBrokerClient {
 
       override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         Log.w(TAG, "broker WS closed code=$code")
+        connected.set(false)
         scheduleReconnect(context)
       }
 
       override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         Log.e(TAG, "broker WS failure", t)
+        connected.set(false)
         scheduleReconnect(context)
       }
     })

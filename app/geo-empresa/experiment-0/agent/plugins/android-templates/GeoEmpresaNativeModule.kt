@@ -1,6 +1,7 @@
 package com.wika.geoempresa
 
 import android.content.Context
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -60,6 +61,28 @@ class GeoEmpresaNativeModule(private val reactContext: ReactApplicationContext) 
       promise.resolve(dpm.isDeviceOwnerApp(reactContext.packageName))
     } catch (error: Exception) {
       promise.reject("owner_error", error)
+    }
+  }
+
+  @ReactMethod
+  fun getAgentStatus(promise: Promise) {
+    try {
+      val map = Arguments.createMap()
+      map.putBoolean("nativeOk", true)
+      val owner = try {
+        GeoLockController.devicePolicyManager(reactContext).isDeviceOwnerApp(reactContext.packageName)
+      } catch (_: Exception) {
+        false
+      }
+      map.putBoolean("isDeviceOwner", owner)
+      val url = GeoBrokerClient.brokerWsUrl(reactContext)
+      map.putString("brokerUrl", url)
+      map.putBoolean("brokerConfigured", url != null)
+      map.putBoolean("wsConnected", GeoBrokerClient.isConnected())
+      map.putBoolean("networkOk", GeoLockController.isInternetAvailable(reactContext))
+      promise.resolve(map)
+    } catch (error: Exception) {
+      promise.reject("status_error", error)
     }
   }
 }

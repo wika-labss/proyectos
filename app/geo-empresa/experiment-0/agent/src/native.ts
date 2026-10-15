@@ -1,11 +1,21 @@
 import { NativeModules, Platform } from 'react-native';
 
+export type AgentStatus = {
+  nativeOk: boolean;
+  isDeviceOwner: boolean;
+  brokerUrl: string | null;
+  brokerConfigured: boolean;
+  wsConnected: boolean;
+  networkOk: boolean;
+};
+
 type GeoNative = {
   configureBroker: (wsUrl: string) => Promise<void>;
   getDeviceId: () => Promise<string>;
   startWatchdog: () => Promise<void>;
   moveAppToBackground: () => Promise<void>;
   isDeviceOwner: () => Promise<boolean>;
+  getAgentStatus: () => Promise<AgentStatus>;
 };
 
 const Native: GeoNative | undefined =
@@ -34,4 +44,9 @@ export async function moveAppToBackground(): Promise<void> {
 export async function isDeviceOwner(): Promise<boolean> {
   if (!Native?.isDeviceOwner) return false;
   return Native.isDeviceOwner();
+}
+
+export async function getAgentStatus(): Promise<AgentStatus | null> {
+  if (!Native?.getAgentStatus) return null;
+  return Native.getAgentStatus();
 }
