@@ -2,6 +2,8 @@
 
 Canal **consola → broker en memoria → APK** por WebSocket. No usa Supabase para comandos ni registro.
 
+**Informe de sesión (15 oct 2026):** [docs/SESION-2026-10-15.md](docs/SESION-2026-10-15.md) — qué funcionó, pendientes (reposo / post-reboot) y **Fase 2** (ping, geocerca, auto-lock).
+
 ## Componentes
 
 | Carpeta | Rol |
@@ -126,3 +128,14 @@ PIN kiosco local: **1312**. `UNLOCK` remoto sale del kiosco sin PIN (TI).
 ## v1 (fuera de alcance)
 
 `SET_PIN`, `WIPE`, restricciones cámara, auditoría en Supabase.
+
+## Roadmap breve
+
+| Etapa | Contenido |
+|-------|-----------|
+| **Exp 0 (hoy)** | Admin directo, comandos manuales LOCK/UNLOCK/LOCATE/REBOOT/STATUS. |
+| **Hardening** | WS estable con pantalla off / Doze; auto-arranque tras reboot. |
+| **Fase 2** | Ping constante, detección fuera de rango, bloqueo automático. |
+| **v1 Supabase** | Registro, auditoría persistente, RPCs (cuando exp0 sea estable). |
+
+Detalle en [docs/SESION-2026-10-15.md](docs/SESION-2026-10-15.md).
