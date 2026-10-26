@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
     "plugins": ["expo-notifications"],
     "ios": {
       "supportsTablet": true,
@@ -14,7 +13,6 @@
     },
     "android": {
       "package": "com.intergalaxia.dt",
-      "newArchEnabled": false,
       "adaptiveIcon": {
         "backgroundColor": "#1B5E20",
         "foregroundImage": "./assets/android-icon-foreground.png",
