@@ -52,8 +52,10 @@ bash scripts/build-apk.sh       # APK + copia a /opt/cursor/artifacts/
 
 Salida:
 
-- `android/app/build/outputs/apk/debug/app-debug.apk`
-- Artefacto Cursor: `/opt/cursor/artifacts/inter-galaxia-debug.apk`
+- `android/app/build/outputs/apk/release/app-release.apk` (JS **embebido**; no requiere Metro)
+- Copia como artefacto: `/opt/cursor/artifacts/inter-galaxia-debug.apk`
+
+> **No usar `assembleDebug` en el teléfono del DT:** el variant debug no empaqueta el bundle y muestra *Unable to load script* / Metro.
 
 El script fija `newArchEnabled=false` y `reactNativeArchitectures=arm64-v8a`.
 
