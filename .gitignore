@@ -2,3 +2,6 @@
 *.psd
 *.ai
 *.tmp
+
+# Android SDK local (Cloud Agent builds)
+/android-sdk/
