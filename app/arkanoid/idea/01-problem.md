@@ -37,9 +37,10 @@ Entregar V1 instalable (APK Release) de Arkanoid en Android con: pala táctil, f
 - **Stack WIKA:** Expo SDK 52 + React Native; dependencias pinneadas (`~`); JDK 17 para BUILD.
 - **Orientación:** Portrait (V1).
 - **Permisos:** Ningún permiso sensible en V1 (sin cámara, ubicación ni internet).
-- **Tamaño:** < 25 MB instalado.
+- **Tamaño:** < 25 MB instalado (objetivo V1). El runtime Expo 52 supera ese techo; no se suma más peso de audio.
+- **Audio / arranque (V3):** Feature 24 no puede tumbar el proceso ni bloquear **Jugar**. El menú pinta antes de decodificar el MP3. Un fallo de `expo-av` deja la partida usable.
 - **Entregable:** APK Release sideloadable **sin Metro**.
-- **Fidelidad:** Reglas de juego = Arkanoid clásico (no variantes modernas tipo power-up-heavy salvo las deseables).
+- **Fidelidad:** Reglas de juego = Arkanoid clásico. V1 = núcleo pala/bola/ladrillos. V3 añade las cápsulas Vaus clásicas (L E C S B D P). Sin jefe ni rutas dedicadas de derrota/victoria (eso fue un delta V2 retirado).
 
 ## Criterios de éxito
 
@@ -51,3 +52,21 @@ Entregar V1 instalable (APK Release) de Arkanoid en Android con: pala táctil, f
 - [ ] Menú principal intuitivo con diseño futurista; partida con diseño retro.
 - [ ] La app funciona 100% offline.
 - [ ] El APK Release compila, se instala por sideload y corre sin PC/Metro.
+
+---
+
+## Refinamiento V3 (cápsulas + 33 niveles)
+
+El problema original no cambia: Arkanoid Android offline, menú futurista, partida retro.
+
+V3 **completa la fidelidad clásica** con:
+
+- Cápsulas que caen al romper ladrillos.
+- Un loop ambiental con volumen propio.
+- **33 niveles** de muro, de más fácil a más difícil. La partida larga es el medidor de skill y de high score.
+
+No es un juego distinto ni un delta de jefe.
+
+Fuente de verdad: `idea/02-features.md` → Feature 06 / 17 (33 niveles) + Feature 22 (sin delta V2) + Feature 23 (cápsulas) + Feature 24 (ambiente).
+
+Catálogo operativo de fallos V3 (arranque, audio, Windows, adb): `audits/errores-v3.md` (`ERR-V3-01` … `ERR-V3-27`).

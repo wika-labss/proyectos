@@ -27,8 +27,8 @@ Game
 ├── Controles: drag pala + launch
 ├── [Pausa] ──► Pause overlay ──► Reanudar | Menú
 ├── ballLost → (vidas>0 ? reset ball : Game Over)
-├── level cleared → Level Clear → next Game | Victory
-└── Game Over / Victory
+├── level cleared → Level Clear → next Game | Boss | WIN
+└── LOSER / WIN (rutas propias)
       ├── Score + High score
       ├── [Reintentar] → Game (nivel 1)
       └── [Menú] → Menu
@@ -43,8 +43,8 @@ Game
 3. Launch → bola en movimiento; arrastra pala; rebota y rompe ladrillos (reglas clásicas).
 4. Pierde bola → −1 vida; si quedan vidas, re-launch; si 0 → **Game Over**.
 5. Limpia ladrillos → **Level Clear** → siguiente nivel (vidas se conservan).
-6. Completa último nivel → **Victory**; actualiza high score si corresponde.
-7. Desde Game Over / Victory: Reintentar o volver al Menú.
+6. Completa el último muro → jefe → **WIN** al derrotarlo; actualiza high score si corresponde.
+7. Desde LOSER / WIN: Reintentar o volver al Menú.
 
 ---
 
@@ -86,9 +86,10 @@ type RunState = {
 
 // Constantes V1
 const INITIAL_LIVES = 3;
-const LEVEL_COUNT = 3;
+const LEVEL_COUNT = 4; // 3 muros + jefe
 const SCORE_NORMAL = 100;
 const SCORE_HARD = 200;
+const SCORE_BOSS = 1000;
 const BALL_SPEED_BASE = 280; // px/s aprox. en coords lógicas
 ```
 
@@ -114,46 +115,28 @@ const BALL_SPEED_BASE = 280; // px/s aprox. en coords lógicas
 
 ## 5. Navegación / UI
 
-### Menú (futurista)
-- Marca **Arkanoid** como señal hero (no solo nav).
-- Una frase corta: “Rompe el muro. Sobrevive al rebote.”
-- High score visible.
-- CTA primario único: **Jugar**.
-- Secundario: **Cómo jugar** (reglas en 3–4 líneas).
-- Atmósfera: fondo profundo con gradiente/scanlines sutiles; acentos cyan/magenta controlados; tipografía display; **sin** cards ni badges flotantes.
-
-### Game (retro)
-- Campo con ladrillos por color (filas tipo arcade).
-- Pala y bola simples, alto contraste.
-- HUD superior: vidas · score · nivel.
-- Controles: drag sobre pala / zona inferior; tap para launch si no lanzada.
-- Pausa discreta (icono), sin overlays decorativos.
+### Menú y partida (8-bit unificado)
+- Tipografía **Press Start 2P**. Paleta NES (`bit.*`). Sin radios redondos.
+- Fondo: pack `inspiration/arkanoid-castle` + scanlines CRT.
+- Marca **ARKANOID**, CTA **JUGAR**, secundario **COMO JUGAR**.
+- Campo: ladrillos/pala/bola/cápsulas cuadrados, alto contraste.
 
 ### Level Clear / Game Over / Victory
 - Mensaje claro + score + high score.
 - CTAs: Continuar / Reintentar / Menú.
 
-### Dirección visual V1 — dos atmósferas
+### Dirección visual V3 — 8-bit unificado
 
-**Menú (futurista)**
-
-| Token | Hex | Uso |
-|-------|-----|-----|
-| Void | `#050B18` | Fondo |
-| Nebula | `#0E1A33` → `#1A0B2E` | Gradiente |
-| Neon | `#2EE6D6` | CTA / acentos |
-| Magenta | `#E84AFF` | Detalles secundarios |
-| Text | `#E8F4FF` | Títulos |
-
-**Partida (retro)**
+Menú y partida comparten la misma atmósfera (ya no hay dual futurista/retro).
 
 | Token | Hex | Uso |
 |-------|-----|-----|
-| CRT | `#1A1020` | Fondo campo |
-| Brick1–N | `#E74C3C` `#E67E22` `#F1C40F` `#2ECC71` `#3498DB` `#9B59B6` | Filas |
-| Paddle | `#ECF0F1` | Pala |
-| Ball | `#FFFFFF` | Bola |
-| HUD | `#F5EE9E` | Texto score |
+| Night | `#0C0820` | Fondo |
+| Panel | `#140C28` | Cajas pixel |
+| Gold | `#F8D878` | CTA / HUD |
+| Ink | `#F8F8F8` | Texto |
+| Brick NES | `#F83800` `#FC9838` `#F8D878` `#00B800` `#3CBCFC` `#B8B8F8` | Filas |
+| Font | Press Start 2P | Toda la UI |
 
 ---
 
@@ -163,8 +146,8 @@ const BALL_SPEED_BASE = 280; // px/s aprox. en coords lógicas
 2. Exactamente **3** vidas al iniciar partida.
 3. Score solo por ladrillos destruidos (100 / 200).
 4. High score = máximo histórico local.
-5. ≥ 3 niveles; limpiar muro = avanzar; último nivel = Victory.
-6. Menú futurista ≠ look de partida retro (dos skins conscientes).
+5. ≥ 3 niveles en V1; **V3: 33 niveles** fácil → difícil. Limpiar muro = avanzar; último = Victory.
+6. V3: menú y partida comparten look 8-bit (Press Start 2P + pack Castillo).
 
 ---
 
@@ -198,3 +181,107 @@ const BALL_SPEED_BASE = 280; // px/s aprox. en coords lógicas
 - [x] Modelo de datos
 - [x] Tokens menú futurista + partida retro
 - [x] Auditoría de ensamblado (`audits/auditoria-ensamblado.md` — APROBADO)
+
+---
+
+## 9. Contrato V3 (vigente)
+
+V3 **sustituye** el flujo V2 (jefe, `/lose`, `/win`), **añade** cápsulas y fija **33 niveles**. El menú y la partida comparten look 8-bit.
+
+### Flujo de pantallas V3
+
+```
+Menu (8-bit)
+├── [Jugar] ──► Game (8-bit)
+├── [Cómo jugar] ──► HowTo (reglas + L E C S B D P)
+└── Game
+    ├── HUD: vidas (hasta 6) + score + nivel + poder activo
+    ├── Playfield: fondo inspiration/arkanoid-castle + ladrillos + pala + bola(s) + cápsulas + láseres + puerta
+    ├── [Pausa] overlay
+    ├── ballLost → reset poderes → playing | Game Over overlay
+    ├── level cleared | breakExit → Level Clear overlay → next | Victory overlay
+    └── Game Over / Victory: score + high score · Reintentar / Menú
+```
+
+### Constantes de niveles V3
+
+```ts
+const LEVEL_COUNT = 33;
+const BALL_SPEED_BASE = 280;
+const BALL_SPEED_PER_LEVEL = 5; // índice 32 → 440 px/s
+```
+
+Alfabeto de fila (8 columnas): `n` normal, `h` hard, `.` vacío.  
+HUD: `LV {levelIndex + 1}`. HowTo: `33 NIVELES`.
+
+### Modelo de datos V3 (añadido)
+
+```ts
+type CapsuleKind = "L" | "E" | "C" | "S" | "B" | "D" | "P";
+type ExclusivePower = "laser" | "enlarge" | "catch" | "slow" | "disrupt";
+
+type WorldState = {
+  // ...campos V1
+  extraBalls: Ball[];
+  capsules: Capsule[];
+  lasers: Laser[];
+  power: ExclusivePower | null;
+  slow: boolean;
+  doorOpen: boolean;
+  doorExit: boolean;
+  laserCooldownMs: number;
+};
+```
+
+### Relación de módulos V3
+
+| Emisor | Evento | Consumidor |
+|--------|--------|------------|
+| `arkanoid-engine` | `capsuleSpawned` / `capsuleCaught` | `playfield-retro`, HUD |
+| `vaus-capsules` | `extraLife` | `lives-system` (tope 6) |
+| `vaus-capsules` | `breakExit` | `level-progress` (mismo camino que clear) |
+| `playfield-retro` | render L/E/C/S/B/D/P | tokens `capsuleColor` |
+
+### Tokens de cápsula (partida retro)
+
+| Código | Color | Uso |
+|--------|-------|-----|
+| L | rojo | Láser |
+| E | verde | Enlarge |
+| C | cian | Catch |
+| S | naranja | Slow |
+| B | magenta | Break |
+| D | azul | Disrupt |
+| P | gris | Player |
+
+### Reglas de diseño V3
+
+7. Cápsulas caen al destruir ladrillos; recogerlas es el único input extra (más toque para láser/relanzar Catch).
+8. L/E/C/S/D se sustituyen. P y B no quitan el poder actual.
+9. Perder la última bola limpia poderes. Un nivel nuevo nace limpio.
+10. Victoria = limpiar el muro 33 o salir por Break en el último nivel. Sin jefe.
+11. Única pista ambiente (Castillo) en loop **después** del primer frame del menú. Volumen **Ambiente** en Menú y Pausa. Jugar no espera al audio.
+12. Fondo de partida: pack independiente `recursos/inspiration/arkanoid-castle/` (`dracula-castle-playfield.png`).
+13. 33 layouts fácil → difícil (Feature 06). Tutorial 1–6 solo normal; hard desde el 7; el 33 es muro hard completo.
+
+### Inspiración visual V3
+
+| Pack | Catálogo | Runtime |
+|------|----------|---------|
+| `arkanoid-castle` | `recursos/inspiration/arkanoid-castle/` | `assets/recursos/inspiration/arkanoid-castle/` |
+
+### Audio ambiente (Feature 24)
+
+| Dato | Clave | Default | UI |
+|------|-------|---------|-----|
+| Tema | fijado `castle` | runtime `ambient-castle.mp3` (≤ 2 MB, 64 kbps) | — |
+| Play Android | `MediaPlayer` + URI | no ExoPlayer embebido | — |
+| Arranque | gesto Jugar | `ensureStarted` | el menú no carga audio |
+| Volumen `ambient` | `arkanoid:v3:ambientVolume` | 0.45 | Slider Menú + Pausa |
+| Volumen `sfx` | (reservado) | 0.80 | — (Feature 18) |
+
+- [x] Auditoría documentación V3: `audits/auditoria-documentacion-v3.md`
+- [x] Auditoría módulos V3: `audits/auditoria-modulos-v3.md`
+- [x] Auditoría ensamblado V3: `audits/auditoria-ensamblado-v3.md`
+- [x] Auditoría audio/arranque V3: `audits/auditoria-audio-arranque-v3.md`
+- [ ] Auditoría release V3: `audits/auditoria-release-v3.md` (sideload pendiente)

@@ -8,6 +8,8 @@ En esta carpeta debemos generar documentacion para recursos graficos
 - [splash/](./splash/) — Pantallas de inicio y splash
 - [illustrations/](./illustrations/) — Ilustraciones y gráficos decorativos
 - [templates/](./templates/) — Plantillas reutilizables de diseño
+- [audio/](./audio/) — Loops ambientales y efectos
+- [inspiration/](./inspiration/) — Packs de inspiración independientes por juego
 
 ## Buenas Prácticas
 
