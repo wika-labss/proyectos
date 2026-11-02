@@ -4,12 +4,13 @@
 **Fecha de revisión:** 2026-11-02  
 **Documentos:** `idea/01-problem.md` v0.1.1, `idea/02-features.md` v0.1.1, `idea/03-module-discovery.md` v0.1.0  
 **Checklist:** `web-design/docs/auditoria-modulos.md`  
-**Revisor:** borrador de agente (no es firma de arquitecto)  
-**Estado:** `PENDIENTE_ARQUITECTO`
+**Checklist preparado por:** agente (borrador)  
+**Arquitecto:** Vissiuss  
+**Estado:** **APROBADO**
 
 El plan de negocio / SKU A/B no entra en este gate.
 
-Este borrador no activa `audit_2_passed` ni `direction_locked`, y no escribe **APROBADO**.
+El arquitecto aprobó el Gate 2 el 2026-11-02 a las 17:30 (UTC-3) con el mensaje "aprobado lo que me dijiste". El agente transcribió esa decisión en este archivo y en `03-module-discovery.md`.
 
 ---
 
@@ -44,7 +45,7 @@ Este borrador no activa `audit_2_passed` ni `direction_locked`, y no escribe **A
 - [x] `direction_skill: minimalist-ui` es un valor permitido.
 - [x] Resuelto con `mappings.b2b_saas` de `standards/direction-matrix.yaml`.
 - [x] `direction_rationale` no está vacío.
-- [ ] `direction_locked: true` — pendiente. Lo activa el arquitecto al aprobar.
+- [x] `direction_locked: true` al aprobar.
 - [x] `forbidden_phase2_skills` incluye `image-to-code`.
 
 ### Metadatos y trazabilidad
@@ -57,7 +58,7 @@ Este borrador no activa `audit_2_passed` ni `direction_locked`, y no escribe **A
 
 ## Decisiones para el arquitecto
 
-No son gaps de documentación. Si no se decide nada, queda lo que indica cada punto:
+No son gaps de documentación. El arquitecto aprobó lo propuesto, así que cada punto queda como se indica:
 
 1. **Tildes en `#`:** ¿`#gásfiter` y `#gasfiter` son el mismo oficio? Sin decisión, son distintos.
 2. **Oficios de varias palabras:** ¿`maestro chasquilla` conserva el espacio interno? Sin decisión, sí.
@@ -68,12 +69,14 @@ No son gaps de documentación. Si no se decide nada, queda lo que indica cada pu
 
 ---
 
-## Resultado del borrador
+## Resultado
 
-- [x] `PENDIENTE_ARQUITECTO` — la checklist oficial está cubierta, salvo `direction_locked`, que se activa con la firma.
+- [ ] `PENDIENTE_ARQUITECTO`
 - [ ] `REQUIERE_REVISIÓN`
-- [ ] **APROBADO** — solo el arquitecto
+- [x] **APROBADO** — Vissiuss (arquitecto), 2026-11-02
 
-**Flags:** `audit_2_passed: false` en `03-module-discovery.md` y `direction_locked: false` en MOD-DIR.
+Los módulos pueden avanzar al HTML estructural.
 
-**Siguiente, si el arquitecto aprueba:** registrar **APROBADO** en este archivo, poner `audit_2_passed: true` en `03` y `direction_locked: true` en MOD-DIR, y completar `idea/04-html-design.md`.
+**Flags:** `audit_2_passed: true` en `03-module-discovery.md` y `direction_locked: true` en MOD-DIR.
+
+**Siguiente:** `idea/04-html-design.md` (vistas del cliente y del panel del emprendedor) y Gate 3A.

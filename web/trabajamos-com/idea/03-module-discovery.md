@@ -1,13 +1,13 @@
 ---
 id: "WEB-MOD-001"
 title: "trabajamos.com — Descubrimiento de Módulos"
-status: "BORRADOR"
+status: "APROBADO"
 version: "0.1.0"
 owner: "Vissiuss"
 created_at: "2026-11-02"
 updated_at: "2026-11-02"
 audit_1_passed: true
-audit_2_passed: false
+audit_2_passed: true
 ---
 
 # [03] Descubrimiento y Especificación de Módulos — trabajamos.com
@@ -21,7 +21,7 @@ audit_2_passed: false
 - **Nombre del Proyecto:** trabajamos.com
 - **Especificaciones base:** `01-problem.md` (`WEB-PROB-001`) | `02-features.md` (`WEB-FEAT-001`)
 - **site_type:** `cms`
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_MODULOS`
+- **Estado de gatekeeping:** `AUDITORIA_MODULOS_APROBADA`
 
 ---
 
@@ -196,8 +196,8 @@ No hay ciclos. `MOD-02` usa la regla de normalización de `MOD-05` como contrato
 
 ### Riesgos
 
-1. **Tildes en `#`.** `01` y `02` no dicen si `#gásfiter` y `#gasfiter` son el mismo oficio. Sin decisión, la regla las trata como distintas.
-2. **Oficios de varias palabras.** "Sin espacios sobrantes" no define qué pasa con `maestro chasquilla`. Sin decisión, el espacio interno se conserva.
+1. **Tildes en `#`.** Decisión del Gate 2: `#gásfiter` y `#gasfiter` son oficios distintos.
+2. **Oficios de varias palabras.** Decisión del Gate 2: el espacio interno se conserva (`#maestro chasquilla`).
 3. **Privacidad del punto.** Quien trabaja desde su casa puede publicar la ubicación de su casa. El punto es el que él confirma; `01` no pide un punto aproximado.
 4. **Distancia.** `02` pide orden por cercanía sin definir la medida. **Supuesto:** distancia en línea recta entre puntos.
 5. **URL válida de redes.** **Supuesto:** se acepta una URL `https://` completa.
@@ -216,7 +216,7 @@ industry_type: b2b_saas
 business_model: marketplace_oficios_local
 direction_skill: minimalist-ui
 direction_rationale: "Portal de búsqueda y perfiles: barra y listado primero, perfiles legibles en el teléfono, tono claro, cercano y práctico. b2b_saas mapea a minimalist-ui y 'claro' confirma el desempate."
-direction_locked: false
+direction_locked: true
 allowed_phase2_skills:
   - design-taste-frontend
   - redesign-existing-projects
@@ -224,4 +224,4 @@ forbidden_phase2_skills:
   - image-to-code
 ```
 
-`direction_locked` pasa a `true` cuando el arquitecto aprueba el Gate 2. Cambiar de dirección después exige reabrir la auditoría de módulos.
+`direction_locked: true` desde la aprobación del Gate 2. Cambiar de dirección exige reabrir la auditoría de módulos.
