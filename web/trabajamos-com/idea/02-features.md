@@ -2,7 +2,7 @@
 id: "WEB-FEAT-001"
 title: "trabajamos.com — Features y Secciones"
 status: "BORRADOR"
-version: "0.1.0"
+version: "0.1.1"
 owner: "Vissiuss"
 created_at: "2026-11-02"
 updated_at: "2026-11-02"
@@ -21,7 +21,7 @@ site_type: "cms"
 
 - **Nombre del Proyecto:** trabajamos.com
 - **Documento base:** `idea/01-problem.md` (ID: `WEB-PROB-001`)
-- **site_type:** `cms` — el emprendedor crea y edita perfil, ofertas, imágenes y localidad. No es una landing fija.
+- **site_type:** `cms` — el emprendedor crea y edita perfil, ofertas, imágenes, localidad, contacto y redes. No es una landing fija.
 - **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
 
 ---
@@ -36,6 +36,7 @@ site_type: "cms"
 | `FEAT-04` | `ERR-04` | Localidad georreferenciada | `Crítica` | `mod-geo` |
 | `FEAT-05` | `ERR-05` | Barra de búsqueda de oficios con `#` | `Crítica` | `mod-buscador` |
 | `FEAT-06` | `ERR-06` | Oficios cercanos según la ubicación del cliente | `Crítica` | `mod-buscador` |
+| `FEAT-07` | `ERR-07` | Botón de contacto y redes sociales del perfil | `Crítica` | `mod-perfil` |
 
 ---
 
@@ -51,7 +52,7 @@ site_type: "cms"
 
 - **Dado que** una persona entra como emprendedor autenticado
 - **Cuando** guarda su perfil con nombre visible
-- **Entonces** el perfil queda publicado y es el lugar donde cuelgan ofertas, portafolio y localidad
+- **Entonces** el perfil queda publicado y es el lugar donde cuelgan ofertas, portafolio, localidad, contacto y redes
 
 #### Escenario 1.2: Manejo de errores
 
@@ -167,6 +168,31 @@ site_type: "cms"
 
 ---
 
+### Feature `FEAT-07`: Botón de contacto y redes sociales del perfil
+
+**Descripción:** el perfil público del emprendedor muestra un botón de contacto y los enlaces a sus redes sociales. El emprendedor los carga. El cliente los usa sin cuenta. El botón abre el destino guardado y sale del portal. Las redes son enlaces, no un muro dentro de trabajamos.com.
+
+**CTA:** `Contactar` en el perfil público. Cada red es un enlace con el nombre de la red.
+
+**Supuesto:** negocio no fijó un canal único. El destino del botón es un teléfono, un correo o un enlace que el emprendedor guarda.
+
+#### Escenario 7.1: Flujo exitoso
+
+- **Dado que** el emprendedor autenticado guardó un teléfono, un correo o un enlace, y al menos una red con nombre y URL
+- **Cuando** publica el perfil
+- **Entonces** el cliente ve el botón `Contactar` y los enlaces de esas redes
+- **Y** al activar `Contactar` se abre ese destino
+- **Y** al activar una red se abre esa URL
+
+#### Escenario 7.2: Manejo de errores
+
+- **Dado que** el contacto está vacío o la URL de una red no es válida
+- **Cuando** el emprendedor intenta guardarlos
+- **Entonces** ese contacto o esa red no se publican
+- **Y** el perfil conserva el contacto y las redes que ya eran válidos
+
+---
+
 ## 4. Funcionalidades Deseables (v1.1+)
 
 | ID Feature | Nombre | Prioridad | Notas |
@@ -179,7 +205,7 @@ site_type: "cms"
 
 - Bolsa de empleo, currículum y postulaciones.
 - Pagos, cotizaciones formales, reservas y contratación.
-- Mensajería entre cliente y emprendedor.
+- Chat dentro del portal. El contacto es el botón `Contactar` del perfil.
 - Cuenta o login del cliente.
 - Muro o compositor de hashtags. El `#` solo clasifica el oficio dentro de la barra.
 
@@ -189,4 +215,4 @@ site_type: "cms"
 
 - **Performance:** la barra permanece usable en un teléfono. Si la ubicación tarda, la búsqueda espera el punto y no muestra un listado con un origen falso.
 - **SEO mínimo:** el portal tiene `title` y descripción propios de trabajamos.com. Cada perfil público tiene título identificable.
-- **Accesibilidad:** la barra tiene etiqueta visible o nombre accesible. Los controles `Crear perfil`, `Agregar oferta`, `Subir imagen` y `Marcar localidad` tienen nombre. Cada imagen del portafolio lleva texto alternativo escrito por el emprendedor.
+- **Accesibilidad:** la barra tiene etiqueta visible o nombre accesible. Los controles `Crear perfil`, `Agregar oferta`, `Subir imagen`, `Marcar localidad` y `Contactar` tienen nombre. Cada red anuncia el nombre de la red. Cada imagen del portafolio lleva texto alternativo escrito por el emprendedor.
