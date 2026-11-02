@@ -1,12 +1,12 @@
 ---
 id: "WEB-FEAT-001"
 title: "trabajamos.com — Features y Secciones"
-status: "BORRADOR"
+status: "APROBADO"
 version: "0.1.1"
 owner: "Vissiuss"
 created_at: "2026-11-02"
 updated_at: "2026-11-02"
-audit_1_passed: false
+audit_1_passed: true
 site_type: "cms"
 ---
 
@@ -22,7 +22,7 @@ site_type: "cms"
 - **Nombre del Proyecto:** trabajamos.com
 - **Documento base:** `idea/01-problem.md` (ID: `WEB-PROB-001`)
 - **site_type:** `cms` — el emprendedor crea y edita perfil, ofertas, imágenes, localidad, contacto y redes. No es una landing fija.
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDITORIA_DOCUMENTACION_APROBADA`
 
 ---
 
