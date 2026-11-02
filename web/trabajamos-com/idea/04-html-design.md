@@ -2,7 +2,7 @@
 id: "WEB-HTML-001"
 title: "trabajamos.com — Diseño HTML y Aprobación Visual"
 status: "BORRADOR"
-version: "0.1.0"
+version: "0.2.0"
 owner: "Vissiuss"
 created_at: "2026-11-02"
 updated_at: "2026-11-02"
@@ -25,6 +25,7 @@ direction_skill: "minimalist-ui"
 - **Nombre del Proyecto:** trabajamos.com
 - **Documentos base:** `01-problem.md` (`WEB-PROB-001`) | `02-features.md` (`WEB-FEAT-001`) | `03-module-discovery.md` (`WEB-MOD-001`) | `05-build-plan.md`
 - **Estado de gatekeeping:** `PENDIENTE_APROBACION_VISUAL`
+- **Decisiones del arquitecto:** Vissiuss respondió las nueve preguntas de la versión `0.1.0` el 2026-11-02 a las 17:50 (UTC-3). Esta versión las aplica (§7.1). Esas respuestas no firman el Gate 3A.
 - **direction_skill:** `minimalist-ui`. Coincide con `MOD-DIR` en `03-module-discovery.md` (`direction_locked: true`).
 - **Estado de `05`:** `05-build-plan.md` sigue como plantilla. Lo que este documento deja "para `05`" (autenticación, datos, imágenes, mapa, URL final) se decide allí.
 - **Alcance:** Fase 1 textual. Estructura semántica y wireframes de texto para el cliente sin cuenta (`VIEW-01` a `VIEW-09`) y el panel del emprendedor (`VIEW-10` a `VIEW-17`). Sin colores, tipografías ni tokens visuales; el look lo pone `minimalist-ui` en Fase 2.
@@ -44,7 +45,7 @@ direction_skill: "minimalist-ui"
 | `VIEW-03` | `index.html` `#estado-busqueda` — mensajes de estado de la búsqueda (región viva) | `MOD-05` | `FEAT-05`, `FEAT-06` |
 | `VIEW-04` | `index.html` `#resultados` — listado de ofertas cercanas | `MOD-05`, `MOD-02`, `MOD-04`, `MOD-01` | `FEAT-05`, `FEAT-06` |
 | `VIEW-05` | `perfil.html?slug={slug}` `#perfil` — identidad del perfil público | `MOD-01` | `FEAT-01` |
-| `VIEW-06` | `perfil.html?slug={slug}` `#contacto` — botón `Contactar` y redes | `MOD-01` | `FEAT-07` |
+| `VIEW-06` | `perfil.html?slug={slug}` `#contacto` — botón `Contactar`, dato de contacto visible y redes | `MOD-01` | `FEAT-07` |
 | `VIEW-07` | `perfil.html?slug={slug}` `#ofertas` — ofertas públicas | `MOD-02` | `FEAT-02` |
 | `VIEW-08` | `perfil.html?slug={slug}` `#portafolio` — imágenes del trabajo | `MOD-03` | `FEAT-03` |
 | `VIEW-09` | `perfil.html?slug={slug}` `#localidad` — localidad georreferenciada | `MOD-04` | `FEAT-04` |
@@ -95,15 +96,17 @@ Normaliza el texto a un # (regla única, §3.3)
                                                  │
                      ┌───────────────────────────┼─────────────────────────────┐
                      ▼                           ▼                             ▼
-          [VIEW-03 error de servicio]  [VIEW-04 vacío: el # existe   [VIEW-04 éxito: <ol> de ofertas
-           + botón Reintentar           pero ninguna oferta tiene     con punto, de la más cercana
-                                        localidad marcada]            a la más lejana]
+          [VIEW-03 error de servicio]  [VIEW-04 vacío propio (D-04): [VIEW-04 éxito: <ol> de ofertas
+           + botón Reintentar           el # existe pero ninguna      con punto, de la más cercana
+                                        oferta tiene localidad        a la más lejana, cada una
+                                        marcada]                      con "a 1,2 km" (D-02)]
                                                                                │
                                                      enlace de cada resultado ─┘
                                                                                ▼
                                               [perfil.html?slug=…]
                                                VIEW-05 identidad (h1 nombre)
-                                               VIEW-06 Contactar (tel: | mailto: | URL) y redes (enlaces)
+                                               VIEW-06 Contactar (tel: | mailto: | URL) + dato visible (D-03)
+                                                       y redes (enlaces)
                                                VIEW-07 ofertas · VIEW-08 portafolio · VIEW-09 localidad
                                                "Buscar otro oficio" ─▶ VIEW-01
 ```
@@ -117,7 +120,7 @@ Primera vez (orden de onboarding):
       │
       ▼
 [VIEW-10 Entrar] ──credencial válida──▶ [VIEW-12 Perfil y contacto: "Crear perfil"]
-      ▲                                        │ nombre guardado = perfil público
+      ▲                                        │ nombre + contacto válido = perfil público (D-01)
       │ sin sesión / sesión vencida            ▼
 [VIEW-11 guardia de panel/*]            [VIEW-13 Redes: "Guardar redes"]
                                                │
@@ -128,7 +131,8 @@ Primera vez (orden de onboarding):
                                         [VIEW-15 Portafolio: "Subir imagen" + texto alternativo]
                                                │
                                                ▼
-                                        [VIEW-16 Localidad: buscar o tocar mapa → "Marcar localidad"]
+                                        [VIEW-16 Localidad: buscar o tocar mapa → nombre de la
+                                         localidad (D-08) → "Marcar localidad"]
                                                │
                                                ▼
                                         [VIEW-17 Estado del perfil público] ──▶ "Ver mi perfil público"
@@ -165,7 +169,7 @@ Cada paso del panel termina con un enlace al siguiente ("Siguiente: Ofertas", et
 
 La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay coincidencia parcial ni sugerencias; `gas` no encuentra `#gasfiter` y el estado vacío no propone otros `#` (`FEAT-05` 5.2).
 
-**Orden por cercanía.** El listado ordena por distancia ascendente entre el punto del cliente y el punto del perfil. **Supuesto (`03`, riesgo 4):** distancia en línea recta. **Supuesto:** los empates se ordenan por `nombre` del perfil. Solo entran ofertas cuyo perfil tiene `punto` distinto de `null` (`FEAT-04` 4.2, `FEAT-06`). **Supuesto:** v1 no tiene radio máximo ni paginación; si hace falta un límite, se fija en `05`.
+**Orden y distancia (D-02).** El listado ordena por distancia ascendente entre el punto del cliente y el punto del perfil, medida en línea recta (`03` riesgo 4, confirmado por D-02). Cada resultado muestra su distancia en kilómetros con un decimal y coma decimal: "a 1,2 km", "a 0,4 km", "a 12,0 km". **Supuesto:** el valor se redondea al décimo más cercano y siempre se expresa en km. **Supuesto:** los empates se ordenan por `nombre` del perfil. Solo entran ofertas cuyo perfil tiene `punto` distinto de `null` (`FEAT-04` 4.2, `FEAT-06`). **Supuesto:** v1 no tiene radio máximo ni paginación; si hace falta un límite, se fija en `05`.
 
 **Origen de la cercanía (cliente).**
 
@@ -175,13 +179,17 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 - El punto del cliente no se guarda (`03` `MOD-04`). **Supuesto:** la consulta y la localidad escrita van en la URL (`index.html?q=…&localidad=…`) para que el botón Atrás y el enlace compartido funcionen; las coordenadas del dispositivo no van en la URL.
 - **Supuesto:** primero se valida el `#` y después el origen. Un `#` sin coincidencia da el vacío "no está" sin pedir ubicación; un `#` con coincidencia y sin origen pide una ubicación.
 
-**Punto del emprendedor.** El punto público es el que el emprendedor confirma en `VIEW-16`. El panel nunca pide permiso de ubicación del dispositivo (`03` `MOD-04`, límite).
+**Punto del emprendedor.** El punto público es el que el emprendedor confirma en `VIEW-16`. `VIEW-16` ofrece solo el mapa o una localidad escrita; no hay "Usar mi ubicación actual" y el panel nunca pide permiso de ubicación del dispositivo (`03` `MOD-04`, límite; D-06). Junto al aviso de que el punto es público, `VIEW-16` sugiere a quien trabaja desde su casa marcar un punto cercano, como su comuna o una esquina cercana (D-05). Todo punto guardado lleva `etiqueta`, el nombre legible de la localidad (D-08): se llena con el resultado elegido de la localidad escrita o con el nombre que la geocodificación da al punto del mapa, y el emprendedor puede editarlo antes de guardar. Sin `etiqueta` el punto no se guarda.
 
 **Rutas.** Perfil público: `perfil.html?slug={slug}`. Entrada al panel: `panel/entrar.html`; el enlace `Crear perfil` del encabezado público apunta allí. **Supuesto:** el esquema final de URL se fija en `05`.
 
-**Publicación sin borradores.** Un perfil es público desde que se guarda con nombre (`FEAT-01` 1.1). No hay estado de borrador; el lado público solo recibe perfiles guardados. Un `slug` que no existe muestra "Perfil no disponible".
+**Publicación sin borradores.** Un perfil es público desde que se guarda por primera vez con nombre y contacto válido. No hay estado de borrador; el lado público solo recibe perfiles guardados. Un `slug` que no existe muestra "Perfil no disponible".
 
-**Contacto vacío.** El perfil se publica solo con el nombre. Mientras no haya un contacto válido, el botón `Contactar` no aparece en el perfil público (`VIEW-06`) y el panel lo indica (`VIEW-12`, `VIEW-17`). Si el contacto debe ser obligatorio es la pregunta 1 de §7.2.
+**Contacto obligatorio (D-01).** El primer guardado exige nombre visible (`02` 1.1) y un contacto válido: teléfono, correo o URL. La exigencia del contacto sale del objetivo de `01` §5 (el emprendedor publica su perfil con un botón de contacto). Sin alguno de los dos, `Crear perfil` no publica nada (`VIEW-12`). Por eso todo perfil publicado tiene `Contactar` en `VIEW-06`. En ediciones posteriores, un contacto vacío o inválido no se guarda y queda el contacto válido anterior (`02` 7.2).
+
+**Dato de contacto visible (D-03).** Junto a `Contactar`, `VIEW-06` muestra el dato como texto: el teléfono o el correo tal como se guardaron, o el dominio de la URL. `Contactar` sigue siendo un enlace.
+
+**Ítems con `id` (D-09).** Cada oferta, imagen y red guardada tiene un `id` que asigna el sistema. `Quitar` apunta a ese `id`. Un ítem que aún no se guarda no tiene `id`, por eso el campo es opcional en el contrato (§6.1).
 
 ### 3.4 Estados por vista
 
@@ -216,7 +224,7 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 | Loading (búsqueda) | "Buscando #gasfiter cerca de ti…" |
 | Éxito | "5 ofertas de #gasfiter, de la más cercana a la más lejana." |
 | Vacío (sin coincidencia) | "No encontramos #xyz." |
-| Vacío (sin ofertas con punto) | "Ninguna oferta de #gasfiter tiene localidad marcada." |
+| Vacío (sin ofertas con punto, D-04) | "Ninguna oferta de #gasfiter tiene localidad marcada." |
 | Error (`#` vacío) | "Escribe un oficio, por ejemplo gasfiter." |
 | Error (sin origen) | "Para ver oficios cercanos necesitamos tu ubicación." |
 | Error (localidad no resuelta) | "No encontramos la localidad «xyz»." |
@@ -226,9 +234,9 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 
 - **Oculto:** antes de la primera búsqueda la sección no se muestra.
 - **Loading:** la sección queda `aria-busy="true"` y se retira el listado anterior, para no mostrar resultados con un origen viejo.
-- **Éxito:** título "Ofertas de #gasfiter cerca de {origen}" y lista ordenada. Cada ítem muestra `titulo`, `tipo`, `tag` y `nombre` del perfil, y enlaza a `perfil.html?slug={slug}`. **Supuesto:** un ítem por oferta; si un perfil tiene dos ofertas con el mismo `#`, aparecen dos ítems.
+- **Éxito:** título "Ofertas de #gasfiter cerca de {origen}" y lista ordenada. Cada ítem muestra `titulo`, `tipo`, `tag`, `nombre` del perfil y la distancia ("a 1,2 km", D-02), y enlaza a `perfil.html?slug={slug}`. **Supuesto:** un ítem por oferta; si un perfil tiene dos ofertas con el mismo `#`, aparecen dos ítems.
 - **Vacío sin coincidencia:** título "No encontramos #xyz". Texto: "Ese oficio no está publicado. Revisa cómo lo escribiste: las tildes cuentan, #gásfiter y #gasfiter son distintos." No aparece ninguna oferta ni otro `#`.
-- **Vacío sin ofertas con punto:** título "Sin oficios cercanos para #gasfiter". Texto: "Hay ofertas de #gasfiter, pero ninguna tiene localidad marcada, así que no aparecen como cercanas." No se listan.
+- **Vacío sin ofertas con punto (mensaje propio, D-04):** título "Sin oficios cercanos para #gasfiter". Texto: "Hay ofertas de #gasfiter, pero ninguna tiene localidad marcada, así que no aparecen como cercanas." No se listan. Este mensaje es distinto de "Ese oficio no está publicado".
 - **Error:** no hay listado; el mensaje está en `VIEW-03`.
 
 **`VIEW-05` Identidad del perfil**
@@ -237,12 +245,12 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 - **Éxito:** `h1` con `nombre`, navegación interna a Contacto, Ofertas, Portafolio y Localidad, y enlace `Buscar otro oficio`.
 - **Error, perfil no disponible:** falta `slug` o el `slug` no existe. `h1` "Perfil no disponible" y enlace `Buscar otro oficio`. **Supuesto:** respuesta 404 y `noindex` si hay servidor.
 - **Error de carga:** "No pudimos cargar el perfil." + botón `Reintentar`.
-- **Vacío:** no aplica; un perfil guardado siempre tiene `nombre` (`FEAT-01` 1.1).
+- **Vacío:** no aplica; un perfil guardado siempre tiene `nombre` (`FEAT-01` 1.1) y contacto (D-01).
 
 **`VIEW-06` Contactar y redes**
 
-- **Éxito:** enlace `Contactar` (abre `tel:`, `mailto:` o la URL) y lista de redes, cada una con su `nombre` como texto.
-- **Sin contacto (vacío):** no aparece el botón; texto "Este perfil aún no publica un contacto." No se muestra un botón deshabilitado.
+- **Éxito:** enlace `Contactar` (abre `tel:`, `mailto:` o la URL) con el dato de contacto como texto al lado (D-03): "Teléfono: +56 9 1234 5678", "Correo: juan@dominio.cl" o "Sitio: dominio.cl". Debajo, la lista de redes, cada una con su `nombre` como texto.
+- **Contacto:** siempre presente en un perfil publicado (D-01); no hay estado vacío de contacto.
 - **Sin redes (vacío):** texto "Este perfil aún no publica redes."
 - **Loading y error:** heredan de `VIEW-05`.
 - Solo se muestran el contacto y las redes que el panel guardó como válidos (`FEAT-07` 7.2); el cliente no valida ni corrige datos.
@@ -262,7 +270,7 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 
 **`VIEW-09` Localidad**
 
-- **Éxito:** región de mapa con el `punto` del perfil y el texto de la localidad: `punto.etiqueta` si el arquitecto acepta esa propuesta (§6.3); si no, "Punto confirmado en el mapa". **Supuesto:** el formato del mapa (interactivo o imagen) y el proveedor se fijan en `05`.
+- **Éxito:** texto con `punto.etiqueta` (D-08), por ejemplo "Maipú, Región Metropolitana", y región de mapa con el `punto` del perfil. **Supuesto:** el formato del mapa (interactivo o imagen) y el proveedor se fijan en `05`.
 - **Vacío (`punto: null`):** "Este perfil aún no marca su localidad."
 - **Error del mapa:** "No pudimos mostrar el mapa." El texto de la localidad y el resto del perfil siguen visibles.
 
@@ -272,11 +280,11 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 | :--- | :--- | :--- | :--- | :--- |
 | `VIEW-10` | "Verificando…" en el botón `Entrar` y en el mensaje de estado | Redirige a la página pedida o a `VIEW-12` | Credencial rechazada (mensaje genérico); servicio de autenticación no disponible | Formulario vacío. Variante "Tu sesión terminó" cuando llega desde la guardia |
 | `VIEW-11` | "Verificando sesión…": no se muestra ningún formulario hasta confirmar la sesión | Marco con nombre del perfil, navegación y estado de cada paso | Sin sesión: redirige a `VIEW-10?volver={ruta}`. Error al cargar datos: "No pudimos cargar tus datos. No se cambió nada." con botón `Reintentar` | Sesión válida sin perfil: la navegación muestra solo "Crear perfil" activo; el resto dice "Disponible después de crear tu perfil" |
-| `VIEW-12` | "Guardando perfil…" | "Perfil publicado" (primera vez) o "Perfil guardado" | Sin nombre: no se publica nada. Contacto vacío o inválido: el contacto no se publica y queda el anterior. Sesión vencida al guardar: nada se guarda | Sin perfil: título "Crear perfil", campos vacíos, botón `Crear perfil` |
+| `VIEW-12` | "Guardando perfil…" | "Perfil publicado" (primera vez) o "Perfil guardado" | Primer guardado sin nombre o sin contacto válido: no se publica nada y se indica el dato que falta (D-01). Edición sin nombre: nada se guarda. Edición con contacto vacío o inválido: el contacto no se guarda y queda el anterior. Sesión vencida al guardar: nada se guarda | Sin perfil: título "Crear perfil", campos vacíos, botón `Crear perfil` |
 | `VIEW-13` | "Guardando redes…" | "Redes guardadas" con la lista publicada | Red con URL inválida o incompleta: esa red no se publica y queda su valor anterior; las demás válidas se guardan | "Aún no agregas redes." con una fila vacía y botón `Agregar red` |
-| `VIEW-14` | "Cargando ofertas…" / "Guardando oferta…" | La oferta nueva aparece al final de la lista con su tipo y su `#` | Sin tipo, sin título o con `#` vacío: no se guarda y la lista anterior queda igual | "Aún no tienes ofertas." Bloqueada sin perfil |
+| `VIEW-14` | "Cargando ofertas…" / "Guardando oferta…" | La oferta nueva aparece al final de la lista con su tipo, su título y su `#` | Sin tipo, sin título (D-07) o con `#` vacío: no se guarda y la lista anterior queda igual | "Aún no tienes ofertas." Bloqueada sin perfil |
 | `VIEW-15` | "Subiendo imagen…" con barra de progreso | La imagen aparece en el portafolio con su texto alternativo | Archivo que no es imagen, carga fallida o texto alternativo vacío: el portafolio no cambia y se indica que la imagen no se guardó | "Aún no hay imágenes en tu portafolio." Bloqueada sin perfil |
-| `VIEW-16` | "Cargando mapa…" / "Buscando localidad…" / "Guardando localidad…" | "Localidad marcada" con el punto confirmado | Localidad escrita que no se resuelve: no se marca ningún punto. Mapa no carga: queda disponible la búsqueda escrita. Guardado fallido: el punto anterior se mantiene | "Sin localidad confirmada: tus ofertas no aparecen como oficios cercanos." Bloqueada sin perfil |
+| `VIEW-16` | "Cargando mapa…" / "Buscando localidad…" / "Guardando localidad…" | "Localidad marcada: {etiqueta}" con el punto confirmado | Localidad escrita que no se resuelve: no se marca ningún punto. Nombre de la localidad vacío: el punto no se guarda (D-08). Mapa no carga: queda disponible la búsqueda escrita. Guardado fallido: el punto anterior se mantiene | "Sin localidad confirmada: tus ofertas no aparecen como oficios cercanos." Bloqueada sin perfil |
 | `VIEW-17` | Usa la carga de `VIEW-11` | Lista de lo publicado y enlace "Ver mi perfil público" | Hereda el error de carga de `VIEW-11` | Sin perfil: la sección no aparece; `VIEW-11` indica "sin crear" |
 
 **Bloqueada sin perfil:** `FEAT-02` exige "perfil publicado" y `MOD-03`/`MOD-04` dependen de `MOD-01`. Sin perfil, `VIEW-14`, `VIEW-15` y `VIEW-16` muestran solo "Primero crea tu perfil." con un enlace a `VIEW-12`, sin formulario.
@@ -368,6 +376,7 @@ h1  Encuentra un oficio cerca de ti                (VIEW-01)
         <article aria-labelledby="r1">
           <h3 id="r1"><a href="perfil.html?slug=juan-perez">Gasfitería a domicilio, Juan Pérez</a></h3>
           <p>Oficio · #gasfiter</p>
+          <p>a 1,2 km</p>                                           D-02
         </article>
       </li>
       …
@@ -387,6 +396,7 @@ h1  Encuentra un oficio cerca de ti                (VIEW-01)
 - `#resultados` usa `aria-busy="true"` mientras carga.
 - Tras un éxito el foco no se mueve; el anuncio basta. Tras un error de `#` vacío el foco va a la barra. Tras permiso negado, sin origen o localidad no resuelta, el foco va al campo de localidad.
 - El listado es `<ol>` porque el orden (cercanía) es parte del significado.
+- La distancia de cada resultado es texto (`<p>a 1,2 km</p>`), con un decimal y coma decimal (D-02). No forma parte del enlace, para que el nombre accesible del enlace siga siendo "{titulo}, {nombre}".
 
 #### `perfil.html` (`VIEW-05` a `VIEW-09`)
 
@@ -425,7 +435,8 @@ h1  {nombre}                          (VIEW-05) | Perfil no disponible
 
     <section id="contacto" aria-labelledby="contacto-titulo">       VIEW-06
       <h2 id="contacto-titulo">Contacto</h2>
-      <a href="tel:+56912345678">Contactar<span class="oculto"> a Juan Pérez por teléfono</span></a>
+      <p><a href="tel:+56912345678" aria-describedby="contacto-dato">Contactar<span class="oculto"> a Juan Pérez por teléfono</span></a></p>
+      <p id="contacto-dato">Teléfono: +56 9 1234 5678</p>               D-03
       <h3 id="redes-titulo">Redes</h3>
       <ul aria-labelledby="redes-titulo">
         <li><a href="https://instagram.com/…" rel="nofollow ugc">Instagram</a></li>
@@ -449,7 +460,7 @@ h1  {nombre}                          (VIEW-05) | Perfil no disponible
 
     <section id="localidad" aria-labelledby="localidad-titulo">     VIEW-09
       <h2 id="localidad-titulo">Localidad</h2>
-      <p>{punto.etiqueta | Punto confirmado en el mapa}</p>
+      <p>{punto.etiqueta}</p>                                         D-08
       <div role="img" aria-label="Mapa con la localidad de Juan Pérez"> mapa (proveedor en 05) </div>
     </section>
 
@@ -460,13 +471,13 @@ h1  {nombre}                          (VIEW-05) | Perfil no disponible
 
 **Destino de `Contactar` según `contacto.tipo`**
 
-| `contacto.tipo` | `href` | Nombre accesible |
-| :--- | :--- | :--- |
-| `telefono` | `tel:{valor}` | "Contactar a {nombre} por teléfono" |
-| `correo` | `mailto:{valor}` | "Contactar a {nombre} por correo" |
-| `url` | `{valor}` (URL `https://` completa) | "Contactar a {nombre} en su sitio" |
+| `contacto.tipo` | `href` | Nombre accesible | Texto junto al botón (D-03) |
+| :--- | :--- | :--- | :--- |
+| `telefono` | `tel:{valor}` | "Contactar a {nombre} por teléfono" | "Teléfono: {valor}" |
+| `correo` | `mailto:{valor}` | "Contactar a {nombre} por correo" | "Correo: {valor}" |
+| `url` | `{valor}` (URL `https://` completa) | "Contactar a {nombre} en su sitio" | "Sitio: {dominio}" |
 
-El teléfono llega en formato internacional (`+56…`) porque así lo valida `VIEW-12`. El nombre accesible empieza con el texto visible "Contactar", así que coincide con lo que se ve.
+El teléfono llega en formato internacional (`+56…`) porque así lo valida `VIEW-12`. El nombre accesible empieza con el texto visible "Contactar", así que coincide con lo que se ve. `Contactar` sigue siendo un `<a>`; el dato de contacto es texto plano (`<p id="contacto-dato">`), se puede copiar y el enlace lo referencia con `aria-describedby`. **Supuesto:** `{dominio}` es el nombre de host de la URL, sin `https://`, sin `www.` y sin ruta (por ejemplo `https://www.dominio.cl/contacto` muestra "dominio.cl").
 
 **Otros puntos**
 
@@ -505,6 +516,7 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
 - **Acción en curso:** el botón lleva `aria-disabled="true"` y conserva su texto; el progreso se anuncia en la región de estado.
 - **Nombres accesibles de NFR (`02` §6):** `Crear perfil`, `Editar perfil`, `Agregar oferta`, `Subir imagen` y `Marcar localidad` son el texto visible de su control. `Contactar` no tiene control en el panel; el panel anuncia qué abrirá en el perfil público (`VIEW-12`).
 - **Botones repetidos:** cada `Quitar` lleva texto oculto con su objeto: "Quitar oferta: {titulo}", "Quitar imagen: {alt}", "Quitar red: {nombre}".
+- **`Quitar` por `id` (D-09):** el `Quitar` de un ítem guardado es `<button type="submit" name="quitar" value="{id}">` dentro de un formulario `method="post"`; apunta al `id` del ítem, no a su posición, y funciona sin JavaScript. En `VIEW-13`, una fila nueva que aún no tiene `id` se quita con `<button type="button">` y no envía nada.
 
 #### `VIEW-11` — Marco del panel y guardia de sesión (`panel/*`)
 
@@ -557,22 +569,21 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
   - `<form id="form-datos" method="post" novalidate>`:
     - Resumen de errores.
     - `<label for="nombre">Nombre visible (obligatorio)</label>` · `<input id="nombre" name="nombre" type="text" required autocomplete="name">` · ayuda: "Es el nombre que verán los clientes. Puede ser tu nombre o el de tu emprendimiento."
-    - `<fieldset aria-describedby="contacto-ayuda">` · `<legend>Contacto</legend>`:
-      - `<p id="contacto-ayuda">` "Es lo que abre el botón Contactar de tu perfil público. Elige un solo medio."
-      - `<fieldset>` · `<legend>Medio de contacto</legend>` · radios `name="contacto[tipo]"`: `Teléfono` (`telefono`), `Correo` (`correo`), `Enlace web` (`url`).
-      - `<label for="contacto-valor">{Teléfono | Correo | Enlace web}</label>` · `<input id="contacto-valor" name="contacto[valor]">`. El `type` cambia con el medio: `tel` + `autocomplete="tel"`, `email` + `autocomplete="email"`, `url`. Sin JavaScript, el label es "Teléfono, correo o enlace web" y el `type` es `text`.
+    - `<fieldset aria-describedby="contacto-ayuda">` · `<legend>Contacto (obligatorio)</legend>` (D-01):
+      - `<p id="contacto-ayuda">` "Es lo que abre el botón Contactar de tu perfil público y el dato que se ve a su lado. Elige un solo medio. Sin contacto no se puede crear el perfil."
+      - `<fieldset aria-describedby="contacto-tipo-error">` · `<legend>Medio de contacto (obligatorio)</legend>` · radios `name="contacto[tipo]"` con `required`: `Teléfono` (`telefono`), `Correo` (`correo`), `Enlace web` (`url`).
+      - `<label for="contacto-valor">{Teléfono | Correo | Enlace web} (obligatorio)</label>` · `<input id="contacto-valor" name="contacto[valor]" required>`. El `type` cambia con el medio: `tel` + `autocomplete="tel"`, `email` + `autocomplete="email"`, `url`. Sin JavaScript, el label es "Teléfono, correo o enlace web (obligatorio)" y el `type` es `text`.
       - Ayuda por medio: teléfono "Incluye el código de país, por ejemplo +56 9 …"; correo "Ejemplo: nombre@dominio.cl"; enlace "Debe empezar con https://".
-      - `<p id="contacto-destino">` "El botón Contactar abrirá: {llamada a +56 9 … | correo a … | el enlace …}" o "Tu perfil no muestra Contactar hasta que guardes un contacto."
+      - `<p id="contacto-destino">` "El botón Contactar abrirá: {llamada a +56 9 … | correo a … | el enlace …}. En tu perfil se verá: {Teléfono: … | Correo: … | Sitio: dominio}" (D-03). Sin dato todavía: "Elige un medio y escribe el dato."
     - `<button type="submit">Crear perfil</button>` (sin perfil) o `<button type="submit">Guardar perfil</button>`.
     - `<p id="form-datos-estado" role="status" aria-live="polite">`.
     - Al final, enlace de avance `<a href="#redes">Siguiente: Redes sociales</a>`.
-- Regla de guardado (`02` 1.2 y 7.2, `03` `MOD-01`):
+- Regla de guardado (`02` 1.2 y 7.2, `01` §5, `03` `MOD-01`, D-01):
   1. Sin sesión: nada se publica (guardia de `VIEW-11`).
-  2. Sin nombre: nada se publica. Error en `nombre`: "Falta el nombre visible. Tu perfil no se publicó." Si ya había perfil: "Sigue publicado: {nombre anterior}".
-  3. Con nombre: el nombre se guarda y el perfil queda público. El contacto se valida aparte:
-     - Contacto vacío (sin medio o sin dato) o con formato inválido: no se publica. Error en el campo que corresponde ("Elige un medio de contacto", "Escribe tu teléfono", "El correo no es válido", "El enlace debe empezar con https://") y "Sigue publicado: {contacto anterior}" o "No hay un contacto publicado".
-     - El mensaje de estado dice "Perfil guardado. El contacto no se guardó." y el resumen lista el error de contacto.
-  4. Todo válido: "Perfil publicado" (primera vez) o "Perfil guardado". El primer guardado crea el `slug`.
+  2. Primer guardado (`Crear perfil`): exige nombre visible y contacto válido. Si falta cualquiera de los dos, nada se publica. El resumen de errores lista cada dato que falta y cada campo muestra su error: "Falta el nombre visible. Tu perfil no se publicó."; "Elige un medio de contacto"; "Escribe tu teléfono" (o "tu correo", "tu enlace"; sin medio elegido, "Escribe tu teléfono, correo o enlace"); "El correo no es válido"; "El enlace debe empezar con https://". El estado dice "Tu perfil no se publicó." Los valores escritos quedan en el formulario.
+  3. Edición sin nombre: nada se guarda. Error en `nombre`: "Falta el nombre visible. No se guardó ningún cambio." y "Sigue publicado: {nombre anterior}".
+  4. Edición con nombre y contacto vacío (sin medio o sin dato) o con formato inválido: el nombre se guarda; el contacto no. Error en el campo que corresponde y "Sigue publicado: {contacto anterior}" (`02` 7.2). El estado dice "Perfil guardado. El contacto no se guardó." y el resumen lista el error de contacto. El perfil nunca queda sin contacto.
+  5. Todo válido: "Perfil publicado" (primera vez) o "Perfil guardado". El primer guardado crea el `slug`.
 
 #### `VIEW-13` — Redes sociales (`panel/perfil.html#redes`)
 
@@ -581,17 +592,19 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
 - `<form id="form-redes" method="post" novalidate>`:
   - Resumen de errores.
   - `<ol id="lista-redes">`; cada fila es un `<li>` con `<fieldset>` · `<legend>Red {n}</legend>`:
+    - Fila guardada: campo oculto `redes[{n}][id]` con el `id` de la red (D-09). Fila nueva: sin `id`.
     - `<label for="red-{n}-nombre">Nombre de la red</label>` · `<input id="red-{n}-nombre" name="redes[{n}][nombre]" type="text">` · ayuda "Por ejemplo: Instagram".
     - `<label for="red-{n}-url">Dirección de la red</label>` · `<input id="red-{n}-url" name="redes[{n}][url]" type="url" inputmode="url">` · ayuda "Copia la dirección completa; empieza con https://".
-    - `<button type="button">Quitar<span class="oculto"> red: {nombre}</span></button>`.
+    - Fila guardada: `<button type="submit" name="quitar" value="{id}">Quitar<span class="oculto"> red: {nombre}</span></button>`. Fila nueva: `<button type="button">Quitar<span class="oculto"> red {n}</span></button>`.
   - `<button type="button">Agregar red</button>`: agrega una fila y mueve el foco a su primer campo; la región de estado dice "Se agregó la red {n}".
   - `<button type="submit">Guardar redes</button>`.
   - `<p id="form-redes-estado" role="status" aria-live="polite">`.
   - Enlace de avance `<a href="ofertas.html">Siguiente: Ofertas</a>`.
 - Regla de guardado (`02` 7.2):
   - Fila totalmente vacía: se ignora.
-  - Fila con nombre sin URL, URL sin nombre o URL que no es `https://` completa: esa red no se publica. Error en el campo; "Sigue publicada: {nombre} {url anterior}" si la fila ya existía, o "Esta red no se publicó" si era nueva.
+  - Fila con nombre sin URL, URL sin nombre o URL que no es `https://` completa: esa red no se publica. Error en el campo; "Sigue publicada: {nombre} {url anterior}" si la fila tiene `id`, o "Esta red no se publicó" si era nueva.
   - Las filas válidas se guardan aunque otra fila falle. Estado: "Se guardaron {k} redes. {m} no se publicaron." El resumen lista las que fallaron.
+  - Envío con `quitar={id}`: solo se quita esa red; estado "Se quitó la red {nombre}." **Supuesto:** las demás filas no se guardan en ese envío y conservan lo escrito.
 
 #### `VIEW-17` — Estado del perfil público (`panel/perfil.html#publicacion`)
 
@@ -599,11 +612,11 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
 - `<h2 id="publicacion-titulo">Tu perfil público</h2>`.
 - `<ul>` con una línea de texto por dato (sin íconos como único indicador):
   - "Nombre: {nombre}".
-  - "Contactar: abre {destino}" o "Contactar: no aparece, falta un contacto" + `<a href="#datos">Agregar contacto</a>`.
+  - "Contactar: abre {destino}. En tu perfil se ve: {Teléfono: … | Correo: … | Sitio: dominio}" (D-01, D-03). Un perfil creado siempre tiene contacto.
   - "Redes: {n}" o "Redes: ninguna".
   - "Ofertas: {n}" o "Ofertas: ninguna. Sin ofertas, la barra de búsqueda no te encuentra." + `<a href="ofertas.html">Agregar oferta</a>`.
   - "Portafolio: {n} imágenes" o "Portafolio: sin imágenes".
-  - "Localidad: {punto.etiqueta | punto confirmado en el mapa}" o "Localidad: sin confirmar. Tus ofertas no aparecen como oficios cercanos." + `<a href="localidad.html">Marcar localidad</a>`.
+  - "Localidad: {punto.etiqueta}" (D-08) o "Localidad: sin confirmar. Tus ofertas no aparecen como oficios cercanos." + `<a href="localidad.html">Marcar localidad</a>`.
 - `<a href="../perfil.html?slug={slug}">Ver mi perfil público</a>`.
 - Sin perfil, la sección no se muestra; `VIEW-11` ya indica "sin crear".
 
@@ -614,20 +627,20 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
   - `<h1>Ofertas</h1>` · `<p>` "Publica proyectos, servicios u oficios. El # es lo que los clientes buscan en la barra."
   - Aviso de localidad (de `VIEW-11`) si `punto` es `null`.
   - `<section aria-labelledby="mis-ofertas">` · `<h2 id="mis-ofertas">Mis ofertas</h2>`:
-    - `<ul>`; cada `<li>` es un `<article aria-labelledby="oferta-{i}-titulo">` con `<h3 id="oferta-{i}-titulo">{titulo}</h3>`, `<p>Tipo: {Proyecto|Servicio|Oficio}</p>`, `<p>Etiqueta: {tag}</p>` y `<button type="button">Quitar<span class="oculto"> oferta: {titulo}</span></button>`.
+    - `<ul>`; cada `<li>` es un `<article aria-labelledby="oferta-{id}-titulo">` con `<h3 id="oferta-{id}-titulo">{titulo}</h3>`, `<p>Tipo: {Proyecto|Servicio|Oficio}</p>`, `<p>Etiqueta: {tag}</p>` y `<form method="post"><button type="submit" name="quitar" value="{id}">Quitar<span class="oculto"> oferta: {titulo}</span></button></form>` (D-09).
     - Vacío: `<p>Aún no tienes ofertas. Sin ofertas, la barra de búsqueda no te encuentra.</p>`.
   - `<section aria-labelledby="nueva-oferta">` · `<h2 id="nueva-oferta">Agregar oferta</h2>`:
     - `<form id="form-oferta" method="post" novalidate>`:
       - Resumen de errores.
       - `<fieldset aria-describedby="tipo-error">` · `<legend>Tipo de oferta (obligatorio)</legend>` · radios `name="tipo"` con `required`: `Proyecto` (`proyecto`), `Servicio` (`servicio`), `Oficio` (`oficio`).
-      - `<label for="titulo">Título (obligatorio)</label>` · `<input id="titulo" name="titulo" type="text" required>` · ayuda "Por ejemplo: Reparación de cañerías".
+      - `<label for="titulo">Título (obligatorio)</label>` · `<input id="titulo" name="titulo" type="text" required>` · ayuda "Por ejemplo: Reparación de cañerías". Obligatorio por D-07.
       - `<label for="tag">Etiqueta de oficio, # (obligatorio)</label>` · `<input id="tag" name="tag" type="text" required autocapitalize="none" spellcheck="false" aria-describedby="tag-ayuda tag-vista-previa">`.
       - `<p id="tag-ayuda">` "Escribe el oficio, con o sin #. Se guarda en minúsculas, con # al inicio y sin espacios sobrantes. Las tildes cuentan: #gásfiter y #gasfiter son oficios distintos."
       - `<p>Se guardará como: <output id="tag-vista-previa" for="tag" aria-live="polite">{tag normalizado}</output></p>`. Aplica la regla única de §3.3. Se actualiza al dejar de escribir y al salir del campo, no en cada tecla, para no saturar al lector de pantalla. Sin texto válido: "—".
       - `<button type="submit">Agregar oferta</button>`.
       - `<p id="form-oferta-estado" role="status" aria-live="polite">`.
     - Enlace de avance `<a href="portafolio.html">Siguiente: Portafolio</a>`.
-- Regla de guardado (`02` 2.2): sin tipo ("Elige el tipo de oferta"), sin título ("Escribe un título") o con `#` vacío según §3.3 ("Escribe la etiqueta de oficio"): la oferta no se guarda, la lista "Mis ofertas" queda igual y el estado lo confirma: "La oferta no se guardó. Tus ofertas anteriores siguen publicadas." Los valores escritos quedan en el formulario para corregir.
+- Regla de guardado (`02` 2.2 y D-07): sin tipo ("Elige el tipo de oferta"), sin título ("Escribe un título") o con `#` vacío según §3.3 ("Escribe la etiqueta de oficio"): la oferta no se guarda, la lista "Mis ofertas" queda igual y el estado lo confirma: "La oferta no se guardó. Tus ofertas anteriores siguen publicadas." Los valores escritos quedan en el formulario para corregir.
 - Éxito: "Oferta agregada: {titulo}, {tag}". La oferta aparece al final de la lista, el formulario se limpia y el foco vuelve al primer radio de tipo.
 
 #### `VIEW-15` — Portafolio (`panel/portafolio.html`)
@@ -636,7 +649,7 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
 - `<main id="contenido">`:
   - `<h1>Portafolio</h1>` · `<p>` "Sube fotos de trabajos que hiciste. Cada imagen necesita una descripción para quien no puede verla."
   - `<section aria-labelledby="mis-imagenes">` · `<h2 id="mis-imagenes">Mis imágenes</h2>`:
-    - `<ul>`; cada `<li>` tiene `<figure>` con `<img src="{url}" alt="{alt}">` y `<figcaption>Texto alternativo: {alt}</figcaption>` (el emprendedor ve lo que escribió), más `<button type="button">Quitar<span class="oculto"> imagen: {alt}</span></button>`.
+    - `<ul>`; cada `<li>` tiene `<figure>` con `<img src="{url}" alt="{alt}">` y `<figcaption>Texto alternativo: {alt}</figcaption>` (el emprendedor ve lo que escribió), más `<form method="post"><button type="submit" name="quitar" value="{id}">Quitar<span class="oculto"> imagen: {alt}</span></button></form>` (D-09).
     - Vacío: `<p>Aún no hay imágenes en tu portafolio.</p>`.
   - `<section aria-labelledby="nueva-imagen">` · `<h2 id="nueva-imagen">Subir imagen</h2>`:
     - `<form id="form-imagen" method="post" enctype="multipart/form-data" novalidate>`:
@@ -659,31 +672,35 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
 - `<title>`: "Localidad — Panel — trabajamos.com".
 - `<main id="contenido">`:
   - `<h1>Localidad</h1>` · `<p>` "Marca el lugar desde donde ofreces tu trabajo. Los clientes ven primero las ofertas más cercanas a ellos."
-  - `<p>` "Este punto es público. trabajamos.com no usa ni sigue la ubicación de tu teléfono: solo publica el punto que tú confirmas."
+  - `<p id="aviso-publico">` "Este punto es público. trabajamos.com no usa ni sigue la ubicación de tu teléfono: solo publica el punto que tú confirmas."
+  - `<p id="sugerencia-punto">` "Si trabajas desde tu casa, puedes marcar un punto cercano en vez de tu dirección exacta, por ejemplo tu comuna o una esquina cercana." (D-05). Va justo después del aviso de que el punto es público.
   - `<section aria-labelledby="localidad-actual">` · `<h2 id="localidad-actual">Localidad publicada</h2>`:
-    - Con punto: `<p>Localidad marcada: {punto.etiqueta | punto confirmado en el mapa}</p>`.
+    - Con punto: `<p>Localidad marcada: {punto.etiqueta}</p>` (D-08).
     - Sin punto: `<p role="note">Sin localidad confirmada. Tus ofertas no aparecen como oficios cercanos hasta que marques tu localidad.</p>`.
   - `<section aria-labelledby="cambiar-localidad">` · `<h2 id="cambiar-localidad">Marcar localidad</h2>`:
-    - `<form id="form-localidad" method="post" novalidate>`:
+    - `<form id="form-localidad" method="post" novalidate aria-describedby="aviso-publico sugerencia-punto">`:
       - Resumen de errores.
+      - Solo hay dos opciones: localidad escrita o mapa. No hay botón "Usar mi ubicación actual" (D-06).
       - Opción escrita (camino accesible completo, funciona sin mapa):
         - `<label for="localidad-texto">Escribe tu localidad</label>` · `<input id="localidad-texto" type="text" autocomplete="off">` · ayuda "Por ejemplo: Maipú, Santiago".
         - `<button type="button">Buscar localidad</button>`.
         - Resultados: `<fieldset>` · `<legend>Elige el resultado correcto</legend>` · un radio por resultado. Elegir uno mueve el marcador del mapa a ese punto.
       - Opción mapa:
         - `<div id="mapa" role="region" aria-label="Mapa para marcar tu localidad">`. Tocar o hacer clic deja un marcador.
-        - `<p id="punto-elegido" aria-live="polite">` "Punto elegido: {resultado elegido | en el mapa}. Aún no está guardado." o "Aún no eliges un punto."
+        - `<p id="punto-elegido" aria-live="polite">` "Punto elegido: {nombre sugerido | en el mapa}. Aún no está guardado." o "Aún no eliges un punto." Aquí la etiqueta puede faltar mientras la geocodificación no da un nombre; por eso es el único lugar con el texto "en el mapa".
       - Campos ocultos `punto[lat]` y `punto[lng]`, llenados solo por el resultado elegido o el marcador.
+      - Nombre de la localidad (D-08): `<label for="punto-etiqueta">Nombre de la localidad (obligatorio)</label>` · `<input id="punto-etiqueta" name="punto[etiqueta]" type="text" required aria-describedby="punto-etiqueta-ayuda">` · `<p id="punto-etiqueta-ayuda">` "Es lo que verán los clientes en tu perfil. Se llena con el resultado que elegiste o con el nombre del punto del mapa, y puedes cambiarlo. Por ejemplo: Maipú, Santiago." Si la geocodificación no da un nombre para el punto del mapa, el campo queda vacío y la región de estado dice "No encontramos un nombre para ese punto. Escribe el nombre de la localidad."
       - `<button type="submit">Marcar localidad</button>`.
       - `<p id="form-localidad-estado" role="status" aria-live="polite">`.
     - Enlace de avance `<a href="perfil.html#publicacion">Siguiente: Revisar mi perfil público</a>`.
 - Regla de guardado (`02` 4.1, 4.2; `03` `MOD-04`):
   - Sin punto elegido: "Elige tu localidad en el mapa o escríbela." No se guarda nada; el punto anterior se mantiene o sigue sin punto.
   - Localidad escrita sin resultados: "No encontramos esa localidad. No se marcó ningún punto. Prueba con la comuna o una calle cercana."
+  - Punto sin nombre de la localidad: "Escribe el nombre de la localidad. La localidad no se guardó." El punto anterior se mantiene o sigue sin punto (D-08).
   - Mapa que no carga: `<p role="status">El mapa no está disponible. Puedes escribir tu localidad.</p>`; la opción escrita sigue activa.
   - Guardado fallido: "La localidad no se guardó. Sigue publicada: {anterior}" o "Sigues sin localidad confirmada".
-  - Éxito: "Localidad marcada. Tus ofertas ya pueden aparecer como oficios cercanos." El aviso global de `VIEW-11` desaparece.
-  - Nunca se pide permiso de ubicación del dispositivo en esta vista.
+  - Éxito: "Localidad marcada: {etiqueta}. Tus ofertas ya pueden aparecer como oficios cercanos." El aviso global de `VIEW-11` desaparece.
+  - Nunca se pide permiso de ubicación del dispositivo en esta vista (D-06).
 
 ### 4.4 Checklist de fases
 
@@ -787,12 +804,15 @@ Ancho de referencia: teléfono. En pantallas anchas el orden de lectura se manti
 |                                        |
 | 1. Gasfitería a domicilio, Juan Pérez  |  h3 > a (perfil)
 |    Oficio · #gasfiter                  |
+|    a 0,8 km                            |  D-02
 | -------------------------------------- |
 | 2. Reparación de calefont, Ana Soto    |
 |    Servicio · #gasfiter                |
+|    a 1,2 km                            |
 | -------------------------------------- |
 | 3. Remodelación de baño, Taller Ríos   |
 |    Proyecto · #gasfiter                |
+|    a 4,5 km                            |
 +----------------------------------------+
 ```
 
@@ -812,9 +832,12 @@ Ancho de referencia: teléfono. En pantallas anchas el orden de lectura se manti
 +----------------------------------------+
 ```
 
-#### `VIEW-04` — vacío, el `#` existe pero ninguna oferta tiene punto
+#### `VIEW-04` — vacío propio, el `#` existe pero ninguna oferta tiene punto (D-04)
 
 ```text
+| Ninguna oferta de #gasfiter tiene      |  role=status
+| localidad marcada.                     |
++----------------------------------------+
 | SIN OFICIOS CERCANOS PARA #GASFITER    |  h2
 | Hay ofertas de #gasfiter, pero ninguna |
 | tiene localidad marcada, así que no    |
@@ -843,6 +866,7 @@ Ancho de referencia: teléfono. En pantallas anchas el orden de lectura se manti
 +----------------------------------------+
 | CONTACTO                               |  h2  VIEW-06
 | [Contactar]                            |  a tel:/mailto:/URL
+| Teléfono: +56 9 1234 5678              |  texto, D-03
 | Redes                                  |  h3
 |  - Instagram                           |  a
 |  - Facebook                            |  a
@@ -859,7 +883,7 @@ Ancho de referencia: teléfono. En pantallas anchas el orden de lectura se manti
 | [img: alt "Tablero eléctrico"]         |
 +----------------------------------------+
 | LOCALIDAD                              |  h2  VIEW-09
-| Punto confirmado en el mapa            |  o punto.etiqueta
+| Ñuñoa, Santiago                        |  punto.etiqueta, D-08
 | [ mapa con el punto del perfil ]       |  role=img, nombre
 +----------------------------------------+
 | Buscar otro oficio                     |  a
@@ -869,14 +893,16 @@ Ancho de referencia: teléfono. En pantallas anchas el orden de lectura se manti
 +----------------------------------------+
 ```
 
-#### Perfil con datos faltantes (vacíos de `VIEW-06`, `VIEW-07`, `VIEW-08`, `VIEW-09`)
+#### Perfil con datos faltantes (vacíos de redes en `VIEW-06`, y de `VIEW-07`, `VIEW-08`, `VIEW-09`)
+
+El contacto nunca falta en un perfil publicado (D-01). Ejemplo con contacto tipo `url`:
 
 ```text
 | MARÍA LÓPEZ                            |  h1
 +----------------------------------------+
 | CONTACTO                               |
-| Este perfil aún no publica un          |  sin botón Contactar
-| contacto.                              |
+| [Contactar]                            |  a https://…
+| Sitio: costurasmaria.cl                |  dominio, D-03
 | Redes                                  |
 | Este perfil aún no publica redes.      |
 +----------------------------------------+
@@ -985,7 +1011,8 @@ Error de carga:                   | 3. Portafolio (igual)           |
 | TU PERFIL PÚBLICO          (VIEW-17) |
 | - Nombre: Juan Pérez Gasfitería      |
 | - Contactar: abre llamada a          |
-|   +56 9 1234 5678                    |
+|   +56 9 1234 5678. En tu perfil se   |
+|   ve: Teléfono: +56 9 1234 5678      |
 | - Redes: 1                           |
 | - Ofertas: 2                         |
 | - Portafolio: sin imágenes           |
@@ -999,14 +1026,16 @@ Error de carga:                   | 3. Portafolio (igual)           |
 | [ Juan Pérez Gasfitería            ] |
 | Es el nombre que verán los clientes. |
 |                                      |
-| Contacto                             |
-| Es lo que abre el botón Contactar.   |
-| Medio de contacto                    |
+| Contacto (obligatorio)               |
+| Es lo que abre el botón Contactar y  |
+| el dato que se ve a su lado.         |
+| Medio de contacto (obligatorio)      |
 | (o) Teléfono ( ) Correo ( ) Enlace   |
-| Teléfono                             |
+| Teléfono (obligatorio)               |
 | [ +56 9 1234 5678                  ] |
 | El botón Contactar abrirá: llamada   |
-| a +56 9 1234 5678                    |
+| a +56 9 1234 5678. En tu perfil se   |
+| verá: Teléfono: +56 9 1234 5678      |
 |                                      |
 | [ Guardar perfil ]                   |
 | (estado)                             |
@@ -1027,24 +1056,49 @@ Primera vez (empty): título "CREAR PERFIL", sin bloque VIEW-17,
 campos vacíos, botón [ Crear perfil ]; redes dice
 "Primero crea tu perfil."
 
-Error sin nombre:
+Error primer guardado, sin nombre y sin contacto (D-01):
+| +----------------------------------+ |
+| | Hay 3 datos por corregir         | |
+| | - Falta el nombre visible        | |
+| | - Elige un medio de contacto     | |
+| | - Escribe tu teléfono, correo o  | |
+| |   enlace                         | |
+| +----------------------------------+ |
+| (estado) Tu perfil no se publicó.    |
+| Nombre visible (obligatorio)         |
+| Error: Falta el nombre visible. Tu   |
+| perfil no se publicó.                |
+| [                                  ] |
+| Medio de contacto (obligatorio)      |
+| Error: Elige un medio de contacto.   |
+| ( ) Teléfono ( ) Correo ( ) Enlace   |
+| Teléfono, correo o enlace web        |
+| (obligatorio)                        |
+| Error: Escribe tu teléfono, correo o |
+| enlace.                              |
+| [                                  ] |
+| [ Crear perfil ]                     |
+
+Error edición sin nombre:
 | +----------------------------------+ |
 | | Hay 1 dato por corregir          | |
 | | - Falta el nombre visible        | |
 | +----------------------------------+ |
 | Nombre visible (obligatorio)         |
-| Error: Falta el nombre visible. Tu   |
-| perfil no se publicó.                |
+| Error: Falta el nombre visible. No   |
+| se guardó ningún cambio.             |
+| Sigue publicado: Juan Pérez          |
+| Gasfitería                           |
 | [                                  ] |
 
-Error contacto (nombre sí se guarda):
+Error contacto en edición (nombre sí se guarda):
 | (estado) Perfil guardado. El         |
 | contacto no se guardó.               |
 | +----------------------------------+ |
 | | Hay 1 dato por corregir          | |
 | | - El correo no es válido         | |
 | +----------------------------------+ |
-| Correo                               |
+| Correo (obligatorio)                 |
 | Error: El correo no es válido.       |
 | Sigue publicado: +56 9 1234 5678     |
 | [ juan@                            ] |
@@ -1100,10 +1154,11 @@ Vacío:
 | Aún no tienes ofertas. Sin ofertas,  |
 | la barra de búsqueda no te encuentra.|
 
-Error (sin tipo y # vacío):
+Error (sin tipo, sin título y # vacío; título obligatorio por D-07):
 | +----------------------------------+ |
-| | Hay 2 datos por corregir         | |
+| | Hay 3 datos por corregir         | |
 | | - Elige el tipo de oferta        | |
+| | - Escribe un título              | |
 | | - Escribe la etiqueta de oficio  | |
 | +----------------------------------+ |
 | (estado) La oferta no se guardó. Tus |
@@ -1174,6 +1229,10 @@ Error (no es imagen o carga fallida):
 | tu trabajo.                          |
 | Este punto es público. No usamos ni  |
 | seguimos la ubicación de tu teléfono.|
+| Si trabajas desde tu casa, puedes    |  D-05
+| marcar un punto cercano en vez de tu |
+| dirección exacta, por ejemplo tu     |
+| comuna o una esquina cercana.        |
 |                                      |
 | LOCALIDAD PUBLICADA                  |
 | Sin localidad confirmada. Tus        |
@@ -1196,23 +1255,41 @@ Error (no es imagen o carga fallida):
 | Punto elegido: Maipú, Región         |
 | Metropolitana. Aún no está guardado. |
 |                                      |
+| Nombre de la localidad (obligatorio) |  D-08
+| [ Maipú, Región Metropolitana      ] |
+| Es lo que verán los clientes en tu   |
+| perfil. Puedes cambiarlo.            |
+|                                      |
+| (sin botón "Usar mi ubicación        |  D-06
+|  actual")                            |
 | [ Marcar localidad ]                 |
 | (estado)                             |
 | Siguiente: Revisar mi perfil público |
 +--------------------------------------+
 
 Éxito:
-| (estado) Localidad marcada. Tus      |
-| ofertas ya pueden aparecer como      |
-| oficios cercanos.                    |
+| (estado) Localidad marcada: Maipú,   |
+| Región Metropolitana. Tus ofertas ya |
+| pueden aparecer como oficios         |
+| cercanos.                            |
 | LOCALIDAD PUBLICADA                  |
-| Localidad marcada: punto confirmado  |
-| en el mapa                           |  o punto.etiqueta si se acepta
-|                                      |
+| Localidad marcada: Maipú, Región     |
+| Metropolitana                        |
 
 Error (no se resuelve):
 | Error: No encontramos esa localidad. |
 | No se marcó ningún punto.            |
+
+Error (punto del mapa sin nombre):
+| Punto elegido: en el mapa. Aún no    |
+| está guardado.                       |
+| (estado) No encontramos un nombre    |
+| para ese punto. Escribe el nombre de |
+| la localidad.                        |
+| Nombre de la localidad (obligatorio) |
+| Error: Escribe el nombre de la       |
+| localidad. La localidad no se guardó.|
+| [                                  ] |
 
 Mapa no disponible:
 | El mapa no está disponible. Puedes   |
@@ -1226,72 +1303,76 @@ Mapa no disponible:
 ### 6.1 Contrato base
 
 ```text
-Perfil  { slug, nombre, contacto { tipo: telefono|correo|url, valor }, redes [ { nombre, url } ],
-          punto { lat, lng } | null, ofertas [ Oferta ], imagenes [ Imagen ] }
-Oferta  { tipo: proyecto|servicio|oficio, titulo, tag }
-Imagen  { url, alt }
+Perfil  { slug, nombre, contacto { tipo: telefono|correo|url, valor }, redes [ { id?, nombre, url } ],
+          punto { lat, lng, etiqueta } | null, ofertas [ Oferta ], imagenes [ Imagen ] }
+Oferta  { id?, tipo: proyecto|servicio|oficio, titulo, tag }
+Imagen  { id?, url, alt }
 ```
 
+- `contacto` es obligatorio en todo perfil publicado (D-01): nunca es `null` ni vacío.
+- `punto.etiqueta` es el nombre legible de la localidad (D-08), por ejemplo "Maipú, Región Metropolitana". Es obligatorio cuando hay `punto`; con `punto: null` no existe.
+- `id` es opcional (D-09): lo asigna el sistema al guardar una oferta, una imagen o una red. Un ítem que aún no se guarda no tiene `id`. `Quitar` usa el `id`.
+- `titulo` es obligatorio en `Oferta` (D-07).
 - `tag` se guarda ya normalizado con la regla única de §3.3.
 - `slug` lo genera el sistema al crear el perfil (supuesto S-05).
-- Un perfil sin contacto válido no muestra `Contactar` (§3.3). **Supuesto:** en ese caso `contacto` llega vacío o ausente; la forma exacta se fija en `05`.
-- Atributos `name` de los formularios del panel: `nombre`, `contacto[tipo]`, `contacto[valor]`, `redes[i][nombre]`, `redes[i][url]`, `tipo`, `titulo`, `tag`, `imagen` (archivo), `alt`, `punto[lat]`, `punto[lng]`.
+- Atributos `name` de los formularios del panel: `nombre`, `contacto[tipo]`, `contacto[valor]`, `redes[i][id]`, `redes[i][nombre]`, `redes[i][url]`, `tipo`, `titulo`, `tag`, `imagen` (archivo), `alt`, `punto[lat]`, `punto[lng]`, `punto[etiqueta]`, `quitar` (valor: `id` del ítem).
 - El cliente solo lee `Perfil`; `VIEW-17` también solo lee `Perfil` (supuesto S-17).
 
 ### 6.2 Resultado de búsqueda (derivado, no se guarda)
 
 ```text
-ResultadoCercano { oferta: Oferta, perfil: { slug, nombre } }
+ResultadoCercano { oferta: Oferta, perfil: { slug, nombre }, distancia_km }
 ```
 
-Lista ordenada por distancia ascendente al origen del cliente (§3.3). Solo incluye ofertas de perfiles con `punto` distinto de `null`. Si se acepta mostrar la distancia (pregunta 2), se agrega `distancia_km`. No cambia `Perfil` ni `Oferta`.
+Lista ordenada por `distancia_km` ascendente al origen del cliente (§3.3). `distancia_km` es la distancia en línea recta en kilómetros; la vista la muestra con un decimal y coma decimal ("a 1,2 km", D-02). Solo incluye ofertas de perfiles con `punto` distinto de `null`. No cambia `Perfil` ni `Oferta`.
 
 ### 6.3 Propuestas (no incorporadas)
 
-Estas propuestas no forman parte del contrato hasta que el arquitecto las acepte.
-
-1. **`punto.etiqueta: string`.** Texto legible de la localidad que el emprendedor confirma en `VIEW-16` (por ejemplo "Maipú, Región Metropolitana"). Vive dentro de `punto`, así que es `null` cuando no hay punto. Si se acepta, `VIEW-09`, `VIEW-16` y `VIEW-17` la muestran y el formulario de `VIEW-16` agrega `punto[etiqueta]`. Si no se acepta, esas vistas dicen "punto confirmado en el mapa".
-2. **`id` opcional en `Oferta`, `Imagen` y en cada ítem de `redes`.** Permite que `Quitar` y el mensaje "Sigue publicada" apunten a un ítem sin depender de su posición en la lista.
+No queda ninguna propuesta pendiente. `punto.etiqueta` (D-08) y los `id` opcionales (D-09) se incorporaron al contrato de §6.1.
 
 ---
 
-## 7. Supuestos y preguntas para el arquitecto
+## 7. Decisiones y supuestos
 
-### 7.1 Supuestos
+### 7.1 Decisiones del arquitecto (2026-11-02)
 
-1. **S-01 Rutas.** Fase 1 usa `perfil.html?slug={slug}` para el perfil público y `panel/entrar.html` para entrar; el esquema final de URL se fija en `05`.
-2. **S-02 Autenticación.** El método de autenticación se fija en `05`. `VIEW-10` usa un formulario de credencial genérico; si el método exige registro aparte, `05` lo agrega en `VIEW-18`.
-3. **S-03 Salir.** El panel tiene un botón `Salir` para cerrar sesión.
-4. **S-04 Mantener ítems.** Redes, ofertas e imágenes se quitan con `Quitar` (apoyado en "el emprendedor mantiene" de `01` §7). No hay edición de un ítem existente: se quita y se agrega de nuevo.
-5. **S-05 Slug.** El `slug` lo genera el sistema al crear el perfil y no cambia al editar el nombre.
-6. **S-06 Formatos.** Teléfono con código de país (regla exacta en `05`), correo con formato estándar, y contacto tipo `url` y redes con URL `https://` completa (`03` riesgo 5).
-7. **S-07 Perfil primero.** Ofertas, portafolio y localidad requieren perfil creado.
-8. **S-08 Título obligatorio.** El título de la oferta es obligatorio mientras no se responda la pregunta 7.
-9. **S-09 Regla `#`.** El tratamiento de los `#` iniciales y la reducción de espacios internos a uno desarrollan la regla de `03`. No hay coincidencia parcial ni sugerencias.
-10. **S-10 Orden de validación.** La búsqueda valida primero el `#` y después el origen.
-11. **S-11 Origen.** La localidad escrita tiene prioridad sobre la ubicación del navegador; el permiso solo se pide tras una acción del cliente; el tiempo máximo de espera se fija en `05`.
-12. **S-12 Distancia.** Distancia en línea recta (`03` riesgo 4), empates por `nombre`, sin radio máximo ni paginación en v1.
-13. **S-13 URL de búsqueda.** `q` y `localidad` van en la URL; las coordenadas del dispositivo no.
-14. **S-14 Ítems del listado.** Un ítem por oferta; una búsqueda nueva reemplaza la que está en curso.
-15. **S-15 Enlaces externos.** Abren en la misma pestaña; `Contactar` tipo `url` y las redes llevan `rel="nofollow ugc"`.
-16. **S-16 Carga del perfil.** Si el perfil se carga en el navegador existe el estado "Cargando perfil…"; si se entrega desde el servidor, no. Un `slug` inexistente responde 404 con `noindex`. Se decide en `05`.
-17. **S-17 Estado del perfil.** `VIEW-17` no agrega datos; solo lee el `Perfil`.
-18. **S-18 Mapa.** Proveedor y formato (interactivo o imagen) en `05`. El control de teclado depende del proveedor; la opción escrita de `VIEW-16` cubre a quien no usa el mapa.
-19. **S-19 Imágenes.** Formatos y tamaño máximo en `05`. En el perfil público cargan en diferido, sin reintento por imagen y sin visor ampliado.
-20. **S-20 Encabezado público.** El enlace `Crear perfil` del encabezado es la entrada al panel. No hay páginas legales en v1.
-21. **S-21 Títulos y descripciones.** El `title` de `index.html` refleja la búsqueda; la `description` del perfil se arma con `nombre` y los `tag` de sus ofertas.
+Vissiuss respondió "todas si" a las nueve preguntas de la versión `0.1.0` el 2026-11-02 a las 17:50 (UTC-3). Estas decisiones no firman el Gate 3A.
 
-### 7.2 Preguntas
+- **D-01 Contacto obligatorio en el primer guardado.** El perfil se publica solo con nombre y contacto válido (teléfono, correo o URL); en ediciones, un contacto vacío o inválido no se guarda y queda el anterior; sale del objetivo de `01` §5. Vistas: `VIEW-06`, `VIEW-12`, `VIEW-17`.
+- **D-02 Distancia visible por resultado.** Cada resultado muestra "a 1,2 km" (línea recta, un decimal, coma decimal) y el orden sigue siendo del más cercano al más lejano; `distancia_km` entra al resultado derivado. Vistas: `VIEW-03`, `VIEW-04`.
+- **D-03 Dato de contacto visible.** Junto a `Contactar` se muestra el teléfono o el correo como texto, o el dominio si el contacto es una URL; `Contactar` sigue siendo un enlace. Vistas: `VIEW-06`, `VIEW-12`, `VIEW-17`.
+- **D-04 Mensaje propio sin punto.** "El `#` existe pero ninguna oferta tiene localidad marcada" tiene su mensaje, distinto de "ese oficio no está". Vistas: `VIEW-03`, `VIEW-04`.
+- **D-05 Sugerencia de punto cercano.** Junto al aviso de que el punto es público, el panel sugiere a quien trabaja desde su casa marcar un punto cercano, como su comuna o una esquina cercana. Vista: `VIEW-16`.
+- **D-06 Sin ubicación actual en el panel.** `VIEW-16` ofrece solo el mapa o una localidad escrita; no hay "Usar mi ubicación actual". Vista: `VIEW-16`.
+- **D-07 Título de oferta obligatorio.** Una oferta sin título no se guarda. Vista: `VIEW-14`.
+- **D-08 `punto.etiqueta` en el contrato.** `punto { lat, lng, etiqueta } | null`; la etiqueta es obligatoria al guardar un punto, se llena con la localidad elegida o el nombre geocodificado del punto del mapa y el emprendedor puede editarla. Vistas: `VIEW-09`, `VIEW-16`, `VIEW-17`.
+- **D-09 `id` opcional en ofertas, imágenes y redes.** El sistema asigna el `id` al guardar y `Quitar` apunta a ese `id`. Vistas: `VIEW-13`, `VIEW-14`, `VIEW-15`.
 
-1. **Contacto obligatorio.** El perfil se publica solo con el nombre (`02` 1.1) y `Contactar` queda oculto hasta guardar un contacto válido. ¿El contacto debe ser obligatorio en el primer guardado (objetivo de `01` §5)?
-2. **Distancia visible.** `02` pide orden por cercanía, no mostrar la distancia. ¿Cada resultado muestra la distancia (por ejemplo "a 1,2 km")? Este documento no la muestra.
-3. **Valor del contacto visible.** En un computador sin aplicación de teléfono, `tel:` no hace nada. ¿Se muestra el número o el correo como texto junto a `Contactar`? Este documento muestra solo el botón.
-4. **`#` sin ofertas con punto.** Este documento distingue "el `#` existe pero ninguna oferta tiene localidad marcada" de "ese oficio no está". ¿Se mantiene el mensaje separado o se unifica?
-5. **Punto aproximado.** ¿El panel sugiere marcar un punto cercano (por ejemplo, la comuna) a quien trabaja desde su casa (`03` riesgo 3)? Hoy solo avisa que el punto es público.
-6. **Ubicación actual en el panel.** `VIEW-16` no ofrece "Usar mi ubicación actual" porque `03` solo nombra mapa o localidad escrita. ¿Se confirma que queda fuera del panel?
-7. **Título de oferta.** `03` lista el título como entrada y `02` 2.2 solo nombra tipo y `#`. ¿El título es obligatorio (supuesto S-08)?
-8. **`punto.etiqueta`.** ¿Se acepta la propuesta 1 de §6.3?
-9. **`id` opcionales.** ¿Se acepta la propuesta 2 de §6.3?
+### 7.2 Supuestos
+
+Convertidos en decisión: **S-08 → D-07** (título obligatorio) y la parte "distancia en línea recta" de **S-12 → D-02**. El resto de S-12 sigue como supuesto. Los demás supuestos no cambian; los identificadores se mantienen para no romper referencias.
+
+- **S-01 Rutas.** Fase 1 usa `perfil.html?slug={slug}` para el perfil público y `panel/entrar.html` para entrar; el esquema final de URL se fija en `05`.
+- **S-02 Autenticación.** El método de autenticación se fija en `05`. `VIEW-10` usa un formulario de credencial genérico; si el método exige registro aparte, `05` lo agrega en `VIEW-18`.
+- **S-03 Salir.** El panel tiene un botón `Salir` para cerrar sesión.
+- **S-04 Mantener ítems.** Redes, ofertas e imágenes se quitan con `Quitar` (apoyado en "el emprendedor mantiene" de `01` §7). No hay edición de un ítem existente: se quita y se agrega de nuevo.
+- **S-05 Slug.** El `slug` lo genera el sistema al crear el perfil y no cambia al editar el nombre.
+- **S-06 Formatos.** Teléfono con código de país (regla exacta en `05`), correo con formato estándar, y contacto tipo `url` y redes con URL `https://` completa (`03` riesgo 5).
+- **S-07 Perfil primero.** Ofertas, portafolio y localidad requieren perfil creado.
+- **S-09 Regla `#`.** El tratamiento de los `#` iniciales y la reducción de espacios internos a uno desarrollan la regla de `03`. No hay coincidencia parcial ni sugerencias.
+- **S-10 Orden de validación.** La búsqueda valida primero el `#` y después el origen.
+- **S-11 Origen.** La localidad escrita tiene prioridad sobre la ubicación del navegador; el permiso solo se pide tras una acción del cliente; el tiempo máximo de espera se fija en `05`.
+- **S-12 Empates y alcance.** Empates por `nombre`, sin radio máximo ni paginación en v1. La distancia se redondea al décimo más cercano y siempre se expresa en km.
+- **S-13 URL de búsqueda.** `q` y `localidad` van en la URL; las coordenadas del dispositivo no.
+- **S-14 Ítems del listado.** Un ítem por oferta; una búsqueda nueva reemplaza la que está en curso.
+- **S-15 Enlaces externos.** Abren en la misma pestaña; `Contactar` tipo `url` y las redes llevan `rel="nofollow ugc"`.
+- **S-16 Carga del perfil.** Si el perfil se carga en el navegador existe el estado "Cargando perfil…"; si se entrega desde el servidor, no. Un `slug` inexistente responde 404 con `noindex`. Se decide en `05`.
+- **S-17 Estado del perfil.** `VIEW-17` no agrega datos; solo lee el `Perfil`.
+- **S-18 Mapa.** Proveedor y formato (interactivo o imagen) en `05`. El control de teclado depende del proveedor; la opción escrita de `VIEW-16` cubre a quien no usa el mapa. El nombre del punto marcado en el mapa (D-08) requiere geocodificación inversa del mismo proveedor.
+- **S-19 Imágenes.** Formatos y tamaño máximo en `05`. En el perfil público cargan en diferido, sin reintento por imagen y sin visor ampliado.
+- **S-20 Encabezado público.** El enlace `Crear perfil` del encabezado es la entrada al panel. No hay páginas legales en v1.
+- **S-21 Títulos y descripciones.** El `title` de `index.html` refleja la búsqueda; la `description` del perfil se arma con `nombre` y los `tag` de sus ofertas.
+- **S-22 Dominio visible.** Para un contacto tipo `url`, el texto visible (D-03) es el nombre de host sin `https://`, sin `www.` y sin ruta.
 
 ---
 
@@ -1299,29 +1380,29 @@ Estas propuestas no forman parte del contrato hasta que el arquitecto las acepte
 
 | Escenario (`01` / `02`) | Cliente (`VIEW-01` a `VIEW-09`) | Panel (`VIEW-10` a `VIEW-17`) |
 | :--- | :--- | :--- |
-| `01` Escenario 1: el cliente encuentra un oficio cerca | `VIEW-01` barra + `VIEW-02` ubicación concedida o resuelta → `VIEW-04` éxito ordenado por cercanía → `VIEW-05` con `VIEW-06` (`Contactar` y redes). Solo hay barra, sin compositor de hashtags. | `VIEW-14` éxito (oferta con `#`) + `VIEW-16` éxito (punto) + `VIEW-12`/`VIEW-13` éxito (contacto y redes). |
+| `01` Escenario 1: el cliente encuentra un oficio cerca | `VIEW-01` barra + `VIEW-02` ubicación concedida o resuelta → `VIEW-04` éxito ordenado por cercanía con "a 1,2 km" por resultado (D-02) → `VIEW-05` con `VIEW-06` (`Contactar`, dato de contacto visible y redes; D-03). Solo hay barra, sin compositor de hashtags. | `VIEW-14` éxito (oferta con título y `#`) + `VIEW-16` éxito (punto con etiqueta) + `VIEW-12`/`VIEW-13` éxito (contacto obligatorio y redes). |
 | `01` Escenario 2: sin oficio o sin ubicación no hay listado inventado | `VIEW-04` vacío sin coincidencia (sin otros `#`); `VIEW-03` error `#` vacío (pide un oficio); `VIEW-02` sin origen o permiso negado (pide ubicación, sin punto inventado). | — |
-| `FEAT-01` 1.1: perfil guardado con nombre queda publicado | `VIEW-05` éxito: `h1` con `nombre`, secciones `VIEW-06` a `VIEW-09`, `<title>{nombre} — trabajamos.com</title>`. | `VIEW-12` éxito "Perfil publicado"; `VIEW-17` con enlace "Ver mi perfil público"; `VIEW-11` pasa a "publicado". |
+| `FEAT-01` 1.1: perfil guardado con nombre queda publicado (D-01 suma contacto válido) | `VIEW-05` éxito: `h1` con `nombre`, secciones `VIEW-06` a `VIEW-09`, `<title>{nombre} — trabajamos.com</title>`; `VIEW-06` siempre con `Contactar`. | `VIEW-12` éxito "Perfil publicado" tras guardar nombre y contacto válido; `VIEW-17` con enlace "Ver mi perfil público"; `VIEW-11` pasa a "publicado". |
 | `FEAT-01` 1.2: sin sesión, no se publica y ve qué falta | Un perfil sin guardar no existe: `VIEW-05` error "Perfil no disponible". | `VIEW-11` guardia (redirige a `VIEW-10`, sin formularios); sesión vencida al enviar: "Tu sesión terminó. No se guardó ningún cambio." + "Entrar de nuevo"; `VIEW-10` variante sesión vencida. |
-| `FEAT-01` 1.2: sin nombre, no se publica y ve qué falta | `VIEW-05` error "Perfil no disponible" si el perfil nunca se guardó. | `VIEW-12` error: resumen + "Falta el nombre visible. Tu perfil no se publicó." y "Sigue publicado: {nombre anterior}". |
+| `FEAT-01` 1.2: sin nombre, no se publica y ve qué falta (D-01: también sin contacto en el primer guardado) | `VIEW-05` error "Perfil no disponible" si el perfil nunca se guardó. | `VIEW-12` error de primer guardado: el resumen lista nombre y contacto faltantes, "Tu perfil no se publicó."; edición sin nombre: "Falta el nombre visible. No se guardó ningún cambio." y "Sigue publicado: {nombre anterior}". |
 | `FEAT-02` 2.1: la oferta aparece en el perfil con tipo y `#` | `VIEW-07` éxito; `VIEW-04` éxito muestra `tipo` y `tag` por ítem. | `VIEW-14` éxito: la oferta entra a "Mis ofertas" con tipo y `#` normalizado (vista previa "Se guardará como"). |
-| `FEAT-02` 2.2: sin tipo o `#` vacío, no se guarda y se conservan las anteriores | `VIEW-07` muestra solo ofertas guardadas; `VIEW-07` vacío si no hay. | `VIEW-14` error: resumen por campo, "La oferta no se guardó. Tus ofertas anteriores siguen publicadas.", lista sin cambios. |
+| `FEAT-02` 2.2: sin tipo o `#` vacío, no se guarda y se conservan las anteriores (D-07 suma el título) | `VIEW-07` muestra solo ofertas guardadas; `VIEW-07` vacío si no hay. | `VIEW-14` error (sin tipo, sin título o `#` vacío): resumen por campo, "La oferta no se guardó. Tus ofertas anteriores siguen publicadas.", lista sin cambios. |
 | `FEAT-02` precondición "perfil publicado" | — | `VIEW-14` bloqueada sin perfil, con enlace a `VIEW-12`. |
 | `FEAT-03` 3.1: la imagen queda en el portafolio | `VIEW-08` éxito con `alt` por imagen. | `VIEW-15` éxito: imagen en "Mis imágenes" con su texto alternativo. |
 | `FEAT-03` 3.2: no es imagen o la carga falla, el portafolio no cambia | `VIEW-08` muestra solo imágenes guardadas; `VIEW-08` vacío si no hay. | `VIEW-15` error: "La imagen no se guardó y tu portafolio no cambió.", lista sin cambios. |
-| `FEAT-04` 4.1: localidad confirmada se guarda y habilita cercanía | `VIEW-09` éxito (mapa y texto); `VIEW-04` éxito solo lista perfiles con `punto`. | `VIEW-16` éxito: "Localidad marcada. Tus ofertas ya pueden aparecer como oficios cercanos."; desaparece el aviso de `VIEW-11`. |
-| `FEAT-04` 4.2: sin punto, las ofertas no aparecen como cercanas | `VIEW-04` excluye ofertas con `punto: null`; `VIEW-04` vacío sin ofertas con punto; `VIEW-09` vacío. | `VIEW-16` vacío "Sin localidad confirmada…"; aviso global de `VIEW-11`; "Localidad: sin confirmar" en `VIEW-17`; aviso en `VIEW-14`. |
-| `FEAT-04` supuesto: punto confirmado, no posición del dispositivo | El punto del cliente no se guarda ("No la guardamos" en `VIEW-02`). | `VIEW-16`: "No usamos ni seguimos la ubicación de tu teléfono"; el punto solo se guarda con `Marcar localidad`; nunca se pide permiso de ubicación. |
+| `FEAT-04` 4.1: localidad confirmada se guarda y habilita cercanía | `VIEW-09` éxito (`punto.etiqueta` y mapa; D-08); `VIEW-04` éxito solo lista perfiles con `punto`. | `VIEW-16` éxito: "Localidad marcada: {etiqueta}. Tus ofertas ya pueden aparecer como oficios cercanos."; desaparece el aviso de `VIEW-11`; `VIEW-17` muestra la etiqueta. Error: punto sin nombre de la localidad no se guarda (D-08). |
+| `FEAT-04` 4.2: sin punto, las ofertas no aparecen como cercanas | `VIEW-04` excluye ofertas con `punto: null`; `VIEW-04` vacío propio sin ofertas con punto (D-04); `VIEW-09` vacío. | `VIEW-16` vacío "Sin localidad confirmada…"; aviso global de `VIEW-11`; "Localidad: sin confirmar" en `VIEW-17`; aviso en `VIEW-14`. |
+| `FEAT-04` supuesto: punto confirmado, no posición del dispositivo | El punto del cliente no se guarda ("No la guardamos" en `VIEW-02`). | `VIEW-16`: "No usamos ni seguimos la ubicación de tu teléfono" y sugerencia de punto cercano para quien trabaja desde su casa (D-05); solo mapa o localidad escrita, sin "Usar mi ubicación actual" (D-06); el punto solo se guarda con `Marcar localidad`. |
 | `FEAT-05` 5.1: `gasfiter` o `#gasfiter` dan solo `#gasfiter` | Regla única de §3.3 + `VIEW-04` éxito con coincidencia exacta del `#`. | `VIEW-14` guarda el `tag` con la misma regla, así que la búsqueda y el guardado coinciden. |
 | `FEAT-05` 5.2: texto sin coincidencia, listado vacío y sin otros `#` | `VIEW-04` vacío "No encontramos #xyz" + anuncio en `VIEW-03`; sin sugerencias ni otros `#`. | — |
-| `FEAT-06` 6.1: ubicación autorizada o escrita, orden por cercanía | `VIEW-02` permiso concedido o localidad resuelta → `VIEW-03` loading → `VIEW-04` éxito en `<ol>` por distancia ascendente. | `VIEW-16` éxito aporta el punto del perfil. |
+| `FEAT-06` 6.1: ubicación autorizada o escrita, orden por cercanía | `VIEW-02` permiso concedido o localidad resuelta → `VIEW-03` loading → `VIEW-04` éxito en `<ol>` por distancia ascendente, con la distancia de cada resultado (D-02). | `VIEW-16` éxito aporta el punto del perfil. |
 | `FEAT-06` 6.2: niega ubicación y no escribe localidad | `VIEW-02` permiso negado / sin soporte / tiempo agotado → pide localidad, foco en el campo; `VIEW-03` "necesitamos tu ubicación"; sin listado. | — |
-| `FEAT-07` 7.1: el cliente ve `Contactar` y redes; cada uno abre su destino | `VIEW-06` éxito: `Contactar` es `<a>` con `tel:`, `mailto:` o URL; cada red es `<a>` con su nombre. | `VIEW-12` éxito con "El botón Contactar abrirá: …"; `VIEW-13` éxito "Redes guardadas"; `VIEW-17` enlaza al perfil público. |
-| `FEAT-07` 7.2: contacto vacío, no se publica y queda el válido anterior | `VIEW-06` vacío "Este perfil aún no publica un contacto.", sin botón deshabilitado. | `VIEW-12` error de contacto con "Sigue publicado: {anterior}" o "No hay un contacto publicado". |
+| `FEAT-07` 7.1: el cliente ve `Contactar` y redes; cada uno abre su destino | `VIEW-06` éxito: `Contactar` es `<a>` con `tel:`, `mailto:` o URL, con el dato de contacto como texto al lado (D-03); cada red es `<a>` con su nombre. | `VIEW-12` éxito con "El botón Contactar abrirá: … En tu perfil se verá: …"; `VIEW-13` éxito "Redes guardadas"; `VIEW-17` enlaza al perfil público. |
+| `FEAT-07` 7.2: contacto vacío, no se publica y queda el válido anterior | `VIEW-06` muestra el último contacto válido; un perfil publicado siempre tiene contacto (D-01). | `VIEW-12` primer guardado sin contacto: no se publica el perfil (D-01). Edición con contacto vacío o inválido: error de contacto con "Sigue publicado: {anterior}". |
 | `FEAT-07` 7.2: URL de red inválida, no se publica y quedan las válidas | `VIEW-06` muestra solo redes válidas; vacío "Este perfil aún no publica redes." | `VIEW-13` error por fila: esa red no se publica, "Sigue publicada: …" si existía; las demás filas válidas se guardan. |
 | `02` §6 Performance: usable en teléfono; esperar el punto | Wireframes de una columna con barra y `Buscar` arriba; `type="search"`, `enterkeyhint`; `VIEW-03` "Esperando tu ubicación…" sin listado con origen falso; `VIEW-04` retira el listado anterior al cargar. | Wireframes de una columna; camino escrito en `VIEW-16` que no depende del mapa. |
 | `02` §6 SEO mínimo | `title` y `description` propios en `index.html`; `<title>{nombre} — trabajamos.com</title>` en cada perfil. | `{Vista} — Panel — trabajamos.com` por página. |
-| `02` §6 Accesibilidad | Etiqueta visible "Oficio"; `form role="search"`; nombre accesible de `Contactar`; cada red anuncia su nombre; `alt` del emprendedor en cada imagen; región viva `role="status"`; enlace para saltar al contenido. | Texto visible de `Crear perfil`, `Editar perfil`, `Agregar oferta`, `Subir imagen` y `Marcar localidad`; campo "Descripción de la imagen (obligatorio)" en `VIEW-15`; resumen de errores con `role="alert"`. |
+| `02` §6 Accesibilidad | Etiqueta visible "Oficio"; `form role="search"`; nombre accesible de `Contactar` y dato de contacto enlazado con `aria-describedby` (D-03); cada red anuncia su nombre; `alt` del emprendedor en cada imagen; región viva `role="status"`; enlace para saltar al contenido. | Texto visible de `Crear perfil`, `Editar perfil`, `Agregar oferta`, `Subir imagen` y `Marcar localidad`; campo "Descripción de la imagen (obligatorio)" en `VIEW-15`; "Contacto (obligatorio)" en `VIEW-12` y "Nombre de la localidad (obligatorio)" en `VIEW-16`; resumen de errores con `role="alert"`; `Quitar` con su objeto en texto oculto. |
 
 ---
 
