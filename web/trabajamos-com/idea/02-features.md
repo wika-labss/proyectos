@@ -1,16 +1,16 @@
 ---
 id: "WEB-FEAT-001"
-title: "[Features y Secciones Web]"
+title: "trabajamos.com — Features y Secciones"
 status: "BORRADOR"
 version: "0.1.0"
-owner: "[Responsable]"
-created_at: "YYYY-MM-DD"
-updated_at: "YYYY-MM-DD"
+owner: "Vissiuss"
+created_at: "2026-11-02"
+updated_at: "2026-11-02"
 audit_1_passed: false
-site_type: ""
+site_type: "cms"
 ---
 
-# [02] Features, Secciones y CTAs (Web)
+# [02] Features, Secciones y CTAs — trabajamos.com
 
 > **Gate 1:** este documento se aprueba **junto con** `01-problem.md`.  
 > **Equivalencia:** Auditoría de Documentación → `docs/auditoria-documentacion.md`.  
@@ -19,10 +19,10 @@ site_type: ""
 
 ## 1. Identificación y Control de Cambios
 
-- **Nombre del Proyecto:** `[Ej. Landing oficios — WIKA]`
+- **Nombre del Proyecto:** trabajamos.com
 - **Documento base:** `idea/01-problem.md` (ID: `WEB-PROB-001`)
-- **site_type:** `[landing | multipage | cms]`
-- **Estado de gatekeeping:** `[PENDIENTE_AUDITORIA_DOCUMENTACION]`
+- **site_type:** `cms` — el emprendedor crea y edita perfil, ofertas, imágenes y localidad. No es una landing fija.
+- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
 
 ---
 
@@ -30,28 +30,140 @@ site_type: ""
 
 | ID Feature | ID Problema (`01-problem.md`) | Nombre | Prioridad | Módulo Destino (`03`) |
 | :--- | :--- | :--- | :--- | :--- |
-| `FEAT-01` | `ERR-01` | `[Hero + CTA WhatsApp]` | `Crítica` | `mod-[nombre]` |
-| `FEAT-02` | `ERR-02` | `[Formulario de contacto]` | `Alta` | `mod-[nombre]` |
+| `FEAT-01` | `ERR-01` | Perfil del emprendedor | `Crítica` | `mod-perfil` |
+| `FEAT-02` | `ERR-02` | Ofertas de proyectos, servicios y oficios | `Crítica` | `mod-ofertas` |
+| `FEAT-03` | `ERR-03` | Portafolio con imágenes del trabajo | `Crítica` | `mod-portafolio` |
+| `FEAT-04` | `ERR-04` | Localidad georreferenciada | `Crítica` | `mod-geo` |
+| `FEAT-05` | `ERR-05` | Barra de búsqueda de oficios con `#` | `Crítica` | `mod-buscador` |
+| `FEAT-06` | `ERR-06` | Oficios cercanos según la ubicación del cliente | `Crítica` | `mod-buscador` |
 
 ---
 
 ## 3. Funcionalidades Obligatorias
 
-### Feature `FEAT-01`: [Nombre]
+### Feature `FEAT-01`: Perfil del emprendedor
 
-**Descripción:** `[Qué hace y valor para el visitante]`
+**Descripción:** el emprendedor arma un perfil público que lo identifica como quien ofrece trabajo de oficio. Es la vitrina que las páginas de empleo no le dan.
+
+**CTA:** `Crear perfil` / `Editar perfil`.
 
 #### Escenario 1.1: Flujo exitoso
 
-- **Dado que** `[condición inicial]`
-- **Cuando** `[acción del visitante]`
-- **Entonces** `[resultado observable]`
+- **Dado que** una persona entra como emprendedor autenticado
+- **Cuando** guarda su perfil con nombre visible
+- **Entonces** el perfil queda publicado y es el lugar donde cuelgan ofertas, portafolio y localidad
 
 #### Escenario 1.2: Manejo de errores
 
-- **Dado que** `[condición de fallo]`
-- **Cuando** `[se intenta la acción]`
-- **Entonces** `[comportamiento seguro; mensaje o estado fallback]`
+- **Dado que** el emprendedor no está autenticado o guarda el perfil sin nombre
+- **Cuando** intenta publicarlo
+- **Entonces** el perfil no se publica y ve qué dato falta
+
+---
+
+### Feature `FEAT-02`: Ofertas de proyectos, servicios y oficios
+
+**Descripción:** en el perfil, el emprendedor ofrece proyectos, servicios y oficios. Cada oficio lleva un `#` que el buscador usa después. Ejemplos de etiqueta: `#gasfiter`, `#electricista`.
+
+**CTA:** `Agregar oferta`.
+
+#### Escenario 2.1: Flujo exitoso
+
+- **Dado que** el emprendedor tiene perfil publicado
+- **Cuando** agrega una oferta de tipo proyecto, servicio u oficio y le asigna un `#`
+- **Entonces** la oferta aparece en su perfil con ese tipo y ese `#`
+
+#### Escenario 2.2: Manejo de errores
+
+- **Dado que** la oferta no tiene tipo o el `#` está vacío
+- **Cuando** intenta guardarla
+- **Entonces** la oferta no se publica y el perfil conserva las ofertas anteriores
+
+---
+
+### Feature `FEAT-03`: Portafolio con imágenes del trabajo
+
+**Descripción:** el emprendedor gestiona un portafolio con imágenes de su trabajo, visibles en el perfil.
+
+**CTA:** `Subir imagen`.
+
+#### Escenario 3.1: Flujo exitoso
+
+- **Dado que** el emprendedor está autenticado en su perfil
+- **Cuando** sube una imagen de un trabajo
+- **Entonces** la imagen queda en el portafolio de ese perfil
+
+#### Escenario 3.2: Manejo de errores
+
+- **Dado que** el archivo no es una imagen o la carga falla
+- **Cuando** intenta subirla
+- **Entonces** el portafolio no cambia y ve que la imagen no se guardó
+
+---
+
+### Feature `FEAT-04`: Localidad georreferenciada
+
+**Descripción:** el emprendedor marca la localidad desde la que ofrece sus oficios. Ese punto es el que usa la búsqueda de cercanía.
+
+**CTA:** `Marcar localidad`.
+
+#### Escenario 4.1: Flujo exitoso
+
+- **Dado que** el emprendedor está autenticado
+- **Cuando** confirma una localidad en el mapa o equivalente geográfico
+- **Entonces** el perfil guarda ese punto y las ofertas de ese perfil pueden entrar al listado de cercanos
+
+#### Escenario 4.2: Manejo de errores
+
+- **Dado que** el emprendedor no confirma una localidad
+- **Cuando** deja el perfil sin punto
+- **Entonces** sus ofertas no aparecen como oficios cercanos
+
+**Supuesto:** la localidad publicada es un punto que el emprendedor confirma (lugar de trabajo), no la posición silenciosa de su dispositivo.
+
+---
+
+### Feature `FEAT-05`: Barra de búsqueda de oficios con `#`
+
+**Descripción:** de cara al cliente hay una barra de búsqueda. La búsqueda funciona con `#`: el texto de la barra se normaliza a un `#` de oficio (minúsculas; si falta `#`, se agrega; los espacios sobrantes se quitan). El cliente no usa un compositor de hashtags.
+
+**CTA:** la barra, con acción `Buscar`.
+
+#### Escenario 5.1: Flujo exitoso
+
+- **Dado que** existe al menos una oferta etiquetada `#gasfiter`
+- **Cuando** el cliente escribe `gasfiter` o `#gasfiter` en la barra y busca
+- **Entonces** el resultado corresponde solo a `#gasfiter`
+
+#### Escenario 5.2: Manejo de errores
+
+- **Dado que** el cliente escribe un texto que no coincide con ningún `#` publicado
+- **Cuando** busca
+- **Entonces** el listado queda vacío e indica que ese oficio no está
+- **Y** no muestra ofertas de otro `#`
+
+---
+
+### Feature `FEAT-06`: Oficios cercanos según la ubicación del cliente
+
+**Descripción:** con un `#` reconocido, el portal muestra oficios ofrecidos cerca de la ubicación del cliente, del más cercano al más lejano. Entran solo ofertas con localidad georreferenciada (`FEAT-04`).
+
+**CTA:** el mismo `Buscar` de la barra. La cercanía es el orden del resultado, no una segunda pantalla.
+
+#### Escenario 6.1: Flujo exitoso
+
+- **Dado que** el cliente autorizó su ubicación o escribió una localidad
+- **Y** hay ofertas de ese `#` con punto geográfico
+- **Cuando** busca
+- **Entonces** ve esas ofertas ordenadas por cercanía a su ubicación
+
+#### Escenario 6.2: Manejo de errores
+
+- **Dado que** el cliente niega la ubicación del dispositivo y no escribe una localidad
+- **Cuando** busca un `#` válido
+- **Entonces** el portal no inventa un punto y le pide una ubicación antes de listar cercanos
+
+**Supuesto:** si el navegador no entrega ubicación, la barra acepta una localidad escrita por el cliente y esa localidad es el origen de la cercanía.
 
 ---
 
@@ -59,18 +171,22 @@ site_type: ""
 
 | ID Feature | Nombre | Prioridad | Notas |
 | :--- | :--- | :--- | :--- |
-| `FEAT-03` | `[Nombre]` | `Media` | `[Fuera de v1 si no cabe]` |
+| — | Ninguna solicitada en este gate | — | negocio no pidió una v1.1 |
 
 ---
 
 ## 5. Fuera de Alcance
 
-- `[Reservas, pagos, login de visitantes]`
+- Bolsa de empleo, currículum y postulaciones.
+- Pagos, cotizaciones formales, reservas y contratación.
+- Mensajería entre cliente y emprendedor.
+- Cuenta o login del cliente.
+- Muro o compositor de hashtags. El `#` solo clasifica el oficio dentro de la barra.
 
 ---
 
 ## 6. NFRs
 
-- **Performance:** `[LCP razonable en 4G]`
-- **SEO mínimo:** `[title, OG, sitemap si aplica]`
-- **Accesibilidad:** `[landmarks, labels en forms]`
+- **Performance:** la barra permanece usable en un teléfono. Si la ubicación tarda, la búsqueda espera el punto y no muestra un listado con un origen falso.
+- **SEO mínimo:** el portal tiene `title` y descripción propios de trabajamos.com. Cada perfil público tiene título identificable.
+- **Accesibilidad:** la barra tiene etiqueta visible o nombre accesible. Los controles `Crear perfil`, `Agregar oferta`, `Subir imagen` y `Marcar localidad` tienen nombre. Cada imagen del portafolio lleva texto alternativo escrito por el emprendedor.
