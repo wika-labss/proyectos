@@ -5,11 +5,11 @@ Nombre comercial: trabajamos.com
 Fuente de plantillas: wika-labss/web-design templates/ (01–05)
 
 Estado:
-- idea/01-problem.md y idea/02-features.md rellenos (Gate 1 en borrador, v0.1.1)
+- idea/01-problem.md y idea/02-features.md rellenos (Gate 1 v0.1.1)
 - el perfil público incluye botón de contacto y redes sociales (`FEAT-07`)
-- audit_1_passed: false — pendiente de auditoría del arquitecto
+- audits/auditoria-documentacion.md en PENDIENTE_ARQUITECTO
+- audit_1_passed: false
 - idea/03–05 siguen como plantilla
-- audits/ vacío
 - iterations/ vacío
 - final/ vacío
 
