@@ -218,8 +218,9 @@ Resuelto con `standards/direction-matrix.yaml`: `mappings.b2b_saas` da `minimali
 mod_id: MOD-DIR
 industry_type: b2b_saas
 business_model: marketplace_oficios_local
-direction_skill: minimalist-ui
-direction_rationale: "Portal de búsqueda y perfiles: barra y listado primero, perfiles legibles en el teléfono, tono claro, cercano y práctico. b2b_saas mapea a minimalist-ui y 'claro' confirma el desempate."
+direction_skill: industrial-brutalist-ui
+direction_variant: swiss_print_claro
+direction_rationale: "Vissiuss rechazó minimalist-ui (2026-11-02 23:51 UTC-3) y eligió industrial-brutalist-ui en variante Swiss print clara (no CRT oscuro): tipografía industrial, grilla rígida, acento rojo, papel documental. Sobreescribe el default b2b_saas→minimalist-ui de direction-matrix.yaml."
 direction_locked: true
 allowed_phase2_skills:
   - design-taste-frontend
@@ -228,4 +229,4 @@ forbidden_phase2_skills:
   - image-to-code
 ```
 
-`direction_locked: true` desde la aprobación del Gate 2. Cambiar de dirección exige reabrir la auditoría de módulos.
+`direction_locked: true` tras reabrir Gate 2 (cambio de dirección). Cambiar de nuevo exige otra reapertura.

@@ -94,3 +94,16 @@ Vissiuss aprobó el 2026-11-02 a las 22:17 (UTC-3) alinear `03` con las decision
 - `MOD-05`: distancia en km por resultado.
 
 Los módulos, el grafo de dependencias y MOD-DIR no cambian. `audit_2_passed` y `direction_locked` siguen en `true`.
+
+---
+
+## Reapertura Gate 2 — cambio de dirección (2026-11-02)
+
+Vissiuss reabrió MOD-DIR el 2026-11-02 a las 23:51 (UTC-3): rechazó `minimalist-ui` y fijó `direction_skill: industrial-brutalist-ui` con variante **Swiss print clara** (no CRT oscuro). Encargo de UI: banner grande de cabecera, menú hamburguesa desplegable al costado derecho y reorden de botones. El agente transcribió la decisión.
+
+- [x] `direction_skill` es un valor permitido.
+- [x] Rationale documentado en `03` (sobreescribe el default de la matriz).
+- [x] `direction_locked: true` tras el cambio.
+- [x] `04.direction_skill` alineado.
+
+**Flags:** `audit_2_passed: true`, `direction_locked: true` con la nueva dirección.

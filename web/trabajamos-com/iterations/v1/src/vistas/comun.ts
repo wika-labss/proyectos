@@ -5,6 +5,56 @@ export interface ErrorCampo {
   texto: string;
 }
 
+export interface EnlaceMenu {
+  href: string;
+  texto: string;
+  actual?: boolean;
+  meta?: string;
+}
+
+/** Banner grande + menú hamburguesa que abre un cajón desde la derecha (funciona sin JS). */
+export function cabeceraBanner(opciones: {
+  lema: string;
+  meta?: string;
+  enlaces: EnlaceMenu[];
+  extra?: Html;
+}): Html {
+  return html`<header class="banner">
+  <div class="banner-franja" aria-hidden="true"><span>REV 1.0</span><span>CL / LOCAL</span><span>OFICIOS</span></div>
+  <div class="banner-cuerpo">
+    <div class="banner-marca">
+      <p class="banner-kicker">PORTAL DE OFICIOS CERCANOS</p>
+      <a class="marca" href="/index.html">trabajamos.com</a>
+      <p class="banner-lema">${opciones.lema}</p>
+      ${opciones.meta ? html`<p class="banner-meta">${opciones.meta}</p>` : ""}
+    </div>
+    <input type="checkbox" id="menu-toggle" class="menu-toggle">
+    <label for="menu-toggle" class="menu-boton" aria-controls="menu-cajon">
+      <span class="menu-boton-lineas" aria-hidden="true"></span>
+      <span class="menu-boton-texto">Menú</span>
+    </label>
+    <label for="menu-toggle" class="menu-fondo" aria-hidden="true"></label>
+    <aside id="menu-cajon" class="menu-cajon" aria-label="Menú principal">
+      <div class="menu-cajon-cabeza">
+        <p class="menu-cajon-titulo">[ MENÚ ]</p>
+        <label for="menu-toggle" class="menu-cerrar">Cerrar</label>
+      </div>
+      <nav aria-label="Principal">
+        <ul>
+          ${opciones.enlaces.map(
+            (e) => html`<li><a href="${e.href}"${e.actual ? html` aria-current="page"` : ""}>${e.texto}${
+              e.meta ? html`<span class="menu-meta"> · ${e.meta}</span>` : ""
+            }</a></li>`,
+          )}
+        </ul>
+      </nav>
+      ${opciones.extra ?? ""}
+    </aside>
+  </div>
+  <div class="banner-barra" aria-hidden="true"></div>
+</header>`;
+}
+
 export function documento(opciones: {
   titulo: string;
   descripcion?: string;
@@ -32,7 +82,7 @@ ${opciones.cabecera}
 ${opciones.cuerpo}
 ${opciones.pie}
 ${(opciones.scripts ?? []).map((src) => html`<script src="${src}" defer></script>`)}
-<script src="/assets/motion.js" defer></script>
+<script src="/assets/nav.js" defer></script>
 </body>
 </html>`;
 }

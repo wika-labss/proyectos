@@ -7,7 +7,7 @@ import {
   contactoMedio,
   distanciaTexto,
 } from "../lib/reglas.js";
-import { documento } from "./comun.js";
+import { cabeceraBanner, documento } from "./comun.js";
 
 export type TipoBusqueda =
   | "inicial"
@@ -29,16 +29,16 @@ export interface EstadoBusqueda {
   resultados: ResultadoCercano[];
 }
 
-function cabeceraPublica(): Html {
-  return html`<header>
-  <a class="marca" href="/index.html">trabajamos.com</a>
-  <nav aria-label="Principal">
-    <ul>
-      <li><a href="/index.html">Buscar oficios</a></li>
-      <li><a href="/panel/entrar.html">Crear perfil</a></li>
-    </ul>
-  </nav>
-</header>`;
+function cabeceraPublica(actual: "buscar" | "perfil" | "otra" = "otra"): Html {
+  // Orden del menú: primero el CTA de emprendedor, luego la búsqueda.
+  return cabeceraBanner({
+    lema: "Oficios y emprendedores cerca de ti.",
+    meta: "CHILE · GEO · #OFICIO",
+    enlaces: [
+      { href: "/panel/entrar.html", texto: "Crear perfil", actual: false },
+      { href: "/index.html", texto: "Buscar oficios", actual: actual === "buscar" },
+    ],
+  });
 }
 
 function piePublico(): Html {
@@ -125,22 +125,23 @@ export function vistaInicio(e: EstadoBusqueda): Html {
   const localidadInvalida = e.tipo === "localidad_no_encontrada" || e.tipo === "sin_origen";
   const cuerpo = html`<main id="contenido">
   <section id="buscar" aria-labelledby="buscar-titulo">
+    <p class="bloque-etiqueta">[ 01 / BUSCAR ]</p>
     <h1 id="buscar-titulo">Encuentra un oficio cerca de ti</h1>
     <form id="form-buscar" role="search" aria-label="Buscar oficios" action="/index.html" method="get">
+      <fieldset id="ubicacion" aria-describedby="ubicacion-ayuda">
+        <legend>Tu ubicación</legend>
+        <p id="ubicacion-actual">${textoUbicacion(e)}</p>
+        <label for="localidad">Escribe tu localidad</label>
+        <input type="text" id="localidad" name="localidad" value="${e.localidad}" autocomplete="address-level2"
+               aria-describedby="ubicacion-actual"${attrSi(localidadInvalida, 'aria-invalid="true"')}${attrSi(localidadInvalida && !qInvalido, "autofocus")}>
+        <button type="button" id="usar-ubicacion" hidden>Usar mi ubicación</button>
+        <p id="ubicacion-ayuda">Usamos tu ubicación solo para ordenar los resultados. No la guardamos.</p>
+      </fieldset>
+
       <label for="q">Oficio</label>
       <input type="search" id="q" name="q" value="${e.q}" autocomplete="off" enterkeyhint="search"
              aria-describedby="q-ayuda${qInvalido ? " estado-busqueda" : ""}"${attrSi(qInvalido, 'aria-invalid="true" autofocus')}>
       <p id="q-ayuda">Escribe solo el oficio, por ejemplo gasfiter o #maestro chasquilla.</p>
-
-      <fieldset id="ubicacion" aria-describedby="ubicacion-ayuda">
-        <legend>Tu ubicación</legend>
-        <p id="ubicacion-actual">${textoUbicacion(e)}</p>
-        <button type="button" id="usar-ubicacion" hidden>Usar mi ubicación</button>
-        <label for="localidad">O escribe tu localidad</label>
-        <input type="text" id="localidad" name="localidad" value="${e.localidad}" autocomplete="address-level2"
-               aria-describedby="ubicacion-actual"${attrSi(localidadInvalida, 'aria-invalid="true"')}${attrSi(localidadInvalida && !qInvalido, "autofocus")}>
-        <p id="ubicacion-ayuda">Usamos tu ubicación solo para ordenar los resultados. No la guardamos.</p>
-      </fieldset>
 
       <button type="submit">Buscar</button>
     </form>
@@ -153,7 +154,7 @@ export function vistaInicio(e: EstadoBusqueda): Html {
   return documento({
     titulo: tituloInicio(e),
     descripcion: "Busca un oficio en trabajamos.com y encuentra emprendedores cercanos a tu ubicación.",
-    cabecera: cabeceraPublica(),
+    cabecera: cabeceraPublica("buscar"),
     cuerpo,
     pie: piePublico(),
     scripts: ["/assets/buscar.js"],
@@ -239,7 +240,7 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
   return documento({
     titulo: `${perfil.nombre} — trabajamos.com`,
     descripcion,
-    cabecera: cabeceraPublica(),
+    cabecera: cabeceraPublica("perfil"),
     cuerpo,
     pie: piePublico(),
     estilos: perfil.punto ? ["/vendor/leaflet/leaflet.css"] : [],

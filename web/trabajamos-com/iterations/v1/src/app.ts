@@ -12,7 +12,7 @@ import { html } from "./lib/html.js";
 import { type Contexto, enviarHtml } from "./rutas/comun.js";
 import { registrarPanel } from "./rutas/panel.js";
 import { registrarPublicas } from "./rutas/publicas.js";
-import { documento } from "./vistas/comun.js";
+import { cabeceraBanner, documento } from "./vistas/comun.js";
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const LEAFLET = path.join(path.dirname(createRequire(import.meta.url).resolve("leaflet/package.json")), "dist");
@@ -33,7 +33,14 @@ function paginaSimple(titulo: string, texto: string) {
   return documento({
     titulo: `${titulo} — trabajamos.com`,
     noindex: true,
-    cabecera: html`<header><a href="/index.html">trabajamos.com</a></header>`,
+    cabecera: cabeceraBanner({
+      lema: titulo,
+      meta: "SISTEMA",
+      enlaces: [
+        { href: "/panel/entrar.html", texto: "Crear perfil" },
+        { href: "/index.html", texto: "Buscar oficios" },
+      ],
+    }),
     cuerpo: html`<main id="contenido">
   <h1>${titulo}</h1>
   <div role="alert"><p>${texto}</p></div>

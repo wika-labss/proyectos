@@ -9,6 +9,8 @@ import {
 } from "../lib/reglas.js";
 import {
   type ErrorCampo,
+  type EnlaceMenu,
+  cabeceraBanner,
   campoOcultoCsrf,
   describedBy,
   documento,
@@ -24,10 +26,6 @@ function tituloPanel(vista: string, conError: boolean): string {
   return `${conError ? "Error: " : ""}${vista} — Panel — trabajamos.com`;
 }
 
-function cabeceraSimple(): Html {
-  return html`<header><a class="marca" href="/index.html">trabajamos.com</a></header>`;
-}
-
 function piePanel(): Html {
   return html`<footer><a href="/index.html">Volver al inicio de trabajamos.com</a></footer>`;
 }
@@ -36,33 +34,58 @@ function cuenta(n: number, singular: string, plural: string): string {
   return n === 1 ? `1 ${singular}` : `${n} ${plural}`;
 }
 
-function navegacion(perfil: Perfil | null, actual: SeccionPanel): Html {
-  const actualAttr = (s: SeccionPanel) => attrSi(actual === s, 'aria-current="page"');
+function enlacesPanel(perfil: Perfil | null, actual: SeccionPanel): EnlaceMenu[] {
   if (!perfil) {
-    return html`<nav aria-label="Panel"><ol>
-    <li><a href="/panel/perfil.html"${actualAttr("perfil")}>Crear perfil <span>· sin crear</span></a></li>
-    <li>Ofertas <span>· Disponible después de crear tu perfil</span></li>
-    <li>Portafolio <span>· Disponible después de crear tu perfil</span></li>
-    <li>Localidad <span>· Disponible después de crear tu perfil</span></li>
-  </ol></nav>`;
+    return [
+      { href: "/panel/perfil.html", texto: "Crear perfil", meta: "sin crear", actual: actual === "perfil" },
+      { href: "/panel/perfil.html", texto: "Ofertas", meta: "después del perfil" },
+      { href: "/panel/perfil.html", texto: "Portafolio", meta: "después del perfil" },
+      { href: "/panel/perfil.html", texto: "Localidad", meta: "después del perfil" },
+    ];
   }
-  return html`<nav aria-label="Panel"><ol>
-    <li><a href="/panel/perfil.html"${actualAttr("perfil")}>Editar perfil <span>· publicado</span></a></li>
-    <li><a href="/panel/ofertas.html"${actualAttr("ofertas")}>Ofertas <span>· ${
-      perfil.ofertas.length ? cuenta(perfil.ofertas.length, "oferta", "ofertas") : "sin ofertas"
-    }</span></a></li>
-    <li><a href="/panel/portafolio.html"${actualAttr("portafolio")}>Portafolio <span>· ${
-      perfil.imagenes.length ? cuenta(perfil.imagenes.length, "imagen", "imágenes") : "sin imágenes"
-    }</span></a></li>
-    <li><a href="/panel/localidad.html"${actualAttr("localidad")}>Localidad <span>· ${
-      perfil.punto ? "marcada" : "sin confirmar"
-    }</span></a></li>
-  </ol></nav>`;
+  return [
+    {
+      href: "/panel/perfil.html",
+      texto: "Editar perfil",
+      meta: "publicado",
+      actual: actual === "perfil",
+    },
+    {
+      href: "/panel/ofertas.html",
+      texto: "Ofertas",
+      meta: perfil.ofertas.length ? cuenta(perfil.ofertas.length, "oferta", "ofertas") : "sin ofertas",
+      actual: actual === "ofertas",
+    },
+    {
+      href: "/panel/portafolio.html",
+      texto: "Portafolio",
+      meta: perfil.imagenes.length ? cuenta(perfil.imagenes.length, "imagen", "imágenes") : "sin imágenes",
+      actual: actual === "portafolio",
+    },
+    {
+      href: "/panel/localidad.html",
+      texto: "Localidad",
+      meta: perfil.punto ? "marcada" : "sin confirmar",
+      actual: actual === "localidad",
+    },
+  ];
 }
 
 function avisoLocalidad(perfil: Perfil | null, actual: SeccionPanel): Html {
   if (!perfil || perfil.punto || !perfil.ofertas.length || actual === "localidad") return html``;
   return html`<p role="note">Tus ofertas no aparecen como oficios cercanos porque no has marcado tu localidad. <a href="/panel/localidad.html">Marcar localidad</a></p>`;
+}
+
+function cabeceraAuth(lema: string): Html {
+  return cabeceraBanner({
+    lema,
+    meta: "PANEL · ACCESO",
+    enlaces: [
+      { href: "/panel/crear-cuenta.html", texto: "Crear cuenta" },
+      { href: "/panel/entrar.html", texto: "Entrar" },
+      { href: "/index.html", texto: "Buscar oficios" },
+    ],
+  });
 }
 
 function marco(opciones: {
@@ -76,14 +99,19 @@ function marco(opciones: {
   scripts?: string[];
 }): Html {
   const { perfil } = opciones;
-  const cabecera = html`<header>
-  <a class="marca" href="/index.html">trabajamos.com</a>
-  <p>${perfil ? `Panel de ${perfil.nombre}` : "Panel"}</p>
-  ${perfil ? html`<a href="/perfil.html?slug=${encodeURIComponent(perfil.slug)}">Ver mi perfil público</a>` : ""}
-  <form method="post" action="/panel/salir">${campoOcultoCsrf(opciones.csrf)}<button type="submit">Salir</button></form>
-  ${navegacion(perfil, opciones.actual)}
-  ${avisoLocalidad(perfil, opciones.actual)}
-</header>`;
+  const extra = html`${
+    perfil
+      ? html`<p class="menu-accion"><a href="/perfil.html?slug=${encodeURIComponent(perfil.slug)}">Ver mi perfil público</a></p>`
+      : ""
+  }
+  <form method="post" action="/panel/salir" class="menu-salir">${campoOcultoCsrf(opciones.csrf)}<button type="submit">Salir</button></form>`;
+  const cabecera = html`${cabeceraBanner({
+    lema: perfil ? `Panel de ${perfil.nombre}` : "Panel del emprendedor",
+    meta: perfil ? `SLUG / ${perfil.slug}` : "SIN PERFIL",
+    enlaces: enlacesPanel(perfil, opciones.actual),
+    extra,
+  })}
+  ${avisoLocalidad(perfil, opciones.actual)}`;
   return documento({
     titulo: tituloPanel(opciones.vista, opciones.conError),
     cabecera,
@@ -129,7 +157,7 @@ export function vistaEntrar(opciones: {
 </main>`;
   return documento({
     titulo: tituloPanel("Entrar", Boolean(opciones.error)),
-    cabecera: cabeceraSimple(),
+    cabecera: cabeceraAuth("Entra para editar tu perfil y tus ofertas."),
     cuerpo,
     pie: piePanel(),
     scripts: ["/assets/panel.js"],
@@ -175,7 +203,7 @@ export function vistaCrearCuenta(opciones: {
 </main>`;
   return documento({
     titulo: tituloPanel("Crear cuenta", errores.length > 0 || opciones.duplicado),
-    cabecera: cabeceraSimple(),
+    cabecera: cabeceraAuth("Crea tu cuenta. Los clientes no necesitan una."),
     cuerpo,
     pie: piePanel(),
     scripts: ["/assets/panel.js"],
@@ -185,7 +213,7 @@ export function vistaCrearCuenta(opciones: {
 export function vistaSesionTerminada(volver: string): Html {
   return documento({
     titulo: tituloPanel("Sesión terminada", true),
-    cabecera: cabeceraSimple(),
+    cabecera: cabeceraAuth("Tu sesión terminó."),
     cuerpo: html`<main id="contenido">
   <h1>Tu sesión terminó</h1>
   <div role="alert" tabindex="-1" data-foco>
@@ -201,7 +229,7 @@ export function vistaSesionTerminada(volver: string): Html {
 export function vistaSolicitudInvalida(): Html {
   return documento({
     titulo: tituloPanel("Solicitud no válida", true),
-    cabecera: cabeceraSimple(),
+    cabecera: cabeceraAuth("Solicitud no válida."),
     cuerpo: html`<main id="contenido">
   <h1>No pudimos procesar el formulario</h1>
   <p>El formulario venció o llegó incompleto. No se guardó ningún cambio. Vuelve a la página e intenta de nuevo.</p>
