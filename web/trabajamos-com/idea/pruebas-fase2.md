@@ -23,9 +23,9 @@ Capturas en `idea/pruebas-fase2/`.
 | :--- | :--- |
 | Fase 1 (`construction_phase_complete`) | Firmada |
 | Look Fase 2 | **No aprobado** — ver pruebas abajo |
-| Código activo | Prueba **4b**: anatomía Indeed/LinkedIn + polish orgánico (`redesign-skill`) |
-| Skills | `indeed-cl-inspired` · `linkedin-profile-inspired` · audit vía `web-design/.../redesign-skill` |
-| Siguiente | Veredicto de Vissiuss sobre 4b; luego Auditoría de Release si hay firma |
+| Código activo | Lote paralelo A/B/C en ramas `cursor/look-*-aa58` (PR #117 sigue en bootstrap) |
+| Skills | Catálogo en bóveda WIKA: [`wika-fundaments/bodega-disenos/catalogo-skills.md`](https://github.com/wika-labss/wika-fundaments/blob/cursor/bodega-disenos-trabajamos-aa58/bodega-disenos/catalogo-skills.md) |
+| Siguiente | Elegir look A/B/C; firmar; consolidar en bootstrap |
 
 ---
 
