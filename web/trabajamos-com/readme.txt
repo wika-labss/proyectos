@@ -2,16 +2,15 @@ trabajamos.com — proyecto web WIKA
 
 Carpeta: web/trabajamos-com
 Nombre comercial: trabajamos.com
-Fuente de plantillas: wika-labss/web-design templates/ (01–05)
 
-Estado:
-- Gate 1 APROBADO (audits/auditoria-documentacion.md): audit_1_passed: true en 01 y 02 (02 v0.1.2)
-- el perfil público incluye botón de contacto y redes sociales (`FEAT-07`)
-- Gate 2 APROBADO (audits/auditoria-modulos.md): MOD-01 a MOD-06 + MOD-DIR (minimalist-ui) (03 v0.1.1)
-- audit_2_passed: true, direction_locked: true
-- Gate 3A APROBADO: idea/04-html-design.md v0.2.1, VIEW-01 a VIEW-09 (cliente) y VIEW-10 a VIEW-17 (panel), visual_approval_passed: true
-- idea/05-build-plan.md sigue como plantilla
-- iterations/ vacío
+Estado (cierre de sesión 2026-11-02/03 UTC-3):
+- Gates 1, 2, 3A, 3B y Fase 1 (`construction_phase_complete`) OK
+- Fase 2 look: SIN APROBACIÓN — tres pruebas documentadas en idea/pruebas-fase2.md
+  1) minimalist-ui
+  2) industrial-brutalist-ui (Swiss print clara)
+  3) high-end-visual-design (Soft Structuralism clara) ← código actual en iterations/v1
+- Skills: skills/indeed-cl-inspired/, skills/linkedin-profile-inspired/
+- Código QA: iterations/v1/
 - final/ vacío
 
-Siguiente: idea/05-build-plan.md (hosting, datos, autenticación, imágenes, mapa) y Auditoría de Ensamblado (Gate 3B).
+Siguiente: elegir dirección visual (o nueva prueba) → firmar look Fase 2 → Auditoría de Release → final/.

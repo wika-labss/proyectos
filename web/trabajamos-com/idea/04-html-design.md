@@ -1,15 +1,15 @@
 ---
 id: "WEB-HTML-001"
 title: "trabajamos.com — Diseño HTML y Aprobación Visual"
-status: "BORRADOR"
-version: "0.2.1"
+status: "APROBADO"
+version: "0.2.2"
 owner: "Vissiuss"
 created_at: "2026-11-02"
 updated_at: "2026-11-02"
 visual_approval_passed: true
-audit_3_passed: false
-construction_phase_complete: false
-direction_skill: "minimalist-ui"
+audit_3_passed: true
+construction_phase_complete: true
+direction_skill: "high-end-visual-design"
 ---
 
 # [04] HTML Estructural, Wireframes y Aprobación Visual — trabajamos.com
@@ -24,13 +24,14 @@ direction_skill: "minimalist-ui"
 
 - **Nombre del Proyecto:** trabajamos.com
 - **Documentos base:** `01-problem.md` (`WEB-PROB-001`) | `02-features.md` (`WEB-FEAT-001`) | `03-module-discovery.md` (`WEB-MOD-001`) | `05-build-plan.md`
-- **Estado de gatekeeping:** `APROBACION_VISUAL_APROBADA` · `PENDIENTE_AUDITORIA_ENSAMBLADO`
+- **Estado de gatekeeping:** `CONSTRUCTION_PHASE_COMPLETE`
 - **Decisiones del arquitecto:** Vissiuss respondió las nueve preguntas de la versión `0.1.0` el 2026-11-02 a las 17:50 (UTC-3). Esta versión las aplica (§7.1).
-- **Gate 3A:** Vissiuss aprobó la versión `0.2.1` el 2026-11-02 a las 22:17 (UTC-3) con el mensaje "alinea y aprobado 04" (§9).
-- **direction_skill:** `minimalist-ui`. Coincide con `MOD-DIR` en `03-module-discovery.md` (`direction_locked: true`).
-- **Estado de `05`:** `05-build-plan.md` sigue como plantilla. Lo que este documento deja "para `05`" (autenticación, datos, imágenes, mapa, URL final) se decide allí.
-- **Alcance:** Fase 1 textual. Estructura semántica y wireframes de texto para el cliente sin cuenta (`VIEW-01` a `VIEW-09`) y el panel del emprendedor (`VIEW-10` a `VIEW-17`). Sin colores, tipografías ni tokens visuales; el look lo pone `minimalist-ui` en Fase 2.
-- **Sin HTML de producción:** no se crea ningún archivo en `iterations/` hasta `ready_for_construction: true` en `05`. Las rutas de este documento son relativas a `iterations/v1/`.
+- **Gate 3A:** Vissiuss aprobó la versión `0.2.1` el 2026-11-02 a las 22:17 (UTC-3) con el mensaje "alinea y aprobado 04" (§9). La v0.2.2 agrega `VIEW-18` y los campos de `VIEW-10` según `05`; Vissiuss la aprobó el 2026-11-02 a las 22:51 (UTC-3) con el plan de construcción.
+- **direction_skill:** `high-end-visual-design` (variante Soft Structuralism clara / `soft_structuralism_claro`). Coincide con `MOD-DIR` en `03-module-discovery.md` (`direction_locked: true`) tras reapertura Gate 2.
+- **Estado de `05`:** `05-build-plan.md` APROBADO con `ready_for_construction: true`. Autenticación, datos, imágenes y mapa están definidos allí y construidos en `iterations/v1/`.
+- **Alcance Fase 1:** HTML semántico y SSR en `iterations/v1/` para el cliente (`VIEW-01` a `VIEW-09`) y el panel (`VIEW-10` a `VIEW-18`). El look lo pone la skill de MOD-DIR en Fase 2.
+- **Fase 1:** Vissiuss firmó el contrato el 2026-11-02 a las 23:37 (UTC-3). El agente transcribió la firma.
+- **Fase 2 dirección:** se probaron `minimalist-ui`, `industrial-brutalist-ui` y `high-end-visual-design` (Soft Structuralism). **Ningún look aprobado** al cierre del día (2026-11-03). Registro: `idea/pruebas-fase2.md`.
 
 `direction_skill` debe coincidir con `MOD-DIR` en `03-module-discovery.md`.
 
@@ -60,7 +61,9 @@ direction_skill: "minimalist-ui"
 | `VIEW-16` | `panel/localidad.html` — localidad | `MOD-04`, `MOD-06` | `FEAT-04` |
 | `VIEW-17` | `panel/perfil.html` `#publicacion` — estado del perfil público y enlace "Ver mi perfil público" | `MOD-01`, `MOD-02`, `MOD-03`, `MOD-04` | `FEAT-01`, `FEAT-04` (4.2), `FEAT-07` |
 
-`VIEW-18` y `VIEW-19` quedan reservadas para lo que fije `05`; por ejemplo, una vista de registro si el método de autenticación la exige.
+| `VIEW-18` | `panel/crear-cuenta.html` — crear cuenta con correo y contraseña (`05`) | `MOD-06` | `FEAT-01` (1.1, autenticación) |
+
+`VIEW-19` queda reservada. `VIEW-18` entra en v0.2.2 porque `05` fija la autenticación con correo y contraseña.
 
 `VIEW-01` a `VIEW-04` viven en una sola página: la cercanía es el orden del resultado, no una segunda pantalla (`FEAT-06`). `VIEW-05` a `VIEW-09` son secciones de una sola página de perfil. Cobertura de `03`: `MOD-01` a `MOD-06` tienen al menos una vista; `MOD-DIR` se aplica en Fase 2.
 
@@ -142,6 +145,8 @@ Primera vez (orden de onboarding):
 Vuelta posterior:
 [VIEW-10 Entrar] ──▶ página pedida (?volver=) o VIEW-12 ──▶ cualquier vista desde la navegación de VIEW-11
 ```
+
+Sin cuenta, `VIEW-10` enlaza a `VIEW-18` "Crear cuenta"; al crearla, la sesión empieza y el flujo sigue en `VIEW-12`.
 
 Cada paso del panel termina con un enlace al siguiente ("Siguiente: Ofertas", etc.). El orden es una guía: la navegación de `VIEW-11` permite saltar a cualquier vista, salvo que el perfil aún no exista (ver "bloqueada sin perfil" en §3.4).
 
@@ -280,6 +285,7 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 | Vista | loading | success | error | empty |
 | :--- | :--- | :--- | :--- | :--- |
 | `VIEW-10` | "Verificando…" en el botón `Entrar` y en el mensaje de estado | Redirige a la página pedida o a `VIEW-12` | Credencial rechazada (mensaje genérico); servicio de autenticación no disponible | Formulario vacío. Variante "Tu sesión terminó" cuando llega desde la guardia |
+| `VIEW-18` | "Creando cuenta…" | Cuenta creada, sesión iniciada y redirige a `VIEW-12` | Correo vacío o inválido, contraseña corta, contraseñas distintas, correo ya registrado: no se crea nada | Formulario vacío |
 | `VIEW-11` | "Verificando sesión…": no se muestra ningún formulario hasta confirmar la sesión | Marco con nombre del perfil, navegación y estado de cada paso | Sin sesión: redirige a `VIEW-10?volver={ruta}`. Error al cargar datos: "No pudimos cargar tus datos. No se cambió nada." con botón `Reintentar` | Sesión válida sin perfil: la navegación muestra solo "Crear perfil" activo; el resto dice "Disponible después de crear tu perfil" |
 | `VIEW-12` | "Guardando perfil…" | "Perfil publicado" (primera vez) o "Perfil guardado" | Primer guardado sin nombre o sin contacto válido: no se publica nada y se indica el dato que falta (D-01). Edición sin nombre: nada se guarda. Edición con contacto vacío o inválido: el contacto no se guarda y queda el anterior. Sesión vencida al guardar: nada se guarda | Sin perfil: título "Crear perfil", campos vacíos, botón `Crear perfil` |
 | `VIEW-13` | "Guardando redes…" | "Redes guardadas" con la lista publicada | Red con URL inválida o incompleta: esa red no se publica y queda su valor anterior; las demás válidas se guardan | "Aún no agregas redes." con una fila vacía y botón `Agregar red` |
@@ -551,14 +557,34 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
   - Variante sesión vencida (`?volver=` con motivo): `<div role="status">Tu sesión terminó. Entra de nuevo para seguir editando.</div>`.
   - `<form id="form-entrar" method="post" novalidate>`:
     - Resumen de errores.
-    - `[Campos de credencial]`: **pendiente del método de `05`**. Cada campo sigue las reglas del panel (label visible, obligatorio marcado, `autocomplete` correcto). Ejemplos posibles, no elegidos: correo para enlace de acceso; correo y contraseña; botón de proveedor externo.
+    - Credencial (`05`: correo y contraseña):
+      - `<label for="correo">Correo (obligatorio)</label>` · `<input id="correo" name="correo" type="email" required autocomplete="username">`.
+      - `<label for="contrasena">Contraseña (obligatorio)</label>` · `<input id="contrasena" name="contrasena" type="password" required autocomplete="current-password">`.
     - `<button type="submit">Entrar</button>`.
     - `<p id="form-entrar-estado" role="status" aria-live="polite">`.
-  - `<p>` "¿Primera vez? Entra y luego creas tu perfil." **Supuesto:** vale si el método de `05` crea la cuenta al primer acceso; si no, `05` agrega una vista de registro en `VIEW-18`.
+  - `<p>` "¿Primera vez? <a href="crear-cuenta.html">Crea tu cuenta</a> y luego tu perfil." (`VIEW-18`).
 - Errores:
   - Credencial rechazada: "No pudimos verificar tus datos. Revisa e intenta de nuevo." Mensaje genérico; no indica cuál dato falló.
   - Servicio no disponible: "No pudimos conectar con el servicio de acceso. Intenta en unos minutos."
+  - Cuenta bloqueada tras 5 intentos fallidos (`05`): "Demasiados intentos. Espera 15 minutos e intenta de nuevo."
 - Éxito: redirige a `volver` si es una ruta de `panel/`; si no, a `panel/perfil.html`.
+
+#### `VIEW-18` — Crear cuenta (`panel/crear-cuenta.html`)
+
+- `<title>`: "Crear cuenta — Panel — trabajamos.com".
+- `<header>`: igual que `VIEW-10`.
+- `<main id="contenido">`:
+  - `<h1>Crear tu cuenta</h1>` · `<p>` "Con tu cuenta creas y editas tu perfil. Los clientes no necesitan cuenta."
+  - `<form id="form-cuenta" method="post" novalidate>`:
+    - Resumen de errores.
+    - `<label for="correo">Correo (obligatorio)</label>` · `<input id="correo" name="correo" type="email" required autocomplete="email">`.
+    - `<label for="contrasena">Contraseña (obligatorio)</label>` · `<input id="contrasena" name="contrasena" type="password" required minlength="8" autocomplete="new-password" aria-describedby="contrasena-ayuda">` · `<p id="contrasena-ayuda">Al menos 8 caracteres.</p>`.
+    - `<label for="contrasena2">Repite la contraseña (obligatorio)</label>` · `<input id="contrasena2" name="contrasena2" type="password" required autocomplete="new-password">`.
+    - `<button type="submit">Crear cuenta</button>`.
+    - `<p id="form-cuenta-estado" role="status" aria-live="polite">`.
+  - `<p>` "¿Ya tienes cuenta? <a href="entrar.html">Entrar</a>".
+- Errores: "Escribe tu correo"; "El correo no es válido"; "La contraseña debe tener al menos 8 caracteres"; "Las contraseñas no coinciden"; "Ya existe una cuenta con ese correo. <a href="entrar.html">Entrar</a>". No se crea nada.
+- Éxito: la cuenta queda creada, la sesión empieza y redirige a `perfil.html` (`VIEW-12`, "Crear perfil").
 
 #### `VIEW-12` — Perfil y contacto (`panel/perfil.html#datos`)
 
@@ -705,9 +731,9 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
 
 ### 4.4 Checklist de fases
 
-- [ ] `ready_for_construction` se activa en **05**, tras Gate 3A + 3B
-- [ ] `construction_phase_complete` cuando el HTML de `iterations/vN/` cumple este documento
-- [ ] Fase 2 (taste-skill) **prohibida** hasta `construction_phase_complete: true`
+- [x] `ready_for_construction` se activa en **05**, tras Gate 3A + 3B
+- [x] `construction_phase_complete` — HTML de `iterations/v1/` cumple este documento (firma 2026-11-02 23:37 UTC-3)
+- [ ] Fase 2 look **sin aprobación** — pruebas en `idea/pruebas-fase2.md` (última skill en código: Soft Structuralism)
 
 ---
 
@@ -1383,7 +1409,7 @@ Convertidos en decisión: **S-08 → D-07** (título obligatorio) y la parte "di
 | :--- | :--- | :--- |
 | `01` Escenario 1: el cliente encuentra un oficio cerca | `VIEW-01` barra + `VIEW-02` ubicación concedida o resuelta → `VIEW-04` éxito ordenado por cercanía con "a 1,2 km" por resultado (D-02) → `VIEW-05` con `VIEW-06` (`Contactar`, dato de contacto visible y redes; D-03). Solo hay barra, sin compositor de hashtags. | `VIEW-14` éxito (oferta con título y `#`) + `VIEW-16` éxito (punto con etiqueta) + `VIEW-12`/`VIEW-13` éxito (contacto obligatorio y redes). |
 | `01` Escenario 2: sin oficio o sin ubicación no hay listado inventado | `VIEW-04` vacío sin coincidencia (sin otros `#`); `VIEW-03` error `#` vacío (pide un oficio); `VIEW-02` sin origen o permiso negado (pide ubicación, sin punto inventado). | — |
-| `FEAT-01` 1.1: perfil guardado con nombre y contacto válido queda publicado | `VIEW-05` éxito: `h1` con `nombre`, secciones `VIEW-06` a `VIEW-09`, `<title>{nombre} — trabajamos.com</title>`; `VIEW-06` siempre con `Contactar`. | `VIEW-12` éxito "Perfil publicado" tras guardar nombre y contacto válido; `VIEW-17` con enlace "Ver mi perfil público"; `VIEW-11` pasa a "publicado". |
+| `FEAT-01` 1.1: perfil guardado con nombre y contacto válido queda publicado | `VIEW-05` éxito: `h1` con `nombre`, secciones `VIEW-06` a `VIEW-09`, `<title>{nombre} — trabajamos.com</title>`; `VIEW-06` siempre con `Contactar`. | `VIEW-18` crea la cuenta e inicia la sesión; `VIEW-12` éxito "Perfil publicado" tras guardar nombre y contacto válido; `VIEW-17` con enlace "Ver mi perfil público"; `VIEW-11` pasa a "publicado". |
 | `FEAT-01` 1.2: sin sesión, no se publica y ve qué falta | Un perfil sin guardar no existe: `VIEW-05` error "Perfil no disponible". | `VIEW-11` guardia (redirige a `VIEW-10`, sin formularios); sesión vencida al enviar: "Tu sesión terminó. No se guardó ningún cambio." + "Entrar de nuevo"; `VIEW-10` variante sesión vencida. |
 | `FEAT-01` 1.2: sin nombre o sin contacto válido, no se publica y ve qué falta | `VIEW-05` error "Perfil no disponible" si el perfil nunca se guardó. | `VIEW-12` error de primer guardado: el resumen lista nombre y contacto faltantes, "Tu perfil no se publicó."; edición sin nombre: "Falta el nombre visible. No se guardó ningún cambio." y "Sigue publicado: {nombre anterior}". |
 | `FEAT-02` 2.1: la oferta aparece en el perfil con tipo, título y `#` | `VIEW-07` éxito; `VIEW-04` éxito muestra `tipo` y `tag` por ítem. | `VIEW-14` éxito: la oferta entra a "Mis ofertas" con tipo y `#` normalizado (vista previa "Se guardará como"). |
@@ -1410,5 +1436,7 @@ Convertidos en decisión: **S-08 → D-07** (título obligatorio) y la parte "di
 ## 9. Aprobación
 
 - **Gate 3A** `visual_approval_passed` — wireframe / estructura. **APROBADO** por Vissiuss (arquitecto), 2026-11-02 22:17 (UTC-3). El agente transcribió la decisión.
-- **Gate 3B** `audit_3_passed` — ensamblado 03+04+05.
-- **Fase 1** `ready_for_construction` — flag en `05-build-plan.md`.
+- **Gate 3B** `audit_3_passed` — ensamblado 03+04+05. **APROBADO** por Vissiuss (arquitecto), 2026-11-02 22:51 (UTC-3) (`audits/auditoria-ensamblado.md`).
+- **Fase 1** `ready_for_construction` — flag en `05-build-plan.md` (`true`).
+- **Fase 1 completa** `construction_phase_complete` — **APROBADO** por Vissiuss (arquitecto), 2026-11-02 23:37 (UTC-3). El agente transcribió la firma.
+- **Fase 2 look** — **PENDIENTE.** Tres pruebas (minimalist, Swiss brutalist, Soft Structuralism); ninguna convenció (cierre 2026-11-03). Ver `idea/pruebas-fase2.md`.

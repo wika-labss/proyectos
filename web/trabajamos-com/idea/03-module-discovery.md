@@ -212,15 +212,17 @@ No hay ciclos. `MOD-02` usa la regla de normalización de `MOD-05` como contrato
 
 ## 5. Resolución de dirección visual (taste-skill) — MOD-DIR
 
-Resuelto con `standards/direction-matrix.yaml`: `mappings.b2b_saas` da `minimalist-ui`. El tono `claro` de `01` cae en el desempate de `minimalist-ui`.
+Resuelto inicialmente con `standards/direction-matrix.yaml`: `mappings.b2b_saas` → `minimalist-ui`. El tono `claro` de `01` caía en el desempate de `minimalist-ui`. Vissiuss reabrió Gate 2 dos veces: primero a `industrial-brutalist-ui`, luego a `high-end-visual-design`.
 
 ```yaml
 mod_id: MOD-DIR
 industry_type: b2b_saas
 business_model: marketplace_oficios_local
-direction_skill: minimalist-ui
-direction_rationale: "Portal de búsqueda y perfiles: barra y listado primero, perfiles legibles en el teléfono, tono claro, cercano y práctico. b2b_saas mapea a minimalist-ui y 'claro' confirma el desempate."
+direction_skill: high-end-visual-design
+direction_variant: soft_structuralism_claro
+direction_rationale: "Última prueba de la sesión: Soft Structuralism clara. Vissiuss probó minimalist-ui, industrial-brutalist-ui y high-end-visual-design; al cerrar el día (2026-11-03) ninguna convenció. Ver idea/pruebas-fase2.md. direction_locked permanece en la última prueba hasta nueva decisión."
 direction_locked: true
+look_fase2_aprobado: false
 allowed_phase2_skills:
   - design-taste-frontend
   - redesign-existing-projects
@@ -228,4 +230,4 @@ forbidden_phase2_skills:
   - image-to-code
 ```
 
-`direction_locked: true` desde la aprobación del Gate 2. Cambiar de dirección exige reabrir la auditoría de módulos.
+`direction_locked: true` en la última prueba. **El look de Fase 2 no está aprobado** (`look_fase2_aprobado: false`). Cambiar de skill exige reabrir Gate 2.
