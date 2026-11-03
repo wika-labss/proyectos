@@ -33,7 +33,7 @@ function cabeceraPublica(actual: "buscar" | "perfil" | "otra" = "otra"): Html {
   // Orden del menú: primero el CTA de emprendedor, luego la búsqueda.
   return cabeceraBanner({
     lema: "Oficios y emprendedores cerca de ti.",
-    meta: "CHILE · GEO · #OFICIO",
+    meta: "Chile · cercanía · #oficio",
     enlaces: [
       { href: "/panel/entrar.html", texto: "Crear perfil", actual: false },
       { href: "/index.html", texto: "Buscar oficios", actual: actual === "buscar" },
@@ -125,7 +125,7 @@ export function vistaInicio(e: EstadoBusqueda): Html {
   const localidadInvalida = e.tipo === "localidad_no_encontrada" || e.tipo === "sin_origen";
   const cuerpo = html`<main id="contenido">
   <section id="buscar" aria-labelledby="buscar-titulo">
-    <p class="bloque-etiqueta">[ 01 / BUSCAR ]</p>
+    <p class="bloque-etiqueta">Buscar oficios</p>
     <h1 id="buscar-titulo">Encuentra un oficio cerca de ti</h1>
     <form id="form-buscar" role="search" aria-label="Buscar oficios" action="/index.html" method="get">
       <fieldset id="ubicacion" aria-describedby="ubicacion-ayuda">

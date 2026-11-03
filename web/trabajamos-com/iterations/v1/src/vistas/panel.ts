@@ -79,7 +79,7 @@ function avisoLocalidad(perfil: Perfil | null, actual: SeccionPanel): Html {
 function cabeceraAuth(lema: string): Html {
   return cabeceraBanner({
     lema,
-    meta: "PANEL · ACCESO",
+    meta: "Panel · acceso",
     enlaces: [
       { href: "/panel/crear-cuenta.html", texto: "Crear cuenta" },
       { href: "/panel/entrar.html", texto: "Entrar" },
@@ -107,7 +107,7 @@ function marco(opciones: {
   <form method="post" action="/panel/salir" class="menu-salir">${campoOcultoCsrf(opciones.csrf)}<button type="submit">Salir</button></form>`;
   const cabecera = html`${cabeceraBanner({
     lema: perfil ? `Panel de ${perfil.nombre}` : "Panel del emprendedor",
-    meta: perfil ? `SLUG / ${perfil.slug}` : "SIN PERFIL",
+    meta: perfil ? `Slug · ${perfil.slug}` : "Sin perfil",
     enlaces: enlacesPanel(perfil, opciones.actual),
     extra,
   })}

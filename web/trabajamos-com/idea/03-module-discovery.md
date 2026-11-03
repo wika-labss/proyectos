@@ -212,15 +212,15 @@ No hay ciclos. `MOD-02` usa la regla de normalización de `MOD-05` como contrato
 
 ## 5. Resolución de dirección visual (taste-skill) — MOD-DIR
 
-Resuelto con `standards/direction-matrix.yaml`: `mappings.b2b_saas` da `minimalist-ui`. El tono `claro` de `01` cae en el desempate de `minimalist-ui`.
+Resuelto inicialmente con `standards/direction-matrix.yaml`: `mappings.b2b_saas` → `minimalist-ui`. El tono `claro` de `01` caía en el desempate de `minimalist-ui`. Vissiuss reabrió Gate 2 dos veces: primero a `industrial-brutalist-ui`, luego a `high-end-visual-design`.
 
 ```yaml
 mod_id: MOD-DIR
 industry_type: b2b_saas
 business_model: marketplace_oficios_local
-direction_skill: industrial-brutalist-ui
-direction_variant: swiss_print_claro
-direction_rationale: "Vissiuss rechazó minimalist-ui (2026-11-02 23:51 UTC-3) y eligió industrial-brutalist-ui en variante Swiss print clara (no CRT oscuro): tipografía industrial, grilla rígida, acento rojo, papel documental. Sobreescribe el default b2b_saas→minimalist-ui de direction-matrix.yaml."
+direction_skill: high-end-visual-design
+direction_variant: soft_structuralism_claro
+direction_rationale: "Vissiuss rechazó minimalist-ui y luego industrial-brutalist-ui; eligió high-end-visual-design en variante Soft Structuralism clara (2026-11-02 23:59 UTC-3): whitespace aireado, tipografía grotesk fuerte, un solo acento, sin glass morado / OLED. Sobreescribe el default b2b_saas→minimalist-ui de direction-matrix.yaml."
 direction_locked: true
 allowed_phase2_skills:
   - design-taste-frontend

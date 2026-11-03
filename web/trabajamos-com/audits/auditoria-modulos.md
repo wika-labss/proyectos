@@ -107,3 +107,17 @@ Vissiuss reabrió MOD-DIR el 2026-11-02 a las 23:51 (UTC-3): rechazó `minimalis
 - [x] `04.direction_skill` alineado.
 
 **Flags:** `audit_2_passed: true`, `direction_locked: true` con la nueva dirección.
+
+---
+
+## Reapertura Gate 2 — cambio de dirección a Soft Structuralism (2026-11-02 23:59 UTC-3)
+
+Vissiuss rechazó el look industrial-brutalist y reabrió MOD-DIR el 2026-11-02 a las 23:59 (UTC-3): fijó `direction_skill: high-end-visual-design` con variante **Soft Structuralism clara** (`soft_structuralism_claro`). Encargo: whitespace aireado, tipografía fuerte, un solo acento, más motion de página, menú dropdown/cajón premium; prohibido glass morado / ethereal / OLED negro. El agente transcribió la decisión.
+
+- [x] `direction_skill: high-end-visual-design` es un valor permitido (taste-skill soft-skill).
+- [x] Variante `soft_structuralism_claro` documentada en `03` §5.
+- [x] Rationale: elección tras rechazar minimalist e industrial-brutalist.
+- [x] `direction_locked: true` tras el cambio.
+- [x] `04.direction_skill` alineado.
+
+**Flags:** `audit_2_passed: true`, `direction_locked: true` con Soft Structuralism clara.

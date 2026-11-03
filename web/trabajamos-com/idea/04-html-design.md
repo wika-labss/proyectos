@@ -9,7 +9,7 @@ updated_at: "2026-11-02"
 visual_approval_passed: true
 audit_3_passed: true
 construction_phase_complete: true
-direction_skill: "industrial-brutalist-ui"
+direction_skill: "high-end-visual-design"
 ---
 
 # [04] HTML Estructural, Wireframes y Aprobación Visual — trabajamos.com
@@ -27,11 +27,11 @@ direction_skill: "industrial-brutalist-ui"
 - **Estado de gatekeeping:** `CONSTRUCTION_PHASE_COMPLETE`
 - **Decisiones del arquitecto:** Vissiuss respondió las nueve preguntas de la versión `0.1.0` el 2026-11-02 a las 17:50 (UTC-3). Esta versión las aplica (§7.1).
 - **Gate 3A:** Vissiuss aprobó la versión `0.2.1` el 2026-11-02 a las 22:17 (UTC-3) con el mensaje "alinea y aprobado 04" (§9). La v0.2.2 agrega `VIEW-18` y los campos de `VIEW-10` según `05`; Vissiuss la aprobó el 2026-11-02 a las 22:51 (UTC-3) con el plan de construcción.
-- **direction_skill:** `industrial-brutalist-ui` (variante Swiss print clara). Coincide con `MOD-DIR` en `03-module-discovery.md` (`direction_locked: true`) tras reapertura Gate 2.
+- **direction_skill:** `high-end-visual-design` (variante Soft Structuralism clara / `soft_structuralism_claro`). Coincide con `MOD-DIR` en `03-module-discovery.md` (`direction_locked: true`) tras reapertura Gate 2.
 - **Estado de `05`:** `05-build-plan.md` APROBADO con `ready_for_construction: true`. Autenticación, datos, imágenes y mapa están definidos allí y construidos en `iterations/v1/`.
 - **Alcance Fase 1:** HTML semántico y SSR en `iterations/v1/` para el cliente (`VIEW-01` a `VIEW-09`) y el panel (`VIEW-10` a `VIEW-18`). El look lo pone la skill de MOD-DIR en Fase 2.
 - **Fase 1:** Vissiuss firmó el contrato el 2026-11-02 a las 23:37 (UTC-3). El agente transcribió la firma.
-- **Fase 2 dirección:** Vissiuss rechazó `minimalist-ui` y eligió `industrial-brutalist-ui` Swiss print clara el 2026-11-02 a las 23:51 (UTC-3), con banner grande de cabecera y menú hamburguesa derecho.
+- **Fase 2 dirección:** Vissiuss rechazó `minimalist-ui` y `industrial-brutalist-ui`; eligió `high-end-visual-design` Soft Structuralism clara el 2026-11-02 a las 23:59 (UTC-3), con cabecera premium y menú desplegable/cajón pulido.
 
 `direction_skill` debe coincidir con `MOD-DIR` en `03-module-discovery.md`.
 
@@ -733,7 +733,7 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
 
 - [x] `ready_for_construction` se activa en **05**, tras Gate 3A + 3B
 - [x] `construction_phase_complete` — HTML de `iterations/v1/` cumple este documento (firma 2026-11-02 23:37 UTC-3)
-- [x] Fase 2 (taste-skill) habilitada: `industrial-brutalist-ui` (Swiss print clara)
+- [x] Fase 2 (taste-skill) habilitada: `high-end-visual-design` (Soft Structuralism clara)
 
 ---
 
@@ -1439,4 +1439,4 @@ Convertidos en decisión: **S-08 → D-07** (título obligatorio) y la parte "di
 - **Gate 3B** `audit_3_passed` — ensamblado 03+04+05. **APROBADO** por Vissiuss (arquitecto), 2026-11-02 22:51 (UTC-3) (`audits/auditoria-ensamblado.md`).
 - **Fase 1** `ready_for_construction` — flag en `05-build-plan.md` (`true`).
 - **Fase 1 completa** `construction_phase_complete` — **APROBADO** por Vissiuss (arquitecto), 2026-11-02 23:37 (UTC-3). El agente transcribió la firma.
-- **Fase 2 dirección** — Gate 2 reabierto: `industrial-brutalist-ui` Swiss print clara. **APROBADO** por Vissiuss, 2026-11-02 23:51 (UTC-3).
+- **Fase 2 dirección** — Gate 2 reabierto de nuevo: `high-end-visual-design` Soft Structuralism clara (`soft_structuralism_claro`), tras rechazar minimalist e industrial-brutalist. Decisión de Vissiuss, 2026-11-02 23:59 (UTC-3). El agente transcribió la decisión; el look Fase 2 queda pendiente de aprobación visual del arquitecto.
