@@ -220,8 +220,9 @@ industry_type: b2b_saas
 business_model: marketplace_oficios_local
 direction_skill: high-end-visual-design
 direction_variant: soft_structuralism_claro
-direction_rationale: "Vissiuss rechazó minimalist-ui y luego industrial-brutalist-ui; eligió high-end-visual-design en variante Soft Structuralism clara (2026-11-02 23:59 UTC-3): whitespace aireado, tipografía grotesk fuerte, un solo acento, sin glass morado / OLED. Sobreescribe el default b2b_saas→minimalist-ui de direction-matrix.yaml."
+direction_rationale: "Última prueba de la sesión: Soft Structuralism clara. Vissiuss probó minimalist-ui, industrial-brutalist-ui y high-end-visual-design; al cerrar el día (2026-11-03) ninguna convenció. Ver idea/pruebas-fase2.md. direction_locked permanece en la última prueba hasta nueva decisión."
 direction_locked: true
+look_fase2_aprobado: false
 allowed_phase2_skills:
   - design-taste-frontend
   - redesign-existing-projects
@@ -229,4 +230,4 @@ forbidden_phase2_skills:
   - image-to-code
 ```
 
-`direction_locked: true` tras reabrir Gate 2 (cambio de dirección). Cambiar de nuevo exige otra reapertura.
+`direction_locked: true` en la última prueba. **El look de Fase 2 no está aprobado** (`look_fase2_aprobado: false`). Cambiar de skill exige reabrir Gate 2.
