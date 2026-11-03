@@ -1,0 +1,13 @@
+## Ejemplo (no commitear local.properties real)
+
+```properties
+sdk.dir=/path/to/Android/sdk
+```
+
+Obtén el SHA-1 de debug para OAuth Android:
+
+```bash
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+```
+
+Package: `lat.vissiuss.pedidosfotos`
