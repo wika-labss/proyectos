@@ -72,8 +72,8 @@ Capturas en `idea/pruebas-fase2/`.
 
 | Skill | Ruta | Uso |
 | :--- | :--- | :--- |
-| Job-board search (Indeed CL inspired-by) | `skills/indeed-cl-inspired/SKILL.md` | Barra / listado tipo job board |
-| Perfil emprendedor (LinkedIn inspired-by) | `skills/linkedin-profile-inspired/SKILL.md` | Perfil público + editable del panel |
+| Job-board search (Indeed CL inspired-by) | `skills/indeed-cl-inspired/SKILL.md` (`19f4fcd2`) | Barra / listado tipo job board |
+| Perfil emprendedor (LinkedIn inspired-by) | `skills/linkedin-profile-inspired/SKILL.md` (`b70f294b`) | Perfil público + panel editable |
 
 No sustituyen `direction_skill`. No usan marcas ni assets de terceros en la UI.
 
