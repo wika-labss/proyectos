@@ -1,4 +1,4 @@
-/* Fase 2 — look colorido: sunflower + navy (oficios Chile) */
+/* Fase 2 — look colorido + tipo editorial C2 (Syne brand / Newsreader titles) */
 
 @font-face {
   font-family: "Syne";
@@ -20,6 +20,34 @@
   font-weight: 800;
   font-display: swap;
   src: url("/assets/fonts/syne-latin-800-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/newsreader-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/newsreader-latin-400-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/assets/fonts/newsreader-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/assets/fonts/newsreader-latin-700-normal.woff2") format("woff2");
 }
 @font-face {
   font-family: "Plus Jakarta Sans";
@@ -51,7 +79,7 @@
 }
 
 :root {
-  /* Sunflower + navy — un solo sistema */
+  /* Sunflower + navy — un solo sistema (colores locked) */
   --navy: #0c1b33;
   --navy-mid: #16325a;
   --navy-soft: #2a4a78;
@@ -72,14 +100,31 @@
   --shadow-soft: 0 6px 18px rgba(12, 27, 51, 0.08);
   --shadow-sun: 0 10px 28px rgba(245, 196, 0, 0.35);
 
-  --font-display: "Syne", "Plus Jakarta Sans", sans-serif;
+  /* C2 editorial pairing */
+  --font-brand: "Syne", "Plus Jakarta Sans", sans-serif;
+  --font-display: "Newsreader", "Plus Jakarta Sans", Georgia, serif;
   --font-body: "Plus Jakarta Sans", "Noto Sans", system-ui, sans-serif;
+
+  /* Size ladder — air in hero, compact in results */
+  --fs-display: clamp(2.55rem, 6.5vw + 0.55rem, 3.85rem);
+  --fs-title: clamp(1.2rem, 1.6vw + 0.55rem, 1.65rem);
+  --fs-body: 1.0625rem;
+  --fs-meta: 0.75rem;
+  --lh-display: 0.92;
+  --lh-title: 1.22;
+  --lh-body: 1.62;
+  --lh-meta: 1.35;
+  --track-brand: -0.055em;
+  --track-title: -0.012em;
+  --track-meta: 0.08em;
+
   --ancho: 1100px;
   --radio: 14px;
   --radio-lg: 22px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-menu: 420ms;
   --dur-reveal: 700ms;
+  --tap-min: 44px;
 
   /* aliases usados por panel / legado */
   --fondo: var(--paper);
@@ -140,9 +185,9 @@ body {
     radial-gradient(720px 480px at -8% 18%, rgba(22, 50, 90, 0.12), transparent 50%),
     linear-gradient(165deg, #f5f8ff 0%, var(--paper) 45%, var(--paper-deep) 100%);
   font-family: var(--font-body);
-  font-size: 1.0625rem;
+  font-size: var(--fs-body);
   font-weight: 400;
-  line-height: 1.55;
+  line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -220,8 +265,8 @@ body > a[href="#contenido"]:focus {
 }
 
 .tw-logo {
-  font-family: var(--font-display);
-  font-size: clamp(1.35rem, 2vw + 0.7rem, 1.7rem);
+  font-family: var(--font-brand);
+  font-size: clamp(1.25rem, 1.4vw + 0.75rem, 1.55rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -290,6 +335,7 @@ body > a[href="#contenido"]:focus {
   align-items: center;
   gap: 0.5rem;
   margin: 0;
+  min-height: var(--tap-min);
   padding: 0.5rem 0.75rem;
   border: 2px solid rgba(245, 196, 0, 0.55);
   border-radius: var(--radio);
@@ -297,10 +343,10 @@ body > a[href="#contenido"]:focus {
   color: var(--sun);
   cursor: pointer;
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: var(--fs-meta);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--track-meta);
   user-select: none;
 }
 
@@ -522,30 +568,34 @@ h3 {
 h1 {
   margin: 0 0 1rem;
   font-family: var(--font-display);
-  font-size: clamp(1.85rem, 4vw + 0.8rem, 2.75rem);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1.05;
+  font-size: var(--fs-title);
+  font-weight: 600;
+  letter-spacing: var(--track-title);
+  line-height: var(--lh-title);
   color: var(--ink);
 }
 
 h2 {
   margin: 0 0 0.75rem;
   font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: var(--track-title);
+  line-height: var(--lh-title);
 }
 
 h3 {
   margin: 0 0 0.35rem;
-  font-size: 1.05rem;
+  font-family: var(--font-body);
+  font-size: 1.02rem;
   font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 p {
-  max-width: 42rem;
-  margin: 0 0 0.75rem;
+  max-width: 38rem;
+  margin: 0 0 0.85rem;
 }
 
 /* ——— Hero color-block ——— */
@@ -566,7 +616,7 @@ p {
 .tw-hero__stage {
   position: relative;
   z-index: 2;
-  padding: clamp(1.1rem, 2.4vw, 1.85rem);
+  padding: clamp(1.35rem, 3vw, 2.35rem) clamp(1.15rem, 2.6vw, 2rem);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -574,28 +624,36 @@ p {
 }
 
 .tw-hero__brand {
-  margin: 0 0 0.4rem;
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.6vw + 0.55rem, 2.05rem);
+  margin: 0 0 0.85rem;
+  font-family: var(--font-brand);
+  font-size: var(--fs-display);
   font-weight: 800;
-  letter-spacing: -0.05em;
-  line-height: 1;
+  letter-spacing: var(--track-brand);
+  line-height: var(--lh-display);
   color: var(--sun);
   max-width: none;
 }
 
 .tw-hero #buscar-titulo {
-  margin: 0 0 0.4rem;
-  color: #fff;
-  font-size: clamp(1.4rem, 2.2vw + 0.65rem, 2rem);
-  max-width: 16ch;
+  margin: 0 0 0.55rem;
+  color: #f0f4fc;
+  font-family: var(--font-display);
+  font-size: clamp(1.12rem, 1.5vw + 0.55rem, 1.48rem);
+  font-weight: 600;
+  letter-spacing: var(--track-title);
+  line-height: var(--lh-title);
+  max-width: 22ch;
 }
 
 .tw-hero__lead {
-  margin: 0 0 0.9rem;
+  margin: 0 0 1.25rem;
   color: #c9d5ee;
-  font-size: 1rem;
-  max-width: 36ch;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.02rem;
+  font-weight: 400;
+  line-height: 1.55;
+  max-width: 34ch;
 }
 
 .tw-hero__splash {
@@ -652,11 +710,13 @@ p {
 }
 
 .tw-field__label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: var(--track-meta);
   text-transform: uppercase;
   color: var(--navy-mid);
+  line-height: var(--lh-meta);
 }
 
 .tw-field input {
@@ -719,17 +779,17 @@ p {
 
 .tw-cta {
   align-self: stretch;
-  min-height: 52px;
+  min-height: max(52px, var(--tap-min));
   margin: 0;
   padding: 0 1.4rem;
   border: 0;
   border-radius: var(--radio);
   background: var(--sun);
   color: var(--navy);
-  font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-family: var(--font-brand);
+  font-size: 1rem;
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   cursor: pointer;
   box-shadow: inset 0 -3px 0 rgba(12, 27, 51, 0.18);
   transition: background 220ms var(--ease), transform 220ms var(--ease), box-shadow 220ms var(--ease);
@@ -839,12 +899,17 @@ p {
 .tw-results__head h2 {
   margin: 0;
   color: #fff;
-  font-size: 1.2rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: var(--track-title);
 }
 
 .tw-sort {
   margin: 0;
-  font-size: 0.9rem;
+  font-family: var(--font-body);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.02em;
   color: #b7c5df;
 }
 
@@ -858,7 +923,7 @@ p {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: 0.55rem;
 }
 
 .tw-card {
@@ -866,9 +931,9 @@ p {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto auto;
-  column-gap: 1rem;
-  row-gap: 0.15rem;
-  padding: 1rem 1.15rem 1rem 1.25rem;
+  column-gap: 0.85rem;
+  row-gap: 0.05rem;
+  padding: 0.72rem 0.95rem 0.72rem 1rem;
   background: var(--surface);
   border: 2px solid var(--border);
   border-radius: var(--radio);
@@ -887,26 +952,27 @@ p {
   grid-row: 1 / span 3;
   align-self: center;
   margin: 0;
-  min-width: 4.5rem;
-  padding: 0.55rem 0.45rem;
-  border-radius: 12px;
+  min-width: 3.9rem;
+  padding: 0.4rem 0.35rem;
+  border-radius: 10px;
   background: var(--sun);
   color: var(--navy);
-  font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-family: var(--font-brand);
+  font-size: 0.72rem;
   font-weight: 800;
+  letter-spacing: 0.02em;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.15;
   max-width: none;
 }
 
 .tw-card__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.2rem;
-  line-height: 1.15;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: var(--track-title);
 }
 
 .tw-card__title a {
@@ -922,13 +988,16 @@ p {
 .tw-card__who,
 .tw-card__tag {
   margin: 0;
-  font-size: 0.92rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  line-height: 1.3;
   color: var(--ink-soft);
   max-width: none;
 }
 
 .tw-card__tag {
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--navy-mid);
 }
 
@@ -937,6 +1006,16 @@ p {
     grid-template-columns: 1fr;
     min-height: auto;
     border-radius: 0 0 var(--radio) var(--radio);
+  }
+  .tw-hero__stage {
+    padding: 1.25rem 1.1rem 1.5rem;
+    gap: 0;
+  }
+  .tw-hero__brand {
+    margin-bottom: 0.7rem;
+  }
+  .tw-hero #buscar-titulo {
+    max-width: none;
   }
   .tw-hero__splash {
     min-height: 120px;
@@ -949,9 +1028,18 @@ p {
   }
   .tw-search {
     grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+  .tw-field {
+    min-height: var(--tap-min);
+    justify-content: center;
+  }
+  .tw-field input {
+    min-height: 1.5rem;
   }
   .tw-cta {
     width: 100%;
+    min-height: var(--tap-min);
   }
   .tw-results,
   .tw-filters {
@@ -1008,7 +1096,7 @@ p {
   border: 4px solid var(--navy);
   display: grid;
   place-items: center;
-  font-family: var(--font-display);
+  font-family: var(--font-brand);
   font-size: 2.4rem;
   font-weight: 800;
   color: var(--navy);
@@ -1017,14 +1105,21 @@ p {
 
 .tw-profile__id h1 {
   margin: 0;
-  font-size: clamp(1.7rem, 2.4vw + 1rem, 2.35rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 2vw + 0.85rem, 2.1rem);
+  font-weight: 600;
+  letter-spacing: var(--track-title);
+  line-height: 1.15;
   color: var(--navy);
 }
 
 .tw-profile__headline {
-  margin: 0.35rem 0 0;
+  margin: 0.45rem 0 0;
+  font-family: var(--font-display);
+  font-style: italic;
   font-size: 1.05rem;
-  font-weight: 600;
+  font-weight: 400;
+  line-height: 1.45;
   color: var(--ink);
   max-width: none;
 }
@@ -1139,7 +1234,9 @@ p {
 .tw-offers h3 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: var(--track-title);
   color: var(--navy);
 }
 
@@ -1265,14 +1362,16 @@ textarea:focus {
 button {
   appearance: none;
   margin-top: 1rem;
+  min-height: var(--tap-min);
   padding: 0.75rem 1.2rem;
   border: 0;
   border-radius: var(--radio);
   background: var(--sun);
   color: var(--navy);
-  font-family: var(--font-display);
+  font-family: var(--font-brand);
   font-size: 0.95rem;
   font-weight: 800;
+  letter-spacing: -0.02em;
   cursor: pointer;
   transition: background 220ms var(--ease), transform 220ms var(--ease);
 }
