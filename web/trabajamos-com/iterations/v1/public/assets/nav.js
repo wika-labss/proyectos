@@ -30,14 +30,14 @@
   document.documentElement.classList.add("motion-ready");
 
   const targets = document.querySelectorAll(
-    ".jb-header, .jb-search, .jb-results, .ep-hero, .ep-section, body > main > *:not(script), body > footer, .jb-card, .ep-offers > li, .ep-folio > li",
+    ".tw-header, .tw-results, .tw-profile__hero, .tw-block, .tw-card, .tw-offers > li, .tw-folio > li, body > footer, .tw-footer",
   );
 
   targets.forEach((el, i) => {
     if (!(el instanceof HTMLElement)) return;
     if (el.closest(".menu-cajon")) return;
     el.classList.add("reveal");
-    el.style.setProperty("--reveal-delay", `${Math.min(i * 40, 360)}ms`);
+    el.style.setProperty("--reveal-delay", `${Math.min(i * 45, 360)}ms`);
   });
 
   const io = new IntersectionObserver(
@@ -54,7 +54,7 @@
   document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
   requestAnimationFrame(() => {
-    document.querySelector(".jb-header")?.classList.add("reveal-in");
-    document.querySelector(".jb-search, .ep-hero, body > main > *:first-child")?.classList.add("reveal-in");
+    document.querySelector(".tw-header")?.classList.add("reveal-in");
+    document.querySelector(".tw-profile__hero")?.classList.add("reveal-in");
   });
 })();

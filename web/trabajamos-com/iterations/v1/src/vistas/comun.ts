@@ -12,21 +12,21 @@ export interface EnlaceMenu {
   meta?: string;
 }
 
-/** Cabecera search-first / utilitaria (Indeed-inspired en público; panel reutiliza el mismo shell). */
+/** Cabecera compartida: bloque navy + marca sunflower (look colorido). */
 export function cabeceraBanner(opciones: {
   lema: string;
   meta?: string;
   enlaces: EnlaceMenu[];
   extra?: Html;
 }): Html {
-  return html`<header class="jb-header">
-  <div class="jb-header__bar">
-    <a class="jb-logo" href="/index.html">trabajamos.com</a>
-    <nav class="jb-nav" aria-label="Principal">
+  return html`<header class="tw-header">
+  <div class="tw-header__bar">
+    <a class="tw-logo" href="/index.html">trabajamos<span class="tw-logo__dot">.com</span></a>
+    <nav class="tw-nav" aria-label="Principal">
       <ul>
         ${opciones.enlaces.map(
           (e) => html`<li><a href="${e.href}"${e.actual ? html` aria-current="page"` : ""}>${e.texto}${
-            e.meta ? html`<span class="jb-nav__meta">${e.meta}</span>` : ""
+            e.meta ? html`<span class="tw-nav__meta">${e.meta}</span>` : ""
           }</a></li>`,
         )}
       </ul>
@@ -57,7 +57,7 @@ export function cabeceraBanner(opciones: {
       ${opciones.extra ?? ""}
     </aside>
   </div>
-  <p class="jb-header__lema">${opciones.lema}${opciones.meta ? html` · ${opciones.meta}` : ""}</p>
+  <p class="tw-header__lema">${opciones.lema}${opciones.meta ? html` · ${opciones.meta}` : ""}</p>
 </header>`;
 }
 

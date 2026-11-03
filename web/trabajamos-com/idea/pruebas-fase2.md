@@ -98,6 +98,21 @@ Capturas en `idea/pruebas-fase2/`.
 
 ---
 
+## Prueba look-colorido — sunflower + navy (Team C)
+
+| Campo | Valor |
+| :--- | :--- |
+| Cuándo | 2026-11-03 |
+| Branch | `cursor/look-colorido-aa58` |
+| Variante | Moderno colorido: bloques navy + sunflower, Syne + Plus Jakarta |
+| Dials | VARIANCE 8–9 · MOTION 7–8 · DENSITY 4–5 |
+| Qué se probó | Hero color-block con marca hero-level; resultados con badge km sunflower; perfil con banner rayado y Contactar chunky |
+| Evitado | purple AI, cream+terracotta, sage 4b, pieles Indeed/LinkedIn |
+| Veredicto | **Pendiente** (Vissiuss) |
+| Capturas | `pruebas-fase2/look-colorido-*.png` · NOTES: `look-colorido-NOTES.md` |
+
+---
+
 ## Skills de apoyo (no son dirección MOD-DIR por sí solas)
 
 | Skill | Ruta | Uso |
