@@ -31,7 +31,7 @@ export interface EstadoBusqueda {
 
 function cabeceraPublica(): Html {
   return html`<header>
-  <a href="/index.html">trabajamos.com</a>
+  <a class="marca" href="/index.html">trabajamos.com</a>
   <nav aria-label="Principal">
     <ul>
       <li><a href="/index.html">Buscar oficios</a></li>

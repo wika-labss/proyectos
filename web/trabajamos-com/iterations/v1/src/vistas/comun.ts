@@ -32,6 +32,7 @@ ${opciones.cabecera}
 ${opciones.cuerpo}
 ${opciones.pie}
 ${(opciones.scripts ?? []).map((src) => html`<script src="${src}" defer></script>`)}
+<script src="/assets/motion.js" defer></script>
 </body>
 </html>`;
 }

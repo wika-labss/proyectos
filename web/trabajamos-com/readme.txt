@@ -12,7 +12,8 @@ Estado:
 - idea/05-build-plan.md APROBADO, ready_for_construction: true, hoja de ruta 01–08 HECHO
 - idea/06-modelo-datos.md: esquema PostgreSQL+PostGIS (fuente de verdad de la migración)
 - Fase 1 COMPLETA: construction_phase_complete: true (firma 2026-11-02 23:37 UTC-3)
+- Fase 2 EN CURSO: minimalist-ui + redesign-existing-projects sobre iterations/v1/
 - Código QA: iterations/v1/ (Node 22 + Fastify SSR, PostGIS, Docker Compose + Caddy)
 - final/ vacío
 
-Siguiente: Fase 2 diseño con taste-skill minimalist-ui (+ redesign-existing-projects), luego Auditoría de Release.
+Siguiente: cerrar look Fase 2, Auditoría de Release, luego final/.

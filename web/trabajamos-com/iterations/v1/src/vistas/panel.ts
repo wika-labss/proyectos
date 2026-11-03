@@ -25,7 +25,7 @@ function tituloPanel(vista: string, conError: boolean): string {
 }
 
 function cabeceraSimple(): Html {
-  return html`<header><a href="/index.html">trabajamos.com</a></header>`;
+  return html`<header><a class="marca" href="/index.html">trabajamos.com</a></header>`;
 }
 
 function piePanel(): Html {
@@ -77,7 +77,7 @@ function marco(opciones: {
 }): Html {
   const { perfil } = opciones;
   const cabecera = html`<header>
-  <a href="/index.html">trabajamos.com</a>
+  <a class="marca" href="/index.html">trabajamos.com</a>
   <p>${perfil ? `Panel de ${perfil.nombre}` : "Panel"}</p>
   ${perfil ? html`<a href="/perfil.html?slug=${encodeURIComponent(perfil.slug)}">Ver mi perfil público</a>` : ""}
   <form method="post" action="/panel/salir">${campoOcultoCsrf(opciones.csrf)}<button type="submit">Salir</button></form>
