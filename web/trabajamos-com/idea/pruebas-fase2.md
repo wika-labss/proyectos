@@ -23,9 +23,9 @@ Capturas en `idea/pruebas-fase2/`.
 | :--- | :--- |
 | Fase 1 (`construction_phase_complete`) | Firmada |
 | Look Fase 2 | **No aprobado** — ver pruebas abajo |
-| Código activo | Prueba 4: `indeed-cl-inspired` (home) + `linkedin-profile-inspired` (perfil) |
-| Skills | `skills/indeed-cl-inspired/` · `skills/linkedin-profile-inspired/` (inspired-by; sin marcas en UI) |
-| Siguiente | Veredicto de Vissiuss sobre prueba 4; luego Auditoría de Release si hay firma |
+| Código activo | Prueba **4b**: anatomía Indeed/LinkedIn + polish orgánico (`redesign-skill`) |
+| Skills | `indeed-cl-inspired` · `linkedin-profile-inspired` · audit vía `web-design/.../redesign-skill` |
+| Siguiente | Veredicto de Vissiuss sobre 4b; luego Auditoría de Release si hay firma |
 
 ---
 
@@ -78,8 +78,23 @@ Capturas en `idea/pruebas-fase2/`.
 | Home | Header plano logo+nav; Qué / Dónde lado a lado + CTA azul `Buscar`; chips; cards densas título→empresa→distancia→meta |
 | Perfil | Banner + `ep-hero` (inicial, nombre H1, headline, localidad); **Contactar** en CTA del header; TOC; secciones en bloques blancos |
 | Tokens | `--jb-*` (job board azul `#2557a7`) · `--ep-*` (perfil teal `#0f766e`) |
-| Veredicto | **Pendiente** (Vissiuss) |
+| Veredicto | Anatomía OK para probar; look aún frío/utilitario → iteración **4b** |
 | Capturas | `04-indeed-inicio.png`, `04-indeed-resultados.png`, `04-indeed-mobile.png`, `04-linkedin-perfil.png` |
+
+---
+
+## Prueba 4b — polish orgánico (redesign-skill)
+
+| Campo | Valor |
+| :--- | :--- |
+| Cuándo | 2026-11-03 ~11:20 UTC-3 |
+| Base | Prueba 4 (misma IA: qué/dónde + ep-hero); **sin** cambiar ids/a11y Fase 1 |
+| Auditor usado | Checklist de `web-design/external/taste-skill/skills/redesign-skill` (no hay auditor CSS dedicado en el repo) |
+| Diagnóstico | Dos acentos (azul + teal); grises estériles; flat sin textura; CTAs 8px; chips pill; tipografía sin presencia suficiente |
+| Fixes | Un acento sage `#3d6b4f`; neutros con tinte verde; grain + radiales; radios 12–18px; H1 más grande/tracking; sombras tintadas; chips 12px (no pill-full) |
+| Evitado | cream+#terracotta+serif; purple glass; azul Indeed en UI |
+| Veredicto | **Pendiente** (Vissiuss) |
+| Capturas | `04b-organic-inicio.png`, `04b-organic-resultados.png`, `04b-organic-perfil.png`, `04b-organic-mobile.png` |
 
 ---
 
