@@ -23,9 +23,9 @@ Capturas en `idea/pruebas-fase2/`.
 | :--- | :--- |
 | Fase 1 (`construction_phase_complete`) | Firmada |
 | Look Fase 2 | **No aprobado** — ver pruebas abajo |
-| Código activo | Prueba **4b**: anatomía Indeed/LinkedIn + polish orgánico (`redesign-skill`) |
+| Código activo | Depende de la rama; experimento Team A: `look-linkedin` en `cursor/look-linkedin-aa58` |
 | Skills | `indeed-cl-inspired` · `linkedin-profile-inspired` · audit vía `web-design/.../redesign-skill` |
-| Siguiente | Veredicto de Vissiuss sobre 4b; luego Auditoría de Release si hay firma |
+| Siguiente | Veredicto de Vissiuss sobre pruebas 4b / 5; luego Auditoría de Release si hay firma |
 
 ---
 
@@ -95,6 +95,21 @@ Capturas en `idea/pruebas-fase2/`.
 | Evitado | cream+#terracotta+serif; purple glass; azul Indeed en UI |
 | Veredicto | **Pendiente** (Vissiuss) |
 | Capturas | `04b-organic-inicio.png`, `04b-organic-resultados.png`, `04b-organic-perfil.png`, `04b-organic-mobile.png` |
+
+---
+
+## Prueba 5 — LinkedIn / perfil profesional (Team A)
+
+| Campo | Valor |
+| :--- | :--- |
+| Cuándo | 2026-11-03 |
+| Rama | `cursor/look-linkedin-aa58` |
+| Skills | `linkedin-profile-inspired` (primaria) · `indeed-cl-inspired` (anatomía search) · `redesign-skill` |
+| Qué se probó | Neutrales `#f4f2ee` + acento teal único `#0f766e`; header plano `lp-*`; home Qué/Dónde denso; perfil `ep-topcard` banner+inicial+Contactar; TOC sticky; portafolio rail |
+| Evitado | Soft Structuralism glass; Swiss CRT; azul Indeed; cream+terracotta; grain 4b |
+| Veredicto | **Pendiente** (Vissiuss) |
+| Capturas | `look-linkedin-inicio.png`, `look-linkedin-resultados.png`, `look-linkedin-perfil.png`, `look-linkedin-mobile.png` |
+| Notas | `look-linkedin-NOTES.md` |
 
 ---
 

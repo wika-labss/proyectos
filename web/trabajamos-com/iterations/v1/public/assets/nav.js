@@ -30,7 +30,7 @@
   document.documentElement.classList.add("motion-ready");
 
   const targets = document.querySelectorAll(
-    ".jb-header, .jb-search, .jb-results, .ep-hero, .ep-section, body > main > *:not(script), body > footer, .jb-card, .ep-offers > li, .ep-folio > li",
+    ".lp-header, .jb-search, .jb-results, .ep-topcard, .ep-section, body > main > *:not(script), body > footer, .jb-card, .ep-offers > li, .ep-folio > li",
   );
 
   targets.forEach((el, i) => {
@@ -54,7 +54,7 @@
   document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
   requestAnimationFrame(() => {
-    document.querySelector(".jb-header")?.classList.add("reveal-in");
-    document.querySelector(".jb-search, .ep-hero, body > main > *:first-child")?.classList.add("reveal-in");
+    document.querySelector(".lp-header")?.classList.add("reveal-in");
+    document.querySelector(".jb-search, .ep-topcard, body > main > *:first-child")?.classList.add("reveal-in");
   });
 })();

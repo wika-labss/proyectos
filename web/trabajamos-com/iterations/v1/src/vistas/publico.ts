@@ -41,7 +41,7 @@ function cabeceraPublica(actual: "buscar" | "perfil" | "otra" = "otra"): Html {
 }
 
 function piePublico(): Html {
-  return html`<footer>
+  return html`<footer class="lp-footer">
   <p>trabajamos.com: oficios y emprendedores cerca de ti.</p>
   <p class="atribucion">Mapas y localidades: © colaboradores de <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>.</p>
 </footer>`;
@@ -99,18 +99,22 @@ export function seccionResultados(e: EstadoBusqueda): Html {
         <article class="jb-card" aria-labelledby="r${i + 1}">
           <h3 id="r${i + 1}" class="jb-card__title"><a href="/perfil.html?slug=${encodeURIComponent(r.perfil.slug)}">${r.oferta.titulo}</a></h3>
           <p class="jb-card__company">${r.perfil.nombre}</p>
-          <p class="jb-card__meta">${distanciaTexto(r.distanciaKm)}</p>
-          <p class="jb-card__snip">${ETIQUETA_OFERTA[r.oferta.tipo]} · ${r.oferta.tag}</p>
+          <p class="jb-card__loc">${distanciaTexto(r.distanciaKm)}</p>
+          <p class="jb-card__meta">${ETIQUETA_OFERTA[r.oferta.tipo]} · ${r.oferta.tag}</p>
         </article>
       </li>`,
       )}
     </ol>`;
   } else if (e.tipo === "sin_coincidencia") {
-    contenido = html`<h2 id="resultados-titulo">No encontramos ${e.tag}</h2>
-    <p>Ese oficio no está publicado. Revisa cómo lo escribiste: las tildes cuentan, #gásfiter y #gasfiter son distintos.</p>`;
+    contenido = html`<div class="jb-results__empty">
+      <h2 id="resultados-titulo">No encontramos ${e.tag}</h2>
+      <p>Ese oficio no está publicado. Revisa cómo lo escribiste: las tildes cuentan, #gásfiter y #gasfiter son distintos.</p>
+    </div>`;
   } else if (e.tipo === "sin_punto") {
-    contenido = html`<h2 id="resultados-titulo">Sin oficios cercanos para ${e.tag}</h2>
-    <p>Hay ofertas de ${e.tag}, pero ninguna tiene localidad marcada, así que no aparecen como cercanas.</p>`;
+    contenido = html`<div class="jb-results__empty">
+      <h2 id="resultados-titulo">Sin oficios cercanos para ${e.tag}</h2>
+      <p>Hay ofertas de ${e.tag}, pero ninguna tiene localidad marcada, así que no aparecen como cercanas.</p>
+    </div>`;
   }
   return html`<section id="resultados" class="jb-results" aria-labelledby="resultados-titulo"${attrSi(!visible, "hidden")}>
     ${contenido}
@@ -128,6 +132,7 @@ export function vistaInicio(e: EstadoBusqueda): Html {
   const localidadInvalida = e.tipo === "localidad_no_encontrada" || e.tipo === "sin_origen";
   const cuerpo = html`<main id="contenido" class="jb-page">
   <section id="buscar" class="jb-search" aria-labelledby="buscar-titulo">
+    <p class="jb-kicker">Portal de oficios</p>
     <h1 id="buscar-titulo">Encuentra un oficio cerca de ti</h1>
     <form id="form-buscar" class="jb-search__form" role="search" aria-label="Buscar oficios" action="/index.html" method="get">
       <label class="jb-field" for="q">
@@ -193,25 +198,27 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
   const cuerpo = html`<main id="contenido" class="ep-page">
   <p id="estado-perfil" role="status" aria-live="polite"></p>
   <article id="perfil" class="ep-profile" aria-labelledby="perfil-nombre">
-    <div class="ep-banner" aria-hidden="true"></div>
-    <header class="ep-hero">
-      <div class="ep-hero__photo" aria-hidden="true">${inicialNombre(perfil.nombre)}</div>
-      <div class="ep-hero__id">
-        <h1 id="perfil-nombre">${perfil.nombre}</h1>
-        <p class="ep-hero__headline">${headlinePerfil(perfil)}</p>
-        <p class="ep-hero__loc">${locLine}</p>
-        <div class="ep-hero__cta">
-          <a class="ep-cta" href="${contactoHref(c.tipo, c.valor)}" aria-describedby="contacto-dato"${new Html(externo)}>Contactar<span class="oculto"> a ${perfil.nombre} ${contactoMedio(c.tipo)}</span></a>
-          ${
-            perfil.redes.length
-              ? html`<ul class="ep-redes-inline" aria-label="Redes">
-            ${perfil.redes.map((r) => html`<li><a href="${r.url}" rel="nofollow ugc">${r.nombre}</a></li>`)}
-          </ul>`
-              : ""
-          }
+    <div class="ep-topcard">
+      <div class="ep-banner" aria-hidden="true"></div>
+      <header class="ep-hero">
+        <div class="ep-hero__photo" aria-hidden="true">${inicialNombre(perfil.nombre)}</div>
+        <div class="ep-hero__id">
+          <h1 id="perfil-nombre">${perfil.nombre}</h1>
+          <p class="ep-hero__headline">${headlinePerfil(perfil)}</p>
+          <p class="ep-hero__loc">${locLine}</p>
+          <div class="ep-hero__cta">
+            <a class="ep-cta" href="${contactoHref(c.tipo, c.valor)}" aria-describedby="contacto-dato"${new Html(externo)}>Contactar<span class="oculto"> a ${perfil.nombre} ${contactoMedio(c.tipo)}</span></a>
+            ${
+              perfil.redes.length
+                ? html`<ul class="ep-redes-inline" aria-label="Redes">
+              ${perfil.redes.map((r) => html`<li><a href="${r.url}" rel="nofollow ugc">${r.nombre}</a></li>`)}
+            </ul>`
+                : ""
+            }
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
 
     <nav class="ep-toc" aria-label="Secciones del perfil">
       <ul>
@@ -224,11 +231,14 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
 
     <section id="contacto" class="ep-section" aria-labelledby="contacto-titulo">
       <h2 id="contacto-titulo">Contacto</h2>
-      <p id="contacto-dato">${contactoDato(c.tipo, c.valor)}</p>
+      <div class="ep-contacto-row">
+        <a class="ep-cta ep-cta--secondary" href="${contactoHref(c.tipo, c.valor)}" aria-describedby="contacto-dato"${new Html(externo)}>Contactar<span class="oculto"> a ${perfil.nombre} ${contactoMedio(c.tipo)}</span></a>
+        <p id="contacto-dato">${contactoDato(c.tipo, c.valor)}</p>
+      </div>
       <h3 id="redes-titulo">Redes</h3>
       ${
         perfil.redes.length
-          ? html`<ul aria-labelledby="redes-titulo">
+          ? html`<ul class="ep-redes" aria-labelledby="redes-titulo">
         ${perfil.redes.map((r) => html`<li><a href="${r.url}" rel="nofollow ugc">${r.nombre}</a></li>`)}
       </ul>`
           : html`<p>Este perfil aún no publica redes.</p>`
@@ -252,10 +262,10 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
       <h2 id="portafolio-titulo">Portafolio</h2>
       ${
         perfil.imagenes.length
-          ? html`<ul class="ep-folio">
+          ? html`<ul class="ep-folio ep-folio--rail">
         ${perfil.imagenes.map(
           (i) =>
-            html`<li><img src="${urlImagen(i.archivo)}" alt="${i.alt}" width="${i.ancho}" height="${i.alto}" loading="lazy"></li>`,
+            html`<li><figure class="ep-folio__item"><img src="${urlImagen(i.archivo)}" alt="${i.alt}" width="${i.ancho}" height="${i.alto}" loading="lazy"><figcaption class="oculto">${i.alt}</figcaption></figure></li>`,
         )}
       </ul>`
           : html`<p>Este perfil aún no tiene imágenes de su trabajo.</p>`
@@ -293,9 +303,11 @@ export function vistaPerfilNoDisponible(): Html {
     titulo: "Perfil no disponible — trabajamos.com",
     noindex: true,
     cabecera: cabeceraPublica(),
-    cuerpo: html`<main id="contenido">
-  <h1>Perfil no disponible</h1>
-  <p><a href="/index.html">Buscar otro oficio</a></p>
+    cuerpo: html`<main id="contenido" class="ep-page">
+  <div class="ep-section">
+    <h1>Perfil no disponible</h1>
+    <p><a href="/index.html">Buscar otro oficio</a></p>
+  </div>
 </main>`,
     pie: piePublico(),
   });
