@@ -76,14 +76,14 @@ Decisiones de Vissiuss del 2026-11-02 (UTC-3): base de datos robusta, despliegue
 
 | Paso | Módulo | ID Feature | Qué hacer | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| `01` | `global` | N/A | Proyecto Node + TS, migraciones SQL, configuración, Docker Compose, Caddy | `PENDIENTE` |
-| `02` | `MOD-06` | `FEAT-01` | `VIEW-10` Entrar, `VIEW-18` Crear cuenta, sesiones, CSRF, bloqueo, guardia de `panel/*`, `Salir` | `PENDIENTE` |
-| `03` | `MOD-01` | `FEAT-01`, `FEAT-07` | `VIEW-11`, `VIEW-12`, `VIEW-13`, `VIEW-17`; slug; perfil público `VIEW-05`, `VIEW-06` | `PENDIENTE` |
-| `04` | `MOD-02` | `FEAT-02` | `VIEW-14` con la regla única del `#`; `VIEW-07` | `PENDIENTE` |
-| `05` | `MOD-03` | `FEAT-03` | `VIEW-15` con `sharp` y volumen; `VIEW-08` | `PENDIENTE` |
-| `06` | `MOD-04` | `FEAT-04` | Adaptador Nominatim con caché; `VIEW-16` con Leaflet; `VIEW-09` | `PENDIENTE` |
-| `07` | `MOD-05` | `FEAT-05`, `FEAT-06` | `VIEW-01` a `VIEW-04`: búsqueda por `#`, origen por localidad o navegador, orden y distancia con PostGIS | `PENDIENTE` |
-| `08` | `global` | N/A | Pruebas automáticas, datos semilla, verificación en navegador, `DEPLOY.md` | `PENDIENTE` |
+| `01` | `global` | N/A | Proyecto Node + TS, migraciones SQL, configuración, Docker Compose, Caddy | `HECHO` |
+| `02` | `MOD-06` | `FEAT-01` | `VIEW-10` Entrar, `VIEW-18` Crear cuenta, sesiones, CSRF, bloqueo, guardia de `panel/*`, `Salir` | `HECHO` |
+| `03` | `MOD-01` | `FEAT-01`, `FEAT-07` | `VIEW-11`, `VIEW-12`, `VIEW-13`, `VIEW-17`; slug; perfil público `VIEW-05`, `VIEW-06` | `HECHO` |
+| `04` | `MOD-02` | `FEAT-02` | `VIEW-14` con la regla única del `#`; `VIEW-07` | `HECHO` |
+| `05` | `MOD-03` | `FEAT-03` | `VIEW-15` con `sharp` y volumen; `VIEW-08` | `HECHO` |
+| `06` | `MOD-04` | `FEAT-04` | Adaptador Nominatim con caché; `VIEW-16` con Leaflet; `VIEW-09` | `HECHO` |
+| `07` | `MOD-05` | `FEAT-05`, `FEAT-06` | `VIEW-01` a `VIEW-04`: búsqueda por `#`, origen por localidad o navegador, orden y distancia con PostGIS | `HECHO` |
+| `08` | `global` | N/A | Pruebas automáticas, datos semilla, verificación en navegador, `DEPLOY.md` | `HECHO` |
 
 ## 4. Despliegue en el servidor de prueba (QA)
 

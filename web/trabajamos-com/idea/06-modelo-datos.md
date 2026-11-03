@@ -1,7 +1,7 @@
 ---
 id: "WEB-DATA-001"
 title: "trabajamos.com — Modelo de datos"
-status: "BORRADOR"
+status: "APROBADO"
 version: "0.1.0"
 owner: "Vissiuss"
 created_at: "2026-11-02"
@@ -145,7 +145,7 @@ erDiagram
 | `perfil_id` | `uuid` | `NOT NULL` FK `perfiles(id) ON DELETE CASCADE` |
 | `tipo` | `oferta_tipo` | `NOT NULL` |
 | `titulo` | `text` | `NOT NULL`, 1 a 120 caracteres (D-07) |
-| `tag` | `text` | `NOT NULL`. Check: empieza con un solo `#`, sin espacios al borde ni dobles, en minúsculas (`tag = lower(tag)`). La aplicación normaliza con la regla única de `04` §3.3. |
+| `tag` | `text` | `NOT NULL`. Check: empieza con un solo `#` seguido de un carácter que no es espacio, sin espacio al final ni espacios dobles, hasta 61 caracteres (`#` + 60). Las minúsculas las asegura la aplicación con la regla única de `04` §3.3 (`toLocaleLowerCase("es-CL")`); la base no lo repite porque `lower()` depende del locale del servidor. |
 | `creado_en` | `timestamptz` | `NOT NULL DEFAULT now()` |
 
 Índices: `ofertas(tag)`, `ofertas(perfil_id, creado_en)`.

@@ -8,7 +8,7 @@ created_at: "2026-11-02"
 updated_at: "2026-11-02"
 visual_approval_passed: true
 audit_3_passed: true
-construction_phase_complete: false
+construction_phase_complete: true
 direction_skill: "minimalist-ui"
 ---
 
@@ -24,13 +24,13 @@ direction_skill: "minimalist-ui"
 
 - **Nombre del Proyecto:** trabajamos.com
 - **Documentos base:** `01-problem.md` (`WEB-PROB-001`) | `02-features.md` (`WEB-FEAT-001`) | `03-module-discovery.md` (`WEB-MOD-001`) | `05-build-plan.md`
-- **Estado de gatekeeping:** `APROBACION_VISUAL_Y_ENSAMBLADO_APROBADOS`
+- **Estado de gatekeeping:** `CONSTRUCTION_PHASE_COMPLETE`
 - **Decisiones del arquitecto:** Vissiuss respondió las nueve preguntas de la versión `0.1.0` el 2026-11-02 a las 17:50 (UTC-3). Esta versión las aplica (§7.1).
 - **Gate 3A:** Vissiuss aprobó la versión `0.2.1` el 2026-11-02 a las 22:17 (UTC-3) con el mensaje "alinea y aprobado 04" (§9). La v0.2.2 agrega `VIEW-18` y los campos de `VIEW-10` según `05`; Vissiuss la aprobó el 2026-11-02 a las 22:51 (UTC-3) con el plan de construcción.
 - **direction_skill:** `minimalist-ui`. Coincide con `MOD-DIR` en `03-module-discovery.md` (`direction_locked: true`).
-- **Estado de `05`:** `05-build-plan.md` sigue como plantilla. Lo que este documento deja "para `05`" (autenticación, datos, imágenes, mapa, URL final) se decide allí.
-- **Alcance:** Fase 1 textual. Estructura semántica y wireframes de texto para el cliente sin cuenta (`VIEW-01` a `VIEW-09`) y el panel del emprendedor (`VIEW-10` a `VIEW-17`). Sin colores, tipografías ni tokens visuales; el look lo pone `minimalist-ui` en Fase 2.
-- **Sin HTML de producción:** no se crea ningún archivo en `iterations/` hasta `ready_for_construction: true` en `05`. Las rutas de este documento son relativas a `iterations/v1/`.
+- **Estado de `05`:** `05-build-plan.md` APROBADO con `ready_for_construction: true`. Autenticación, datos, imágenes y mapa están definidos allí y construidos en `iterations/v1/`.
+- **Alcance Fase 1:** HTML semántico y SSR en `iterations/v1/` para el cliente (`VIEW-01` a `VIEW-09`) y el panel (`VIEW-10` a `VIEW-18`). El look lo pone `minimalist-ui` en Fase 2.
+- **Fase 1:** Vissiuss firmó el contrato el 2026-11-02 a las 23:37 (UTC-3) con el mensaje "esta bien firmo el contrato de fase 1, sigamos el flujo mientras pusheo (listo)". El agente transcribió la firma.
 
 `direction_skill` debe coincidir con `MOD-DIR` en `03-module-discovery.md`.
 
@@ -731,8 +731,8 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
 ### 4.4 Checklist de fases
 
 - [x] `ready_for_construction` se activa en **05**, tras Gate 3A + 3B
-- [ ] `construction_phase_complete` cuando el HTML de `iterations/vN/` cumple este documento
-- [ ] Fase 2 (taste-skill) **prohibida** hasta `construction_phase_complete: true`
+- [x] `construction_phase_complete` — HTML de `iterations/v1/` cumple este documento (firma 2026-11-02 23:37 UTC-3)
+- [x] Fase 2 (taste-skill) habilitada: `minimalist-ui`
 
 ---
 
@@ -1436,4 +1436,5 @@ Convertidos en decisión: **S-08 → D-07** (título obligatorio) y la parte "di
 
 - **Gate 3A** `visual_approval_passed` — wireframe / estructura. **APROBADO** por Vissiuss (arquitecto), 2026-11-02 22:17 (UTC-3). El agente transcribió la decisión.
 - **Gate 3B** `audit_3_passed` — ensamblado 03+04+05. **APROBADO** por Vissiuss (arquitecto), 2026-11-02 22:51 (UTC-3) (`audits/auditoria-ensamblado.md`).
-- **Fase 1** `ready_for_construction` — flag en `05-build-plan.md`.
+- **Fase 1** `ready_for_construction` — flag en `05-build-plan.md` (`true`).
+- **Fase 1 completa** `construction_phase_complete` — **APROBADO** por Vissiuss (arquitecto), 2026-11-02 23:37 (UTC-3). El agente transcribió la firma. Habilita Fase 2 con `minimalist-ui`.

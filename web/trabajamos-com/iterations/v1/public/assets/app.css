@@ -1,0 +1,86 @@
+/* Fase 1: solo lo funcional. El aspecto visual llega en Fase 2 (minimalist-ui). */
+[hidden] {
+  display: none !important;
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+label,
+legend {
+  display: block;
+  font-weight: 600;
+  margin-top: 0.75rem;
+}
+
+input[type="radio"] + label {
+  display: inline;
+  font-weight: normal;
+  margin-right: 1rem;
+}
+
+input:not([type="radio"]):not([type="hidden"]):not([type="file"]),
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 32rem;
+  padding: 0.4rem;
+  font: inherit;
+}
+
+button {
+  font: inherit;
+  margin-top: 0.75rem;
+  padding: 0.4rem 0.9rem;
+}
+
+button[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.error {
+  color: #a00000;
+  font-weight: 600;
+}
+
+[aria-invalid="true"] {
+  outline: 2px solid #a00000;
+}
+
+[role="alert"] {
+  border-left: 4px solid #a00000;
+  padding-left: 0.75rem;
+}
+
+.mapa {
+  height: 20rem;
+  max-width: 40rem;
+  margin: 0.75rem 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.atribucion {
+  font-size: 0.875rem;
+}
