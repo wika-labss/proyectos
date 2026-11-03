@@ -98,6 +98,21 @@ Capturas en `idea/pruebas-fase2/`.
 
 ---
 
+## Prueba Elegante — Pearl Soft Structuralism (Team B)
+
+| Campo | Valor |
+| :--- | :--- |
+| Cuándo | 2026-11-03 |
+| Branch | `cursor/look-elegante-aa58` |
+| Skills | `high-end-visual-design` (principios) · taste dials 5–6 / 4–5 / 3 · `redesign-skill` |
+| Qué se probó | Aire, tipografía Syne presente, un acento pizarra oceánica, motion suave; home unificado; resultados editoriales; perfil sin anatomía LinkedIn |
+| Evitado | Isla glass / morado / OLED (prueba 3); cream+terracotta; chips job-board |
+| Veredicto | **Pendiente** (Vissiuss) |
+| Capturas | `look-elegante-inicio.png`, `look-elegante-resultados.png`, `look-elegante-perfil.png`, `look-elegante-mobile.png` |
+| Notas | `pruebas-fase2/look-elegante-NOTES.md` |
+
+---
+
 ## Skills de apoyo (no son dirección MOD-DIR por sí solas)
 
 | Skill | Ruta | Uso |

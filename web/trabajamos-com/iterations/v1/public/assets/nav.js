@@ -30,14 +30,14 @@
   document.documentElement.classList.add("motion-ready");
 
   const targets = document.querySelectorAll(
-    ".jb-header, .jb-search, .jb-results, .ep-hero, .ep-section, body > main > *:not(script), body > footer, .jb-card, .ep-offers > li, .ep-folio > li",
+    ".eg-header, .eg-hero, .eg-search-shell, .eg-results, .eg-result, .eg-profile__hero, .eg-section, .eg-offers > li, .eg-folio > li, body > main > *:not(script), body > footer",
   );
 
   targets.forEach((el, i) => {
     if (!(el instanceof HTMLElement)) return;
     if (el.closest(".menu-cajon")) return;
     el.classList.add("reveal");
-    el.style.setProperty("--reveal-delay", `${Math.min(i * 40, 360)}ms`);
+    el.style.setProperty("--reveal-delay", `${Math.min(i * 45, 400)}ms`);
   });
 
   const io = new IntersectionObserver(
@@ -54,7 +54,7 @@
   document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
   requestAnimationFrame(() => {
-    document.querySelector(".jb-header")?.classList.add("reveal-in");
-    document.querySelector(".jb-search, .ep-hero, body > main > *:first-child")?.classList.add("reveal-in");
+    document.querySelector(".eg-header")?.classList.add("reveal-in");
+    document.querySelector(".eg-hero, .eg-profile__hero, body > main > *:first-child")?.classList.add("reveal-in");
   });
 })();
