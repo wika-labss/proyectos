@@ -1,0 +1,17 @@
+{
+  "name": "geo-empresa-broker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Broker en memoria para comandos admin -> APK Device Owner (experimento 0, sin base de datos)",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

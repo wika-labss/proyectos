@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Geo Empresa — Admin directo (exp 0)</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --primary: #2563eb;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --border: #334155;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); }
+      header { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+      h1 { margin: 0 0 6px; font-size: 20px; }
+      .muted { color: var(--muted); font-size: 13px; }
+      main { padding: 16px 20px; display: grid; gap: 14px; max-width: 1100px; }
+      .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
+      tr { cursor: pointer; }
+      tr.selected { background: #1d4ed822; }
+      .ok { color: var(--success); }
+      .bad { color: var(--danger); }
+      button { background: var(--primary); color: #fff; border: 0; border-radius: 8px; padding: 8px 12px; font-weight: 600; cursor: pointer; }
+      button.danger { background: var(--danger); }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      #log { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); white-space: pre-wrap; max-height: 200px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Geo Empresa — Admin directo</h1>
+      <div class="muted">Sin contraseña. Solo dispositivos con la APK conectada por WebSocket. Sin base de datos.</div>
+    </header>
+    <main>
+      <section class="card row">
+        <span class="muted" id="cfg">Cargando config…</span>
+        <button type="button" id="refresh">Actualizar</button>
+      </section>
+      <section class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Device ID</th>
+              <th>Estado</th>
+              <th>Owner</th>
+              <th>Kiosco</th>
+              <th>Ubicación</th>
+              <th>Distancia</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </section>
+      <section class="card">
+        <div class="row">
+          <strong id="sel">Ningún dispositivo</strong>
+          <button type="button" id="lock" class="danger" disabled>Kiosco (LOCK)</button>
+          <button type="button" id="unlock" disabled>Desbloquear (UNLOCK)</button>
+          <button type="button" id="locate" disabled>Ubicación (LOCATE)</button>
+          <button type="button" id="status" disabled>Estado (STATUS)</button>
+          <button type="button" id="reboot" class="danger" disabled>Reiniciar (REBOOT)</button>
+        </div>
+        <p class="muted" id="detail"></p>
+      </section>
+      <section class="card">
+        <div class="muted">Eventos</div>
+        <div id="log">—</div>
+      </section>
+    </main>
+    <script>
+      let cfg = { fenceRadiusM: 20 };
+      let devices = [];
+      let selectedId = null;
+
+      function log(line) {
+        const node = document.getElementById("log");
+        const ts = new Date().toISOString().slice(11, 19);
+        node.textContent = ts + "  " + line + "\n" + node.textContent;
+      }
+
+      async function api(path, opts) {
+        const res = await fetch(path, opts);
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : null;
+        if (!res.ok) throw new Error(data?.error || res.status + " " + text);
+        return data;
+      }
+
+      function render() {
+        const body = document.getElementById("rows");
+        body.innerHTML = devices
+          .map((d) => {
+            const sel = d.deviceId === selectedId ? "selected" : "";
+            const loc =
+              d.lastLocation && d.lastLocation.lat != null
+                ? d.lastLocation.lat.toFixed(5) + ", " + d.lastLocation.lng.toFixed(5)
+                : "—";
+            const dist =
+              d.distanceM == null ? "—" : Math.round(d.distanceM) + " m / " + cfg.fenceRadiusM + " m";
+            const inside =
+              d.insideFence === true ? "dentro" : d.insideFence === false ? "fuera" : "—";
+            return `<tr class="${sel}" data-id="${d.deviceId}">
+              <td>${d.deviceId}</td>
+              <td class="${d.online ? "ok" : "bad"}">${d.online ? "online" : "offline"}</td>
+              <td>${d.isDeviceOwner ? "sí" : "no"}</td>
+              <td>${d.kiosk ? "activo" : "no"}</td>
+              <td>${loc} · ${inside}</td>
+              <td>${dist}</td>
+            </tr>`;
+          })
+          .join("");
+        body.querySelectorAll("tr").forEach((row) => {
+          row.onclick = () => {
+            selectedId = row.dataset.id;
+            render();
+          };
+        });
+        const d = devices.find((x) => x.deviceId === selectedId);
+        const online = Boolean(d && d.online);
+        ["lock", "unlock", "locate", "status", "reboot"].forEach((id) => {
+          document.getElementById(id).disabled = !online;
+        });
+        if (!d) {
+          document.getElementById("sel").textContent = "Ningún dispositivo online";
+          document.getElementById("detail").textContent = "";
+          return;
+        }
+        document.getElementById("sel").textContent = d.deviceId + (d.model ? " · " + d.model : "");
+        document.getElementById("detail").textContent =
+          "v" +
+          (d.appVersion || "?") +
+          " · lastSeen " +
+          d.lastSeen +
+          (d.pendingCount ? " · pendientes " + d.pendingCount : "");
+      }
+
+      async function refresh() {
+        cfg = await api("/api/config");
+        document.getElementById("cfg").textContent =
+          "Base " +
+          cfg.baseLat +
+          ", " +
+          cfg.baseLng +
+          " · radio " +
+          cfg.fenceRadiusM +
+          " m · comandos: " +
+          cfg.commandTypes.join(", ");
+        const list = await api("/api/devices");
+        devices = list.devices || [];
+        if (!selectedId && devices[0]) selectedId = devices[0].deviceId;
+        if (selectedId && !devices.find((d) => d.deviceId === selectedId)) selectedId = devices[0]?.deviceId || null;
+        render();
+        const ev = await api("/api/events?limit=30");
+        if (Array.isArray(ev.events) && ev.events.length) {
+          document.getElementById("log").textContent = ev.events
+            .map((e) => e.ts.slice(11, 19) + "  " + e.kind + (e.deviceId ? " " + e.deviceId : "") + (e.detail ? " " + JSON.stringify(e.detail) : ""))
+            .join("\n");
+        }
+      }
+
+      async function send(type) {
+        if (!selectedId) return;
+        if (type === "REBOOT" && !confirm("¿Reiniciar " + selectedId + "?")) return;
+        const r = await api("/api/devices/" + encodeURIComponent(selectedId) + "/commands", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type }),
+        });
+        log(type + " → " + r.commandId + (r.delivered ? " enviado" : " en cola"));
+        setTimeout(refresh, 800);
+      }
+
+      document.getElementById("refresh").onclick = () => refresh().catch((e) => log(e.message));
+      document.getElementById("lock").onclick = () => send("LOCK").catch((e) => log(e.message));
+      document.getElementById("unlock").onclick = () => send("UNLOCK").catch((e) => log(e.message));
+      document.getElementById("locate").onclick = () => send("LOCATE").catch((e) => log(e.message));
+      document.getElementById("status").onclick = () => send("STATUS").catch((e) => log(e.message));
+      document.getElementById("reboot").onclick = () => send("REBOOT").catch((e) => log(e.message));
+
+      refresh().catch((e) => log(e.message));
+      setInterval(() => refresh().catch(() => {}), 3000);
+    </script>
+  </body>
+</html>
