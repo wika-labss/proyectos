@@ -98,13 +98,31 @@ Capturas en `idea/pruebas-fase2/`.
 
 ---
 
+## Lote paralelo A / B / C (2026-11-03)
+
+Tres equipos reformularon estructura con libertad; invariantes Fase 1 intactos. **Bóveda oficial (skills + capturas):**  
+https://github.com/wika-labss/wika-fundaments/tree/cursor/bodega-disenos-trabajamos-aa58/bodega-disenos/proyectos/trabajamos-com  
+PR fundaments: https://github.com/wika-labss/wika-fundaments/pull/13
+
+| Look | Rama | Skills ocupadas |
+| :--- | :--- | :--- |
+| **A LinkedIn** | `cursor/look-linkedin-aa58` | `linkedin-profile-inspired` · `indeed-cl-inspired` · `redesign-skill` |
+| **B Elegante** | `cursor/look-elegante-aa58` | `high-end-visual-design` · `design-taste-frontend` · `redesign-skill` |
+| **C Colorido** | `cursor/look-colorido-aa58` | `design-taste-frontend` · `redesign-skill` · (IA producto Indeed/LinkedIn solo orden) |
+
+Capturas locales: `look-{linkedin,elegante,colorido}-*.png` (+ NOTES).
+
+---
+
 ## Skills de apoyo (no son dirección MOD-DIR por sí solas)
 
 | Skill | Ruta | Uso |
 | :--- | :--- | :--- |
 | Job-board search (Indeed CL inspired-by) | `skills/indeed-cl-inspired/SKILL.md` | Barra / listado tipo job board |
 | Perfil emprendedor (LinkedIn inspired-by) | `skills/linkedin-profile-inspired/SKILL.md` | Perfil público (+ anatomía panel) |
+| Taste / soft / redesign / minimalist / brutalist | `web-design/external/taste-skill/skills/…` | Dirección y audit (ver bóveda) |
 
+Catálogo consolidado: `wika-fundaments/bodega-disenos/catalogo-skills.md`.  
 No sustituyen un `direction_skill` firmado. No usan marcas ni assets de terceros en la UI.
 
 ---
@@ -113,4 +131,5 @@ No sustituyen un `direction_skill` firmado. No usan marcas ni assets de terceros
 
 1. No marcar look Fase 2 como aprobado hasta firma de Vissiuss.
 2. El HTML semántico de Fase 1 (ids de formularios / a11y / Contactar) se mantiene; cambian markup de layout y CSS.
-3. PR de trabajo: https://github.com/wika-labss/proyectos/pull/117
+3. PR bootstrap: https://github.com/wika-labss/proyectos/pull/117
+4. PR bóveda: https://github.com/wika-labss/wika-fundaments/pull/13
