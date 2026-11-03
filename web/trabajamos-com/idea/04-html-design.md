@@ -2,11 +2,11 @@
 id: "WEB-HTML-001"
 title: "trabajamos.com — Diseño HTML y Aprobación Visual"
 status: "BORRADOR"
-version: "0.2.0"
+version: "0.2.1"
 owner: "Vissiuss"
 created_at: "2026-11-02"
 updated_at: "2026-11-02"
-visual_approval_passed: false
+visual_approval_passed: true
 audit_3_passed: false
 construction_phase_complete: false
 direction_skill: "minimalist-ui"
@@ -24,8 +24,9 @@ direction_skill: "minimalist-ui"
 
 - **Nombre del Proyecto:** trabajamos.com
 - **Documentos base:** `01-problem.md` (`WEB-PROB-001`) | `02-features.md` (`WEB-FEAT-001`) | `03-module-discovery.md` (`WEB-MOD-001`) | `05-build-plan.md`
-- **Estado de gatekeeping:** `PENDIENTE_APROBACION_VISUAL`
-- **Decisiones del arquitecto:** Vissiuss respondió las nueve preguntas de la versión `0.1.0` el 2026-11-02 a las 17:50 (UTC-3). Esta versión las aplica (§7.1). Esas respuestas no firman el Gate 3A.
+- **Estado de gatekeeping:** `APROBACION_VISUAL_APROBADA` · `PENDIENTE_AUDITORIA_ENSAMBLADO`
+- **Decisiones del arquitecto:** Vissiuss respondió las nueve preguntas de la versión `0.1.0` el 2026-11-02 a las 17:50 (UTC-3). Esta versión las aplica (§7.1).
+- **Gate 3A:** Vissiuss aprobó la versión `0.2.1` el 2026-11-02 a las 22:17 (UTC-3) con el mensaje "alinea y aprobado 04" (§9).
 - **direction_skill:** `minimalist-ui`. Coincide con `MOD-DIR` en `03-module-discovery.md` (`direction_locked: true`).
 - **Estado de `05`:** `05-build-plan.md` sigue como plantilla. Lo que este documento deja "para `05`" (autenticación, datos, imágenes, mapa, URL final) se decide allí.
 - **Alcance:** Fase 1 textual. Estructura semántica y wireframes de texto para el cliente sin cuenta (`VIEW-01` a `VIEW-09`) y el panel del emprendedor (`VIEW-10` a `VIEW-17`). Sin colores, tipografías ni tokens visuales; el look lo pone `minimalist-ui` en Fase 2.
@@ -185,7 +186,7 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 
 **Publicación sin borradores.** Un perfil es público desde que se guarda por primera vez con nombre y contacto válido. No hay estado de borrador; el lado público solo recibe perfiles guardados. Un `slug` que no existe muestra "Perfil no disponible".
 
-**Contacto obligatorio (D-01).** El primer guardado exige nombre visible (`02` 1.1) y un contacto válido: teléfono, correo o URL. La exigencia del contacto sale del objetivo de `01` §5 (el emprendedor publica su perfil con un botón de contacto). Sin alguno de los dos, `Crear perfil` no publica nada (`VIEW-12`). Por eso todo perfil publicado tiene `Contactar` en `VIEW-06`. En ediciones posteriores, un contacto vacío o inválido no se guarda y queda el contacto válido anterior (`02` 7.2).
+**Contacto obligatorio (D-01).** El primer guardado exige nombre visible y un contacto válido: teléfono, correo o URL (`02` 1.1 desde v0.1.2). Sin alguno de los dos, `Crear perfil` no publica nada (`VIEW-12`). Por eso todo perfil publicado tiene `Contactar` en `VIEW-06`. En ediciones posteriores, un contacto vacío o inválido no se guarda y queda el contacto válido anterior (`02` 7.2).
 
 **Dato de contacto visible (D-03).** Junto a `Contactar`, `VIEW-06` muestra el dato como texto: el teléfono o el correo tal como se guardaron, o el dominio de la URL. `Contactar` sigue siendo un enlace.
 
@@ -1336,9 +1337,9 @@ No queda ninguna propuesta pendiente. `punto.etiqueta` (D-08) y los `id` opciona
 
 ### 7.1 Decisiones del arquitecto (2026-11-02)
 
-Vissiuss respondió "todas si" a las nueve preguntas de la versión `0.1.0` el 2026-11-02 a las 17:50 (UTC-3). Estas decisiones no firman el Gate 3A.
+Vissiuss respondió "todas si" a las nueve preguntas de la versión `0.1.0` el 2026-11-02 a las 17:50 (UTC-3). `02` v0.1.2 y `03` v0.1.1 recogen D-01, D-02, D-07, D-08 y D-09.
 
-- **D-01 Contacto obligatorio en el primer guardado.** El perfil se publica solo con nombre y contacto válido (teléfono, correo o URL); en ediciones, un contacto vacío o inválido no se guarda y queda el anterior; sale del objetivo de `01` §5. Vistas: `VIEW-06`, `VIEW-12`, `VIEW-17`.
+- **D-01 Contacto obligatorio en el primer guardado.** El perfil se publica solo con nombre y contacto válido (teléfono, correo o URL); en ediciones, un contacto vacío o inválido no se guarda y queda el anterior. `02` v0.1.2 lo recoge en 1.1 y 1.2. Vistas: `VIEW-06`, `VIEW-12`, `VIEW-17`.
 - **D-02 Distancia visible por resultado.** Cada resultado muestra "a 1,2 km" (línea recta, un decimal, coma decimal) y el orden sigue siendo del más cercano al más lejano; `distancia_km` entra al resultado derivado. Vistas: `VIEW-03`, `VIEW-04`.
 - **D-03 Dato de contacto visible.** Junto a `Contactar` se muestra el teléfono o el correo como texto, o el dominio si el contacto es una URL; `Contactar` sigue siendo un enlace. Vistas: `VIEW-06`, `VIEW-12`, `VIEW-17`.
 - **D-04 Mensaje propio sin punto.** "El `#` existe pero ninguna oferta tiene localidad marcada" tiene su mensaje, distinto de "ese oficio no está". Vistas: `VIEW-03`, `VIEW-04`.
@@ -1368,7 +1369,7 @@ Convertidos en decisión: **S-08 → D-07** (título obligatorio) y la parte "di
 - **S-15 Enlaces externos.** Abren en la misma pestaña; `Contactar` tipo `url` y las redes llevan `rel="nofollow ugc"`.
 - **S-16 Carga del perfil.** Si el perfil se carga en el navegador existe el estado "Cargando perfil…"; si se entrega desde el servidor, no. Un `slug` inexistente responde 404 con `noindex`. Se decide en `05`.
 - **S-17 Estado del perfil.** `VIEW-17` no agrega datos; solo lee el `Perfil`.
-- **S-18 Mapa.** Proveedor y formato (interactivo o imagen) en `05`. El control de teclado depende del proveedor; la opción escrita de `VIEW-16` cubre a quien no usa el mapa. El nombre del punto marcado en el mapa (D-08) requiere geocodificación inversa del mismo proveedor.
+- **S-18 Mapa.** Proveedor y formato (interactivo o imagen) en `05`. El control de teclado depende del proveedor; la opción escrita de `VIEW-16` cubre a quien no usa el mapa. El nombre del punto marcado en el mapa (D-08) usa la geocodificación inversa de `MOD-04` (`03` v0.1.1), con el mismo proveedor.
 - **S-19 Imágenes.** Formatos y tamaño máximo en `05`. En el perfil público cargan en diferido, sin reintento por imagen y sin visor ampliado.
 - **S-20 Encabezado público.** El enlace `Crear perfil` del encabezado es la entrada al panel. No hay páginas legales en v1.
 - **S-21 Títulos y descripciones.** El `title` de `index.html` refleja la búsqueda; la `description` del perfil se arma con `nombre` y los `tag` de sus ofertas.
@@ -1382,11 +1383,11 @@ Convertidos en decisión: **S-08 → D-07** (título obligatorio) y la parte "di
 | :--- | :--- | :--- |
 | `01` Escenario 1: el cliente encuentra un oficio cerca | `VIEW-01` barra + `VIEW-02` ubicación concedida o resuelta → `VIEW-04` éxito ordenado por cercanía con "a 1,2 km" por resultado (D-02) → `VIEW-05` con `VIEW-06` (`Contactar`, dato de contacto visible y redes; D-03). Solo hay barra, sin compositor de hashtags. | `VIEW-14` éxito (oferta con título y `#`) + `VIEW-16` éxito (punto con etiqueta) + `VIEW-12`/`VIEW-13` éxito (contacto obligatorio y redes). |
 | `01` Escenario 2: sin oficio o sin ubicación no hay listado inventado | `VIEW-04` vacío sin coincidencia (sin otros `#`); `VIEW-03` error `#` vacío (pide un oficio); `VIEW-02` sin origen o permiso negado (pide ubicación, sin punto inventado). | — |
-| `FEAT-01` 1.1: perfil guardado con nombre queda publicado (D-01 suma contacto válido) | `VIEW-05` éxito: `h1` con `nombre`, secciones `VIEW-06` a `VIEW-09`, `<title>{nombre} — trabajamos.com</title>`; `VIEW-06` siempre con `Contactar`. | `VIEW-12` éxito "Perfil publicado" tras guardar nombre y contacto válido; `VIEW-17` con enlace "Ver mi perfil público"; `VIEW-11` pasa a "publicado". |
+| `FEAT-01` 1.1: perfil guardado con nombre y contacto válido queda publicado | `VIEW-05` éxito: `h1` con `nombre`, secciones `VIEW-06` a `VIEW-09`, `<title>{nombre} — trabajamos.com</title>`; `VIEW-06` siempre con `Contactar`. | `VIEW-12` éxito "Perfil publicado" tras guardar nombre y contacto válido; `VIEW-17` con enlace "Ver mi perfil público"; `VIEW-11` pasa a "publicado". |
 | `FEAT-01` 1.2: sin sesión, no se publica y ve qué falta | Un perfil sin guardar no existe: `VIEW-05` error "Perfil no disponible". | `VIEW-11` guardia (redirige a `VIEW-10`, sin formularios); sesión vencida al enviar: "Tu sesión terminó. No se guardó ningún cambio." + "Entrar de nuevo"; `VIEW-10` variante sesión vencida. |
-| `FEAT-01` 1.2: sin nombre, no se publica y ve qué falta (D-01: también sin contacto en el primer guardado) | `VIEW-05` error "Perfil no disponible" si el perfil nunca se guardó. | `VIEW-12` error de primer guardado: el resumen lista nombre y contacto faltantes, "Tu perfil no se publicó."; edición sin nombre: "Falta el nombre visible. No se guardó ningún cambio." y "Sigue publicado: {nombre anterior}". |
-| `FEAT-02` 2.1: la oferta aparece en el perfil con tipo y `#` | `VIEW-07` éxito; `VIEW-04` éxito muestra `tipo` y `tag` por ítem. | `VIEW-14` éxito: la oferta entra a "Mis ofertas" con tipo y `#` normalizado (vista previa "Se guardará como"). |
-| `FEAT-02` 2.2: sin tipo o `#` vacío, no se guarda y se conservan las anteriores (D-07 suma el título) | `VIEW-07` muestra solo ofertas guardadas; `VIEW-07` vacío si no hay. | `VIEW-14` error (sin tipo, sin título o `#` vacío): resumen por campo, "La oferta no se guardó. Tus ofertas anteriores siguen publicadas.", lista sin cambios. |
+| `FEAT-01` 1.2: sin nombre o sin contacto válido, no se publica y ve qué falta | `VIEW-05` error "Perfil no disponible" si el perfil nunca se guardó. | `VIEW-12` error de primer guardado: el resumen lista nombre y contacto faltantes, "Tu perfil no se publicó."; edición sin nombre: "Falta el nombre visible. No se guardó ningún cambio." y "Sigue publicado: {nombre anterior}". |
+| `FEAT-02` 2.1: la oferta aparece en el perfil con tipo, título y `#` | `VIEW-07` éxito; `VIEW-04` éxito muestra `tipo` y `tag` por ítem. | `VIEW-14` éxito: la oferta entra a "Mis ofertas" con tipo y `#` normalizado (vista previa "Se guardará como"). |
+| `FEAT-02` 2.2: sin tipo, sin título o con `#` vacío, no se guarda y se conservan las anteriores | `VIEW-07` muestra solo ofertas guardadas; `VIEW-07` vacío si no hay. | `VIEW-14` error (sin tipo, sin título o `#` vacío): resumen por campo, "La oferta no se guardó. Tus ofertas anteriores siguen publicadas.", lista sin cambios. |
 | `FEAT-02` precondición "perfil publicado" | — | `VIEW-14` bloqueada sin perfil, con enlace a `VIEW-12`. |
 | `FEAT-03` 3.1: la imagen queda en el portafolio | `VIEW-08` éxito con `alt` por imagen. | `VIEW-15` éxito: imagen en "Mis imágenes" con su texto alternativo. |
 | `FEAT-03` 3.2: no es imagen o la carga falla, el portafolio no cambia | `VIEW-08` muestra solo imágenes guardadas; `VIEW-08` vacío si no hay. | `VIEW-15` error: "La imagen no se guardó y tu portafolio no cambió.", lista sin cambios. |
@@ -1408,6 +1409,6 @@ Convertidos en decisión: **S-08 → D-07** (título obligatorio) y la parte "di
 
 ## 9. Aprobación
 
-- **Gate 3A** `visual_approval_passed` — wireframe / estructura.
+- **Gate 3A** `visual_approval_passed` — wireframe / estructura. **APROBADO** por Vissiuss (arquitecto), 2026-11-02 22:17 (UTC-3). El agente transcribió la decisión.
 - **Gate 3B** `audit_3_passed` — ensamblado 03+04+05.
 - **Fase 1** `ready_for_construction` — flag en `05-build-plan.md`.
