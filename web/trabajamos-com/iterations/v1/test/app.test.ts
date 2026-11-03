@@ -359,13 +359,15 @@ describe("búsqueda por cercanía (VIEW-01..04)", () => {
     const t = texto(r.body);
     expect(t).toContain("3 ofertas de #gasfiter, de la más cercana a la más lejana.");
     expect(t).toContain("Ofertas de #gasfiter cerca de Providencia");
-    const orden = [...r.body.matchAll(/<h3 id="r\d+"><a [^>]+>([^<]+)<\/a>/gu)].map((m) => m[1]);
+    const orden = [...r.body.matchAll(/<h3 id="r\d+"[^>]*><a [^>]+>([^<]+)<\/a>/gu)].map((m) => m[1]);
     expect(orden).toEqual([
-      "Gasfitería Providencia, Gasfiter Providencia",
-      "Gasfitería Ñuñoa, Gasfiter Ñuñoa",
-      "Gasfitería Maipú, Gasfiter Maipú",
+      "Gasfitería Providencia",
+      "Gasfitería Ñuñoa",
+      "Gasfitería Maipú",
     ]);
-    expect(r.body).toMatch(/<p>a \d+,\d km<\/p>/u);
+    expect(r.body).toMatch(/a \d+,\d km/u);
+    expect(r.body).toContain("Gasfiter Providencia");
+    expect(r.body).toContain("Gasfiter Maipú");
     expect(r.body).toContain("<title>#gasfiter cerca de ti — trabajamos.com</title>");
   });
 
@@ -389,7 +391,7 @@ describe("búsqueda por cercanía (VIEW-01..04)", () => {
   it("sin origen pide la ubicación", async () => {
     const r = await e.app.inject({ method: "GET", url: "/index.html?q=gasfiter" });
     expect(r.body).toContain("Para ver oficios cercanos necesitamos tu ubicación.");
-    expect(r.body).toContain('id="resultados" aria-labelledby="resultados-titulo" hidden');
+    expect(r.body).toMatch(/id="resultados"[^>]*aria-labelledby="resultados-titulo"[^>]*\bhidden\b/u);
   });
 
   it("localidad no encontrada no inventa un punto", async () => {

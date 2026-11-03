@@ -10,22 +10,22 @@ fase2_look_aprobado: false
 
 # Pruebas de dirección visual — Fase 2
 
-Registro de las tres pruebas de look aplicadas sobre el SSR de Fase 1 (`iterations/v1/`).  
-**Ninguna convenció al arquitecto.** El código deja instalada la última prueba (Soft Structuralism); la dirección definitiva queda **pendiente** para otra sesión.
+Registro de pruebas de look aplicadas sobre el SSR de Fase 1 (`iterations/v1/`).  
+**Ninguna está firmada como look final** hasta que el arquitecto apruebe. El código deja instalada la **última prueba** (Indeed home + LinkedIn perfil).
 
 Capturas en `idea/pruebas-fase2/`.
 
 ---
 
-## Estado al cerrar el día (2026-11-02 / 03, America/Santiago)
+## Estado (2026-11-03, America/Santiago)
 
 | Ítem | Estado |
 | :--- | :--- |
 | Fase 1 (`construction_phase_complete`) | Firmada |
 | Look Fase 2 | **No aprobado** — ver pruebas abajo |
-| `direction_skill` actual en MOD-DIR | `high-end-visual-design` / `soft_structuralism_claro` (última prueba; no es firma de look) |
-| Skills auxiliares | `skills/indeed-cl-inspired/` · `skills/linkedin-profile-inspired/` (perfil editable, inspired-by) |
-| Siguiente sesión | Elegir o iterar dirección; luego Auditoría de Release |
+| Código activo | Prueba 4: `indeed-cl-inspired` (home) + `linkedin-profile-inspired` (perfil) |
+| Skills | `skills/indeed-cl-inspired/` · `skills/linkedin-profile-inspired/` (inspired-by; sin marcas en UI) |
+| Siguiente | Veredicto de Vissiuss sobre prueba 4; luego Auditoría de Release si hay firma |
 
 ---
 
@@ -63,24 +63,39 @@ Capturas en `idea/pruebas-fase2/`.
 | Commit | `d4d96f0e` |
 | Variante | Soft Structuralism clara (Syne + Plus Jakarta Sans, acento teal, sin glass morado) |
 | Qué se probó | Cabecera isla, cajón premium, más motion |
-| Veredicto | **No convence** (Vissiuss); cerramos el día con las tres como pruebas |
+| Veredicto | **No convence** (Vissiuss) |
 | Capturas | `pruebas-fase2/03-soft-struct-inicio.png`, `03-soft-struct-menu.png`, `03-soft-struct-resultados.png` |
 
 ---
 
-## Skills de apoyo (no son dirección MOD-DIR)
+## Prueba 4 — Indeed home + LinkedIn perfil (inspired-by)
 
-| Skill | Ruta | Uso |
-| :--- | :--- | :--- |
-| Job-board search (Indeed CL inspired-by) | `skills/indeed-cl-inspired/SKILL.md` (`19f4fcd2`) | Barra / listado tipo job board |
-| Perfil emprendedor (LinkedIn inspired-by) | `skills/linkedin-profile-inspired/SKILL.md` (`b70f294b`) | Perfil público + panel editable |
-
-No sustituyen `direction_skill`. No usan marcas ni assets de terceros en la UI.
+| Campo | Valor |
+| :--- | :--- |
+| Cuándo | 2026-11-03 ~10:20 UTC-3 |
+| Skills | `indeed-cl-inspired` → `#buscar` / `#resultados`; `linkedin-profile-inspired` → `perfil.html` |
+| Qué se copió | Distribución, densidad, formas de botones/campos (radio 8–10px CTAs; chips pill en filtros); **no** marcas ni assets de terceros |
+| Home | Header plano logo+nav; Qué / Dónde lado a lado + CTA azul `Buscar`; chips; cards densas título→empresa→distancia→meta |
+| Perfil | Banner + `ep-hero` (inicial, nombre H1, headline, localidad); **Contactar** en CTA del header; TOC; secciones en bloques blancos |
+| Tokens | `--jb-*` (job board azul `#2557a7`) · `--ep-*` (perfil teal `#0f766e`) |
+| Veredicto | **Pendiente** (Vissiuss) |
+| Capturas | `04-indeed-inicio.png`, `04-indeed-resultados.png`, `04-indeed-mobile.png`, `04-linkedin-perfil.png` |
 
 ---
 
-## Notas para la próxima sesión
+## Skills de apoyo (no son dirección MOD-DIR por sí solas)
 
-1. No marcar look Fase 2 como aprobado hasta que Vissiuss firme una dirección (u otra skill / brandkit propio).
-2. El HTML semántico de Fase 1 se mantiene; solo cambia CSS/shell.
+| Skill | Ruta | Uso |
+| :--- | :--- | :--- |
+| Job-board search (Indeed CL inspired-by) | `skills/indeed-cl-inspired/SKILL.md` | Barra / listado tipo job board |
+| Perfil emprendedor (LinkedIn inspired-by) | `skills/linkedin-profile-inspired/SKILL.md` | Perfil público (+ anatomía panel) |
+
+No sustituyen un `direction_skill` firmado. No usan marcas ni assets de terceros en la UI.
+
+---
+
+## Notas
+
+1. No marcar look Fase 2 como aprobado hasta firma de Vissiuss.
+2. El HTML semántico de Fase 1 (ids de formularios / a11y / Contactar) se mantiene; cambian markup de layout y CSS.
 3. PR de trabajo: https://github.com/wika-labss/proyectos/pull/117

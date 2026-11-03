@@ -1,4 +1,4 @@
-// Menú Soft Structuralism: aria, Escape, reveals de entrada. El cajón funciona sin JS (checkbox).
+// Menú cajón + reveals ligeros. El cajón funciona sin JS (checkbox).
 (() => {
   "use strict";
   const toggle = document.getElementById("menu-toggle");
@@ -22,7 +22,6 @@
     });
   }
 
-  // Entrada: fade-up suave en bloques principales (solo transform/opacity).
   if (reduce) {
     document.documentElement.classList.add("motion-reduce");
     return;
@@ -31,14 +30,14 @@
   document.documentElement.classList.add("motion-ready");
 
   const targets = document.querySelectorAll(
-    "[data-reveal], body > main > *:not(script), body > footer, #resultados > li, #ofertas > ul > li, #portafolio > ul > li",
+    ".jb-header, .jb-search, .jb-results, .ep-hero, .ep-section, body > main > *:not(script), body > footer, .jb-card, .ep-offers > li, .ep-folio > li",
   );
 
   targets.forEach((el, i) => {
     if (!(el instanceof HTMLElement)) return;
     if (el.closest(".menu-cajon")) return;
     el.classList.add("reveal");
-    el.style.setProperty("--reveal-delay", `${Math.min(i * 55, 420)}ms`);
+    el.style.setProperty("--reveal-delay", `${Math.min(i * 40, 360)}ms`);
   });
 
   const io = new IntersectionObserver(
@@ -49,15 +48,13 @@
         io.unobserve(entry.target);
       }
     },
-    { rootMargin: "0px 0px -8% 0px", threshold: 0.12 },
+    { rootMargin: "0px 0px -6% 0px", threshold: 0.08 },
   );
 
   document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 
-  // Primer paint: cabecera y primer bloque sin esperar scroll.
   requestAnimationFrame(() => {
-    document.querySelector(".banner")?.classList.add("reveal-in");
-    const first = document.querySelector("body > main > *:first-child");
-    first?.classList.add("reveal-in");
+    document.querySelector(".jb-header")?.classList.add("reveal-in");
+    document.querySelector(".jb-search, .ep-hero, body > main > *:first-child")?.classList.add("reveal-in");
   });
 })();

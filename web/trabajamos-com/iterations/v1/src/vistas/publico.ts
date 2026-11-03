@@ -30,13 +30,12 @@ export interface EstadoBusqueda {
 }
 
 function cabeceraPublica(actual: "buscar" | "perfil" | "otra" = "otra"): Html {
-  // Orden del menú: primero el CTA de emprendedor, luego la búsqueda.
   return cabeceraBanner({
-    lema: "Oficios y emprendedores cerca de ti.",
-    meta: "Chile · cercanía · #oficio",
+    lema: "Oficios y emprendedores cerca de ti",
+    meta: "Chile",
     enlaces: [
-      { href: "/panel/entrar.html", texto: "Crear perfil", actual: false },
       { href: "/index.html", texto: "Buscar oficios", actual: actual === "buscar" },
+      { href: "/panel/entrar.html", texto: "Crear perfil", actual: false },
     ],
   });
 }
@@ -90,14 +89,18 @@ export function seccionResultados(e: EstadoBusqueda): Html {
   let contenido: Html = html``;
   if (e.tipo === "exito") {
     const origen = e.origen === "localidad" ? e.localidad : "ti";
-    contenido = html`<h2 id="resultados-titulo">Ofertas de ${e.tag} cerca de ${origen}</h2>
-    <ol>
+    contenido = html`<header class="jb-results__head">
+      <h2 id="resultados-titulo">Ofertas de ${e.tag} cerca de ${origen}</h2>
+      <p class="jb-sort">Orden: <span aria-current="true">cercanía</span></p>
+    </header>
+    <ol class="jb-list">
       ${e.resultados.map(
         (r, i) => html`<li>
-        <article aria-labelledby="r${i + 1}">
-          <h3 id="r${i + 1}"><a href="/perfil.html?slug=${encodeURIComponent(r.perfil.slug)}">${r.oferta.titulo}, ${r.perfil.nombre}</a></h3>
-          <p>${ETIQUETA_OFERTA[r.oferta.tipo]} · ${r.oferta.tag}</p>
-          <p>${distanciaTexto(r.distanciaKm)}</p>
+        <article class="jb-card" aria-labelledby="r${i + 1}">
+          <h3 id="r${i + 1}" class="jb-card__title"><a href="/perfil.html?slug=${encodeURIComponent(r.perfil.slug)}">${r.oferta.titulo}</a></h3>
+          <p class="jb-card__company">${r.perfil.nombre}</p>
+          <p class="jb-card__meta">${distanciaTexto(r.distanciaKm)}</p>
+          <p class="jb-card__snip">${ETIQUETA_OFERTA[r.oferta.tipo]} · ${r.oferta.tag}</p>
         </article>
       </li>`,
       )}
@@ -109,7 +112,7 @@ export function seccionResultados(e: EstadoBusqueda): Html {
     contenido = html`<h2 id="resultados-titulo">Sin oficios cercanos para ${e.tag}</h2>
     <p>Hay ofertas de ${e.tag}, pero ninguna tiene localidad marcada, así que no aparecen como cercanas.</p>`;
   }
-  return html`<section id="resultados" aria-labelledby="resultados-titulo"${attrSi(!visible, "hidden")}>
+  return html`<section id="resultados" class="jb-results" aria-labelledby="resultados-titulo"${attrSi(!visible, "hidden")}>
     ${contenido}
   </section>`;
 }
@@ -123,31 +126,37 @@ export function tituloInicio(e: EstadoBusqueda): string {
 export function vistaInicio(e: EstadoBusqueda): Html {
   const qInvalido = e.tipo === "tag_vacio";
   const localidadInvalida = e.tipo === "localidad_no_encontrada" || e.tipo === "sin_origen";
-  const cuerpo = html`<main id="contenido">
-  <section id="buscar" aria-labelledby="buscar-titulo">
-    <p class="bloque-etiqueta">Buscar oficios</p>
+  const cuerpo = html`<main id="contenido" class="jb-page">
+  <section id="buscar" class="jb-search" aria-labelledby="buscar-titulo">
     <h1 id="buscar-titulo">Encuentra un oficio cerca de ti</h1>
-    <form id="form-buscar" role="search" aria-label="Buscar oficios" action="/index.html" method="get">
-      <fieldset id="ubicacion" aria-describedby="ubicacion-ayuda">
-        <legend>Tu ubicación</legend>
-        <p id="ubicacion-actual">${textoUbicacion(e)}</p>
-        <label for="localidad">Escribe tu localidad</label>
+    <form id="form-buscar" class="jb-search__form" role="search" aria-label="Buscar oficios" action="/index.html" method="get">
+      <label class="jb-field" for="q">
+        <span class="jb-field__label">Qué</span>
+        <input type="search" id="q" name="q" value="${e.q}" autocomplete="off" enterkeyhint="search"
+               placeholder="Oficio o palabra clave"
+               aria-describedby="q-ayuda${qInvalido ? " estado-busqueda" : ""}"${attrSi(qInvalido, 'aria-invalid="true" autofocus')}>
+      </label>
+      <div class="jb-field jb-field--donde" id="ubicacion" aria-describedby="ubicacion-ayuda">
+        <label class="jb-field__label" for="localidad">Dónde</label>
         <input type="text" id="localidad" name="localidad" value="${e.localidad}" autocomplete="address-level2"
+               placeholder="Comuna o ciudad"
                aria-describedby="ubicacion-actual"${attrSi(localidadInvalida, 'aria-invalid="true"')}${attrSi(localidadInvalida && !qInvalido, "autofocus")}>
-        <button type="button" id="usar-ubicacion" hidden>Usar mi ubicación</button>
-        <p id="ubicacion-ayuda">Usamos tu ubicación solo para ordenar los resultados. No la guardamos.</p>
-      </fieldset>
-
-      <label for="q">Oficio</label>
-      <input type="search" id="q" name="q" value="${e.q}" autocomplete="off" enterkeyhint="search"
-             aria-describedby="q-ayuda${qInvalido ? " estado-busqueda" : ""}"${attrSi(qInvalido, 'aria-invalid="true" autofocus')}>
-      <p id="q-ayuda">Escribe solo el oficio, por ejemplo gasfiter o #maestro chasquilla.</p>
-
-      <button type="submit">Buscar</button>
+        <p id="ubicacion-actual" class="jb-field__hint">${textoUbicacion(e)}</p>
+        <button type="button" id="usar-ubicacion" class="jb-linkish" hidden>Usar mi ubicación</button>
+      </div>
+      <button type="submit" class="jb-cta">Buscar</button>
     </form>
+    <p id="q-ayuda" class="jb-help">Escribe solo el oficio, por ejemplo gasfiter o #maestro chasquilla.</p>
+    <p id="ubicacion-ayuda" class="jb-help">Usamos tu ubicación solo para ordenar los resultados. No la guardamos.</p>
     <p id="estado-busqueda" role="status" aria-live="polite">${textoEstado(e)}</p>
-    <button type="button" id="reintentar"${attrSi(e.tipo !== "error_servicio", "hidden")}>Reintentar búsqueda</button>
+    <button type="button" id="reintentar" class="jb-cta jb-cta--ghost"${attrSi(e.tipo !== "error_servicio", "hidden")}>Reintentar búsqueda</button>
   </section>
+
+  <div class="jb-filters" role="toolbar" aria-label="Filtros">
+    <button type="button" class="jb-chip is-active" aria-pressed="true" disabled>Cercanía</button>
+    <button type="button" class="jb-chip" aria-pressed="false" disabled>Oficio</button>
+    <button type="button" class="jb-chip" aria-pressed="false" disabled>Fecha</button>
+  </div>
 
   ${seccionResultados(e)}
 </main>`;
@@ -161,6 +170,18 @@ export function vistaInicio(e: EstadoBusqueda): Html {
   });
 }
 
+function inicialNombre(nombre: string): string {
+  const letra = [...nombre.trim()][0];
+  return (letra ?? "?").toLocaleUpperCase("es-CL");
+}
+
+function headlinePerfil(perfil: Perfil): string {
+  if (perfil.ofertas[0]) return perfil.ofertas[0].titulo;
+  const tags = [...new Set(perfil.ofertas.map((o) => o.tag))];
+  if (tags.length) return tags.join(" · ");
+  return "Emprendedor en trabajamos.com";
+}
+
 export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => string): Html {
   const c = perfil.contacto;
   const tags = [...new Set(perfil.ofertas.map((o) => o.tag))];
@@ -168,11 +189,31 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
     `${perfil.nombre} en trabajamos.com: ofertas, trabajos realizados y contacto.` +
     (tags.length ? ` Ofrece ${tags.join(" y ")}.` : "");
   const externo = c.tipo === "url" ? ' rel="nofollow ugc"' : "";
-  const cuerpo = html`<main id="contenido">
+  const locLine = perfil.punto?.etiqueta ?? "Localidad sin marcar";
+  const cuerpo = html`<main id="contenido" class="ep-page">
   <p id="estado-perfil" role="status" aria-live="polite"></p>
-  <article id="perfil" aria-labelledby="perfil-nombre">
-    <h1 id="perfil-nombre">${perfil.nombre}</h1>
-    <nav aria-label="Secciones del perfil">
+  <article id="perfil" class="ep-profile" aria-labelledby="perfil-nombre">
+    <div class="ep-banner" aria-hidden="true"></div>
+    <header class="ep-hero">
+      <div class="ep-hero__photo" aria-hidden="true">${inicialNombre(perfil.nombre)}</div>
+      <div class="ep-hero__id">
+        <h1 id="perfil-nombre">${perfil.nombre}</h1>
+        <p class="ep-hero__headline">${headlinePerfil(perfil)}</p>
+        <p class="ep-hero__loc">${locLine}</p>
+        <div class="ep-hero__cta">
+          <a class="ep-cta" href="${contactoHref(c.tipo, c.valor)}" aria-describedby="contacto-dato"${new Html(externo)}>Contactar<span class="oculto"> a ${perfil.nombre} ${contactoMedio(c.tipo)}</span></a>
+          ${
+            perfil.redes.length
+              ? html`<ul class="ep-redes-inline" aria-label="Redes">
+            ${perfil.redes.map((r) => html`<li><a href="${r.url}" rel="nofollow ugc">${r.nombre}</a></li>`)}
+          </ul>`
+              : ""
+          }
+        </div>
+      </div>
+    </header>
+
+    <nav class="ep-toc" aria-label="Secciones del perfil">
       <ul>
         <li><a href="#contacto">Contacto</a></li>
         <li><a href="#ofertas">Ofertas</a></li>
@@ -181,9 +222,8 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
       </ul>
     </nav>
 
-    <section id="contacto" aria-labelledby="contacto-titulo">
+    <section id="contacto" class="ep-section" aria-labelledby="contacto-titulo">
       <h2 id="contacto-titulo">Contacto</h2>
-      <p><a href="${contactoHref(c.tipo, c.valor)}" aria-describedby="contacto-dato"${new Html(externo)}>Contactar<span class="oculto"> a ${perfil.nombre} ${contactoMedio(c.tipo)}</span></a></p>
       <p id="contacto-dato">${contactoDato(c.tipo, c.valor)}</p>
       <h3 id="redes-titulo">Redes</h3>
       ${
@@ -195,24 +235,24 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
       }
     </section>
 
-    <section id="ofertas" aria-labelledby="ofertas-titulo">
+    <section id="ofertas" class="ep-section" aria-labelledby="ofertas-titulo">
       <h2 id="ofertas-titulo">Ofertas</h2>
       ${
         perfil.ofertas.length
-          ? html`<ul>
+          ? html`<ul class="ep-offers">
         ${perfil.ofertas.map(
-          (o) => html`<li><h3>${o.titulo}</h3><p>${ETIQUETA_OFERTA[o.tipo]} · ${o.tag}</p></li>`,
+          (o) => html`<li><article><h3>${o.titulo}</h3><p class="ep-offers__meta">${ETIQUETA_OFERTA[o.tipo]} · ${o.tag}</p></article></li>`,
         )}
       </ul>`
           : html`<p>Este perfil aún no publica ofertas.</p>`
       }
     </section>
 
-    <section id="portafolio" aria-labelledby="portafolio-titulo">
+    <section id="portafolio" class="ep-section" aria-labelledby="portafolio-titulo">
       <h2 id="portafolio-titulo">Portafolio</h2>
       ${
         perfil.imagenes.length
-          ? html`<ul>
+          ? html`<ul class="ep-folio">
         ${perfil.imagenes.map(
           (i) =>
             html`<li><img src="${urlImagen(i.archivo)}" alt="${i.alt}" width="${i.ancho}" height="${i.alto}" loading="lazy"></li>`,
@@ -222,7 +262,7 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
       }
     </section>
 
-    <section id="localidad" aria-labelledby="localidad-titulo">
+    <section id="localidad" class="ep-section" aria-labelledby="localidad-titulo">
       <h2 id="localidad-titulo">Localidad</h2>
       ${
         perfil.punto
@@ -234,7 +274,7 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
       }
     </section>
 
-    <p><a href="/index.html">Buscar otro oficio</a></p>
+    <p class="ep-back"><a href="/index.html">Buscar otro oficio</a></p>
   </article>
 </main>`;
   return documento({

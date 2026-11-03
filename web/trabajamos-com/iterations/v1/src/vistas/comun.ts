@@ -12,21 +12,25 @@ export interface EnlaceMenu {
   meta?: string;
 }
 
-/** Cabecera isla Soft Structuralism + menú dropdown/cajón premium (funciona sin JS). */
+/** Cabecera search-first / utilitaria (Indeed-inspired en público; panel reutiliza el mismo shell). */
 export function cabeceraBanner(opciones: {
   lema: string;
   meta?: string;
   enlaces: EnlaceMenu[];
   extra?: Html;
 }): Html {
-  return html`<header class="banner" data-reveal>
-  <div class="banner-isla">
-    <div class="banner-marca">
-      <p class="banner-kicker"><span class="banner-kicker-punto" aria-hidden="true"></span>Portal de oficios cercanos</p>
-      <a class="marca" href="/index.html">trabajamos.com</a>
-      <p class="banner-lema">${opciones.lema}</p>
-      ${opciones.meta ? html`<p class="banner-meta">${opciones.meta}</p>` : ""}
-    </div>
+  return html`<header class="jb-header">
+  <div class="jb-header__bar">
+    <a class="jb-logo" href="/index.html">trabajamos.com</a>
+    <nav class="jb-nav" aria-label="Principal">
+      <ul>
+        ${opciones.enlaces.map(
+          (e) => html`<li><a href="${e.href}"${e.actual ? html` aria-current="page"` : ""}>${e.texto}${
+            e.meta ? html`<span class="jb-nav__meta">${e.meta}</span>` : ""
+          }</a></li>`,
+        )}
+      </ul>
+    </nav>
     <input type="checkbox" id="menu-toggle" class="menu-toggle">
     <label for="menu-toggle" class="menu-boton" aria-controls="menu-cajon">
       <span class="menu-boton-lineas" aria-hidden="true"></span>
@@ -41,7 +45,7 @@ export function cabeceraBanner(opciones: {
           <span class="menu-cerrar-icono" aria-hidden="true"></span>
         </label>
       </div>
-      <nav aria-label="Principal">
+      <nav aria-label="Principal móvil">
         <ul>
           ${opciones.enlaces.map(
             (e, i) => html`<li style="--i:${String(i)}"><a href="${e.href}"${e.actual ? html` aria-current="page"` : ""}>${e.texto}${
@@ -53,6 +57,7 @@ export function cabeceraBanner(opciones: {
       ${opciones.extra ?? ""}
     </aside>
   </div>
+  <p class="jb-header__lema">${opciones.lema}${opciones.meta ? html` · ${opciones.meta}` : ""}</p>
 </header>`;
 }
 
