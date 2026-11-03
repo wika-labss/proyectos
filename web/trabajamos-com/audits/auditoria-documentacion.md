@@ -78,3 +78,14 @@ La documentación permite continuar.
 **Flags:** `audit_1_passed: true` en `01-problem.md` y `02-features.md`.
 
 **Siguiente:** `idea/03-module-discovery.md` y Auditoría de Módulos.
+
+---
+
+## Enmienda v0.1.2 de `02` (2026-11-02)
+
+Vissiuss aprobó el 2026-11-02 a las 22:17 (UTC-3) alinear `02` con las decisiones `D-01` y `D-07` de `04-html-design.md`:
+
+- `FEAT-01` 1.1 y 1.2: el perfil se publica con nombre visible y un contacto válido.
+- `FEAT-02` 2.1 y 2.2: cada oferta lleva título.
+
+El alcance, el RTM y el fuera de alcance no cambian. `audit_1_passed` sigue en `true`.

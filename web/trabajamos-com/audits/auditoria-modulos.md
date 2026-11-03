@@ -80,3 +80,17 @@ Los módulos pueden avanzar al HTML estructural.
 **Flags:** `audit_2_passed: true` en `03-module-discovery.md` y `direction_locked: true` en MOD-DIR.
 
 **Siguiente:** `idea/04-html-design.md` (vistas del cliente y del panel del emprendedor) y Gate 3A.
+
+---
+
+## Enmienda v0.1.1 de `03` (2026-11-02)
+
+Vissiuss aprobó el 2026-11-02 a las 22:17 (UTC-3) alinear `03` con las decisiones `D-01`, `D-02`, `D-07`, `D-08` y `D-09` de `04-html-design.md`:
+
+- `MOD-01`: contacto obligatorio para publicar; redes opcionales con `id`.
+- `MOD-02`: título obligatorio; oferta con `id`.
+- `MOD-03`: imagen con `id`.
+- `MOD-04`: `etiqueta` del punto y geocodificación inversa para nombrar un punto del mapa.
+- `MOD-05`: distancia en km por resultado.
+
+Los módulos, el grafo de dependencias y MOD-DIR no cambian. `audit_2_passed` y `direction_locked` siguen en `true`.

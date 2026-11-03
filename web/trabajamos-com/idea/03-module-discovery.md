@@ -2,7 +2,7 @@
 id: "WEB-MOD-001"
 title: "trabajamos.com — Descubrimiento de Módulos"
 status: "APROBADO"
-version: "0.1.0"
+version: "0.1.1"
 owner: "Vissiuss"
 created_at: "2026-11-02"
 updated_at: "2026-11-02"
@@ -22,6 +22,7 @@ audit_2_passed: true
 - **Especificaciones base:** `01-problem.md` (`WEB-PROB-001`) | `02-features.md` (`WEB-FEAT-001`)
 - **site_type:** `cms`
 - **Estado de gatekeeping:** `AUDITORIA_MODULOS_APROBADA`
+- **v0.1.1 (2026-11-02):** contacto obligatorio en `MOD-01`, título obligatorio en `MOD-02`, `id` en ofertas, imágenes y redes, `etiqueta` y geocodificación inversa en `MOD-04`, y distancia por resultado en `MOD-05`. Alinea `03` con las decisiones `D-01`, `D-02`, `D-07`, `D-08` y `D-09` de `04-html-design.md`. Vissiuss aprobó el cambio.
 
 ---
 
@@ -54,16 +55,16 @@ Rutas previstas para la Fase 1 (HTML semántico). El stack de servidor, datos y 
 - **Responsabilidad:** publicar la identidad del emprendedor y sus vías de contacto.
 - **Entradas:**
   - Nombre visible (obligatorio).
-  - Contacto: un teléfono, un correo o una URL.
-  - Redes: lista de `{ nombre, url }`.
+  - Contacto (obligatorio para publicar): un teléfono, un correo o una URL.
+  - Redes (opcionales): lista de `{ id, nombre, url }`.
   - Sesión de `MOD-06` para editar.
 - **Salidas:**
   - Perfil público con dirección propia. Contiene ofertas (`MOD-02`), portafolio (`MOD-03`) y localidad (`MOD-04`).
   - Botón `Contactar`: abre `tel:`, `mailto:` o la URL guardada.
   - Un enlace por red, con el nombre de la red como texto.
 - **Errores:**
-  - Sin sesión o sin nombre: el perfil no se publica y se indica el dato que falta (`FEAT-01` 1.2).
-  - Contacto vacío o URL de red inválida: ese dato no se publica y quedan los valores válidos anteriores (`FEAT-07` 7.2).
+  - Sin sesión, sin nombre o sin contacto válido: el perfil no se publica y se indica el dato que falta (`FEAT-01` 1.2).
+  - En un perfil ya publicado, un contacto vacío o una URL de red inválida no se guardan y quedan los valores válidos anteriores (`FEAT-07` 7.2).
 - **Dependencias:** `MOD-06`. Muestra `MOD-02`, `MOD-03` y `MOD-04`.
 - **Límite:** no tiene chat. No muestra el contenido de las redes. No guarda ofertas, imágenes ni puntos.
 - **Reutilizable:** Sí (botón de contacto y lista de redes).
@@ -79,13 +80,13 @@ Rutas previstas para la Fase 1 (HTML semántico). El stack de servidor, datos y 
 - **Responsabilidad:** registrar lo que el emprendedor ofrece y clasificarlo con un `#`.
 - **Entradas:**
   - Tipo: `proyecto | servicio | oficio`.
-  - Título de la oferta.
+  - Título de la oferta (obligatorio).
   - `#` de oficio, guardado con la regla de normalización de `MOD-05`.
   - Sesión de `MOD-06`.
 - **Salidas:**
-  - Oferta listada en el perfil con su tipo y su `#`.
+  - Oferta con `id`, listada en el perfil con su tipo, su título y su `#`.
   - Índice de `#` por oferta, que lee `MOD-05`.
-- **Errores:** sin tipo o con `#` vacío, la oferta no se guarda y el perfil conserva las anteriores (`FEAT-02` 2.2).
+- **Errores:** sin tipo, sin título o con `#` vacío, la oferta no se guarda y el perfil conserva las anteriores (`FEAT-02` 2.2).
 - **Dependencias:** `MOD-01` (perfil publicado), `MOD-06`, regla de normalización de `MOD-05`.
 - **Límite:** no tiene precios, cotizaciones, reservas ni pagos.
 - **Reutilizable:** No.
@@ -103,7 +104,7 @@ Rutas previstas para la Fase 1 (HTML semántico). El stack de servidor, datos y 
   - Archivo de imagen.
   - Texto alternativo (NFR de accesibilidad de `02` §6). **Supuesto aceptado en Gate 1:** lo escribe el emprendedor.
   - Sesión de `MOD-06`.
-- **Salidas:** imagen visible en el portafolio del perfil, con su texto alternativo.
+- **Salidas:** imagen con `id`, visible en el portafolio del perfil con su texto alternativo.
 - **Errores:** si el archivo no es una imagen o la carga falla, el portafolio no cambia y se indica que la imagen no se guardó (`FEAT-03` 3.2).
 - **Dependencias:** `MOD-01`, `MOD-06`, almacenamiento de imágenes (proveedor en `05`).
 - **Límite:** no edita imágenes. No es una galería general del portal.
@@ -117,18 +118,21 @@ Rutas previstas para la Fase 1 (HTML semántico). El stack de servidor, datos y 
 
 #### Contrato
 
-- **Responsabilidad:** convertir una localidad en un punto y guardar el punto que el emprendedor confirma.
+- **Responsabilidad:** convertir una localidad en un punto, nombrar un punto del mapa y guardar el punto que el emprendedor confirma.
 - **Entradas:**
   - Punto que el emprendedor confirma en un mapa o con una localidad escrita.
+  - Nombre de la localidad (`etiqueta`), sugerido por la geocodificación y editable por el emprendedor.
   - Localidad escrita por el cliente, cuando `MOD-05` la envía.
   - Sesión de `MOD-06` para guardar el punto del perfil.
 - **Salidas:**
-  - Punto del perfil. Con punto, las ofertas del perfil entran al listado de cercanos.
+  - Punto del perfil `{ lat, lng, etiqueta }`. Con punto, las ofertas del perfil entran al listado de cercanos.
+  - Nombre sugerido para un punto del mapa (geocodificación inversa).
   - Punto del cliente para `MOD-05`. Este punto no se guarda.
 - **Errores:**
   - Sin punto confirmado, las ofertas del perfil no aparecen como cercanas (`FEAT-04` 4.2).
   - Si una localidad escrita no se resuelve, no devuelve un punto.
-- **Dependencias:** `MOD-06`, proveedor de mapa y geocodificación (en `05`).
+  - Sin `etiqueta`, el punto no se guarda. Si la geocodificación inversa no da un nombre, el emprendedor lo escribe.
+- **Dependencias:** `MOD-06`, proveedor de mapa, geocodificación y geocodificación inversa (en `05`).
 - **Límite:** no rastrea el dispositivo del emprendedor. No publica un punto sin su confirmación.
 - **Reutilizable:** Sí.
 
@@ -144,8 +148,8 @@ Rutas previstas para la Fase 1 (HTML semántico). El stack de servidor, datos y 
 - **Entradas:**
   - Texto de la barra.
   - Ubicación del cliente: geolocalización del navegador o localidad escrita (resuelta por `MOD-04`).
-- **Regla de normalización de `#`:** minúsculas, sin espacios sobrantes y con `#` si falta. `gasfiter` y `#gasfiter` dan `#gasfiter`. `MOD-02` guarda los `#` con esta misma regla.
-- **Salidas:** listado de ofertas de ese `#` con punto, ordenado por distancia ascendente. Cada ítem enlaza al perfil (`MOD-01`).
+- **Regla de normalización de `#`:** minúsculas, sin espacios sobrantes y con `#` si falta. `gasfiter` y `#gasfiter` dan `#gasfiter`. `MOD-02` guarda los `#` con esta misma regla. El detalle paso a paso está en `04-html-design.md` §3.3.
+- **Salidas:** listado de ofertas de ese `#` con punto, ordenado por distancia ascendente, con la distancia en km de cada una. Cada ítem enlaza al perfil (`MOD-01`).
 - **Errores:**
   - Si el `#` no coincide con ninguno publicado, el listado queda vacío, indica que ese oficio no está y no muestra otros `#` (`FEAT-05` 5.2).
   - Sin ubicación del navegador ni localidad escrita, no inventa un punto y pide una ubicación (`FEAT-06` 6.2).
@@ -190,7 +194,7 @@ No hay ciclos. `MOD-02` usa la regla de normalización de `MOD-05` como contrato
 | CMS / datos del portal (un solo origen) | `MOD-01` … `MOD-06` | Proveedor en `05` |
 | Autenticación del emprendedor | `MOD-06` | Método en `05` |
 | Almacenamiento de imágenes | `MOD-03` | Proveedor en `05` |
-| Mapa y geocodificación | `MOD-04`, `MOD-05` | Proveedor en `05` |
+| Mapa, geocodificación y geocodificación inversa | `MOD-04`, `MOD-05` | Proveedor en `05` |
 | Geolocalización del navegador | `MOD-05` | Permiso del cliente |
 | Enlaces salientes `tel:`, `mailto:` y URL | `MOD-01` | Sin proveedor |
 
