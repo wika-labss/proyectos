@@ -1,12 +1,12 @@
 ---
 id: "WEB-FEAT-001"
 title: "trabajamos.com — Features y Secciones"
-status: "BORRADOR"
-version: "0.1.1"
+status: "APROBADO"
+version: "0.1.2"
 owner: "Vissiuss"
 created_at: "2026-11-02"
 updated_at: "2026-11-02"
-audit_1_passed: false
+audit_1_passed: true
 site_type: "cms"
 ---
 
@@ -22,7 +22,8 @@ site_type: "cms"
 - **Nombre del Proyecto:** trabajamos.com
 - **Documento base:** `idea/01-problem.md` (ID: `WEB-PROB-001`)
 - **site_type:** `cms` — el emprendedor crea y edita perfil, ofertas, imágenes, localidad, contacto y redes. No es una landing fija.
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDITORIA_DOCUMENTACION_APROBADA`
+- **v0.1.2 (2026-11-02):** el contacto es obligatorio para publicar el perfil (`FEAT-01`) y el título es obligatorio en cada oferta (`FEAT-02`). Alinea `02` con las decisiones `D-01` y `D-07` de `04-html-design.md`. Vissiuss aprobó el cambio.
 
 ---
 
@@ -51,12 +52,12 @@ site_type: "cms"
 #### Escenario 1.1: Flujo exitoso
 
 - **Dado que** una persona entra como emprendedor autenticado
-- **Cuando** guarda su perfil con nombre visible
+- **Cuando** guarda su perfil con nombre visible y un contacto válido (teléfono, correo o enlace)
 - **Entonces** el perfil queda publicado y es el lugar donde cuelgan ofertas, portafolio, localidad, contacto y redes
 
 #### Escenario 1.2: Manejo de errores
 
-- **Dado que** el emprendedor no está autenticado o guarda el perfil sin nombre
+- **Dado que** el emprendedor no está autenticado, o guarda el perfil sin nombre o sin un contacto válido
 - **Cuando** intenta publicarlo
 - **Entonces** el perfil no se publica y ve qué dato falta
 
@@ -71,12 +72,12 @@ site_type: "cms"
 #### Escenario 2.1: Flujo exitoso
 
 - **Dado que** el emprendedor tiene perfil publicado
-- **Cuando** agrega una oferta de tipo proyecto, servicio u oficio y le asigna un `#`
-- **Entonces** la oferta aparece en su perfil con ese tipo y ese `#`
+- **Cuando** agrega una oferta de tipo proyecto, servicio u oficio, con título, y le asigna un `#`
+- **Entonces** la oferta aparece en su perfil con ese tipo, ese título y ese `#`
 
 #### Escenario 2.2: Manejo de errores
 
-- **Dado que** la oferta no tiene tipo o el `#` está vacío
+- **Dado que** la oferta no tiene tipo, no tiene título o el `#` está vacío
 - **Cuando** intenta guardarla
 - **Entonces** la oferta no se publica y el perfil conserva las ofertas anteriores
 
@@ -175,6 +176,8 @@ site_type: "cms"
 **CTA:** `Contactar` en el perfil público. Cada red es un enlace con el nombre de la red.
 
 **Supuesto:** negocio no fijó un canal único. El destino del botón es un teléfono, un correo o un enlace que el emprendedor guarda.
+
+El contacto es obligatorio para publicar el perfil (`FEAT-01` 1.1). Las redes son opcionales.
 
 #### Escenario 7.1: Flujo exitoso
 

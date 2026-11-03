@@ -1,12 +1,12 @@
 ---
 id: "WEB-PROB-001"
 title: "trabajamos.com — Definición del Problema"
-status: "BORRADOR"
+status: "APROBADO"
 version: "0.1.1"
 owner: "Vissiuss"
 created_at: "2026-11-02"
 updated_at: "2026-11-02"
-audit_1_passed: false
+audit_1_passed: true
 industry_type: "b2b_saas"
 target_audience: "Emprendedores y oficios que ofrecen trabajo local; clientes que buscan un oficio cerca"
 brand_tone: "claro, cercano, practico"
@@ -23,7 +23,7 @@ brand_tone: "claro, cercano, practico"
 - **Nombre del Proyecto:** trabajamos.com
 - **Repositorio de aplicación:** `proyectos/web/trabajamos-com/`
 - **Stakeholders clave:** Vissiuss (negocio), emprendedor u oficio, cliente que busca un oficio, Arquitecto WIKA
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDITORIA_DOCUMENTACION_APROBADA`
 - **industry_type (MOD-DIR):** `b2b_saas`
 - **Nota de industry_type:** el portal es un marketplace de oficios y servicios locales. `standards/direction-matrix.yaml` no tiene un enum de marketplace local. Se usa `b2b_saas` como el valor válido más cercano (producto con perfiles editables y búsqueda). El arquitecto puede cambiarlo en Gate 2.
 - **brand_tone:** `claro, cercano, practico`. **Supuesto** de este gate: negocio no definió tono de marca.
