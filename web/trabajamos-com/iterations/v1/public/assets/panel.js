@@ -13,6 +13,7 @@
     "form-redes": "Guardando redes…",
     "form-oferta": "Guardando oferta…",
     "form-imagen": "Subiendo imagen…",
+    "form-foto": "Guardando foto…",
     "form-localidad": "Guardando localidad…",
   };
   document.addEventListener("submit", (evento) => {
@@ -104,6 +105,20 @@
     }
     valor.addEventListener("blur", actualizar);
     actualizar();
+  }
+
+  // VIEW-14: la categoría provisional es obligatoria solo en tipo oficio.
+  const categoria = document.getElementById("categoria");
+  if (categoria instanceof HTMLSelectElement) {
+    const syncCategoria = () => {
+      const oficio = document.querySelector('input[name="tipo"]:checked')?.value === "oficio";
+      categoria.required = oficio;
+      categoria.setAttribute("aria-required", oficio ? "true" : "false");
+    };
+    for (const radio of document.querySelectorAll('input[name="tipo"]')) {
+      radio.addEventListener("change", syncCategoria);
+    }
+    syncCategoria();
   }
 
   // VIEW-13: agregar y quitar filas nuevas de redes.

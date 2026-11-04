@@ -29,6 +29,9 @@ export function compactar(texto: string): string {
   return texto.trim().replace(/\s+/gu, " ");
 }
 
+/** Descripción del perfil (delta FEAT-01). Opcional. */
+export const LARGO_DESCRIPCION = 500;
+
 export function telefonoValido(valor: string): boolean {
   const digitos = valor.replace(/[\s\-()]/gu, "");
   return /^\+\d{8,15}$/u.test(digitos);

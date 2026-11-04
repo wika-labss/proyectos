@@ -12,7 +12,8 @@ interface Demo {
   nombre: string;
   contacto: [ContactoTipo, string];
   punto: { lat: number; lng: number; etiqueta: string } | null;
-  ofertas: [OfertaTipo, string, string][];
+  descripcion: string | null;
+  ofertas: [OfertaTipo, string, string, string | null][];
   redes: [string, string][];
   imagenes: { color: [number, number, number]; alt: string }[];
 }
@@ -22,10 +23,11 @@ const DEMOS: Demo[] = [
     correo: "juan@demo.trabajamos.test",
     nombre: "Juan Pérez Gasfitería",
     contacto: ["telefono", "+56 9 1234 5678"],
+    descripcion: "Arreglo cañerías y calefont en casa.",
     punto: { lat: -33.4569, lng: -70.5978, etiqueta: "Ñuñoa, Región Metropolitana" },
     ofertas: [
-      ["oficio", "Gasfitería a domicilio", "#gasfiter"],
-      ["servicio", "Destape de cañerías", "#gasfiter"],
+      ["oficio", "Gasfitería a domicilio", "#gasfiter", "Gasfitería"],
+      ["servicio", "Destape de cañerías", "#gasfiter", null],
     ],
     redes: [["Instagram", "https://www.instagram.com/juanperez.gasfiter"]],
     imagenes: [
@@ -37,10 +39,11 @@ const DEMOS: Demo[] = [
     correo: "maria@demo.trabajamos.test",
     nombre: "María Soto Electricidad",
     contacto: ["correo", "maria.soto@demo.trabajamos.test"],
+    descripcion: null,
     punto: { lat: -33.4263, lng: -70.6114, etiqueta: "Providencia, Región Metropolitana" },
     ofertas: [
-      ["servicio", "Instalaciones eléctricas certificadas", "#electricista"],
-      ["proyecto", "Remodelación de tablero eléctrico", "#electricista"],
+      ["servicio", "Instalaciones eléctricas certificadas", "#electricista", null],
+      ["proyecto", "Remodelación de tablero eléctrico", "#electricista", null],
     ],
     redes: [],
     imagenes: [{ color: [200, 170, 60], alt: "Tablero eléctrico ordenado con automáticos rotulados" }],
@@ -49,10 +52,11 @@ const DEMOS: Demo[] = [
     correo: "pedro@demo.trabajamos.test",
     nombre: "Pedro Rojas",
     contacto: ["url", "https://www.pedrorojas.example/contacto"],
+    descripcion: null,
     punto: { lat: -33.5106, lng: -70.7572, etiqueta: "Maipú, Región Metropolitana" },
     ofertas: [
-      ["oficio", "Arreglos generales del hogar", "#maestro chasquilla"],
-      ["oficio", "Cambio de llaves y flexibles", "#gasfiter"],
+      ["oficio", "Arreglos generales del hogar", "#maestro chasquilla", "Maestro chasquilla"],
+      ["oficio", "Cambio de llaves y flexibles", "#gasfiter", "Gasfitería"],
     ],
     redes: [
       ["Facebook", "https://www.facebook.com/pedrorojas.maestro"],
@@ -64,8 +68,9 @@ const DEMOS: Demo[] = [
     correo: "luis@demo.trabajamos.test",
     nombre: "Luis Fuentes",
     contacto: ["telefono", "+56 9 8765 4321"],
+    descripcion: null,
     punto: { lat: -33.6117, lng: -70.5758, etiqueta: "Puente Alto, Región Metropolitana" },
-    ofertas: [["oficio", "Electricista domiciliario", "#electricista"]],
+    ofertas: [["oficio", "Electricista domiciliario", "#electricista", "Electricidad"]],
     redes: [],
     imagenes: [],
   },
@@ -74,8 +79,9 @@ const DEMOS: Demo[] = [
     correo: "ana@demo.trabajamos.test",
     nombre: "Ana Díaz Carpintería",
     contacto: ["telefono", "+56 9 5555 0000"],
+    descripcion: null,
     punto: null,
-    ofertas: [["oficio", "Muebles a medida", "#carpintero"]],
+    ofertas: [["oficio", "Muebles a medida", "#carpintero", "Carpintería"]],
     redes: [],
     imagenes: [],
   },
@@ -100,10 +106,12 @@ try {
       console.log(`Ya existe ${demo.correo}; se omite.`);
       continue;
     }
-    await crearPerfil(db, usuario.id, demo.nombre, demo.contacto[0], demo.contacto[1]);
+    await crearPerfil(db, usuario.id, demo.nombre, demo.contacto[0], demo.contacto[1], demo.descripcion);
     const perfil = (await perfilDeUsuario(db, usuario.id))!;
     if (demo.punto) await marcarPunto(db, perfil.id, demo.punto);
-    for (const [tipo, titulo, tag] of demo.ofertas) await agregarOferta(db, perfil.id, tipo, titulo, tag);
+    for (const [tipo, titulo, tag, categoria] of demo.ofertas) {
+      await agregarOferta(db, perfil.id, tipo, titulo, tag, categoria);
+    }
     if (demo.redes.length) {
       await guardarRedes(db, perfil.id, demo.redes.map(([nombre, url]) => ({ id: null, nombre, url })));
     }

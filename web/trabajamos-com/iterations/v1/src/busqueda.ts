@@ -1,7 +1,8 @@
-import { buscarCercanos, existeTag } from "./datos.js";
+import { buscarCercanos, existeOficio } from "./datos.js";
 import type { Db } from "./db.js";
 import { type Geocoder, GeocoderNoDisponible, coordenadasValidas } from "./geo/geocoder.js";
 import { compactar, normalizarTag } from "./lib/reglas.js";
+import { categoriaDeConsulta } from "./oficios.js";
 import type { EstadoBusqueda } from "./vistas/publico.js";
 
 export interface ConsultaBusqueda {
@@ -26,9 +27,11 @@ export async function resolverBusqueda(db: Db, geocoder: Geocoder, consulta: Con
   if (consulta.q === null) return base;
   const tag = normalizarTag(consulta.q.slice(0, 200));
   if (!tag) return { ...base, tipo: "tag_vacio" };
-  base.tag = tag;
+  const categoria = categoriaDeConsulta(consulta.q.slice(0, 200));
+  // Si el texto es una categoría provisional, el mensaje usa ese nombre. Si no, el #.
+  base.tag = categoria ?? tag;
   try {
-    if (!(await existeTag(db, tag))) return { ...base, tipo: "sin_coincidencia" };
+    if (!(await existeOficio(db, tag, categoria))) return { ...base, tipo: "sin_coincidencia" };
 
     let origen: { lat: number; lng: number } | null = null;
     if (localidad) {
@@ -48,7 +51,7 @@ export async function resolverBusqueda(db: Db, geocoder: Geocoder, consulta: Con
     }
     if (!origen) return { ...base, tipo: "sin_origen" };
 
-    const resultados = await buscarCercanos(db, tag, origen.lat, origen.lng);
+    const resultados = await buscarCercanos(db, tag, origen.lat, origen.lng, categoria);
     if (!resultados.length) return { ...base, tipo: "sin_punto" };
     return { ...base, tipo: "exito", resultados };
   } catch (error) {

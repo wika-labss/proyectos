@@ -2,10 +2,10 @@
 id: "WEB-FEAT-001"
 title: "trabajamos.com — Features y Secciones"
 status: "APROBADO"
-version: "0.1.2"
+version: "0.1.3"
 owner: "Vissiuss"
 created_at: "2026-11-02"
-updated_at: "2026-11-02"
+updated_at: "2026-11-04"
 audit_1_passed: true
 site_type: "cms"
 ---
@@ -24,6 +24,7 @@ site_type: "cms"
 - **site_type:** `cms` — el emprendedor crea y edita perfil, ofertas, imágenes, localidad, contacto y redes. No es una landing fija.
 - **Estado de gatekeeping:** `AUDITORIA_DOCUMENTACION_APROBADA`
 - **v0.1.2 (2026-11-02):** el contacto es obligatorio para publicar el perfil (`FEAT-01`) y el título es obligatorio en cada oferta (`FEAT-02`). Alinea `02` con las decisiones `D-01` y `D-07` de `04-html-design.md`. Vissiuss aprobó el cambio.
+- **v0.1.3 (2026-11-04), delta sin firma:** descripción y foto de perfil pasan a ser campos opcionales de `FEAT-01`. Una oferta de tipo oficio elige además una categoría de una lista provisional (la misma del selector del home); el `#` sigue libre. Esta versión se escribió junto con el código. No es una firma de Vissiuss y no aprueba el look de Fase 2.
 
 ---
 
@@ -54,6 +55,15 @@ site_type: "cms"
 - **Dado que** una persona entra como emprendedor autenticado
 - **Cuando** guarda su perfil con nombre visible y un contacto válido (teléfono, correo o enlace)
 - **Entonces** el perfil queda publicado y es el lugar donde cuelgan ofertas, portafolio, localidad, contacto y redes
+- **Y** puede guardar una descripción opcional, de hasta 500 caracteres, que se ve bajo el nombre en el perfil público
+- **Y** puede subir una foto de perfil opcional (JPEG, PNG o WebP, hasta 5 MB, sin datos de ubicación en el archivo). Si no hay foto, el recuadro queda vacío. El logo de la marca no ocupa ese recuadro
+
+#### Escenario 1.3: Descripción o foto que no se guardan
+
+- **Dado que** el perfil ya está publicado
+- **Cuando** la descripción supera 500 caracteres o el archivo de la foto no es una imagen válida
+- **Entonces** ese dato no reemplaza al que ya estaba publicado y el emprendedor ve el error
+- **Y** un guardado válido de descripción o foto deja de mostrar el valor anterior en el perfil público
 
 #### Escenario 1.2: Manejo de errores
 
@@ -73,12 +83,14 @@ site_type: "cms"
 
 - **Dado que** el emprendedor tiene perfil publicado
 - **Cuando** agrega una oferta de tipo proyecto, servicio u oficio, con título, y le asigna un `#`
-- **Entonces** la oferta aparece en su perfil con ese tipo, ese título y ese `#`
+- **Y**, si el tipo es oficio, elige una categoría de la lista provisional (Gasfitería, Electricidad, Carpintería, Pintura, Albañilería, Jardinería, Cerrajería, Limpieza, Mudanzas, Maestro chasquilla)
+- **Entonces** la oferta aparece en su perfil con ese tipo, ese título y ese `#`, y con la categoría si es un oficio
+- **Y** esa misma lista provisional alimenta el selector del home. No es un catálogo firmado: queda pendiente de confirmación de Vissiuss. El `#` no se sustituye por la categoría
 
 #### Escenario 2.2: Manejo de errores
 
 - **Dado que** la oferta no tiene tipo, no tiene título o el `#` está vacío
-- **Cuando** intenta guardarla
+- **Cuando** intenta guardarla, o el tipo es oficio y no elige una categoría de la lista provisional
 - **Entonces** la oferta no se publica y el perfil conserva las ofertas anteriores
 
 ---

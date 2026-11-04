@@ -609,15 +609,106 @@ body > a[href="#contenido"]:focus {
   }
 }
 
+/* Panel: barra lateral siempre visible en escritorio. El cajón queda bajo 760px. */
+.tw-side {
+  display: none;
+}
+
+.tw-shell {
+  width: min(100% - 2rem, var(--ancho));
+  margin-inline: auto;
+  padding: 1.5rem 0 3rem;
+}
+
+.tw-shell > main {
+  min-width: 0;
+}
+
 @media (min-width: 760px) {
-  body:has(.menu-salir) .menu-boton,
-  body:has(.menu-accion) .menu-boton {
-    display: inline-flex;
+  .tw-shell:has(.tw-side) {
+    width: min(100% - 2rem, 1240px);
+    display: grid;
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
   }
-  body:has(.menu-salir) .tw-nav,
-  body:has(.menu-accion) .tw-nav {
+
+  .tw-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    position: sticky;
+    top: 1rem;
+    padding: 0.85rem;
+    background: var(--surface);
+    color: var(--ink);
+    border: 3px solid var(--navy);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--shadow);
+  }
+
+  body:has(.tw-side) .menu-boton,
+  body:has(.tw-side) .menu-fondo,
+  body:has(.tw-side) .menu-cajon {
     display: none;
   }
+}
+
+.tw-side nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tw-side nav a {
+  display: block;
+  padding: 0.7rem 0.75rem;
+  margin-bottom: 0.35rem;
+  border-radius: var(--radio);
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  background: var(--paper);
+}
+
+.tw-side nav a:hover,
+.tw-side nav a[aria-current="page"] {
+  background: var(--cobalt);
+  color: var(--on-brand);
+}
+
+.tw-side__meta {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.tw-side nav a[aria-current="page"] .tw-side__meta,
+.tw-side nav a:hover .tw-side__meta {
+  color: var(--apricot);
+}
+
+.tw-side__publico {
+  margin: 0;
+  padding-top: 0.35rem;
+  border-top: 2px solid var(--border);
+}
+
+.tw-side__publico a {
+  color: var(--navy-mid);
+  font-weight: 700;
+}
+
+.tw-side__salir {
+  margin: 0;
+}
+
+.tw-side__salir button {
+  width: 100%;
+  background: var(--apricot);
+  color: var(--ink);
 }
 
 /* ——— Layout ——— */
@@ -1318,19 +1409,21 @@ p {
   width: 112px;
   height: 112px;
   border-radius: 22px;
-  background: var(--ink);
-  border: 4px solid var(--cobalt);
+  background: var(--paper-deep);
+  border: 4px solid var(--border-strong);
   overflow: hidden;
-  box-shadow: 6px 6px 0 var(--ink);
+  box-shadow: 6px 6px 0 var(--navy);
 }
 
-.tw-profile__photo .tw-mark {
+figure.tw-profile__photo {
+  margin: 0 0 1rem;
+}
+
+.tw-profile__photo img {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  padding: 0.45rem;
-  background: var(--paper);
+  object-fit: cover;
 }
 
 .tw-profile__id h1 {
@@ -1495,14 +1588,46 @@ p {
   padding: 0;
 }
 
-.tw-folio img {
+.tw-folio figure {
+  margin: 0;
+}
+
+.tw-folio img,
+#portafolio ul.tw-folio img,
+section[aria-labelledby="mis-imagenes"] ul.tw-folio img {
   display: block;
   width: 100%;
+  max-width: 100%;
+  height: auto;
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: 12px;
   border: 3px solid var(--sun);
   background: var(--navy-mid);
+}
+
+.tw-folio figcaption {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.tw-folio form {
+  margin-top: 0.4rem;
+}
+
+section[aria-labelledby="mis-imagenes"] > ul.tw-folio {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.75rem;
+}
+
+section[aria-labelledby="mis-imagenes"] > ul.tw-folio > li {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .tw-back {

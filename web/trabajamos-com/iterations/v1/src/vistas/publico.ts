@@ -7,6 +7,7 @@ import {
   contactoMedio,
   distanciaTexto,
 } from "../lib/reglas.js";
+import { CATEGORIAS_OFICIO } from "../oficios.js";
 import { cabeceraBanner, documento } from "./comun.js";
 
 export type TipoBusqueda =
@@ -29,33 +30,20 @@ export interface EstadoBusqueda {
   resultados: ResultadoCercano[];
 }
 
-const OFICIOS_EJEMPLO = [
-  "Gasfitería",
-  "Electricidad",
-  "Carpintería",
-  "Pintura",
-  "Albañilería",
-  "Jardinería",
-  "Cerrajería",
-  "Limpieza",
-  "Mudanzas",
-  "Maestro chasquilla",
-] as const;
-
 function oficioCoincide(q: string | undefined, nombre: string): boolean {
   if (!q) return false;
   const limpio = q.trim().replace(/^#+\s*/u, "");
   return limpio.localeCompare(nombre, "es-CL", { sensitivity: "accent" }) === 0;
 }
 
-/** Select nativo entre los dos botones. Sin JS se envía con «Ver» a `?q=`. */
+/** Misma lista provisional que el alta de un oficio. Sin JS se envía con «Ver» a `?q=`. */
 function controlOficios(q: string | undefined): Html {
   return html`<form class="tw-oficios" action="/index.html" method="get">
-    <label class="tw-oficios__label" for="oficio-ejemplo">Oficio de ejemplo</label>
+    <label class="tw-oficios__label" for="oficio-ejemplo">Categoría de oficio</label>
     <span class="tw-oficios__control">
-      <select id="oficio-ejemplo" name="q">
-        <option value="">Ejemplos</option>
-        ${OFICIOS_EJEMPLO.map(
+      <select id="oficio-ejemplo" name="q" data-lista="provisional">
+        <option value="">Categorías</option>
+        ${CATEGORIAS_OFICIO.map(
           (nombre) =>
             html`<option value="${nombre}"${oficioCoincide(q, nombre) ? html` selected` : ""}>${nombre}</option>`,
         )}
@@ -218,11 +206,8 @@ export function vistaInicio(e: EstadoBusqueda): Html {
   });
 }
 
-function headlinePerfil(perfil: Perfil): string {
-  if (perfil.ofertas[0]) return perfil.ofertas[0].titulo;
-  const tags = [...new Set(perfil.ofertas.map((o) => o.tag))];
-  if (tags.length) return tags.join(" · ");
-  return "Emprendedor en trabajamos.com";
+function metaOferta(o: Perfil["ofertas"][number]): string {
+  return `${ETIQUETA_OFERTA[o.tipo]}${o.categoria ? ` · ${o.categoria}` : ""} · ${o.tag}`;
 }
 
 export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => string): Html {
@@ -240,10 +225,14 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
       <img class="tw-mark tw-mark--banner" src="/assets/vissiuss-logo.png" alt="Vissiuss" width="96" height="96">
     </div>
     <header class="tw-profile__hero">
-      <div class="tw-profile__photo"><img class="tw-mark" src="/assets/vissiuss-logo.png" alt="Vissiuss" width="112" height="112"></div>
+      <div class="tw-profile__photo"${perfil.fotoArchivo ? "" : html` role="img" aria-label="Sin foto de perfil"`}>${
+        perfil.fotoArchivo
+          ? html`<img src="${urlImagen(perfil.fotoArchivo)}" alt="Foto de ${perfil.nombre}" width="112" height="112">`
+          : ""
+      }</div>
       <div class="tw-profile__id">
         <h1 id="perfil-nombre">${perfil.nombre}</h1>
-        <p class="tw-profile__headline">${headlinePerfil(perfil)}</p>
+        ${perfil.descripcion ? html`<p class="tw-profile__headline">${perfil.descripcion}</p>` : ""}
         <p class="tw-profile__loc">${locLine}</p>
         <div class="tw-profile__cta">
           <a class="tw-cta tw-cta--contact" href="${contactoHref(c.tipo, c.valor)}" aria-describedby="contacto-dato"${new Html(externo)}>Contactar<span class="oculto"> a ${perfil.nombre} ${contactoMedio(c.tipo)}</span></a>
@@ -286,7 +275,7 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
         perfil.ofertas.length
           ? html`<ul class="tw-offers">
         ${perfil.ofertas.map(
-          (o) => html`<li><article><h3>${o.titulo}</h3><p class="tw-offers__meta">${ETIQUETA_OFERTA[o.tipo]} · ${o.tag}</p></article></li>`,
+          (o) => html`<li><article><h3>${o.titulo}</h3><p class="tw-offers__meta">${metaOferta(o)}</p></article></li>`,
         )}
       </ul>`
           : html`<p>Este perfil aún no publica ofertas.</p>`
@@ -300,7 +289,7 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
           ? html`<ul class="tw-folio">
         ${perfil.imagenes.map(
           (i) =>
-            html`<li><img src="${urlImagen(i.archivo)}" alt="${i.alt}" width="${i.ancho}" height="${i.alto}" loading="lazy"></li>`,
+            html`<li><figure><img src="${urlImagen(i.archivo)}" alt="${i.alt}" width="160" height="160" loading="lazy"><figcaption>${i.alt}</figcaption></figure></li>`,
         )}
       </ul>`
           : html`<p>Este perfil aún no tiene imágenes de su trabajo.</p>`
