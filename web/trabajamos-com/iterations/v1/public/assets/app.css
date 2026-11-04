@@ -1,4 +1,6 @@
-/* Fase 2 — look colorido + tipo Jakarta utilitarian (C3): sunflower + navy */
+/* Fase 2 — Look C color cobalto: campo plano #2f5bff + acento #ffb085.
+   Tipo Jakarta (C3) intacto. El banner de perfil se mueve con transform.
+   prefers-reduced-motion lo congela en el primer cuadro. */
 
 @font-face {
   font-family: "Syne";
@@ -51,26 +53,36 @@
 }
 
 :root {
-  /* Sunflower + navy — un solo sistema */
-  --navy: #0c1b33;
-  --navy-mid: #16325a;
-  --navy-soft: #2a4a78;
-  --sun: #f5c400;
-  --sun-deep: #d9a800;
-  --sun-soft: #fff1b8;
-  --paper: #eef3fb;
-  --paper-deep: #dde6f4;
-  --surface: #f8fbff;
-  --ink: #0c1b33;
-  --ink-soft: #3d4f6a;
-  --ink-faint: #6a7a92;
-  --border: #c5d0e3;
-  --border-strong: #8fa0bc;
+  /* Cobalto plano + albaricoque. Sin malla, sin glow.
+     El albaricoque es relleno y filete, nunca texto sobre cobalto. */
+  --cobalt: #2f5bff;
+  --cobalt-deep: #1e42d4;
+  --cobalt-soft: #5476ff;
+  --apricot: #ffb085;
+  --apricot-deep: #e89468;
+  --apricot-soft: #ffe4d4;
+  --paper: #f4f6ff;
+  --paper-deep: #e4e9fc;
+  --surface: #fbfcff;
+  --ink: #0e1320;
+  --ink-soft: #3c445c;
+  --ink-faint: #646c84;
+  --on-brand: #f4f6ff;
+  --border: #d5dced;
+  --border-strong: #a7b0c8;
   --danger: #b42318;
 
-  --shadow: 0 14px 36px rgba(12, 27, 51, 0.14);
-  --shadow-soft: 0 6px 18px rgba(12, 27, 51, 0.08);
-  --shadow-sun: 0 10px 28px rgba(245, 196, 0, 0.35);
+  /* Alias de la estructura C3. */
+  --navy: var(--cobalt);
+  --navy-mid: var(--cobalt-deep);
+  --navy-soft: var(--cobalt-soft);
+  --sun: var(--apricot);
+  --sun-deep: var(--apricot-deep);
+  --sun-soft: var(--apricot-soft);
+
+  --shadow: 0 14px 36px rgba(14, 19, 32, 0.14);
+  --shadow-soft: 0 6px 18px rgba(14, 19, 32, 0.08);
+  --shadow-sun: 0 10px 24px rgba(14, 19, 32, 0.12);
 
   /* Syne solo logo; UI titles + body = Plus Jakarta Sans */
   --font-logo: "Syne", "Plus Jakarta Sans", sans-serif;
@@ -147,10 +159,7 @@ body {
   margin: 0;
   min-height: 100dvh;
   color: var(--ink);
-  background:
-    radial-gradient(900px 520px at 100% -8%, rgba(245, 196, 0, 0.28), transparent 55%),
-    radial-gradient(720px 480px at -8% 18%, rgba(22, 50, 90, 0.12), transparent 50%),
-    linear-gradient(165deg, #f5f8ff 0%, var(--paper) 45%, var(--paper-deep) 100%);
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
   font-family: var(--font-body);
   font-size: var(--fs-base);
   font-weight: 400;
@@ -193,7 +202,7 @@ input:focus-visible,
 textarea:focus-visible,
 label.menu-boton:focus-visible,
 label.menu-cerrar:focus-visible {
-  outline: 3px solid var(--sun);
+  outline: 3px solid var(--apricot);
   outline-offset: 2px;
 }
 
@@ -204,8 +213,8 @@ body > a[href="#contenido"] {
   z-index: 40;
   padding: 0.5rem 0.85rem;
   border-radius: var(--radio);
-  background: var(--sun);
-  color: var(--navy);
+  background: var(--apricot);
+  color: var(--ink);
   font-weight: 700;
   text-decoration: none;
   transform: translateY(-180%);
@@ -215,11 +224,11 @@ body > a[href="#contenido"]:focus {
   transform: translateY(0);
 }
 
-/* ——— Header navy ——— */
+/* ——— Header cobalto plano ——— */
 .tw-header {
-  background: var(--navy);
-  color: #f4f7ff;
-  border-bottom: 4px solid var(--sun);
+  background: var(--cobalt);
+  color: var(--on-brand);
+  border-bottom: 4px solid var(--apricot);
 }
 
 .tw-header__bar {
@@ -238,16 +247,23 @@ body > a[href="#contenido"]:focus {
   font-weight: 800;
   letter-spacing: var(--tracking-tight);
   line-height: 1;
-  color: #fff;
+  color: var(--on-brand);
   text-decoration: none;
 }
 
 .tw-logo__dot {
-  color: var(--sun);
+  color: var(--ink);
+  background: var(--apricot);
+  border-radius: 0.12em;
+  padding: 0 0.08em;
 }
 
 .tw-logo:hover {
-  color: var(--sun);
+  color: var(--on-brand);
+}
+
+.tw-logo:hover .tw-logo__dot {
+  background: var(--apricot-deep);
 }
 
 .tw-nav {
@@ -263,7 +279,7 @@ body > a[href="#contenido"]:focus {
 }
 
 .tw-nav a {
-  color: #e8eefc;
+  color: var(--on-brand);
   font-size: 0.95rem;
   font-weight: 700;
   text-decoration: none;
@@ -271,7 +287,8 @@ body > a[href="#contenido"]:focus {
 
 .tw-nav a:hover,
 .tw-nav a[aria-current="page"] {
-  color: var(--sun);
+  color: var(--on-brand);
+  box-shadow: inset 0 -3px 0 var(--apricot);
 }
 
 .tw-nav__meta,
@@ -280,7 +297,7 @@ body > a[href="#contenido"]:focus {
   margin-top: 2px;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #a8b6d0;
+  color: var(--on-brand);
 }
 
 .tw-header__lema {
@@ -288,7 +305,7 @@ body > a[href="#contenido"]:focus {
   margin: 0 auto;
   padding: 0 1.15rem 0.75rem;
   font-size: 0.8rem;
-  color: #a8b6d0;
+  color: var(--on-brand);
 }
 
 /* Menú cajón */
@@ -304,10 +321,10 @@ body > a[href="#contenido"]:focus {
   gap: 0.5rem;
   margin: 0;
   padding: 0.5rem 0.75rem;
-  border: 2px solid rgba(245, 196, 0, 0.55);
+  border: 2px solid var(--apricot);
   border-radius: var(--radio);
-  background: var(--navy-mid);
-  color: var(--sun);
+  background: var(--cobalt);
+  color: var(--on-brand);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 0.75rem;
@@ -343,7 +360,7 @@ body > a[href="#contenido"]:focus {
   position: fixed;
   inset: 0;
   z-index: 28;
-  background: rgba(12, 27, 51, 0.45);
+  background: rgba(14, 19, 32, 0.5);
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--dur-menu) var(--ease);
@@ -360,10 +377,10 @@ body > a[href="#contenido"]:focus {
   width: min(20rem, 100vw);
   margin: 0;
   padding: 0;
-  background: var(--navy);
-  color: #fff;
-  border-left: 4px solid var(--sun);
-  box-shadow: -12px 0 32px rgba(12, 27, 51, 0.35);
+  background: var(--cobalt);
+  color: var(--on-brand);
+  border-left: 4px solid var(--apricot);
+  box-shadow: -12px 0 32px rgba(14, 19, 32, 0.28);
   transform: translateX(100%);
   transition: transform var(--dur-menu) var(--ease);
   overflow: auto;
@@ -393,7 +410,7 @@ body > a[href="#contenido"]:focus {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--sun);
+  color: var(--on-brand);
 }
 
 .menu-cerrar {
@@ -451,8 +468,8 @@ body > a[href="#contenido"]:focus {
 
 .menu-cajon nav a:hover,
 .menu-cajon nav a[aria-current="page"] {
-  background: var(--sun);
-  color: var(--navy);
+  background: var(--apricot);
+  color: var(--ink);
 }
 
 .menu-accion,
@@ -463,16 +480,18 @@ body > a[href="#contenido"]:focus {
 }
 
 .menu-accion a {
-  color: var(--sun);
+  color: var(--on-brand);
   font-weight: 700;
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-color: var(--apricot);
+  text-underline-offset: 0.18em;
 }
 
 .menu-salir button {
   width: 100%;
   margin-top: 0.35rem;
-  background: var(--sun);
-  color: var(--navy);
+  background: var(--apricot);
+  color: var(--ink);
 }
 
 @media (max-width: 759px) {
@@ -574,8 +593,8 @@ p {
   min-height: min(68dvh, 520px);
   margin: 0 0 1.25rem;
   border-radius: 0 0 var(--radio-lg) var(--radio-lg);
-  background: var(--navy);
-  color: #f5f8ff;
+  background: var(--cobalt);
+  color: var(--on-brand);
   box-shadow: var(--shadow);
   overflow: clip;
 }
@@ -597,7 +616,11 @@ p {
   font-weight: 800;
   letter-spacing: var(--tracking-tight);
   line-height: 1;
-  color: var(--sun);
+  color: var(--ink);
+  background: var(--apricot);
+  width: fit-content;
+  padding: 0.08em 0.28em 0.06em;
+  border-radius: 0.12em;
   max-width: none;
 }
 
@@ -614,7 +637,7 @@ p {
 
 .tw-hero__lead {
   margin: 0 0 0.75rem;
-  color: #c9d5ee;
+  color: var(--on-brand);
   font-size: var(--fs-base);
   letter-spacing: var(--tracking-body);
   max-width: 36ch;
@@ -623,17 +646,27 @@ p {
 .tw-hero__splash {
   position: relative;
   min-height: 100%;
-  background:
-    radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.22), transparent 28%),
-    radial-gradient(circle at 30% 70%, rgba(12, 27, 51, 0.2), transparent 40%),
-    repeating-linear-gradient(
-      -18deg,
-      var(--sun) 0 28px,
-      #ffd84a 28px 56px,
-      var(--navy-mid) 56px 84px,
-      var(--sun-deep) 84px 112px
-    );
+  overflow: hidden;
+  background: var(--cobalt);
   clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.tw-hero__splash::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  bottom: -50%;
+  left: -96px;
+  width: calc(100% + 192px);
+  background: repeating-linear-gradient(
+    90deg,
+    var(--apricot) 0 22px,
+    var(--apricot-deep) 22px 36px,
+    var(--cobalt) 36px 70px,
+    var(--cobalt-deep) 70px 96px
+  );
+  transform: rotate(-18deg);
+  pointer-events: none;
 }
 
 .tw-hero__splash::after {
@@ -642,10 +675,11 @@ p {
   inset: 12% 18% auto auto;
   width: min(42%, 180px);
   aspect-ratio: 1;
-  border: 6px solid rgba(12, 27, 51, 0.35);
+  border: 6px solid var(--ink);
   border-radius: 28% 72% 40% 60% / 55% 35% 65% 45%;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--apricot);
   transform: rotate(-12deg);
+  pointer-events: none;
 }
 
 .tw-search {
@@ -707,9 +741,9 @@ p {
 }
 
 .tw-field:focus-within {
-  border-color: var(--sun);
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.35);
+  border-color: var(--apricot);
+  background: var(--surface);
+  box-shadow: none;
 }
 
 .tw-field--donde {
@@ -761,22 +795,22 @@ p {
   padding: 0 1.25rem;
   border: 0;
   border-radius: var(--radio);
-  background: var(--sun);
-  color: var(--navy);
+  background: var(--apricot);
+  color: var(--ink);
   font-family: var(--font-ui);
   font-size: var(--fs-base);
   font-weight: 700;
   letter-spacing: var(--tracking-body);
   line-height: 1;
   cursor: pointer;
-  box-shadow: inset 0 -3px 0 rgba(12, 27, 51, 0.18);
+  box-shadow: inset 0 -3px 0 rgba(14, 19, 32, 0.18);
   transition: background 220ms var(--ease), transform 220ms var(--ease), box-shadow 220ms var(--ease);
 }
 
 .tw-cta:hover {
-  background: #ffd33a;
+  background: var(--apricot-deep);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-sun);
+  box-shadow: var(--shadow-soft);
 }
 
 .tw-cta:active {
@@ -785,16 +819,16 @@ p {
 
 .tw-cta--ghost {
   background: transparent;
-  color: var(--sun);
-  border: 2px solid var(--sun);
+  color: var(--on-brand);
+  border: 2px solid var(--apricot);
   margin-top: 0.75rem;
   box-shadow: none;
   width: fit-content;
 }
 
 .tw-cta--ghost:hover {
-  background: var(--sun);
-  color: var(--navy);
+  background: var(--apricot);
+  color: var(--ink);
 }
 
 .tw-cta--contact {
@@ -802,24 +836,24 @@ p {
   align-items: center;
   justify-content: center;
   text-decoration: none !important;
-  color: var(--navy) !important;
+  color: var(--ink) !important;
   min-width: 10rem;
 }
 
 .tw-cta--contact:hover {
-  color: var(--navy) !important;
+  color: var(--ink) !important;
 }
 
 .tw-help {
   margin: 0.65rem 0 0;
   font-size: 0.88rem;
-  color: #aebcd8;
+  color: var(--on-brand);
   max-width: 48ch;
 }
 
 #estado-busqueda {
   margin-top: 0.75rem;
-  color: var(--sun-soft);
+  color: var(--on-brand);
   font-weight: 600;
 }
 
@@ -848,9 +882,9 @@ p {
 
 .tw-chip.is-active,
 .tw-chip[aria-pressed="true"] {
-  border-color: var(--navy);
-  background: var(--navy);
-  color: var(--sun);
+  border-color: var(--apricot);
+  background: var(--cobalt);
+  color: var(--on-brand);
 }
 
 /* ——— Results ——— */
@@ -868,15 +902,15 @@ p {
   gap: 0.5rem;
   margin-bottom: 1rem;
   padding: 0.85rem 1.1rem;
-  background: var(--navy);
-  color: #fff;
+  background: var(--cobalt);
+  color: var(--on-brand);
   border-radius: var(--radio);
   box-shadow: var(--shadow-soft);
 }
 
 .tw-results__head h2 {
   margin: 0;
-  color: #fff;
+  color: var(--on-brand);
   font-size: var(--fs-md);
   letter-spacing: var(--tracking-tight);
 }
@@ -884,12 +918,16 @@ p {
 .tw-sort {
   margin: 0;
   font-size: 0.9rem;
-  color: #b7c5df;
+  color: var(--on-brand);
 }
 
 .tw-sort [aria-current="true"] {
-  color: var(--sun);
+  color: var(--on-brand);
   font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--apricot);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.18em;
 }
 
 .tw-list {
@@ -929,8 +967,8 @@ p {
   min-width: 4.25rem;
   padding: 0.45rem 0.4rem;
   border-radius: 12px;
-  background: var(--sun);
-  color: var(--navy);
+  background: var(--apricot);
+  color: var(--ink);
   font-family: var(--font-ui);
   font-size: var(--fs-sm);
   font-weight: 700;
@@ -1051,18 +1089,41 @@ p {
   width: min(100% - 2rem, 760px) !important;
 }
 
+/* Banner en movimiento: franjas de 96px en el eje local, giro fijo -18°.
+   El ciclo traslada exactamente un período, así el bucle no salta. */
 .tw-profile__banner {
+  position: relative;
   height: 120px;
   margin: 0 0 -2.5rem;
   border-radius: var(--radio-lg) var(--radio-lg) 0 0;
-  background:
-    linear-gradient(115deg, var(--navy) 0 42%, transparent 42%),
-    repeating-linear-gradient(
-      115deg,
-      var(--sun) 0 24px,
-      #ffd84a 24px 48px,
-      var(--navy-mid) 48px 72px
-    );
+  overflow: hidden;
+  background: var(--cobalt);
+}
+
+.tw-profile__banner::before {
+  content: "";
+  position: absolute;
+  top: -80%;
+  bottom: -80%;
+  left: -30%;
+  width: 180%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--apricot) 0 22px,
+    var(--apricot-deep) 22px 36px,
+    var(--cobalt) 36px 70px,
+    var(--cobalt-deep) 70px 96px
+  );
+  transform: rotate(-18deg) translate3d(0, 0, 0);
+  pointer-events: none;
+}
+
+.tw-profile__banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, var(--cobalt) 0 42%, transparent 42%);
+  pointer-events: none;
 }
 
 .tw-profile__hero {
@@ -1081,15 +1142,15 @@ p {
   width: 112px;
   height: 112px;
   border-radius: 22px;
-  background: var(--sun);
-  border: 4px solid var(--navy);
+  background: var(--apricot);
+  border: 4px solid var(--cobalt);
   display: grid;
   place-items: center;
   font-family: var(--font-ui);
   font-size: var(--fs-lg);
   font-weight: 700;
-  color: var(--navy);
-  box-shadow: 6px 6px 0 var(--navy-mid);
+  color: var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
 }
 
 .tw-profile__id h1 {
@@ -1160,16 +1221,16 @@ p {
   display: inline-block;
   padding: 0.4rem 0.8rem;
   border-radius: 999px;
-  background: var(--navy);
-  color: var(--sun);
+  background: var(--cobalt);
+  color: var(--on-brand);
   font-size: 0.8rem;
   font-weight: 700;
   text-decoration: none;
 }
 
 .tw-toc a:hover {
-  background: var(--sun);
-  color: var(--navy);
+  background: var(--apricot);
+  color: var(--ink);
 }
 
 .tw-block {
@@ -1182,19 +1243,24 @@ p {
 }
 
 .tw-block--sun {
-  background: linear-gradient(160deg, var(--sun-soft), #fff 55%);
-  border-color: var(--sun-deep);
+  background: var(--apricot-soft);
+  border-color: var(--apricot-deep);
 }
 
 .tw-block--ink {
-  background: var(--navy);
-  color: #eef3fb;
-  border-color: var(--navy);
+  background: var(--cobalt);
+  color: var(--on-brand);
+  border-color: var(--cobalt);
 }
 
 .tw-block--ink h2,
 .tw-block--ink a {
-  color: var(--sun);
+  color: var(--on-brand);
+}
+
+.tw-block--ink h2 {
+  width: fit-content;
+  box-shadow: inset 0 -3px 0 var(--apricot);
 }
 
 .tw-block h2 {
@@ -1267,15 +1333,16 @@ p {
   display: inline-flex;
   padding: 0.55rem 1rem;
   border-radius: var(--radio);
-  background: var(--sun-soft);
-  border: 2px solid var(--navy);
-  color: var(--navy);
+  background: var(--apricot-soft);
+  border: 2px solid var(--ink);
+  color: var(--ink);
   font-weight: 800;
   text-decoration: none;
 }
 
 .tw-back a:hover {
-  background: var(--sun);
+  background: var(--apricot);
+  color: var(--ink);
 }
 
 @media (max-width: 759px) {
@@ -1345,9 +1412,10 @@ select {
 
 input:focus,
 textarea:focus {
-  outline: none;
-  border-color: var(--sun-deep);
-  box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.35);
+  outline: 3px solid var(--apricot);
+  outline-offset: 2px;
+  border-color: var(--apricot-deep);
+  box-shadow: none;
 }
 
 [aria-invalid="true"] {
@@ -1361,8 +1429,8 @@ button {
   padding: 0.75rem 1.2rem;
   border: 0;
   border-radius: var(--radio);
-  background: var(--sun);
-  color: var(--navy);
+  background: var(--apricot);
+  color: var(--ink);
   font-family: var(--font-ui);
   font-size: var(--fs-base);
   font-weight: 700;
@@ -1372,7 +1440,7 @@ button {
 }
 
 button:hover {
-  background: #ffd33a;
+  background: var(--apricot-deep);
 }
 
 button:active {
@@ -1401,8 +1469,9 @@ button[data-quitar-fila] {
 #buscar-localidad:hover,
 button[name="quitar"]:hover,
 button[data-quitar-fila]:hover {
-  background: var(--sun-soft);
-  border-color: var(--navy);
+  background: var(--apricot-soft);
+  border-color: var(--ink);
+  color: var(--ink);
 }
 
 .error {
@@ -1490,8 +1559,8 @@ output {
   display: inline-block;
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  background: var(--sun);
-  color: var(--navy);
+  background: var(--apricot);
+  color: var(--ink);
   font-size: 0.8rem;
   font-weight: 800;
 }
@@ -1530,6 +1599,10 @@ progress {
 
   .motion-ready .tw-hero__splash {
     animation: tw-slide 900ms var(--ease) 80ms both;
+  }
+
+  .tw-profile__banner::before {
+    animation: tw-banner-drift 9s linear infinite;
   }
 }
 
@@ -1587,6 +1660,15 @@ progress {
   }
 }
 
+@keyframes tw-banner-drift {
+  from {
+    transform: rotate(-18deg) translate3d(0, 0, 0);
+  }
+  to {
+    transform: rotate(-18deg) translate3d(-96px, 0, 0);
+  }
+}
+
 @keyframes tw-slide {
   from {
     opacity: 0.4;
@@ -1616,5 +1698,9 @@ progress {
   .motion-ready .tw-profile__hero {
     opacity: 1;
     transform: none;
+  }
+  .tw-profile__banner::before {
+    animation: none !important;
+    transform: rotate(-18deg) translate3d(0, 0, 0);
   }
 }

@@ -113,6 +113,21 @@ Capturas en `idea/pruebas-fase2/`.
 
 ---
 
+## Prueba look-c-color-cobalto — cobalto + albaricoque (sobre C3 Jakarta)
+
+| Campo | Valor |
+| :--- | :--- |
+| Cuándo | 2026-11-04 |
+| Branch | `cursor/look-c-color-cobalto-aa58` |
+| Base | `cursor/look-c-tipo-jakarta-aa58` (estructura + tipo Jakarta) |
+| Variante | Campo plano cobalto `#2f5bff`, acento albaricoque `#ffb085`, tinta `#0e1320`, papel `#f4f6ff` |
+| Qué se probó | Misma grilla C3; banner de perfil en movimiento (`transform`, se congela con reduced-motion) |
+| Evitado | Sunflower, coral, lima, malla morada, glow |
+| Veredicto | **Pendiente** (Vissiuss) |
+| Capturas | `pruebas-fase2/look-c-color-cobalto-{inicio,perfil,mobile}.png` · NOTES: `look-c-color-cobalto-NOTES.md` |
+
+---
+
 ## Skills de apoyo (no son dirección MOD-DIR por sí solas)
 
 | Skill | Ruta | Uso |
