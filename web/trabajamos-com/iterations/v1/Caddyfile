@@ -1,0 +1,8 @@
+# DOMAIN=qa.trabajamos.com activa HTTPS automático. DOMAIN=:80 sirve solo HTTP (por IP).
+{$DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 6MB
+	}
+	reverse_proxy app:3000
+}
