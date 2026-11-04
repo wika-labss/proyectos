@@ -669,16 +669,16 @@ p {
   pointer-events: none;
 }
 
-.tw-hero__splash::after {
-  content: "";
+.tw-hero__splash .tw-mark {
   position: absolute;
-  inset: 12% 18% auto auto;
-  width: min(42%, 180px);
+  z-index: 1;
+  top: 12%;
+  right: 14%;
+  width: min(42%, 160px);
+  height: auto;
   aspect-ratio: 1;
-  border: 6px solid var(--ink);
-  border-radius: 28% 72% 40% 60% / 55% 35% 65% 45%;
-  background: var(--apricot);
-  transform: rotate(-12deg);
+  object-fit: contain;
+  border-radius: 22px;
   pointer-events: none;
 }
 
@@ -1040,13 +1040,16 @@ p {
     line-height: 1.35;
   }
   .tw-hero__splash {
-    min-height: 56px;
+    min-height: 112px;
     clip-path: none;
     order: -1;
   }
-  .tw-hero__splash::after {
-    inset: 18% auto auto 12%;
-    width: 52px;
+  .tw-hero__splash .tw-mark {
+    top: 50%;
+    left: 0.85rem;
+    right: auto;
+    width: 88px;
+    transform: translateY(-50%);
   }
   .tw-search {
     grid-template-columns: 1fr;
@@ -1093,7 +1096,8 @@ p {
    El ciclo traslada exactamente un período, así el bucle no salta. */
 .tw-profile__banner {
   position: relative;
-  height: 120px;
+  z-index: 0;
+  height: 152px;
   margin: 0 0 -2.5rem;
   border-radius: var(--radio-lg) var(--radio-lg) 0 0;
   overflow: hidden;
@@ -1122,7 +1126,20 @@ p {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(115deg, var(--cobalt) 0 42%, transparent 42%);
+  pointer-events: none;
+}
+
+.tw-profile__banner .tw-mark--banner {
+  position: absolute;
+  z-index: 2;
+  top: 0.45rem;
+  right: 0.9rem;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: 18px;
   pointer-events: none;
 }
 
@@ -1135,6 +1152,7 @@ p {
   border: 3px solid var(--navy);
   border-radius: var(--radio-lg);
   position: relative;
+  z-index: 1;
   box-shadow: var(--shadow);
 }
 
@@ -1142,15 +1160,17 @@ p {
   width: 112px;
   height: 112px;
   border-radius: 22px;
-  background: var(--apricot);
+  background: var(--ink);
   border: 4px solid var(--cobalt);
-  display: grid;
-  place-items: center;
-  font-family: var(--font-ui);
-  font-size: var(--fs-lg);
-  font-weight: 700;
-  color: var(--ink);
+  overflow: hidden;
   box-shadow: 6px 6px 0 var(--ink);
+}
+
+.tw-profile__photo .tw-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .tw-profile__id h1 {
@@ -1347,8 +1367,14 @@ p {
 
 @media (max-width: 759px) {
   .tw-profile__banner {
-    height: 84px;
+    height: 124px;
     margin-bottom: -1.75rem;
+  }
+  .tw-profile__banner .tw-mark--banner {
+    width: 72px;
+    height: 72px;
+    top: 0.35rem;
+    right: 0.65rem;
   }
   .tw-profile__hero {
     grid-template-columns: 1fr;
@@ -1356,7 +1382,6 @@ p {
   .tw-profile__photo {
     width: 88px;
     height: 88px;
-    font-size: var(--fs-md);
   }
   .tw-profile__id h1 {
     font-size: var(--fs-md);

@@ -154,7 +154,9 @@ export function vistaInicio(e: EstadoBusqueda): Html {
       <p id="estado-busqueda" role="status" aria-live="polite">${textoEstado(e)}</p>
       <button type="button" id="reintentar" class="tw-cta tw-cta--ghost"${attrSi(e.tipo !== "error_servicio", "hidden")}>Reintentar búsqueda</button>
     </div>
-    <div class="tw-hero__splash" aria-hidden="true"></div>
+    <div class="tw-hero__splash">
+      <img class="tw-mark" src="/assets/vissiuss-logo.png" alt="Vissiuss" width="160" height="160">
+    </div>
   </section>
 
   <div class="tw-filters" role="toolbar" aria-label="Filtros">
@@ -175,11 +177,6 @@ export function vistaInicio(e: EstadoBusqueda): Html {
   });
 }
 
-function inicialNombre(nombre: string): string {
-  const letra = [...nombre.trim()][0];
-  return (letra ?? "?").toLocaleUpperCase("es-CL");
-}
-
 function headlinePerfil(perfil: Perfil): string {
   if (perfil.ofertas[0]) return perfil.ofertas[0].titulo;
   const tags = [...new Set(perfil.ofertas.map((o) => o.tag))];
@@ -198,9 +195,11 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
   const cuerpo = html`<main id="contenido" class="tw-profile-page">
   <p id="estado-perfil" role="status" aria-live="polite"></p>
   <article id="perfil" class="tw-profile" aria-labelledby="perfil-nombre">
-    <div class="tw-profile__banner" aria-hidden="true"></div>
+    <div class="tw-profile__banner">
+      <img class="tw-mark tw-mark--banner" src="/assets/vissiuss-logo.png" alt="Vissiuss" width="96" height="96">
+    </div>
     <header class="tw-profile__hero">
-      <div class="tw-profile__photo" aria-hidden="true">${inicialNombre(perfil.nombre)}</div>
+      <div class="tw-profile__photo"><img class="tw-mark" src="/assets/vissiuss-logo.png" alt="Vissiuss" width="112" height="112"></div>
       <div class="tw-profile__id">
         <h1 id="perfil-nombre">${perfil.nombre}</h1>
         <p class="tw-profile__headline">${headlinePerfil(perfil)}</p>
