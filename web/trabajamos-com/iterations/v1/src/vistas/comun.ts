@@ -18,11 +18,12 @@ export function cabeceraBanner(opciones: {
   meta?: string;
   enlaces: EnlaceMenu[];
   extra?: Html;
+  /** Sustituye la barra horizontal de enlaces. Sin `<nav>` vacío. */
+  acciones?: Html;
 }): Html {
-  return html`<header class="tw-header">
-  <div class="tw-header__bar">
-    <a class="tw-logo" href="/index.html">trabajamos<span class="tw-logo__dot">.com</span></a>
-    <nav class="tw-nav" aria-label="Principal">
+  const navegacion = opciones.acciones
+    ? opciones.acciones
+    : html`<nav class="tw-nav" aria-label="Principal">
       <ul>
         ${opciones.enlaces.map(
           (e) => html`<li><a href="${e.href}"${e.actual ? html` aria-current="page"` : ""}>${e.texto}${
@@ -55,7 +56,11 @@ export function cabeceraBanner(opciones: {
         </ul>
       </nav>
       ${opciones.extra ?? ""}
-    </aside>
+    </aside>`;
+  return html`<header class="tw-header">
+  <div class="tw-header__bar">
+    <a class="tw-logo" href="/index.html">trabajamos<span class="tw-logo__dot">.com</span></a>
+    ${navegacion}
   </div>
   <p class="tw-header__lema">${opciones.lema}${opciones.meta ? html` · ${opciones.meta}` : ""}</p>
 </header>`;

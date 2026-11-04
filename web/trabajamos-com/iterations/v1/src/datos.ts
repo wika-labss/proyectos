@@ -227,6 +227,7 @@ export async function marcarPunto(db: Db, perfilId: string, punto: Punto): Promi
 export interface ResultadoCercano {
   oferta: Oferta;
   perfil: { slug: string; nombre: string };
+  contacto: { tipo: ContactoTipo; valor: string };
   distanciaKm: number;
 }
 
@@ -240,10 +241,13 @@ export async function buscarCercanos(db: Db, tag: string, lat: number, lng: numb
     tag: string;
     slug: string;
     nombre: string;
+    contacto_tipo: ContactoTipo;
+    contacto_valor: string;
     distancia_km: number;
   }>(
     `WITH origen AS (SELECT ST_SetSRID(ST_MakePoint($3, $2), 4326)::geography AS g)
      SELECT o.id, o.tipo, o.titulo, o.tag, p.slug, p.nombre,
+            p.contacto_tipo, p.contacto_valor,
             ST_Distance(p.punto, origen.g) / 1000.0 AS distancia_km
      FROM ofertas o
      JOIN perfiles p ON p.id = o.perfil_id
@@ -256,6 +260,7 @@ export async function buscarCercanos(db: Db, tag: string, lat: number, lng: numb
   return rows.map((r) => ({
     oferta: { id: r.id, tipo: r.tipo, titulo: r.titulo, tag: r.tag },
     perfil: { slug: r.slug, nombre: r.nombre },
+    contacto: { tipo: r.contacto_tipo, valor: r.contacto_valor },
     distanciaKm: Number(r.distancia_km),
   }));
 }

@@ -22,6 +22,18 @@
     });
   }
 
+  const oficio = document.getElementById("oficio-ejemplo");
+  const campoQ = document.getElementById("q");
+  if (oficio instanceof HTMLSelectElement) {
+    oficio.addEventListener("change", () => {
+      if (!oficio.value) return;
+      if (campoQ instanceof HTMLInputElement) {
+        campoQ.value = oficio.value;
+        campoQ.focus();
+      }
+    });
+  }
+
   if (reduce) {
     document.documentElement.classList.add("motion-reduce");
     return;
@@ -30,7 +42,7 @@
   document.documentElement.classList.add("motion-ready");
 
   const targets = document.querySelectorAll(
-    ".tw-header, .tw-results, .tw-profile__hero, .tw-block, .tw-card, .tw-offers > li, .tw-folio > li, body > footer, .tw-footer",
+    ".tw-header, .tw-profile__hero, .tw-block, .tw-offers > li, .tw-folio > li, body > footer, .tw-footer",
   );
 
   targets.forEach((el, i) => {

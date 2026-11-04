@@ -29,14 +29,52 @@ export interface EstadoBusqueda {
   resultados: ResultadoCercano[];
 }
 
-function cabeceraPublica(actual: "buscar" | "perfil" | "otra" = "otra"): Html {
+const OFICIOS_EJEMPLO = [
+  "Gasfitería",
+  "Electricidad",
+  "Carpintería",
+  "Pintura",
+  "Albañilería",
+  "Jardinería",
+  "Cerrajería",
+  "Limpieza",
+  "Mudanzas",
+  "Maestro chasquilla",
+] as const;
+
+function oficioCoincide(q: string | undefined, nombre: string): boolean {
+  if (!q) return false;
+  const limpio = q.trim().replace(/^#+\s*/u, "");
+  return limpio.localeCompare(nombre, "es-CL", { sensitivity: "accent" }) === 0;
+}
+
+/** Select nativo entre los dos botones. Sin JS se envía con «Ver» a `?q=`. */
+function controlOficios(q: string | undefined): Html {
+  return html`<form class="tw-oficios" action="/index.html" method="get">
+    <label class="tw-oficios__label" for="oficio-ejemplo">Oficio de ejemplo</label>
+    <span class="tw-oficios__control">
+      <select id="oficio-ejemplo" name="q">
+        <option value="">Ejemplos</option>
+        ${OFICIOS_EJEMPLO.map(
+          (nombre) =>
+            html`<option value="${nombre}"${oficioCoincide(q, nombre) ? html` selected` : ""}>${nombre}</option>`,
+        )}
+      </select>
+      <button type="submit" class="tw-oficios__ir">Ver</button>
+    </span>
+  </form>`;
+}
+
+function cabeceraPublica(actual: "buscar" | "perfil" | "otra" = "otra", q?: string): Html {
   return cabeceraBanner({
     lema: "Oficios y emprendedores cerca de ti",
     meta: "Chile",
-    enlaces: [
-      { href: "/index.html", texto: "Buscar oficios", actual: actual === "buscar" },
-      { href: "/panel/entrar.html", texto: "Crear perfil", actual: false },
-    ],
+    enlaces: [],
+    acciones: html`<div class="tw-header__acciones">
+      <a class="tw-header__btn" href="/index.html"${actual === "buscar" ? html` aria-current="page"` : ""}>Buscar oficios</a>
+      ${controlOficios(q)}
+      <a class="tw-header__btn" href="/panel/entrar.html">Crear perfil</a>
+    </div>`,
   });
 }
 
@@ -98,9 +136,12 @@ export function seccionResultados(e: EstadoBusqueda): Html {
         (r, i) => html`<li style="--i:${String(i)}">
         <article class="tw-card" aria-labelledby="r${i + 1}">
           <p class="tw-card__km">${distanciaTexto(r.distanciaKm)}</p>
-          <h3 id="r${i + 1}" class="tw-card__title"><a href="/perfil.html?slug=${encodeURIComponent(r.perfil.slug)}">${r.oferta.titulo}</a></h3>
-          <p class="tw-card__who">${r.perfil.nombre}</p>
-          <p class="tw-card__tag">${ETIQUETA_OFERTA[r.oferta.tipo]} · ${r.oferta.tag}</p>
+          <div class="tw-card__body">
+            <h3 id="r${i + 1}" class="tw-card__title"><a href="/perfil.html?slug=${encodeURIComponent(r.perfil.slug)}">${r.oferta.titulo}</a></h3>
+            <p class="tw-card__who">${r.perfil.nombre}</p>
+            <p class="tw-card__tag"><span class="tw-card__chip">${ETIQUETA_OFERTA[r.oferta.tipo]}</span> ${r.oferta.tag}</p>
+            <p class="tw-card__contacto">${contactoDato(r.contacto.tipo, r.contacto.valor)}</p>
+          </div>
         </article>
       </li>`,
       )}
@@ -154,7 +195,9 @@ export function vistaInicio(e: EstadoBusqueda): Html {
       <p id="estado-busqueda" role="status" aria-live="polite">${textoEstado(e)}</p>
       <button type="button" id="reintentar" class="tw-cta tw-cta--ghost"${attrSi(e.tipo !== "error_servicio", "hidden")}>Reintentar búsqueda</button>
     </div>
-    <div class="tw-hero__splash" aria-hidden="true"></div>
+    <div class="tw-hero__splash">
+      <img class="tw-hero__mark" src="/assets/vissiuss-logo.png" alt="Vissiuss" width="160" height="160">
+    </div>
   </section>
 
   <div class="tw-filters" role="toolbar" aria-label="Filtros">
@@ -168,16 +211,11 @@ export function vistaInicio(e: EstadoBusqueda): Html {
   return documento({
     titulo: tituloInicio(e),
     descripcion: "Busca un oficio en trabajamos.com y encuentra emprendedores cercanos a tu ubicación.",
-    cabecera: cabeceraPublica("buscar"),
+    cabecera: cabeceraPublica("buscar", e.q),
     cuerpo,
     pie: piePublico(),
     scripts: ["/assets/buscar.js"],
   });
-}
-
-function inicialNombre(nombre: string): string {
-  const letra = [...nombre.trim()][0];
-  return (letra ?? "?").toLocaleUpperCase("es-CL");
 }
 
 function headlinePerfil(perfil: Perfil): string {
@@ -198,9 +236,11 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
   const cuerpo = html`<main id="contenido" class="tw-profile-page">
   <p id="estado-perfil" role="status" aria-live="polite"></p>
   <article id="perfil" class="tw-profile" aria-labelledby="perfil-nombre">
-    <div class="tw-profile__banner" aria-hidden="true"></div>
+    <div class="tw-profile__banner">
+      <div class="tw-profile__stripes" aria-hidden="true"></div>
+      <img class="tw-banner__logo" src="/assets/vissiuss-logo.png" alt="Vissiuss" width="112" height="112">
+    </div>
     <header class="tw-profile__hero">
-      <div class="tw-profile__photo" aria-hidden="true">${inicialNombre(perfil.nombre)}</div>
       <div class="tw-profile__id">
         <h1 id="perfil-nombre">${perfil.nombre}</h1>
         <p class="tw-profile__headline">${headlinePerfil(perfil)}</p>
