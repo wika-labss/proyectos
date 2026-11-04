@@ -65,7 +65,7 @@ function controlOficios(q: string | undefined): Html {
   </form>`;
 }
 
-function cabeceraPublica(actual: "buscar" | "perfil" | "otra" = "otra", q?: string): Html {
+function cabeceraPublica(actual: "buscar" | "perfil" | "publicate" | "otra" = "otra", q?: string): Html {
   return cabeceraBanner({
     lema: "Oficios y emprendedores cerca de ti",
     meta: "Chile",
@@ -73,7 +73,7 @@ function cabeceraPublica(actual: "buscar" | "perfil" | "otra" = "otra", q?: stri
     acciones: html`<div class="tw-header__acciones">
       <a class="tw-header__btn" href="/index.html"${actual === "buscar" ? html` aria-current="page"` : ""}>Buscar oficios</a>
       ${controlOficios(q)}
-      <a class="tw-header__btn" href="/panel/entrar.html">Crear perfil</a>
+      <a class="tw-header__btn" href="/publicate-ahora.html"${actual === "publicate" ? html` aria-current="page"` : ""}>Públicate ahora</a>
     </div>`,
   });
 }
@@ -330,6 +330,46 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
     pie: piePublico(),
     estilos: perfil.punto ? ["/vendor/leaflet/leaflet.css"] : [],
     scripts: perfil.punto ? ["/vendor/leaflet/leaflet.js", "/assets/mapa.js", "/assets/perfil.js"] : [],
+  });
+}
+
+/** Informativa previa al registro. No pide sesión. */
+export function vistaPublicate(): Html {
+  const cuerpo = html`<main id="contenido">
+  <h1>Públicate ahora</h1>
+  <p>Esto es lo que hace trabajamos.com hoy, antes de crear la cuenta.</p>
+
+  <section id="como-funciona" class="tw-block" aria-labelledby="como-funciona-titulo">
+    <h2 id="como-funciona-titulo">Cómo funciona</h2>
+    <p>Quien busca escribe un oficio y una comuna. trabajamos.com muestra las ofertas publicadas y las ordena de la más cercana a la más lejana. Buscar y abrir un perfil no pide cuenta.</p>
+    <p>Quien ofrece publica su perfil con nombre y un medio de contacto (teléfono, correo o enlace), sus ofertas, el portafolio y la localidad donde trabaja. Ese contacto queda visible en el perfil. El botón Contactar abre el teléfono, el correo o el enlace guardado.</p>
+  </section>
+
+  <section id="normas" class="tw-block" aria-labelledby="normas-titulo">
+    <h2 id="normas-titulo">Normas de la comunidad</h2>
+    <p>Pendiente de redacción con Vissiuss. Esta sección no publica un reglamento.</p>
+  </section>
+
+  <section id="planes" class="tw-block" aria-labelledby="planes-titulo">
+    <h2 id="planes-titulo">Planes disponibles</h2>
+    <p>Pendiente. No hay planes ni precios publicados.</p>
+  </section>
+
+  <section id="preguntas-frecuentes" class="tw-block" aria-labelledby="preguntas-titulo">
+    <h2 id="preguntas-titulo">Preguntas frecuentes</h2>
+    <p>Pendiente. No hay preguntas escritas.</p>
+  </section>
+
+  <p>El paso siguiente es crear la cuenta. Si ya tienes una, entra.</p>
+  <p><a class="tw-cta tw-cta--contact" href="/panel/crear-cuenta.html">Crear cuenta</a></p>
+  <p><a href="/panel/entrar.html">Ya tengo cuenta</a></p>
+</main>`;
+  return documento({
+    titulo: "Públicate ahora — trabajamos.com",
+    descripcion: "Cómo funciona trabajamos.com antes de crear la cuenta del emprendedor.",
+    cabecera: cabeceraPublica("publicate"),
+    cuerpo,
+    pie: piePublico(),
   });
 }
 

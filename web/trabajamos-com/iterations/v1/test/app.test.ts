@@ -563,3 +563,71 @@ describe("localidad (VIEW-16)", () => {
     expect(pagina.body).not.toContain("Usar mi ubicación");
   });
 });
+
+describe("Públicate ahora", () => {
+  function seccion(body: string, id: string): string {
+    const encontrado = new RegExp(`<section id="${id}"[\\s\\S]*?</section>`, "u").exec(body);
+    expect(encontrado, `falta la sección #${id}`).not.toBeNull();
+    return encontrado?.[0] ?? "";
+  }
+
+  it("el home abre la página informativa sin pedir sesión", async () => {
+    const home = await e.app.inject({ method: "GET", url: "/" });
+    expect(home.statusCode).toBe(200);
+    expect(home.body).toContain('href="/publicate-ahora.html"');
+    expect(home.body).toContain(">Públicate ahora</a>");
+    expect(home.body).toContain('id="form-buscar"');
+    expect(home.body).toContain('id="q"');
+    expect(home.body).toContain('id="localidad"');
+    expect(home.body).toContain('id="usar-ubicacion"');
+    expect(home.body).toContain('id="ubicacion-actual"');
+    expect(home.body).toContain('id="estado-busqueda"');
+    expect(home.body).toContain('id="reintentar"');
+    expect(home.body).toContain('id="resultados"');
+
+    const pagina = await e.app.inject({ method: "GET", url: "/publicate-ahora.html" });
+    expect(pagina.statusCode).toBe(200);
+    expect(pagina.headers.location).toBeUndefined();
+    expect(pagina.body).toContain("<h1>Públicate ahora</h1>");
+    expect(pagina.body).toContain('href="/panel/crear-cuenta.html"');
+    expect(pagina.body).toContain('href="/panel/entrar.html"');
+    expect(pagina.body).not.toContain("Entrar a tu panel");
+  });
+
+  it("muestra los cuatro bloques y deja normas, planes y preguntas pendientes", async () => {
+    const pagina = await e.app.inject({ method: "GET", url: "/publicate-ahora.html" });
+    const cuerpo = pagina.body;
+
+    const como = seccion(cuerpo, "como-funciona");
+    expect(como).toContain("Cómo funciona");
+    expect(como).toContain("oficio");
+    expect(como).toContain("comuna");
+    expect(como).toContain("ofertas");
+    expect(como).toContain("portafolio");
+    expect(como).toContain("localidad");
+    expect(como).toContain("contacto");
+    expect(como).not.toMatch(/chat|cotizaci/iu);
+
+    const normas = seccion(cuerpo, "normas");
+    expect(normas).not.toContain("hidden");
+    expect(normas).toContain("Normas de la comunidad");
+    expect(normas).toContain("Pendiente de redacción con Vissiuss");
+    expect(normas).not.toMatch(/<li>|<ol|<ul/u);
+
+    const planes = seccion(cuerpo, "planes");
+    expect(planes).not.toContain("hidden");
+    expect(planes).toContain("Planes disponibles");
+    expect(planes).toContain("Pendiente");
+    expect(planes).toContain("No hay planes ni precios publicados");
+    expect(planes).not.toMatch(/\$|CLP|UF|Empresa Pro|puntos|mensual|gratis/iu);
+
+    const preguntas = seccion(cuerpo, "preguntas-frecuentes");
+    expect(preguntas).not.toContain("hidden");
+    expect(preguntas).toContain("Preguntas frecuentes");
+    expect(preguntas).toContain("Pendiente");
+    expect(preguntas).toContain("No hay preguntas escritas");
+    expect(preguntas).not.toContain("¿");
+
+    expect(cuerpo).not.toMatch(/Empresa Pro|\$\s*\d|CLP/u);
+  });
+});
