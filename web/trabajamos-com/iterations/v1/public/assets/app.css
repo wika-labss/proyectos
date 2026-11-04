@@ -764,21 +764,17 @@ p {
   pointer-events: none;
 }
 
-.tw-hero__mark {
+.tw-hero__splash .tw-mark {
   position: absolute;
   z-index: 1;
-  top: 14%;
-  right: 16%;
-  width: min(42%, 168px);
+  top: 12%;
+  right: 14%;
+  width: min(42%, 160px);
   height: auto;
   aspect-ratio: 1;
   object-fit: contain;
-  background: var(--cobalt);
-  border: 4px solid var(--ink);
-  border-radius: 16px;
-  box-shadow: 6px 6px 0 var(--ink);
-  color: transparent;
-  font-size: 0;
+  border-radius: 22px;
+  pointer-events: none;
 }
 
 .tw-search {
@@ -1182,17 +1178,16 @@ p {
     line-height: 1.35;
   }
   .tw-hero__splash {
-    min-height: 56px;
+    min-height: 112px;
     clip-path: none;
     order: -1;
   }
-  .tw-hero__mark {
-    top: 8px;
+  .tw-hero__splash .tw-mark {
+    top: 50%;
+    left: 0.85rem;
     right: auto;
-    left: 12px;
-    width: 40px;
-    border-width: 2px;
-    box-shadow: 3px 3px 0 var(--ink);
+    width: 88px;
+    transform: translateY(-50%);
   }
   .tw-search {
     grid-template-columns: 1fr;
@@ -1238,23 +1233,15 @@ p {
    El ciclo traslada exactamente un período, así el bucle no salta. */
 .tw-profile__banner {
   position: relative;
-  height: 120px;
+  z-index: 0;
+  height: 152px;
   margin: 0 0 -2.5rem;
   border-radius: var(--radio-lg) var(--radio-lg) 0 0;
   overflow: hidden;
   background: var(--cobalt);
 }
 
-.tw-profile__stripes {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.tw-profile__stripes::before {
+.tw-profile__banner::before {
   content: "";
   position: absolute;
   top: -80%;
@@ -1272,38 +1259,55 @@ p {
   pointer-events: none;
 }
 
-.tw-profile__stripes::after {
+.tw-profile__banner::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(115deg, var(--cobalt) 0 42%, transparent 42%);
   pointer-events: none;
 }
 
-.tw-banner__logo {
+.tw-profile__banner .tw-mark--banner {
   position: absolute;
   z-index: 2;
-  top: 8px;
-  left: 1.15rem;
-  width: 64px;
-  height: 64px;
+  top: 0.45rem;
+  right: 0.9rem;
+  width: 96px;
+  height: 96px;
   object-fit: contain;
-  background: var(--cobalt);
-  border: 3px solid var(--ink);
-  border-radius: 14px;
-  box-shadow: 4px 4px 0 var(--apricot);
-  color: transparent;
-  font-size: 0;
+  border-radius: 18px;
+  pointer-events: none;
 }
 
 .tw-profile__hero {
-  display: block;
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 1.1rem;
   padding: 1.35rem 1.4rem 1.5rem;
   background: var(--surface);
   border: 3px solid var(--navy);
   border-radius: var(--radio-lg);
   position: relative;
+  z-index: 1;
   box-shadow: var(--shadow);
+}
+
+.tw-profile__photo {
+  width: 112px;
+  height: 112px;
+  border-radius: 22px;
+  background: var(--ink);
+  border: 4px solid var(--cobalt);
+  overflow: hidden;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.tw-profile__photo .tw-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .tw-profile__id h1 {
@@ -1500,15 +1504,21 @@ p {
 
 @media (max-width: 759px) {
   .tw-profile__banner {
-    height: 84px;
+    height: 124px;
     margin-bottom: -1.75rem;
   }
-  .tw-banner__logo {
-    top: 6px;
-    left: 0.85rem;
-    width: 44px;
-    height: 44px;
-    border-width: 2px;
+  .tw-profile__banner .tw-mark--banner {
+    width: 72px;
+    height: 72px;
+    top: 0.35rem;
+    right: 0.65rem;
+  }
+  .tw-profile__hero {
+    grid-template-columns: 1fr;
+  }
+  .tw-profile__photo {
+    width: 88px;
+    height: 88px;
   }
   .tw-profile__id h1 {
     font-size: var(--fs-md);
@@ -1753,7 +1763,7 @@ progress {
     animation: tw-slide 900ms var(--ease) 80ms both;
   }
 
-  .tw-profile__stripes::before {
+  .tw-profile__banner::before {
     animation: tw-banner-drift 9s linear infinite;
   }
 }
@@ -1853,7 +1863,7 @@ progress {
     opacity: 1;
     transform: none;
   }
-  .tw-profile__stripes::before {
+  .tw-profile__banner::before {
     animation: none !important;
     transform: rotate(-18deg) translate3d(0, 0, 0);
   }
