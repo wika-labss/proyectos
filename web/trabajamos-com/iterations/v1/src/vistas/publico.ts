@@ -227,7 +227,7 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
       </ul>
     </nav>
 
-    <section id="contacto" class="tw-block tw-block--sun" aria-labelledby="contacto-titulo">
+    <section id="contacto" class="tw-block tw-block--coral" aria-labelledby="contacto-titulo">
       <h2 id="contacto-titulo">Contacto</h2>
       <p id="contacto-dato">${contactoDato(c.tipo, c.valor)}</p>
       <h3 id="redes-titulo">Redes</h3>
