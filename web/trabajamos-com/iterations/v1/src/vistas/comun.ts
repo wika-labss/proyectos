@@ -59,7 +59,7 @@ export function cabeceraBanner(opciones: {
     </aside>`;
   return html`<header class="tw-header">
   <div class="tw-header__bar">
-    <a class="tw-logo" href="/index.html">trabajamos<span class="tw-logo__dot">.com</span></a>
+    <a class="tw-logo" href="/index.html"><img class="tw-logo__mark" src="/assets/vissiuss-logo.png" alt="" width="36" height="36">trabajamos<span class="tw-logo__dot">.com</span></a>
     ${navegacion}
   </div>
   <p class="tw-header__lema">${opciones.lema}${opciones.meta ? html` · ${opciones.meta}` : ""}</p>
