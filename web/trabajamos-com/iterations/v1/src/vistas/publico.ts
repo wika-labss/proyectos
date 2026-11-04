@@ -1,12 +1,6 @@
 import type { Perfil, ResultadoCercano } from "../datos.js";
-import { Html, attrSi, html } from "../lib/html.js";
-import {
-  ETIQUETA_OFERTA,
-  contactoDato,
-  contactoHref,
-  contactoMedio,
-  distanciaTexto,
-} from "../lib/reglas.js";
+import { type Html, attrSi, html } from "../lib/html.js";
+import { ETIQUETA_OFERTA, datoCorreo, datoTelefono, distanciaTexto, telefonoHref } from "../lib/reglas.js";
 import { cabeceraBanner, documento } from "./comun.js";
 
 export type TipoBusqueda =
@@ -140,7 +134,7 @@ export function seccionResultados(e: EstadoBusqueda): Html {
             <h3 id="r${i + 1}" class="tw-card__title"><a href="/perfil.html?slug=${encodeURIComponent(r.perfil.slug)}">${r.oferta.titulo}</a></h3>
             <p class="tw-card__who">${r.perfil.nombre}</p>
             <p class="tw-card__tag"><span class="tw-card__chip">${ETIQUETA_OFERTA[r.oferta.tipo]}</span> ${r.oferta.tag}</p>
-            <p class="tw-card__contacto">${contactoDato(r.contacto.tipo, r.contacto.valor)}</p>
+            <p class="tw-card__contacto">${datoTelefono(r.telefono)} · ${datoCorreo(r.correoPublico)}</p>
           </div>
         </article>
       </li>`,
@@ -226,12 +220,12 @@ function headlinePerfil(perfil: Perfil): string {
 }
 
 export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => string): Html {
-  const c = perfil.contacto;
+  const telefono = perfil.telefono ?? "";
+  const correo = perfil.correoPublico ?? "";
   const tags = [...new Set(perfil.ofertas.map((o) => o.tag))];
   const descripcion =
     `${perfil.nombre} en trabajamos.com: ofertas, trabajos realizados y contacto.` +
     (tags.length ? ` Ofrece ${tags.join(" y ")}.` : "");
-  const externo = c.tipo === "url" ? ' rel="nofollow ugc"' : "";
   const locLine = perfil.punto?.etiqueta ?? "Localidad sin marcar";
   const cuerpo = html`<main id="contenido" class="tw-profile-page">
   <p id="estado-perfil" role="status" aria-live="polite"></p>
@@ -246,7 +240,7 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
         <p class="tw-profile__headline">${headlinePerfil(perfil)}</p>
         <p class="tw-profile__loc">${locLine}</p>
         <div class="tw-profile__cta">
-          <a class="tw-cta tw-cta--contact" href="${contactoHref(c.tipo, c.valor)}" aria-describedby="contacto-dato"${new Html(externo)}>Contactar<span class="oculto"> a ${perfil.nombre} ${contactoMedio(c.tipo)}</span></a>
+          <a class="tw-cta tw-cta--contact" href="${telefonoHref(telefono)}" aria-describedby="contacto-dato">Contactar<span class="oculto"> a ${perfil.nombre} por teléfono</span></a>
           ${
             perfil.redes.length
               ? html`<ul class="tw-redes-inline" aria-label="Redes">
@@ -269,7 +263,8 @@ export function vistaPerfil(perfil: Perfil, urlImagen: (archivo: string) => stri
 
     <section id="contacto" class="tw-block tw-block--sun" aria-labelledby="contacto-titulo">
       <h2 id="contacto-titulo">Contacto</h2>
-      <p id="contacto-dato">${contactoDato(c.tipo, c.valor)}</p>
+      <p id="contacto-dato">${datoTelefono(telefono)}</p>
+      <p id="contacto-correo">${datoCorreo(correo)}</p>
       <h3 id="redes-titulo">Redes</h3>
       ${
         perfil.redes.length

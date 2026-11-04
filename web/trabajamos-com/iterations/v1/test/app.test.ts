@@ -146,7 +146,7 @@ describe("cuentas y sesión (VIEW-10, VIEW-18)", () => {
     await a.crearCuenta("csrf@ejemplo.cl");
     const r = await a.post(
       "/panel/perfil.html",
-      { form: "datos", nombre: "Ataque", "contacto[tipo]": "telefono", "contacto[valor]": "+56912345678" },
+      { form: "datos", nombre: "Ataque", telefono: "+56912345678", correo_publico: "ataque@ejemplo.cl" },
       { conCsrf: false },
     );
     expect(r.statusCode).toBe(403);
@@ -166,8 +166,8 @@ describe("cuentas y sesión (VIEW-10, VIEW-18)", () => {
     const r = await a.post("/panel/perfil.html", {
       form: "datos",
       nombre: "Tarde",
-      "contacto[tipo]": "telefono",
-      "contacto[valor]": "+56912345678",
+      telefono: "+56912345678",
+      correo_publico: "tarde@ejemplo.cl",
     });
     expect(r.statusCode).toBe(401);
     expect(r.body).toContain("Tu sesión terminó. No se guardó ningún cambio.");
@@ -175,30 +175,39 @@ describe("cuentas y sesión (VIEW-10, VIEW-18)", () => {
 });
 
 describe("perfil y contacto (VIEW-12, VIEW-13, VIEW-17)", () => {
-  it("primer guardado exige nombre y contacto válido (D-01)", async () => {
+  it("el registro no publica si falta nombre, teléfono, correo, oferta o imagen", async () => {
     const a = new Agente(e.app);
     await a.crearCuenta("nuevo@ejemplo.cl");
     await a.get("/panel/perfil.html");
-    const r = await a.post("/panel/perfil.html", { form: "datos", nombre: " ", "contacto[valor]": "" });
+    const r = await a.post("/panel/perfil.html", { form: "registro", accion: "publicar", nombre: " ", red_url: "http://inseguro.cl" });
     expect(r.statusCode).toBe(422);
     expect(r.body).toContain("Falta el nombre visible. Tu perfil no se publicó.");
-    expect(r.body).toContain("Elige un medio de contacto");
+    expect(r.body).toContain("Escribe tu teléfono público");
+    expect(r.body).toContain("Escribe tu correo público");
+    expect(r.body).toContain("Elige el tipo de oferta");
+    expect(r.body).toContain("Escribe un título");
+    expect(r.body).toContain("Escribe la etiqueta de oficio");
+    expect(r.body).toContain("Elige una imagen. Tu perfil no se publicó.");
+    expect(r.body).toContain("Escribe la descripción de la imagen. Tu perfil no se publicó.");
+    expect(r.body).toContain("El enlace debe empezar con https://");
     expect(r.body).toContain("Tu perfil no se publicó.");
-    const r2 = await a.post("/panel/perfil.html", {
-      form: "datos",
-      nombre: "Juan",
-      "contacto[tipo]": "url",
-      "contacto[valor]": "http://inseguro.cl",
-    });
-    expect(r2.body).toContain("El enlace debe empezar con https://");
     const { rows } = await e.db.query("SELECT count(*)::int AS n FROM perfiles");
     expect(rows[0].n).toBe(0);
+    expect((await e.db.query("SELECT count(*)::int AS n FROM ofertas")).rows[0].n).toBe(0);
+    expect((await e.db.query("SELECT count(*)::int AS n FROM imagenes")).rows[0].n).toBe(0);
   });
 
-  it("publica el perfil y lo muestra con Contactar y el dato (D-03)", async () => {
+  it("publica el perfil con teléfono, correo, oferta e imagen; Contactar abre el teléfono", async () => {
     const a = new Agente(e.app);
     await a.crearCuenta("juan@ejemplo.cl");
-    const r = await a.crearPerfil("Juan Pérez", "telefono", "+56 9 1234 5678");
+    const r = await a.crearPerfil("Juan Pérez", {
+      telefono: "+56 9 1234 5678",
+      correo: "juan.publico@ejemplo.cl",
+      tipo: "producto",
+      titulo: "Mesa de madera",
+      tag: "carpintero",
+      alt: "Mesa de madera a la venta",
+    });
     expect(r.statusCode).toBe(303);
     const panel = await a.seguir(r);
     expect(panel.body).toContain("Perfil publicado");
@@ -206,8 +215,20 @@ describe("perfil y contacto (VIEW-12, VIEW-13, VIEW-17)", () => {
     const pub = await e.app.inject({ method: "GET", url: "/perfil.html?slug=juan-perez" });
     expect(pub.statusCode).toBe(200);
     expect(pub.body).toContain('href="tel:+56912345678"');
+    expect(pub.body).toContain('id="contacto-dato"');
     expect(pub.body).toContain("Teléfono: +56 9 1234 5678");
+    expect(pub.body).toContain('id="contacto-correo"');
+    expect(pub.body).toContain("Correo: juan.publico@ejemplo.cl");
+    expect(pub.body).not.toContain("mailto:");
+    expect(pub.body).toContain("Producto");
+    expect(pub.body).toContain("Mesa de madera");
+    expect(pub.body).toContain("#carpintero");
+    expect(pub.body).toContain('alt="Mesa de madera a la venta"');
+    expect(pub.body).not.toContain("Este perfil aún no publica ofertas.");
+    expect(pub.body).not.toContain("Este perfil aún no tiene imágenes");
     expect(pub.body).toContain("Este perfil aún no marca su localidad.");
+    const { rows } = await e.db.query("SELECT telefono, correo_publico FROM perfiles");
+    expect(rows[0]).toEqual({ telefono: "+56 9 1234 5678", correo_publico: "juan.publico@ejemplo.cl" });
   });
 
   it("slug único aunque se repita el nombre", async () => {
@@ -222,29 +243,37 @@ describe("perfil y contacto (VIEW-12, VIEW-13, VIEW-17)", () => {
     const r = await a.post("/panel/perfil.html", {
       form: "datos",
       nombre: "",
-      "contacto[tipo]": "correo",
-      "contacto[valor]": "nuevo@ejemplo.cl",
+      telefono: "+56 9 1234 5678",
+      correo_publico: "nuevo@ejemplo.cl",
     });
     expect(r.statusCode).toBe(422);
     expect(r.body).toContain("Falta el nombre visible. No se guardó ningún cambio.");
     expect(r.body).toContain("Sigue publicado: Nombre Viejo");
-    const { rows } = await e.db.query("SELECT nombre, contacto_tipo FROM perfiles");
-    expect(rows[0]).toEqual({ nombre: "Nombre Viejo", contacto_tipo: "telefono" });
+    const { rows } = await e.db.query("SELECT nombre, telefono, correo_publico FROM perfiles");
+    expect(rows[0]).toEqual({
+      nombre: "Nombre Viejo",
+      telefono: "+56 9 1234 5678",
+      correo_publico: "publico@ejemplo.cl",
+    });
   });
 
-  it("contacto inválido en edición: guarda el nombre y conserva el contacto (02 7.2)", async () => {
+  it("correo inválido en edición: guarda el nombre y conserva el correo público (02 7.2)", async () => {
     const a = await emprendedor("e@ejemplo.cl", "Nombre Viejo");
     const r = await a.post("/panel/perfil.html", {
       form: "datos",
       nombre: "Nombre Nuevo",
-      "contacto[tipo]": "correo",
-      "contacto[valor]": "sin-arroba",
+      telefono: "+56 9 1234 5678",
+      correo_publico: "sin-arroba",
     });
     expect(r.statusCode).toBe(422);
-    expect(r.body).toContain("Perfil guardado. El contacto no se guardó.");
-    expect(r.body).toContain("Sigue publicado: Teléfono: +56 9 1234 5678");
-    const { rows } = await e.db.query("SELECT nombre, contacto_tipo, contacto_valor FROM perfiles");
-    expect(rows[0]).toEqual({ nombre: "Nombre Nuevo", contacto_tipo: "telefono", contacto_valor: "+56 9 1234 5678" });
+    expect(r.body).toContain("Perfil guardado. El correo público no se guardó.");
+    expect(r.body).toContain("Sigue publicado: Correo: publico@ejemplo.cl");
+    const { rows } = await e.db.query("SELECT nombre, telefono, correo_publico FROM perfiles");
+    expect(rows[0]).toEqual({
+      nombre: "Nombre Nuevo",
+      telefono: "+56 9 1234 5678",
+      correo_publico: "publico@ejemplo.cl",
+    });
   });
 
   it("redes: guarda las válidas, informa las que fallan y quita por id (D-09)", async () => {
@@ -311,24 +340,37 @@ describe("ofertas (VIEW-14)", () => {
     expect(r.body).toContain("La oferta no se guardó. Tus ofertas anteriores siguen publicadas.");
   });
 
-  it("normaliza el # al guardar y quita por id", async () => {
+  it("normaliza el # al guardar, quita por id y no deja el perfil sin ofertas", async () => {
     const a = await emprendedor("o@ejemplo.cl", "Ofertas");
     const r = await oferta(a, "Gasfitería  a domicilio", "  #Maestro   Chasquilla ");
     expect(r.statusCode).toBe(303);
     const lista = await a.seguir(r);
     expect(lista.body).toContain("Oferta agregada: Gasfitería a domicilio, #maestro chasquilla");
     expect(lista.body).toContain("Etiqueta: #maestro chasquilla");
-    const { rows } = await e.db.query<{ id: string; tag: string }>("SELECT id, tag FROM ofertas");
-    expect(rows[0]!.tag).toBe("#maestro chasquilla");
+    const { rows } = await e.db.query<{ id: string; tag: string }>(
+      "SELECT id, tag FROM ofertas WHERE tag = '#maestro chasquilla'",
+    );
+    expect(rows).toHaveLength(1);
 
     const otro = await emprendedor("otro@ejemplo.cl", "Otro");
     await otro.get("/panel/ofertas.html");
     await otro.post("/panel/ofertas.html", { quitar: rows[0]!.id });
-    expect((await e.db.query("SELECT count(*)::int AS n FROM ofertas")).rows[0].n).toBe(1);
+    expect((await e.db.query("SELECT count(*)::int AS n FROM ofertas WHERE tag = '#maestro chasquilla'")).rows[0].n).toBe(1);
 
     const q = await a.seguir(await a.post("/panel/ofertas.html", { quitar: rows[0]!.id }));
     expect(q.body).toContain("Se quitó la oferta: Gasfitería a domicilio.");
-    expect((await e.db.query("SELECT count(*)::int AS n FROM ofertas")).rows[0].n).toBe(0);
+    expect((await e.db.query("SELECT count(*)::int AS n FROM ofertas WHERE tag = '#maestro chasquilla'")).rows[0].n).toBe(0);
+
+    const { rows: propias } = await e.db.query<{ id: string }>(
+      "SELECT o.id FROM ofertas o JOIN perfiles p ON p.id = o.perfil_id WHERE p.slug = 'ofertas'",
+    );
+    expect(propias).toHaveLength(1);
+    const ultima = await a.post("/panel/ofertas.html", { quitar: propias[0]!.id });
+    expect(ultima.statusCode).toBe(422);
+    expect(ultima.body).toContain("No se quitó la oferta. El perfil publicado necesita al menos una oferta.");
+    expect((await e.db.query("SELECT count(*)::int AS n FROM ofertas WHERE perfil_id = (SELECT id FROM perfiles WHERE slug = 'ofertas')")).rows[0].n).toBe(1);
+    const pub = await e.app.inject({ method: "GET", url: "/perfil.html?slug=ofertas" });
+    expect(pub.statusCode).toBe(200);
   });
 
   it("avisa cuando hay ofertas y no hay localidad", async () => {
@@ -445,7 +487,9 @@ describe("portafolio (VIEW-15)", () => {
     expect(lista.body).toContain("Imagen agregada al portafolio.");
     expect(lista.body).toContain("Texto alternativo: Baño con cerámica nueva");
 
-    const { rows } = await e.db.query("SELECT id, archivo, ancho, alto FROM imagenes");
+    const { rows } = await e.db.query(
+      "SELECT id, archivo, ancho, alto FROM imagenes WHERE alt = 'Baño con cerámica nueva'",
+    );
     const fila = rows[0];
     expect(fila.archivo).toMatch(/\.webp$/u);
     expect(Math.max(fila.ancho, fila.alto)).toBe(1600);
@@ -460,7 +504,14 @@ describe("portafolio (VIEW-15)", () => {
     expect(existsSync(ruta)).toBe(true);
     await a.post("/panel/portafolio.html", { quitar: fila.id });
     expect(existsSync(ruta)).toBe(false);
-    expect((await e.db.query("SELECT count(*)::int AS n FROM imagenes")).rows[0].n).toBe(0);
+    expect((await e.db.query("SELECT count(*)::int AS n FROM imagenes")).rows[0].n).toBe(1);
+    const { rows: queda } = await e.db.query<{ id: string }>("SELECT id FROM imagenes");
+    const ultima = await a.post("/panel/portafolio.html", { quitar: queda[0]!.id });
+    expect(ultima.statusCode).toBe(422);
+    expect(ultima.body).toContain("No se quitó la imagen. El perfil publicado necesita al menos una imagen.");
+    expect((await e.db.query("SELECT count(*)::int AS n FROM imagenes")).rows[0].n).toBe(1);
+    const pub = await e.app.inject({ method: "GET", url: "/perfil.html?slug=fotos" });
+    expect(pub.statusCode).toBe(200);
   });
 
   it("rechaza archivos que no son imagen, sin descripción o demasiado grandes", async () => {
@@ -494,7 +545,7 @@ describe("portafolio (VIEW-15)", () => {
       { nombre: "alt", valor: "Algo" },
     ]);
     expect(r.statusCode).toBe(403);
-    expect((await e.db.query("SELECT count(*)::int AS n FROM imagenes")).rows[0].n).toBe(0);
+    expect((await e.db.query("SELECT count(*)::int AS n FROM imagenes")).rows[0].n).toBe(1);
   });
 });
 

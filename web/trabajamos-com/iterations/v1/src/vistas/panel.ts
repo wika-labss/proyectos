@@ -1,12 +1,6 @@
-import type { Perfil } from "../datos.js";
-import { Html, attrSi, html } from "../lib/html.js";
-import {
-  ETIQUETA_OFERTA,
-  OFERTA_TIPOS,
-  contactoDato,
-  contactoDestino,
-  type ContactoTipo,
-} from "../lib/reglas.js";
+import { faltantesPublicacion, perfilPublicado, type Perfil } from "../datos.js";
+import { type Html, attrSi, html } from "../lib/html.js";
+import { ETIQUETA_OFERTA, OFERTA_TIPOS, datoCorreo, datoTelefono } from "../lib/reglas.js";
 import {
   type ErrorCampo,
   type EnlaceMenu,
@@ -47,7 +41,7 @@ function enlacesPanel(perfil: Perfil | null, actual: SeccionPanel): EnlaceMenu[]
     {
       href: "/panel/perfil.html",
       texto: "Editar perfil",
-      meta: "publicado",
+      meta: perfilPublicado(perfil) ? "publicado" : "sin publicar",
       actual: actual === "perfil",
     },
     {
@@ -100,14 +94,14 @@ function marco(opciones: {
 }): Html {
   const { perfil } = opciones;
   const extra = html`${
-    perfil
+    perfil && perfilPublicado(perfil)
       ? html`<p class="menu-accion"><a href="/perfil.html?slug=${encodeURIComponent(perfil.slug)}">Ver mi perfil público</a></p>`
       : ""
   }
   <form method="post" action="/panel/salir" class="menu-salir">${campoOcultoCsrf(opciones.csrf)}<button type="submit">Salir</button></form>`;
   const cabecera = html`${cabeceraBanner({
     lema: perfil ? `Panel de ${perfil.nombre}` : "Panel del emprendedor",
-    meta: perfil ? `Slug · ${perfil.slug}` : "Sin perfil",
+    meta: perfil ? (perfilPublicado(perfil) ? `Slug · ${perfil.slug}` : "Sin publicar") : "Sin perfil",
     enlaces: enlacesPanel(perfil, opciones.actual),
     extra,
   })}
@@ -241,8 +235,27 @@ export function vistaSolicitudInvalida(): Html {
 
 export interface FormDatos {
   nombre: string;
-  tipo: ContactoTipo | "";
-  valor: string;
+  telefono: string;
+  correo: string;
+}
+
+export interface FormRegistro {
+  nombre: string;
+  telefono: string;
+  correo: string;
+  tipo: string;
+  titulo: string;
+  tag: string;
+  alt: string;
+  redNombre: string;
+  redUrl: string;
+  texto: string;
+  resultados: ResultadoLocalidad[] | null;
+  elegido: string;
+  lat: string;
+  lng: string;
+  etiqueta: string;
+  vistaPrevia: string;
 }
 
 export interface FilaRed {
@@ -257,97 +270,210 @@ export interface EstadoPerfilPanel {
   csrf: string;
   perfil: Perfil | null;
   datos: FormDatos;
+  registro: FormRegistro;
   erroresDatos: ErrorCampo[];
   vigenteNombre: string | null;
-  vigenteContacto: string | null;
+  vigenteTelefono: string | null;
+  vigenteCorreo: string | null;
   estadoDatos: string;
   redes: FilaRed[];
   erroresRedes: ErrorCampo[];
   estadoRedes: string;
 }
 
-const AYUDA_CONTACTO: Record<ContactoTipo, string> = {
-  telefono: "Incluye el código de país, por ejemplo +56 9 1234 5678.",
-  correo: "Ejemplo: nombre@dominio.cl",
-  url: "Debe empezar con https://",
-};
-
-const ETIQUETA_CONTACTO: Record<ContactoTipo, string> = {
-  telefono: "Teléfono",
-  correo: "Correo",
-  url: "Enlace web",
-};
+function textoDestino(telefono: string, correo: string): string {
+  const llamada = telefono ? `una llamada a ${telefono}` : "una llamada a tu teléfono";
+  const lado = correo ? datoCorreo(correo) : "el correo público, para copiarlo";
+  return `El botón Contactar abrirá ${llamada}. Al lado se verá ${lado}.`;
+}
 
 function seccionPublicacion(perfil: Perfil): Html {
-  const c = perfil.contacto;
+  const publicado = perfilPublicado(perfil);
+  const faltan = faltantesPublicacion(perfil);
   return html`<section id="publicacion" aria-labelledby="publicacion-titulo">
   <h2 id="publicacion-titulo">Tu perfil público</h2>
+  ${
+    publicado
+      ? ""
+      : html`<p role="status">Tu perfil no está publicado. Falta: ${faltan.join(", ")}.</p>`
+  }
   <ul>
     <li>Nombre: ${perfil.nombre}</li>
-    <li>Contactar: abre ${contactoDestino(c.tipo, c.valor)}. En tu perfil se ve: ${contactoDato(c.tipo, c.valor)}</li>
+    <li>Contactar: abre una llamada a ${perfil.telefono ?? "sin teléfono"}. En tu perfil se ve: ${perfil.telefono ? datoTelefono(perfil.telefono) : "sin teléfono"}</li>
+    <li>Correo público: ${perfil.correoPublico ?? "sin correo"}</li>
     <li>Redes: ${perfil.redes.length ? String(perfil.redes.length) : "ninguna"}</li>
     <li>${
       perfil.ofertas.length
         ? `Ofertas: ${perfil.ofertas.length}`
-        : html`Ofertas: ninguna. Sin ofertas, la barra de búsqueda no te encuentra. <a href="/panel/ofertas.html">Agregar oferta</a>`
+        : html`Ofertas: ninguna. Sin una oferta el perfil no se publica. <a href="/panel/ofertas.html">Agregar oferta</a>`
     }</li>
-    <li>Portafolio: ${perfil.imagenes.length ? cuenta(perfil.imagenes.length, "imagen", "imágenes") : "sin imágenes"}</li>
+    <li>${
+      perfil.imagenes.length
+        ? `Portafolio: ${cuenta(perfil.imagenes.length, "imagen", "imágenes")}`
+        : html`Portafolio: sin imágenes. Sin una imagen el perfil no se publica. <a href="/panel/portafolio.html">Subir imagen</a>`
+    }</li>
     <li>${
       perfil.punto
         ? `Localidad: ${perfil.punto.etiqueta}`
         : html`Localidad: sin confirmar. Tus ofertas no aparecen como oficios cercanos. <a href="/panel/localidad.html">Marcar localidad</a>`
     }</li>
   </ul>
-  <p><a href="/perfil.html?slug=${encodeURIComponent(perfil.slug)}">Ver mi perfil público</a></p>
+  ${
+    publicado
+      ? html`<p><a href="/perfil.html?slug=${encodeURIComponent(perfil.slug)}">Ver mi perfil público</a></p>`
+      : ""
+  }
 </section>`;
 }
 
+function camposContacto(nombre: string, telefono: string, correo: string, errores: ErrorCampo[], vigentes: { nombre: string | null; telefono: string | null; correo: string | null }): Html {
+  const err = (c: string) => errorDe(errores, c);
+  return html`<label for="nombre">Nombre visible (obligatorio)</label>
+    <input id="nombre" name="nombre" type="text" required autocomplete="name" maxlength="120" value="${nombre}"
+           aria-describedby="${describedBy("nombre-ayuda", err("nombre") && "nombre-error", vigentes.nombre !== null && "nombre-vigente")}"${attrSi(Boolean(err("nombre")), 'aria-invalid="true"')}>
+    <p id="nombre-ayuda">Es el nombre que verán los clientes. Puede ser tu nombre o el de tu emprendimiento.</p>
+    ${textoError("nombre", err("nombre"))}
+    ${vigentes.nombre !== null ? html`<p id="nombre-vigente">Sigue publicado: ${vigentes.nombre}</p>` : ""}
+    <label for="telefono">Teléfono público (obligatorio)</label>
+    <input id="telefono" name="telefono" type="tel" required autocomplete="tel" maxlength="40" value="${telefono}"
+           aria-describedby="${describedBy("telefono-ayuda", "contacto-destino", err("telefono") && "telefono-error", vigentes.telefono !== null && "telefono-vigente")}"${attrSi(Boolean(err("telefono")), 'aria-invalid="true"')}>
+    <p id="telefono-ayuda">Incluye el código de país, por ejemplo +56 9 1234 5678. Es el número que abre Contactar. No es la contraseña de tu cuenta.</p>
+    ${textoError("telefono", err("telefono"))}
+    ${vigentes.telefono !== null ? html`<p id="telefono-vigente">Sigue publicado: ${vigentes.telefono}</p>` : ""}
+    <label for="correo-publico">Correo público (obligatorio)</label>
+    <input id="correo-publico" name="correo_publico" type="email" required autocomplete="email" maxlength="254" value="${correo}"
+           aria-describedby="${describedBy("correo-publico-ayuda", "contacto-destino", err("correo-publico") && "correo-publico-error", vigentes.correo !== null && "correo-vigente")}"${attrSi(Boolean(err("correo-publico")), 'aria-invalid="true"')}>
+    <p id="correo-publico-ayuda">Es el correo que verán los clientes, para copiarlo. Puede ser distinto del correo con el que entras.</p>
+    ${textoError("correo-publico", err("correo-publico"))}
+    ${vigentes.correo !== null ? html`<p id="correo-vigente">Sigue publicado: ${vigentes.correo}</p>` : ""}
+    <p id="contacto-destino">${textoDestino(telefono, correo)}</p>`;
+}
+
 function formularioDatos(e: EstadoPerfilPanel): Html {
-  const err = (c: string) => errorDe(e.erroresDatos, c);
-  const tipo = e.datos.tipo;
-  const etiquetaValor = tipo ? `${ETIQUETA_CONTACTO[tipo]} (obligatorio)` : "Teléfono, correo o enlace web (obligatorio)";
-  const tipoInput = tipo === "telefono" ? "tel" : tipo === "correo" ? "email" : tipo === "url" ? "url" : "text";
-  const autocomplete = tipo === "telefono" ? "tel" : tipo === "correo" ? "email" : "off";
-  const destino =
-    tipo && e.datos.valor
-      ? `El botón Contactar abrirá ${contactoDestino(tipo, e.datos.valor)}. En tu perfil se verá: ${contactoDato(tipo, e.datos.valor)}`
-      : "Elige un medio y escribe el dato.";
   return html`<section id="datos" aria-labelledby="datos-titulo">
   <h2 id="datos-titulo">Nombre y contacto</h2>
   <form id="form-datos" method="post" action="/panel/perfil.html" novalidate>
     ${campoOcultoCsrf(e.csrf)}
     <input type="hidden" name="form" value="datos">
     ${resumenErrores("form-datos", e.erroresDatos)}
-    <label for="nombre">Nombre visible (obligatorio)</label>
-    <input id="nombre" name="nombre" type="text" required autocomplete="name" maxlength="120" value="${e.datos.nombre}"
-           aria-describedby="${describedBy("nombre-ayuda", err("nombre") && "nombre-error", e.vigenteNombre !== null && "nombre-vigente")}"${attrSi(Boolean(err("nombre")), 'aria-invalid="true"')}>
-    <p id="nombre-ayuda">Es el nombre que verán los clientes. Puede ser tu nombre o el de tu emprendimiento.</p>
-    ${textoError("nombre", err("nombre"))}
-    ${e.vigenteNombre !== null ? html`<p id="nombre-vigente">Sigue publicado: ${e.vigenteNombre}</p>` : ""}
-
     <fieldset aria-describedby="contacto-ayuda">
-      <legend>Contacto (obligatorio)</legend>
-      <p id="contacto-ayuda">Es lo que abre el botón Contactar de tu perfil público y el dato que se ve a su lado. Elige un solo medio. Sin contacto no se puede crear el perfil.</p>
-      <fieldset id="contacto-tipo" aria-describedby="${describedBy(err("contacto-tipo") && "contacto-tipo-error")}">
-        <legend>Medio de contacto (obligatorio)</legend>
-        ${textoError("contacto-tipo", err("contacto-tipo"))}
-        ${(["telefono", "correo", "url"] as const).map(
-          (t, i) => html`<input type="radio" id="contacto-tipo-${t}" name="contacto[tipo]" value="${t}" required${attrSi(tipo === t, "checked")}${attrSi(i === 0, 'data-primero')}>
-        <label for="contacto-tipo-${t}">${ETIQUETA_CONTACTO[t]}</label>`,
-        )}
-      </fieldset>
-      <label for="contacto-valor" id="contacto-valor-etiqueta">${etiquetaValor}</label>
-      <input id="contacto-valor" name="contacto[valor]" type="${tipoInput}" required autocomplete="${autocomplete}" value="${e.datos.valor}"
-             aria-describedby="${describedBy("contacto-valor-ayuda", "contacto-destino", err("contacto-valor") && "contacto-valor-error", e.vigenteContacto !== null && "contacto-vigente")}"${attrSi(Boolean(err("contacto-valor")), 'aria-invalid="true"')}>
-      <p id="contacto-valor-ayuda" data-ayudas='${JSON.stringify(AYUDA_CONTACTO)}'>${tipo ? AYUDA_CONTACTO[tipo] : "Teléfono con código de país (+56 9 …), correo o enlace que empiece con https://"}</p>
-      ${textoError("contacto-valor", err("contacto-valor"))}
-      ${e.vigenteContacto !== null ? html`<p id="contacto-vigente">Sigue publicado: ${e.vigenteContacto}</p>` : ""}
-      <p id="contacto-destino">${destino}</p>
+      <legend>Contacto público (obligatorio)</legend>
+      <p id="contacto-ayuda">Contactar abre una llamada a tu teléfono. El correo se publica al lado, como dato para copiar. Los dos hacen falta. Un enlace https:// es una red y no los reemplaza.</p>
+      ${camposContacto(e.datos.nombre, e.datos.telefono, e.datos.correo, e.erroresDatos, {
+        nombre: e.vigenteNombre,
+        telefono: e.vigenteTelefono,
+        correo: e.vigenteCorreo,
+      })}
+    </fieldset>
+    <button type="submit">Guardar perfil</button>
+    ${regionEstado("form-datos-estado", e.estadoDatos)}
+    <p><a href="#redes">Siguiente: Redes sociales</a></p>
+  </form>
+</section>`;
+}
+
+function formularioRegistro(e: EstadoPerfilPanel): Html {
+  const err = (c: string) => errorDe(e.erroresDatos, c);
+  const r = e.registro;
+  return html`<section id="datos" aria-labelledby="datos-titulo">
+  <h2 id="datos-titulo">Registro de perfil</h2>
+  <p>En este formulario van tu nombre, tu oficio, el teléfono y el correo públicos, una oferta, una imagen y la ubicación. Sin el dato obligatorio el perfil no se publica.</p>
+  <form id="form-registro" method="post" action="/panel/perfil.html" enctype="multipart/form-data" novalidate>
+    ${campoOcultoCsrf(e.csrf)}
+    <input type="hidden" name="form" value="registro">
+    ${resumenErrores("form-registro", e.erroresDatos)}
+    <fieldset aria-describedby="contacto-ayuda">
+      <legend>Nombre y contacto</legend>
+      <p id="contacto-ayuda">Contactar abre una llamada a tu teléfono. El correo se publica al lado, como dato para copiar. Los dos hacen falta. La contraseña de la cuenta no se pide aquí.</p>
+      ${camposContacto(r.nombre, r.telefono, r.correo, e.erroresDatos, { nombre: null, telefono: null, correo: null })}
     </fieldset>
 
-    <button type="submit">${e.perfil ? "Guardar perfil" : "Crear perfil"}</button>
-    ${regionEstado("form-datos-estado", e.estadoDatos)}
-    ${e.perfil ? html`<p><a href="#redes">Siguiente: Redes sociales</a></p>` : ""}
+    <fieldset>
+      <legend>Oferta (obligatoria)</legend>
+      <p>Al menos un proyecto, servicio, oficio o producto en venta. El oficio es la etiqueta # que buscan los clientes.</p>
+      <fieldset id="tipo" aria-describedby="${describedBy(err("tipo") && "tipo-error")}">
+        <legend>Tipo de oferta (obligatorio)</legend>
+        ${textoError("tipo", err("tipo"))}
+        ${OFERTA_TIPOS.map(
+          (t) => html`<input type="radio" id="tipo-${t}" name="tipo" value="${t}" required${attrSi(r.tipo === t, "checked")}>
+        <label for="tipo-${t}">${ETIQUETA_OFERTA[t]}</label>`,
+        )}
+      </fieldset>
+      <label for="titulo">Título (obligatorio)</label>
+      <input id="titulo" name="titulo" type="text" required maxlength="120" value="${r.titulo}"
+             aria-describedby="${describedBy("titulo-ayuda", err("titulo") && "titulo-error")}"${attrSi(Boolean(err("titulo")), 'aria-invalid="true"')}>
+      <p id="titulo-ayuda">Por ejemplo: Reparación de cañerías o Mesa de madera a la venta</p>
+      ${textoError("titulo", err("titulo"))}
+      <label for="tag">Oficio, # (obligatorio)</label>
+      <input id="tag" name="tag" type="text" required autocapitalize="none" spellcheck="false" maxlength="80" value="${r.tag}"
+             aria-describedby="${describedBy("tag-ayuda", "tag-vista-previa", err("tag") && "tag-error")}"${attrSi(Boolean(err("tag")), 'aria-invalid="true"')}>
+      <p id="tag-ayuda">Escribe el oficio, con o sin #. Se guarda en minúsculas, con # al inicio y sin espacios sobrantes. Las tildes cuentan: #gásfiter y #gasfiter son oficios distintos.</p>
+      <p>Se guardará como: <output id="tag-vista-previa" for="tag" aria-live="polite">${r.vistaPrevia}</output></p>
+      ${textoError("tag", err("tag"))}
+    </fieldset>
+
+    <fieldset>
+      <legend>Portafolio (obligatorio)</legend>
+      <p>Al menos una imagen de tu trabajo, con una descripción. Si buscas la localidad antes de publicar, vuelve a elegir el archivo.</p>
+      <label for="imagen">Imagen del trabajo (obligatorio)</label>
+      <input id="imagen" name="imagen" type="file" accept="image/jpeg,image/png,image/webp" required
+             aria-describedby="${describedBy("imagen-ayuda", err("imagen") && "imagen-error")}"${attrSi(Boolean(err("imagen")), 'aria-invalid="true"')}>
+      <p id="imagen-ayuda">Formatos JPEG, PNG o WebP, hasta 5 MB. Al guardarla quitamos los datos de ubicación de la foto.</p>
+      ${textoError("imagen", err("imagen"))}
+      <label for="alt">Descripción de la imagen (obligatorio)</label>
+      <textarea id="alt" name="alt" required rows="2" maxlength="300"
+                aria-describedby="${describedBy("alt-ayuda", err("alt") && "alt-error")}"${attrSi(Boolean(err("alt")), 'aria-invalid="true"')}>${r.alt}</textarea>
+      <p id="alt-ayuda">Describe lo que se ve, por ejemplo: Baño con cerámica nueva instalada.</p>
+      ${textoError("alt", err("alt"))}
+    </fieldset>
+
+    <fieldset>
+      <legend>Enlace https:// (opcional)</legend>
+      <p>Una red o un sitio. No reemplaza al teléfono ni al correo.</p>
+      <label for="red-nombre">Nombre del enlace</label>
+      <input id="red-nombre" name="red_nombre" type="text" maxlength="60" value="${r.redNombre}"
+             aria-describedby="${describedBy(err("red-nombre") && "red-nombre-error")}"${attrSi(Boolean(err("red-nombre")), 'aria-invalid="true"')}>
+      ${textoError("red-nombre", err("red-nombre"))}
+      <label for="red-url">Dirección https://</label>
+      <input id="red-url" name="red_url" type="url" inputmode="url" value="${r.redUrl}"
+             aria-describedby="${describedBy("red-url-ayuda", err("red-url") && "red-url-error")}"${attrSi(Boolean(err("red-url")), 'aria-invalid="true"')}>
+      <p id="red-url-ayuda">Si lo escribes, tiene que empezar con https://</p>
+      ${textoError("red-url", err("red-url"))}
+    </fieldset>
+
+    <fieldset>
+      <legend>Ubicación</legend>
+      <p>Sin localidad confirmada el perfil puede publicarse, pero tus ofertas no aparecen como oficios cercanos. El mapa para afinar el punto queda en Localidad, después de publicar.</p>
+      <label for="registro-localidad">Escribe tu localidad</label>
+      <input id="registro-localidad" name="localidad_texto" type="text" autocomplete="off" value="${r.texto}"
+             aria-describedby="${describedBy("registro-localidad-ayuda", err("registro-localidad") && "registro-localidad-error")}"${attrSi(Boolean(err("registro-localidad")), 'aria-invalid="true"')}>
+      <p id="registro-localidad-ayuda">Por ejemplo: Ñuñoa, Santiago</p>
+      ${textoError("registro-localidad", err("registro-localidad"))}
+      <button type="submit" name="accion" value="buscar" id="buscar-localidad">Buscar localidad</button>
+      <div id="resultados-localidad">
+      ${
+        r.resultados && r.resultados.length
+          ? html`<fieldset>
+        <legend>Elige el resultado correcto</legend>
+        ${r.resultados.map(
+          (res, i) => html`<input type="radio" id="resultado-${i}" name="resultado" value="${valorResultado(res)}"${attrSi(r.elegido === valorResultado(res), "checked")}>
+        <label for="resultado-${i}">${res.etiqueta}</label>`,
+        )}
+      </fieldset>`
+          : ""
+      }
+      </div>
+      <input type="hidden" id="punto-lat" name="punto[lat]" value="${r.lat}">
+      <input type="hidden" id="punto-lng" name="punto[lng]" value="${r.lng}">
+      <label for="punto-etiqueta">Nombre de la localidad</label>
+      <input id="punto-etiqueta" name="punto[etiqueta]" type="text" maxlength="160" value="${r.etiqueta}"
+             aria-describedby="${describedBy("punto-etiqueta-ayuda", err("punto-etiqueta") && "punto-etiqueta-error")}"${attrSi(Boolean(err("punto-etiqueta")), 'aria-invalid="true"')}>
+      <p id="punto-etiqueta-ayuda">Se llena con el resultado que elegiste. Puedes cambiarlo antes de crear el perfil.</p>
+      ${textoError("punto-etiqueta", err("punto-etiqueta"))}
+    </fieldset>
+
+    <button type="submit" name="accion" value="publicar">Crear perfil</button>
+    ${regionEstado("form-registro-estado", e.estadoDatos)}
   </form>
 </section>`;
 }
@@ -415,8 +541,8 @@ export function vistaPerfilPanel(e: EstadoPerfilPanel): Html {
     csrf: e.csrf,
     main: html`<h1>${titulo}</h1>
     ${e.perfil ? seccionPublicacion(e.perfil) : ""}
-    ${formularioDatos(e)}
-    ${formularioRedes(e)}`,
+    ${e.perfil ? formularioDatos(e) : formularioRegistro(e)}
+    ${e.perfil ? formularioRedes(e) : ""}`,
   });
 }
 
@@ -488,7 +614,7 @@ export function vistaOfertas(e: EstadoOfertas): Html {
     actual: "ofertas",
     csrf: e.csrf,
     main: html`<h1>Ofertas</h1>
-    <p>Publica proyectos, servicios u oficios. El # es lo que los clientes buscan en la barra.</p>
+    <p>Publica proyectos, servicios, oficios o productos en venta. El # es lo que los clientes buscan en la barra.</p>
     ${e.perfil && !e.perfil.punto ? html`<p role="note">Tus ofertas no aparecen como oficios cercanos porque no has marcado tu localidad. <a href="/panel/localidad.html">Marcar localidad</a></p>` : ""}
     ${contenido}`,
   });

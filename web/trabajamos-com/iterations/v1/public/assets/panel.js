@@ -10,6 +10,7 @@
     "form-entrar": "Verificando…",
     "form-cuenta": "Creando cuenta…",
     "form-datos": "Guardando perfil…",
+    "form-registro": "Publicando perfil…",
     "form-redes": "Guardando redes…",
     "form-oferta": "Guardando oferta…",
     "form-imagen": "Subiendo imagen…",
@@ -26,7 +27,11 @@
     const boton = evento.submitter;
     if (boton) boton.setAttribute("aria-disabled", "true");
     const region = document.getElementById(`${form.id}-estado`);
-    if (region && TEXTOS_EN_CURSO[form.id]) region.textContent = TEXTOS_EN_CURSO[form.id];
+    if (region && form.id === "form-registro" && boton && boton.value === "buscar") {
+      region.textContent = "Buscando localidad…";
+    } else if (region && TEXTOS_EN_CURSO[form.id]) {
+      region.textContent = TEXTOS_EN_CURSO[form.id];
+    }
     if (form.id === "form-imagen") {
       const progreso = document.getElementById("imagen-progreso");
       if (progreso) {
@@ -60,50 +65,20 @@
     tag.addEventListener("blur", actualizar);
   }
 
-  // VIEW-12: etiqueta, tipo y ayuda del contacto según el medio elegido (D-03).
-  const valor = document.getElementById("contacto-valor");
-  const ayuda = document.getElementById("contacto-valor-ayuda");
-  const etiquetaValor = document.getElementById("contacto-valor-etiqueta");
+  // Contactar abre el teléfono. El correo público se anuncia al lado.
+  const telefono = document.getElementById("telefono");
+  const correoPublico = document.getElementById("correo-publico");
   const destino = document.getElementById("contacto-destino");
-  if (valor && ayuda && etiquetaValor && destino) {
-    const ayudas = JSON.parse(ayuda.dataset.ayudas || "{}");
-    const MEDIOS = {
-      telefono: { etiqueta: "Teléfono", type: "tel", autocomplete: "tel" },
-      correo: { etiqueta: "Correo", type: "email", autocomplete: "email" },
-      url: { etiqueta: "Enlace web", type: "url", autocomplete: "off" },
-    };
-    const dominio = (v) => {
-      try {
-        return new URL(v).hostname.replace(/^www\./u, "");
-      } catch {
-        return v;
-      }
-    };
-    const elegido = () => document.querySelector('input[name="contacto[tipo]"]:checked')?.value;
+  if (telefono && correoPublico && destino) {
     const actualizar = () => {
-      const tipo = elegido();
-      const medio = MEDIOS[tipo];
-      if (medio) {
-        etiquetaValor.textContent = `${medio.etiqueta} (obligatorio)`;
-        valor.type = medio.type;
-        valor.autocomplete = medio.autocomplete;
-        ayuda.textContent = ayudas[tipo] ?? "";
-      }
-      const v = valor.value.trim();
-      if (!medio || !v) {
-        destino.textContent = "Elige un medio y escribe el dato.";
-        return;
-      }
-      const abre =
-        tipo === "telefono" ? `una llamada a ${v}` : tipo === "correo" ? `un correo a ${v}` : `el enlace ${v}`;
-      const dato = tipo === "telefono" ? `Teléfono: ${v}` : tipo === "correo" ? `Correo: ${v}` : `Sitio: ${dominio(v)}`;
-      destino.textContent = `El botón Contactar abrirá ${abre}. En tu perfil se verá: ${dato}`;
+      const tel = telefono.value.trim();
+      const correo = correoPublico.value.trim();
+      const llamada = tel ? `una llamada a ${tel}` : "una llamada a tu teléfono";
+      const lado = correo ? `Correo: ${correo}` : "el correo público, para copiarlo";
+      destino.textContent = `El botón Contactar abrirá ${llamada}. Al lado se verá ${lado}.`;
     };
-    for (const radio of document.querySelectorAll('input[name="contacto[tipo]"]')) {
-      radio.addEventListener("change", actualizar);
-    }
-    valor.addEventListener("blur", actualizar);
-    actualizar();
+    telefono.addEventListener("blur", actualizar);
+    correoPublico.addEventListener("blur", actualizar);
   }
 
   // VIEW-13: agregar y quitar filas nuevas de redes.

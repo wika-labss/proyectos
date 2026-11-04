@@ -12,14 +12,15 @@ import {
 import { csrfValido, tokenCsrf } from "../auth/csrf.js";
 import {
   type Perfil,
+  type Punto,
   type RedAGuardar,
   actualizarPerfil,
   agregarImagen,
   agregarOferta,
-  crearPerfil,
   guardarRedes,
   marcarPunto,
   perfilDeUsuario,
+  publicarRegistro,
   quitarImagen,
   quitarOferta,
   quitarRed,
@@ -27,14 +28,14 @@ import {
 import { GeocoderNoDisponible, coordenadasValidas } from "../geo/geocoder.js";
 import { NoEsImagen, borrarArchivo, guardarImagen, urlImagen } from "../imagenes.js";
 import {
-  type ContactoTipo,
+  type OfertaTipo,
   compactar,
-  contactoDato,
-  contactoValido,
   correoValido,
-  esContactoTipo,
+  datoCorreo,
+  datoTelefono,
   esOfertaTipo,
   normalizarTag,
+  telefonoValido,
   urlHttpsValida,
   volverSeguro,
 } from "../lib/reglas.js";
@@ -46,6 +47,7 @@ import {
   type EstadoPortafolio,
   type FilaRed,
   type FormDatos,
+  type FormRegistro,
   type ResultadoLocalidad,
   valorResultado,
   vistaCrearCuenta,
@@ -234,16 +236,40 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
     return (perfil?.redes ?? []).map((r) => ({ id: r.id, nombre: r.nombre, url: r.url }));
   }
 
+  function registroVacio(parcial: Partial<FormRegistro> = {}): FormRegistro {
+    return {
+      nombre: "",
+      telefono: "",
+      correo: "",
+      tipo: "",
+      titulo: "",
+      tag: "",
+      alt: "",
+      redNombre: "",
+      redUrl: "",
+      texto: "",
+      resultados: null,
+      elegido: "",
+      lat: "",
+      lng: "",
+      etiqueta: "",
+      vistaPrevia: "—",
+      ...parcial,
+    };
+  }
+
   function estadoPerfil(request: FastifyRequest, reply: FastifyReply, perfil: Perfil | null): EstadoPerfilPanel {
     return {
       csrf: csrf(request, reply),
       perfil,
       datos: perfil
-        ? { nombre: perfil.nombre, tipo: perfil.contacto.tipo, valor: perfil.contacto.valor }
-        : { nombre: "", tipo: "", valor: "" },
+        ? { nombre: perfil.nombre, telefono: perfil.telefono ?? "", correo: perfil.correoPublico ?? "" }
+        : { nombre: "", telefono: "", correo: "" },
+      registro: registroVacio(),
       erroresDatos: [],
       vigenteNombre: null,
-      vigenteContacto: null,
+      vigenteTelefono: null,
+      vigenteCorreo: null,
       estadoDatos: "",
       redes: filasDe(perfil),
       erroresRedes: [],
@@ -260,80 +286,281 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
   });
 
   app.post("/panel/perfil.html", protegidaPost, async (request, reply) => {
-    const b = cuerpo(request);
     const perfil = await perfilDeUsuario(db, request.usuario!.id);
+    if (!perfil || request.isMultipart()) return guardarRegistro(request, reply, perfil);
+    const b = cuerpo(request);
     if (campo(b, "form") === "redes") return guardarFormRedes(request, reply, b, perfil);
     return guardarFormDatos(request, reply, b, perfil);
   });
 
-  function erroresContacto(tipo: ContactoTipo | "", valor: string): ErrorCampo[] {
-    if (!tipo) {
-      const errores: ErrorCampo[] = [{ campo: "contacto-tipo", texto: "Elige un medio de contacto" }];
-      if (!valor) errores.push({ campo: "contacto-valor", texto: "Escribe tu teléfono, correo o enlace" });
-      return errores;
-    }
-    if (!valor) {
-      const que = tipo === "telefono" ? "tu teléfono" : tipo === "correo" ? "tu correo" : "tu enlace";
-      return [{ campo: "contacto-valor", texto: `Escribe ${que}` }];
-    }
-    if (contactoValido(tipo, valor)) return [];
-    const texto =
-      tipo === "telefono"
-        ? "El teléfono debe incluir el código de país, por ejemplo +56 9 1234 5678"
-        : tipo === "correo"
-          ? "El correo no es válido"
-          : "El enlace debe empezar con https://";
-    return [{ campo: "contacto-valor", texto }];
+  function errorTelefono(valor: string): string | null {
+    if (!valor) return "Escribe tu teléfono público";
+    if (!telefonoValido(valor)) return "El teléfono debe incluir el código de país, por ejemplo +56 9 1234 5678";
+    return null;
   }
 
-  async function guardarFormDatos(request: FastifyRequest, reply: FastifyReply, b: Cuerpo, perfil: Perfil | null) {
-    const tipoCrudo = campo(b, "contacto[tipo]");
+  function errorCorreoPublico(valor: string): string | null {
+    if (!valor) return "Escribe tu correo público";
+    if (!correoValido(valor)) return "El correo público no es válido";
+    return null;
+  }
+
+  async function guardarFormDatos(request: FastifyRequest, reply: FastifyReply, b: Cuerpo, perfil: Perfil) {
     const datos: FormDatos = {
       nombre: compactar(campo(b, "nombre")),
-      tipo: esContactoTipo(tipoCrudo) ? tipoCrudo : "",
-      valor: campo(b, "contacto[valor]").trim().slice(0, 500),
+      telefono: campo(b, "telefono").trim().slice(0, 40),
+      correo: campo(b, "correo_publico").trim().slice(0, 254),
     };
     const e = estadoPerfil(request, reply, perfil);
     e.datos = datos;
     const errorNombre = !datos.nombre
-      ? perfil
-        ? "Falta el nombre visible. No se guardó ningún cambio."
-        : "Falta el nombre visible. Tu perfil no se publicó."
+      ? "Falta el nombre visible. No se guardó ningún cambio."
       : datos.nombre.length > 120
         ? "El nombre visible puede tener hasta 120 caracteres"
         : null;
-    const errContacto = erroresContacto(datos.tipo, datos.valor);
-
-    if (!perfil) {
-      e.erroresDatos = [...(errorNombre ? [{ campo: "nombre", texto: errorNombre }] : []), ...errContacto];
-      if (e.erroresDatos.length) {
-        e.estadoDatos = "Tu perfil no se publicó.";
-        return enviarHtml(reply, vistaPerfilPanel(e), 422);
-      }
-      await crearPerfil(db, request.usuario!.id, datos.nombre, datos.tipo as ContactoTipo, datos.valor);
-      avisar(reply, { form: "datos", texto: "Perfil publicado" });
-      return reply.redirect("/panel/perfil.html", 303);
-    }
-
     if (errorNombre) {
       e.erroresDatos = [{ campo: "nombre", texto: errorNombre }];
       e.vigenteNombre = perfil.nombre;
       e.estadoDatos = "No se guardó ningún cambio.";
       return enviarHtml(reply, vistaPerfilPanel(e), 422);
     }
-    if (errContacto.length) {
-      // 02 7.2: el nombre se guarda y el contacto anterior sigue publicado.
-      await actualizarPerfil(db, perfil.id, datos.nombre, null);
-      const actualizado = await perfilDeUsuario(db, request.usuario!.id);
-      const e2 = estadoPerfil(request, reply, actualizado);
-      e2.datos = datos;
-      e2.erroresDatos = errContacto;
-      e2.vigenteContacto = contactoDato(perfil.contacto.tipo, perfil.contacto.valor);
-      e2.estadoDatos = "Perfil guardado. El contacto no se guardó.";
-      return enviarHtml(reply, vistaPerfilPanel(e2), 422);
+    const maloTelefono = errorTelefono(datos.telefono);
+    const maloCorreo = errorCorreoPublico(datos.correo);
+    const errores: ErrorCampo[] = [];
+    if (maloTelefono) errores.push({ campo: "telefono", texto: maloTelefono });
+    if (maloCorreo) errores.push({ campo: "correo-publico", texto: maloCorreo });
+    await actualizarPerfil(db, perfil.id, {
+      nombre: datos.nombre,
+      telefono: maloTelefono ? null : datos.telefono,
+      correoPublico: maloCorreo ? null : datos.correo,
+    });
+    if (!errores.length) {
+      avisar(reply, { form: "datos", texto: "Perfil guardado" });
+      return reply.redirect("/panel/perfil.html", 303);
     }
-    await actualizarPerfil(db, perfil.id, datos.nombre, { tipo: datos.tipo as ContactoTipo, valor: datos.valor });
-    avisar(reply, { form: "datos", texto: "Perfil guardado" });
+    const actualizado = await perfilDeUsuario(db, request.usuario!.id);
+    const e2 = estadoPerfil(request, reply, actualizado);
+    e2.datos = datos;
+    e2.erroresDatos = errores;
+    if (maloTelefono) e2.vigenteTelefono = perfil.telefono ? datoTelefono(perfil.telefono) : "Sin teléfono publicado";
+    if (maloCorreo) e2.vigenteCorreo = perfil.correoPublico ? datoCorreo(perfil.correoPublico) : "Sin correo publicado";
+    const cuales = [maloTelefono ? "el teléfono" : "", maloCorreo ? "el correo público" : ""].filter(Boolean).join(" y ");
+    e2.estadoDatos = `Perfil guardado. ${cuales.charAt(0).toUpperCase()}${cuales.slice(1)} no se ${maloTelefono && maloCorreo ? "guardaron" : "guardó"}.`;
+    return enviarHtml(reply, vistaPerfilPanel(e2), 422);
+  }
+
+  async function leerEntrada(
+    request: FastifyRequest,
+  ): Promise<{ campos: Record<string, string>; archivo: Buffer | null; demasiadoGrande: boolean }> {
+    if (!request.isMultipart()) {
+      const b = cuerpo(request);
+      const campos: Record<string, string> = {};
+      for (const [clave, valor] of Object.entries(b)) {
+        if (typeof valor === "string") campos[clave] = valor;
+      }
+      return { campos, archivo: null, demasiadoGrande: false };
+    }
+    const campos: Record<string, string> = {};
+    let archivo: Buffer | null = null;
+    let demasiadoGrande = false;
+    try {
+      for await (const parte of request.parts()) {
+        if (parte.type === "file") {
+          const f = parte as MultipartFile;
+          if (f.fieldname !== "imagen" || archivo) {
+            await f.toBuffer();
+            continue;
+          }
+          const datos = await f.toBuffer();
+          if (f.file.truncated) demasiadoGrande = true;
+          else if (datos.length) archivo = datos;
+        } else if (typeof parte.value === "string") {
+          campos[parte.fieldname] = parte.value;
+        }
+      }
+    } catch (error) {
+      if ((error as { code?: string }).code === "FST_REQ_FILE_TOO_LARGE") demasiadoGrande = true;
+      else throw error;
+    }
+    return { campos, archivo, demasiadoGrande };
+  }
+
+  function erroresOferta(tipo: string, titulo: string, tag: string | null): ErrorCampo[] {
+    const errores: ErrorCampo[] = [];
+    if (!esOfertaTipo(tipo)) errores.push({ campo: "tipo", texto: "Elige el tipo de oferta" });
+    if (!titulo) errores.push({ campo: "titulo", texto: "Escribe un título" });
+    else if (titulo.length > 120) errores.push({ campo: "titulo", texto: "El título puede tener hasta 120 caracteres" });
+    if (!tag) errores.push({ campo: "tag", texto: "Escribe la etiqueta de oficio" });
+    else if (tag.length > 61) errores.push({ campo: "tag", texto: "La etiqueta puede tener hasta 60 caracteres" });
+    return errores;
+  }
+
+  async function guardarRegistro(request: FastifyRequest, reply: FastifyReply, perfil: Perfil | null) {
+    if (perfil && !request.isMultipart()) {
+      return guardarFormDatos(request, reply, cuerpo(request), perfil);
+    }
+    const { campos, archivo, demasiadoGrande } = await leerEntrada(request);
+    if (request.isMultipart() && !csrfValido(request, campos._csrf)) {
+      return enviarHtml(reply, vistaSolicitudInvalida(), 403);
+    }
+    if (perfil) return reply.redirect("/panel/perfil.html", 303);
+
+    const tag = normalizarTag(campos.tag ?? "");
+    const registro = registroVacio({
+      nombre: compactar(campos.nombre ?? ""),
+      telefono: (campos.telefono ?? "").trim().slice(0, 40),
+      correo: (campos.correo_publico ?? "").trim().slice(0, 254),
+      tipo: campos.tipo ?? "",
+      titulo: compactar(campos.titulo ?? ""),
+      tag: (campos.tag ?? "").slice(0, 200),
+      alt: compactar(campos.alt ?? ""),
+      redNombre: compactar(campos.red_nombre ?? ""),
+      redUrl: (campos.red_url ?? "").trim(),
+      texto: compactar(campos.localidad_texto ?? "").slice(0, 160),
+      elegido: campos.resultado ?? "",
+      lat: (campos["punto[lat]"] ?? "").trim(),
+      lng: (campos["punto[lng]"] ?? "").trim(),
+      etiqueta: compactar(campos["punto[etiqueta]"] ?? ""),
+      vistaPrevia: tag ?? "—",
+    });
+    const accion = campos.accion === "buscar" ? "buscar" : "publicar";
+    const e = estadoPerfil(request, reply, null);
+    e.registro = registro;
+
+    const responder = (codigo: number, estado: string) => {
+      e.estadoDatos = estado;
+      return enviarHtml(reply, vistaPerfilPanel(e), codigo);
+    };
+
+    if (accion === "buscar") {
+      if (!registro.texto) {
+        e.erroresDatos = [{ campo: "registro-localidad", texto: "Escribe tu localidad para buscarla" }];
+        return responder(422, "Escribe tu localidad para buscarla.");
+      }
+      try {
+        registro.resultados = await ctx.geocoder.buscar(registro.texto);
+      } catch (error) {
+        if (!(error instanceof GeocoderNoDisponible)) throw error;
+        request.log.warn({ err: error }, "geocodificador no disponible");
+        e.erroresDatos = [
+          {
+            campo: "registro-localidad",
+            texto: "No pudimos buscar la localidad en este momento. Intenta en unos minutos.",
+          },
+        ];
+        return responder(503, "No pudimos buscar la localidad.");
+      }
+      if (!registro.resultados.length) {
+        e.erroresDatos = [
+          {
+            campo: "registro-localidad",
+            texto: "No encontramos esa localidad. No se marcó ningún punto.",
+          },
+        ];
+        return responder(422, "No encontramos esa localidad.");
+      }
+      const unico = registro.resultados.length === 1 ? registro.resultados[0] : undefined;
+      if (unico) {
+        registro.elegido = valorResultado(unico);
+        registro.lat = String(unico.lat);
+        registro.lng = String(unico.lng);
+        registro.etiqueta = unico.etiqueta;
+      }
+      const n = registro.resultados.length;
+      return responder(200, n === 1 ? "1 resultado. Revisa el nombre y crea el perfil." : `${n} resultados. Elige el correcto.`);
+    }
+
+    const errores: ErrorCampo[] = [];
+    if (!registro.nombre) errores.push({ campo: "nombre", texto: "Falta el nombre visible. Tu perfil no se publicó." });
+    else if (registro.nombre.length > 120) errores.push({ campo: "nombre", texto: "El nombre visible puede tener hasta 120 caracteres" });
+    const maloTelefono = errorTelefono(registro.telefono);
+    const maloCorreo = errorCorreoPublico(registro.correo);
+    if (maloTelefono) errores.push({ campo: "telefono", texto: maloTelefono });
+    if (maloCorreo) errores.push({ campo: "correo-publico", texto: maloCorreo });
+    errores.push(...erroresOferta(registro.tipo, registro.titulo, tag));
+    if (demasiadoGrande) {
+      errores.push({ campo: "imagen", texto: "La imagen pesa más de 5 MB. Tu perfil no se publicó." });
+    } else if (!archivo) {
+      errores.push({ campo: "imagen", texto: "Elige una imagen. Tu perfil no se publicó." });
+    }
+    if (!registro.alt) errores.push({ campo: "alt", texto: "Escribe la descripción de la imagen. Tu perfil no se publicó." });
+    else if (registro.alt.length > 300) errores.push({ campo: "alt", texto: "La descripción puede tener hasta 300 caracteres" });
+    if (registro.redNombre || registro.redUrl) {
+      if (!registro.redNombre) errores.push({ campo: "red-nombre", texto: "Escribe el nombre del enlace" });
+      else if (registro.redNombre.length > 60) errores.push({ campo: "red-nombre", texto: "El nombre del enlace puede tener hasta 60 caracteres" });
+      if (!registro.redUrl) errores.push({ campo: "red-url", texto: "Escribe la dirección del enlace" });
+      else if (!urlHttpsValida(registro.redUrl)) errores.push({ campo: "red-url", texto: "El enlace debe empezar con https://" });
+    }
+
+    let punto: Punto | null = null;
+    const latNum = Number(registro.lat);
+    const lngNum = Number(registro.lng);
+    const elegido = leerResultado(registro.elegido);
+    if (registro.lat && registro.lng && coordenadasValidas(latNum, lngNum)) {
+      const etiqueta = registro.etiqueta || (elegido && elegido.lat === latNum && elegido.lng === lngNum ? elegido.etiqueta : "");
+      if (!etiqueta) errores.push({ campo: "punto-etiqueta", texto: "Escribe el nombre de la localidad. Tu perfil no se publicó." });
+      else if (etiqueta.length > 160) errores.push({ campo: "punto-etiqueta", texto: "El nombre de la localidad puede tener hasta 160 caracteres" });
+      else punto = { lat: latNum, lng: lngNum, etiqueta };
+    } else if (elegido) {
+      const etiqueta = registro.etiqueta || elegido.etiqueta;
+      if (!etiqueta) errores.push({ campo: "punto-etiqueta", texto: "Escribe el nombre de la localidad. Tu perfil no se publicó." });
+      else punto = { lat: elegido.lat, lng: elegido.lng, etiqueta };
+    } else if (registro.texto) {
+      try {
+        const resultados = await ctx.geocoder.buscar(registro.texto);
+        registro.resultados = resultados;
+        if (!resultados.length) {
+          errores.push({ campo: "registro-localidad", texto: "No encontramos esa localidad. No se marcó ningún punto. Tu perfil no se publicó." });
+        } else if (resultados.length > 1) {
+          errores.push({ campo: "registro-localidad", texto: "Elige la localidad. Tu perfil no se publicó." });
+        } else {
+          const unico = resultados[0]!;
+          punto = { lat: unico.lat, lng: unico.lng, etiqueta: registro.etiqueta || unico.etiqueta };
+          registro.elegido = valorResultado(unico);
+          registro.lat = String(unico.lat);
+          registro.lng = String(unico.lng);
+          if (!registro.etiqueta) registro.etiqueta = unico.etiqueta;
+        }
+      } catch (error) {
+        if (!(error instanceof GeocoderNoDisponible)) throw error;
+        request.log.warn({ err: error }, "geocodificador no disponible");
+        errores.push({ campo: "registro-localidad", texto: "No pudimos buscar la localidad en este momento. Tu perfil no se publicó." });
+        e.erroresDatos = errores;
+        return responder(503, "Tu perfil no se publicó.");
+      }
+    }
+
+    if (errores.length) {
+      e.erroresDatos = errores;
+      return responder(422, "Tu perfil no se publicó.");
+    }
+
+    try {
+      await publicarRegistro(db, config.uploadsDir, {
+        usuarioId: request.usuario!.id,
+        nombre: registro.nombre,
+        telefono: registro.telefono,
+        correoPublico: registro.correo,
+        oferta: { tipo: registro.tipo as OfertaTipo, titulo: registro.titulo, tag: tag! },
+        imagen: { datos: archivo!, alt: registro.alt },
+        red: registro.redNombre && registro.redUrl ? { nombre: registro.redNombre, url: registro.redUrl } : null,
+        punto,
+      });
+    } catch (error) {
+      if (error instanceof NoEsImagen) {
+        e.erroresDatos = [{ campo: "imagen", texto: "El archivo no es una imagen. Tu perfil no se publicó." }];
+        return responder(422, "Tu perfil no se publicó.");
+      }
+      request.log.error({ err: error }, "registro de perfil fallido");
+      e.erroresDatos = [{ campo: "imagen", texto: "No se pudo guardar el perfil. Intenta de nuevo." }];
+      return responder(503, "Tu perfil no se publicó.");
+    }
+    avisar(reply, {
+      form: "datos",
+      texto: punto
+        ? "Perfil publicado"
+        : "Perfil publicado. Sin localidad, tus ofertas no aparecen como oficios cercanos.",
+    });
     return reply.redirect("/panel/perfil.html", 303);
   }
 
@@ -443,6 +670,12 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
     if (!perfil) return enviarHtml(reply, vistaOfertas(estadoOfertas(request, reply, null)), 409);
     const quitar = campo(b, "quitar");
     if (quitar) {
+      if (perfil.ofertas.length <= 1) {
+        const e = estadoOfertas(request, reply, perfil);
+        e.estado = "No se quitó la oferta. El perfil publicado necesita al menos una oferta.";
+        e.errores = [{ campo: "titulo", texto: e.estado }];
+        return enviarHtml(reply, vistaOfertas(e), 422);
+      }
       const quitada = esUuid(quitar) ? await quitarOferta(db, perfil.id, quitar) : null;
       avisar(reply, {
         form: "oferta",
@@ -491,6 +724,12 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
     if (!request.isMultipart()) {
       const quitar = campo(cuerpo(request), "quitar");
       if (!perfil) return reply.redirect("/panel/portafolio.html", 303);
+      if (perfil.imagenes.length <= 1) {
+        const e = estadoPortafolio(request, reply, perfil);
+        e.estado = "No se quitó la imagen. El perfil publicado necesita al menos una imagen.";
+        e.errores = [{ campo: "imagen", texto: e.estado }];
+        return enviarHtml(reply, vistaPortafolio(e), 422);
+      }
       const quitada = esUuid(quitar) ? await quitarImagen(db, perfil.id, quitar) : null;
       if (quitada) await borrarArchivo(config.uploadsDir, quitada.archivo);
       avisar(reply, {

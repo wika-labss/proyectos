@@ -4,13 +4,15 @@ import { LARGO_MINIMO_CONTRASENA, crearUsuario } from "../auth/cuentas.js";
 import { agregarImagen, agregarOferta, crearPerfil, guardarRedes, marcarPunto, perfilDeUsuario } from "../datos.js";
 import { crearPool } from "../db.js";
 import { guardarImagen } from "../imagenes.js";
-import type { ContactoTipo, OfertaTipo } from "../lib/reglas.js";
+import type { OfertaTipo } from "../lib/reglas.js";
 
 // Datos de demostración para QA. Idempotente: omite las cuentas que ya existen.
+// Cada perfil publica teléfono y correo, y al menos una imagen.
 interface Demo {
   correo: string;
   nombre: string;
-  contacto: [ContactoTipo, string];
+  telefono: string;
+  correoPublico: string;
   punto: { lat: number; lng: number; etiqueta: string } | null;
   ofertas: [OfertaTipo, string, string][];
   redes: [string, string][];
@@ -21,7 +23,8 @@ const DEMOS: Demo[] = [
   {
     correo: "juan@demo.trabajamos.test",
     nombre: "Juan Pérez Gasfitería",
-    contacto: ["telefono", "+56 9 1234 5678"],
+    telefono: "+56 9 1234 5678",
+    correoPublico: "juan.publico@demo.trabajamos.test",
     punto: { lat: -33.4569, lng: -70.5978, etiqueta: "Ñuñoa, Región Metropolitana" },
     ofertas: [
       ["oficio", "Gasfitería a domicilio", "#gasfiter"],
@@ -36,7 +39,8 @@ const DEMOS: Demo[] = [
   {
     correo: "maria@demo.trabajamos.test",
     nombre: "María Soto Electricidad",
-    contacto: ["correo", "maria.soto@demo.trabajamos.test"],
+    telefono: "+56 9 2222 3333",
+    correoPublico: "maria.soto@demo.trabajamos.test",
     punto: { lat: -33.4263, lng: -70.6114, etiqueta: "Providencia, Región Metropolitana" },
     ofertas: [
       ["servicio", "Instalaciones eléctricas certificadas", "#electricista"],
@@ -48,36 +52,40 @@ const DEMOS: Demo[] = [
   {
     correo: "pedro@demo.trabajamos.test",
     nombre: "Pedro Rojas",
-    contacto: ["url", "https://www.pedrorojas.example/contacto"],
+    telefono: "+56 9 4444 5555",
+    correoPublico: "pedro.publico@demo.trabajamos.test",
     punto: { lat: -33.5106, lng: -70.7572, etiqueta: "Maipú, Región Metropolitana" },
     ofertas: [
       ["oficio", "Arreglos generales del hogar", "#maestro chasquilla"],
       ["oficio", "Cambio de llaves y flexibles", "#gasfiter"],
     ],
     redes: [
+      ["Sitio", "https://www.pedrorojas.example/contacto"],
       ["Facebook", "https://www.facebook.com/pedrorojas.maestro"],
       ["TikTok", "https://www.tiktok.com/@pedrorojas"],
     ],
-    imagenes: [],
+    imagenes: [{ color: [90, 120, 90], alt: "Mueble reparado en un living" }],
   },
   {
     correo: "luis@demo.trabajamos.test",
     nombre: "Luis Fuentes",
-    contacto: ["telefono", "+56 9 8765 4321"],
+    telefono: "+56 9 8765 4321",
+    correoPublico: "luis.publico@demo.trabajamos.test",
     punto: { lat: -33.6117, lng: -70.5758, etiqueta: "Puente Alto, Región Metropolitana" },
     ofertas: [["oficio", "Electricista domiciliario", "#electricista"]],
     redes: [],
-    imagenes: [],
+    imagenes: [{ color: [40, 70, 140], alt: "Enchufe domiciliario recién instalado" }],
   },
   {
     // Sin localidad: cubre el mensaje D-04 para #carpintero.
     correo: "ana@demo.trabajamos.test",
     nombre: "Ana Díaz Carpintería",
-    contacto: ["telefono", "+56 9 5555 0000"],
+    telefono: "+56 9 5555 0000",
+    correoPublico: "ana.publico@demo.trabajamos.test",
     punto: null,
     ofertas: [["oficio", "Muebles a medida", "#carpintero"]],
     redes: [],
-    imagenes: [],
+    imagenes: [{ color: [160, 110, 60], alt: "Mueble de madera a medida en un taller" }],
   },
 ];
 
@@ -100,7 +108,7 @@ try {
       console.log(`Ya existe ${demo.correo}; se omite.`);
       continue;
     }
-    await crearPerfil(db, usuario.id, demo.nombre, demo.contacto[0], demo.contacto[1]);
+    await crearPerfil(db, usuario.id, demo.nombre, demo.telefono, demo.correoPublico);
     const perfil = (await perfilDeUsuario(db, usuario.id))!;
     if (demo.punto) await marcarPunto(db, perfil.id, demo.punto);
     for (const [tipo, titulo, tag] of demo.ofertas) await agregarOferta(db, perfil.id, tipo, titulo, tag);

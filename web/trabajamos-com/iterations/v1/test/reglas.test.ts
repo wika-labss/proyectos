@@ -3,8 +3,11 @@ import { escapar, html } from "../src/lib/html.js";
 import {
   contactoDato,
   contactoHref,
+  datoCorreo,
+  datoTelefono,
   distanciaTexto,
   dominioDe,
+  esOfertaTipo,
   normalizarTag,
   slugBase,
   telefonoValido,
@@ -72,6 +75,12 @@ describe("contacto (D-01, D-03)", () => {
   it("arma el destino de Contactar", () => {
     expect(contactoHref("telefono", "+56 9 1234-5678")).toBe("tel:+56912345678");
     expect(contactoHref("correo", "a@b.cl")).toBe("mailto:a@b.cl");
+  });
+
+  it("el perfil publicado muestra teléfono y correo, y acepta producto", () => {
+    expect(datoTelefono("+56 9 1234 5678")).toBe("Teléfono: +56 9 1234 5678");
+    expect(datoCorreo("juan@dominio.cl")).toBe("Correo: juan@dominio.cl");
+    expect(esOfertaTipo("producto")).toBe(true);
   });
 });
 
