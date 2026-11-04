@@ -12,7 +12,7 @@ export interface EnlaceMenu {
   meta?: string;
 }
 
-/** Cabecera compartida: bloque navy + marca sunflower (look colorido). */
+/** Cabecera compartida: bloque charcoal + marca lima (Look C Lima). */
 export function cabeceraBanner(opciones: {
   lema: string;
   meta?: string;
