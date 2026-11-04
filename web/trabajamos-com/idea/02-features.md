@@ -2,10 +2,10 @@
 id: "WEB-FEAT-001"
 title: "trabajamos.com — Features y Secciones"
 status: "APROBADO"
-version: "0.1.2"
+version: "0.1.3"
 owner: "Vissiuss"
 created_at: "2026-11-02"
-updated_at: "2026-11-02"
+updated_at: "2026-11-04"
 audit_1_passed: true
 site_type: "cms"
 ---
@@ -24,6 +24,7 @@ site_type: "cms"
 - **site_type:** `cms` — el emprendedor crea y edita perfil, ofertas, imágenes, localidad, contacto y redes. No es una landing fija.
 - **Estado de gatekeeping:** `AUDITORIA_DOCUMENTACION_APROBADA`
 - **v0.1.2 (2026-11-02):** el contacto es obligatorio para publicar el perfil (`FEAT-01`) y el título es obligatorio en cada oferta (`FEAT-02`). Alinea `02` con las decisiones `D-01` y `D-07` de `04-html-design.md`. Vissiuss aprobó el cambio.
+- **v0.1.3 (2026-11-04):** delta de gate del formulario de registro, sin firma nueva. Para publicar hacen falta nombre, teléfono público, correo público, al menos una oferta y al menos una imagen con texto alternativo (`FEAT-01`, `FEAT-02`, `FEAT-03`). Contactar abre el teléfono (`tel:`); el correo se muestra al lado. El tipo de oferta suma `producto` (producto en venta). La cuenta sigue un paso antes: el correo de acceso y la contraseña no son el teléfono ni el correo públicos.
 
 ---
 
@@ -32,7 +33,7 @@ site_type: "cms"
 | ID Feature | ID Problema (`01-problem.md`) | Nombre | Prioridad | Módulo Destino (`03`) |
 | :--- | :--- | :--- | :--- | :--- |
 | `FEAT-01` | `ERR-01` | Perfil del emprendedor | `Crítica` | `mod-perfil` |
-| `FEAT-02` | `ERR-02` | Ofertas de proyectos, servicios y oficios | `Crítica` | `mod-ofertas` |
+| `FEAT-02` | `ERR-02` | Ofertas de proyectos, servicios, oficios y productos | `Crítica` | `mod-ofertas` |
 | `FEAT-03` | `ERR-03` | Portafolio con imágenes del trabajo | `Crítica` | `mod-portafolio` |
 | `FEAT-04` | `ERR-04` | Localidad georreferenciada | `Crítica` | `mod-geo` |
 | `FEAT-05` | `ERR-05` | Barra de búsqueda de oficios con `#` | `Crítica` | `mod-buscador` |
@@ -51,28 +52,30 @@ site_type: "cms"
 
 #### Escenario 1.1: Flujo exitoso
 
-- **Dado que** una persona entra como emprendedor autenticado
-- **Cuando** guarda su perfil con nombre visible y un contacto válido (teléfono, correo o enlace)
+- **Dado que** una persona ya creó su cuenta (correo de acceso y contraseña) y entra como emprendedor autenticado
+- **Cuando** completa el registro de perfil, en un solo recorrido, con nombre visible, teléfono público, correo público, al menos una oferta (con su oficio `#`) y al menos una imagen con texto alternativo
 - **Entonces** el perfil queda publicado y es el lugar donde cuelgan ofertas, portafolio, localidad, contacto y redes
+- **Y** la ubicación se pide en ese mismo recorrido; sin punto confirmado el perfil puede publicarse y sus ofertas no entran a cercanos (`FEAT-04` 4.2)
 
 #### Escenario 1.2: Manejo de errores
 
-- **Dado que** el emprendedor no está autenticado, o guarda el perfil sin nombre o sin un contacto válido
+- **Dado que** el emprendedor no está autenticado, o el registro no trae nombre, teléfono público, correo público, una oferta o una imagen con texto alternativo
 - **Cuando** intenta publicarlo
-- **Entonces** el perfil no se publica y ve qué dato falta
+- **Entonces** el perfil no se publica y el formulario dice qué dato falta
+- **Y** no se mezcla la contraseña de la cuenta con el teléfono público
 
 ---
 
-### Feature `FEAT-02`: Ofertas de proyectos, servicios y oficios
+### Feature `FEAT-02`: Ofertas de proyectos, servicios, oficios y productos
 
-**Descripción:** en el perfil, el emprendedor ofrece proyectos, servicios y oficios. Cada oficio lleva un `#` que el buscador usa después. Ejemplos de etiqueta: `#gasfiter`, `#electricista`.
+**Descripción:** en el perfil, el emprendedor ofrece proyectos, servicios, oficios y productos en venta. El tipo `producto` es una oferta de algo que se vende; no se mapea a proyecto, servicio ni oficio. Cada oferta lleva un `#` que el buscador usa después. Ese `#` es el oficio del registro. Ejemplos de etiqueta: `#gasfiter`, `#electricista`.
 
-**CTA:** `Agregar oferta`.
+**CTA:** `Agregar oferta`. En el registro, la primera oferta va en el mismo formulario que el perfil (`FEAT-01`).
 
 #### Escenario 2.1: Flujo exitoso
 
-- **Dado que** el emprendedor tiene perfil publicado
-- **Cuando** agrega una oferta de tipo proyecto, servicio u oficio, con título, y le asigna un `#`
+- **Dado que** el emprendedor publica su perfil, o ya lo tiene publicado
+- **Cuando** agrega una oferta de tipo proyecto, servicio, oficio o producto, con título, y le asigna un `#`
 - **Entonces** la oferta aparece en su perfil con ese tipo, ese título y ese `#`
 
 #### Escenario 2.2: Manejo de errores
@@ -80,6 +83,7 @@ site_type: "cms"
 - **Dado que** la oferta no tiene tipo, no tiene título o el `#` está vacío
 - **Cuando** intenta guardarla
 - **Entonces** la oferta no se publica y el perfil conserva las ofertas anteriores
+- **Y** si intenta quitar la última oferta de un perfil publicado, no se quita: el perfil publicado necesita al menos una oferta
 
 ---
 
@@ -91,15 +95,17 @@ site_type: "cms"
 
 #### Escenario 3.1: Flujo exitoso
 
-- **Dado que** el emprendedor está autenticado en su perfil
-- **Cuando** sube una imagen de un trabajo
+- **Dado que** el emprendedor está autenticado
+- **Cuando** sube una imagen de un trabajo con su texto alternativo, en el registro o después
 - **Entonces** la imagen queda en el portafolio de ese perfil
+- **Y** el registro no publica el perfil sin al menos una imagen con texto alternativo (`FEAT-01` 1.1)
 
 #### Escenario 3.2: Manejo de errores
 
-- **Dado que** el archivo no es una imagen o la carga falla
+- **Dado que** el archivo no es una imagen, la carga falla o falta el texto alternativo
 - **Cuando** intenta subirla
 - **Entonces** el portafolio no cambia y ve que la imagen no se guardó
+- **Y** si intenta quitar la última imagen de un perfil publicado, no se quita: el perfil publicado necesita al menos una imagen
 
 ---
 
@@ -175,24 +181,24 @@ site_type: "cms"
 
 **CTA:** `Contactar` en el perfil público. Cada red es un enlace con el nombre de la red.
 
-**Supuesto:** negocio no fijó un canal único. El destino del botón es un teléfono, un correo o un enlace que el emprendedor guarda.
-
-El contacto es obligatorio para publicar el perfil (`FEAT-01` 1.1). Las redes son opcionales.
+**Decisión de este delta:** el botón `Contactar` abre el teléfono público (`tel:`). El correo público se muestra al lado, como texto para copiar, no como segundo botón. Los dos se publican y los dos son obligatorios (`FEAT-01` 1.1). Un enlace `https://` puede seguir como red o como dato extra en el registro; no reemplaza al teléfono ni al correo. Las redes son opcionales.
 
 #### Escenario 7.1: Flujo exitoso
 
-- **Dado que** el emprendedor autenticado guardó un teléfono, un correo o un enlace, y al menos una red con nombre y URL
+- **Dado que** el emprendedor autenticado guardó un teléfono público y un correo público, y puede haber guardado redes con nombre y URL
 - **Cuando** publica el perfil
-- **Entonces** el cliente ve el botón `Contactar` y los enlaces de esas redes
-- **Y** al activar `Contactar` se abre ese destino
+- **Entonces** el cliente ve el botón `Contactar`, el teléfono y el correo
+- **Y** al activar `Contactar` se abre una llamada a ese teléfono
+- **Y** el correo queda como dato copiable al lado
 - **Y** al activar una red se abre esa URL
 
 #### Escenario 7.2: Manejo de errores
 
-- **Dado que** el contacto está vacío o la URL de una red no es válida
-- **Cuando** el emprendedor intenta guardarlos
-- **Entonces** ese contacto o esa red no se publican
-- **Y** el perfil conserva el contacto y las redes que ya eran válidos
+- **Dado que** el teléfono o el correo público están vacíos o no son válidos, o la URL de una red no es válida
+- **Cuando** el emprendedor intenta guardarlos en un perfil ya publicado
+- **Entonces** ese dato no se publica
+- **Y** el perfil conserva el teléfono, el correo y las redes que ya eran válidos
+- **Y** en el primer registro, si falta el teléfono o el correo, no se publica nada (`FEAT-01` 1.2)
 
 ---
 

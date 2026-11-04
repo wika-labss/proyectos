@@ -60,7 +60,7 @@ export async function construirApp(ctx: Contexto, opciones: { logger?: boolean }
   await app.register(fastifyCookie);
   await app.register(fastifyFormbody);
   await app.register(fastifyMultipart, {
-    limits: { fileSize: BYTES_MAXIMOS, files: 1, fields: 10, fieldSize: 10_000 },
+    limits: { fileSize: BYTES_MAXIMOS, files: 1, fields: 40, fieldSize: 10_000 },
   });
 
   app.addHook("onSend", async (_request, reply, payload) => {

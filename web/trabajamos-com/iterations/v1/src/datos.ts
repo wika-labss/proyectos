@@ -1,7 +1,9 @@
+import type { PoolClient } from "pg";
 import type { Db } from "./db.js";
 import { enTransaccion } from "./db.js";
-import type { ContactoTipo, OfertaTipo } from "./lib/reglas.js";
-import { slugBase } from "./lib/reglas.js";
+import { borrarArchivo, guardarImagen } from "./imagenes.js";
+import type { OfertaTipo } from "./lib/reglas.js";
+import { correoValido, slugBase, telefonoValido } from "./lib/reglas.js";
 
 export interface Red {
   id: string;
@@ -34,7 +36,8 @@ export interface Perfil {
   id: string;
   slug: string;
   nombre: string;
-  contacto: { tipo: ContactoTipo; valor: string };
+  telefono: string | null;
+  correoPublico: string | null;
   punto: Punto | null;
   redes: Red[];
   ofertas: Oferta[];
@@ -45,17 +48,43 @@ interface FilaPerfil {
   id: string;
   slug: string;
   nombre: string;
-  contacto_tipo: ContactoTipo;
-  contacto_valor: string;
+  telefono: string | null;
+  correo_publico: string | null;
   lat: number | null;
   lng: number | null;
   punto_etiqueta: string | null;
 }
 
-const COLUMNAS_PERFIL = `id, slug, nombre, contacto_tipo, contacto_valor,
+const COLUMNAS_PERFIL = `id, slug, nombre, telefono, correo_publico,
   ST_Y(punto::geometry) AS lat, ST_X(punto::geometry) AS lng, punto_etiqueta`;
 
-async function completar(db: Db, fila: FilaPerfil | undefined): Promise<Perfil | null> {
+const FILTRO_PUBLICADO = `p.telefono IS NOT NULL AND btrim(p.telefono) <> ''
+  AND p.correo_publico IS NOT NULL AND btrim(p.correo_publico::text) <> ''
+  AND EXISTS (SELECT 1 FROM imagenes i WHERE i.perfil_id = p.id)
+  AND EXISTS (SELECT 1 FROM ofertas pub WHERE pub.perfil_id = p.id)`;
+
+export function perfilPublicado(perfil: Perfil): boolean {
+  return Boolean(
+    perfil.telefono &&
+      telefonoValido(perfil.telefono) &&
+      perfil.correoPublico &&
+      correoValido(perfil.correoPublico) &&
+      perfil.ofertas.length > 0 &&
+      perfil.imagenes.length > 0,
+  );
+}
+
+export function faltantesPublicacion(perfil: Perfil): string[] {
+  const faltan: string[] = [];
+  if (!perfil.nombre) faltan.push("el nombre visible");
+  if (!perfil.telefono || !telefonoValido(perfil.telefono)) faltan.push("el teléfono público");
+  if (!perfil.correoPublico || !correoValido(perfil.correoPublico)) faltan.push("el correo público");
+  if (!perfil.ofertas.length) faltan.push("al menos una oferta");
+  if (!perfil.imagenes.length) faltan.push("al menos una imagen del portafolio");
+  return faltan;
+}
+
+async function completar(db: Db | PoolClient, fila: FilaPerfil | undefined): Promise<Perfil | null> {
   if (!fila) return null;
   const [redes, ofertas, imagenes] = await Promise.all([
     db.query<Red>("SELECT id, nombre, url FROM redes WHERE perfil_id = $1 ORDER BY orden, creado_en", [fila.id]),
@@ -71,7 +100,8 @@ async function completar(db: Db, fila: FilaPerfil | undefined): Promise<Perfil |
     id: fila.id,
     slug: fila.slug,
     nombre: fila.nombre,
-    contacto: { tipo: fila.contacto_tipo, valor: fila.contacto_valor },
+    telefono: fila.telefono,
+    correoPublico: fila.correo_publico,
     punto:
       fila.lat !== null && fila.lng !== null && fila.punto_etiqueta !== null
         ? { lat: fila.lat, lng: fila.lng, etiqueta: fila.punto_etiqueta }
@@ -90,46 +120,116 @@ export async function perfilDeUsuario(db: Db, usuarioId: string): Promise<Perfil
 }
 
 export async function perfilPorSlug(db: Db, slug: string): Promise<Perfil | null> {
-  const { rows } = await db.query<FilaPerfil>(`SELECT ${COLUMNAS_PERFIL} FROM perfiles WHERE slug = $1`, [slug]);
+  const { rows } = await db.query<FilaPerfil>(
+    `SELECT ${COLUMNAS_PERFIL} FROM perfiles p WHERE slug = $1 AND ${FILTRO_PUBLICADO}`,
+    [slug],
+  );
   return completar(db, rows[0]);
+}
+
+async function insertarPerfil(
+  db: Db | PoolClient,
+  usuarioId: string,
+  nombre: string,
+  telefono: string,
+  correoPublico: string,
+): Promise<{ id: string; slug: string }> {
+  const base = slugBase(nombre);
+  for (let intento = 0; intento < 20; intento++) {
+    const slug = intento === 0 ? base : `${base}-${intento + 1}`;
+    const { rows } = await db.query<{ id: string; slug: string }>(
+      `INSERT INTO perfiles (usuario_id, slug, nombre, telefono, correo_publico)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (slug) DO NOTHING
+       RETURNING id, slug`,
+      [usuarioId, slug, nombre, telefono, correoPublico],
+    );
+    if (rows[0]) return rows[0];
+  }
+  throw new Error("No se pudo generar un slug único");
 }
 
 export async function crearPerfil(
   db: Db,
   usuarioId: string,
   nombre: string,
-  contactoTipo: ContactoTipo,
-  contactoValor: string,
+  telefono: string,
+  correoPublico: string,
 ): Promise<string> {
-  const base = slugBase(nombre);
-  for (let intento = 0; intento < 20; intento++) {
-    const slug = intento === 0 ? base : `${base}-${intento + 1}`;
-    const { rows } = await db.query<{ slug: string }>(
-      `INSERT INTO perfiles (usuario_id, slug, nombre, contacto_tipo, contacto_valor)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (slug) DO NOTHING
-       RETURNING slug`,
-      [usuarioId, slug, nombre, contactoTipo, contactoValor],
-    );
-    if (rows[0]) return rows[0].slug;
-  }
-  throw new Error("No se pudo generar un slug único");
+  const creado = await insertarPerfil(db, usuarioId, nombre, telefono, correoPublico);
+  return creado.slug;
 }
 
 export async function actualizarPerfil(
   db: Db,
   perfilId: string,
-  nombre: string,
-  contacto: { tipo: ContactoTipo; valor: string } | null,
+  cambios: { nombre: string; telefono: string | null; correoPublico: string | null },
 ): Promise<void> {
-  if (contacto) {
-    await db.query(
-      `UPDATE perfiles SET nombre = $2, contacto_tipo = $3, contacto_valor = $4, actualizado_en = now()
-       WHERE id = $1`,
-      [perfilId, nombre, contacto.tipo, contacto.valor],
-    );
-  } else {
-    await db.query("UPDATE perfiles SET nombre = $2, actualizado_en = now() WHERE id = $1", [perfilId, nombre]);
+  await db.query(
+    `UPDATE perfiles
+     SET nombre = $2,
+         telefono = COALESCE($3, telefono),
+         correo_publico = COALESCE($4, correo_publico),
+         actualizado_en = now()
+     WHERE id = $1`,
+    [perfilId, cambios.nombre, cambios.telefono, cambios.correoPublico],
+  );
+}
+
+export interface RegistroAPublicar {
+  usuarioId: string;
+  nombre: string;
+  telefono: string;
+  correoPublico: string;
+  oferta: { tipo: OfertaTipo; titulo: string; tag: string };
+  imagen: { datos: Buffer; alt: string };
+  red: { nombre: string; url: string } | null;
+  punto: Punto | null;
+}
+
+export async function publicarRegistro(db: Db, uploadsDir: string, registro: RegistroAPublicar): Promise<string> {
+  let archivo: string | null = null;
+  try {
+    return await enTransaccion(db, async (cliente) => {
+      const perfil = await insertarPerfil(
+        cliente,
+        registro.usuarioId,
+        registro.nombre,
+        registro.telefono,
+        registro.correoPublico,
+      );
+      await cliente.query("INSERT INTO ofertas (perfil_id, tipo, titulo, tag) VALUES ($1, $2, $3, $4)", [
+        perfil.id,
+        registro.oferta.tipo,
+        registro.oferta.titulo,
+        registro.oferta.tag,
+      ]);
+      const imagen = await guardarImagen(uploadsDir, perfil.id, registro.imagen.datos);
+      archivo = imagen.archivo;
+      await cliente.query(
+        "INSERT INTO imagenes (id, perfil_id, archivo, alt, ancho, alto, bytes) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        [imagen.id, perfil.id, imagen.archivo, registro.imagen.alt, imagen.ancho, imagen.alto, imagen.bytes],
+      );
+      if (registro.red) {
+        await cliente.query("INSERT INTO redes (perfil_id, nombre, url, orden) VALUES ($1, $2, $3, 0)", [
+          perfil.id,
+          registro.red.nombre,
+          registro.red.url,
+        ]);
+      }
+      if (registro.punto) {
+        await cliente.query(
+          `UPDATE perfiles
+           SET punto = ST_SetSRID(ST_MakePoint($3, $2), 4326)::geography, punto_etiqueta = $4, actualizado_en = now()
+           WHERE id = $1`,
+          [perfil.id, registro.punto.lat, registro.punto.lng, registro.punto.etiqueta],
+        );
+      }
+      return perfil.slug;
+    });
+  } catch (error) {
+    if (archivo) await borrarArchivo(uploadsDir, archivo);
+    throw error;
   }
 }
 
@@ -227,7 +327,8 @@ export async function marcarPunto(db: Db, perfilId: string, punto: Punto): Promi
 export interface ResultadoCercano {
   oferta: Oferta;
   perfil: { slug: string; nombre: string };
-  contacto: { tipo: ContactoTipo; valor: string };
+  telefono: string;
+  correoPublico: string;
   distanciaKm: number;
 }
 
@@ -241,18 +342,18 @@ export async function buscarCercanos(db: Db, tag: string, lat: number, lng: numb
     tag: string;
     slug: string;
     nombre: string;
-    contacto_tipo: ContactoTipo;
-    contacto_valor: string;
+    telefono: string;
+    correo_publico: string;
     distancia_km: number;
   }>(
     `WITH origen AS (SELECT ST_SetSRID(ST_MakePoint($3, $2), 4326)::geography AS g)
      SELECT o.id, o.tipo, o.titulo, o.tag, p.slug, p.nombre,
-            p.contacto_tipo, p.contacto_valor,
+            p.telefono, p.correo_publico,
             ST_Distance(p.punto, origen.g) / 1000.0 AS distancia_km
      FROM ofertas o
      JOIN perfiles p ON p.id = o.perfil_id
      CROSS JOIN origen
-     WHERE o.tag = $1 AND p.punto IS NOT NULL
+     WHERE o.tag = $1 AND p.punto IS NOT NULL AND ${FILTRO_PUBLICADO}
      ORDER BY p.punto <-> origen.g, p.nombre, o.creado_en
      LIMIT $4`,
     [tag, lat, lng, LIMITE_RESULTADOS],
@@ -260,14 +361,19 @@ export async function buscarCercanos(db: Db, tag: string, lat: number, lng: numb
   return rows.map((r) => ({
     oferta: { id: r.id, tipo: r.tipo, titulo: r.titulo, tag: r.tag },
     perfil: { slug: r.slug, nombre: r.nombre },
-    contacto: { tipo: r.contacto_tipo, valor: r.contacto_valor },
+    telefono: r.telefono,
+    correoPublico: r.correo_publico,
     distanciaKm: Number(r.distancia_km),
   }));
 }
 
 export async function existeTag(db: Db, tag: string): Promise<boolean> {
   const { rows } = await db.query<{ existe: boolean }>(
-    "SELECT EXISTS (SELECT 1 FROM ofertas WHERE tag = $1) AS existe",
+    `SELECT EXISTS (
+       SELECT 1 FROM ofertas o
+       JOIN perfiles p ON p.id = o.perfil_id
+       WHERE o.tag = $1 AND ${FILTRO_PUBLICADO}
+     ) AS existe`,
     [tag],
   );
   return rows[0]?.existe ?? false;

@@ -12,8 +12,8 @@ export function esContactoTipo(valor: unknown): valor is ContactoTipo {
   return typeof valor === "string" && (CONTACTO_TIPOS as readonly string[]).includes(valor);
 }
 
-export type OfertaTipo = "proyecto" | "servicio" | "oficio";
-export const OFERTA_TIPOS: readonly OfertaTipo[] = ["proyecto", "servicio", "oficio"];
+export type OfertaTipo = "proyecto" | "servicio" | "oficio" | "producto";
+export const OFERTA_TIPOS: readonly OfertaTipo[] = ["proyecto", "servicio", "oficio", "producto"];
 
 export function esOfertaTipo(valor: unknown): valor is OfertaTipo {
   return typeof valor === "string" && (OFERTA_TIPOS as readonly string[]).includes(valor);
@@ -23,6 +23,7 @@ export const ETIQUETA_OFERTA: Record<OfertaTipo, string> = {
   proyecto: "Proyecto",
   servicio: "Servicio",
   oficio: "Oficio",
+  producto: "Producto",
 };
 
 export function compactar(texto: string): string {
@@ -72,7 +73,16 @@ export function contactoHref(tipo: ContactoTipo, valor: string): string {
   return valor;
 }
 
-// D-03: dato visible junto a Contactar.
+// Dato público junto a Contactar. El botón abre el teléfono; el correo se copia al lado.
+export function datoTelefono(valor: string): string {
+  return `Teléfono: ${valor}`;
+}
+
+export function datoCorreo(valor: string): string {
+  return `Correo: ${valor}`;
+}
+
+// D-03 histórico: un solo medio. El perfil publicado ya no usa esta variante.
 export function contactoDato(tipo: ContactoTipo, valor: string): string {
   if (tipo === "telefono") return `Teléfono: ${valor}`;
   if (tipo === "correo") return `Correo: ${valor}`;

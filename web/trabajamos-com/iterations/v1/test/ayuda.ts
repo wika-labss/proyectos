@@ -2,6 +2,7 @@ import { mkdtempSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { FastifyInstance, InjectOptions } from "fastify";
+import sharp from "sharp";
 import { construirApp } from "../src/app.js";
 import type { Config } from "../src/config.js";
 import { type Db, crearPool } from "../src/db.js";
@@ -110,9 +111,39 @@ export class Agente {
     return this.post("/panel/crear-cuenta.html", { correo, contrasena, contrasena2: contrasena });
   }
 
-  async crearPerfil(nombre: string, tipo = "telefono", valor = "+56 9 1234 5678"): Promise<Respuesta> {
+  async crearPerfil(
+    nombre: string,
+    opciones: {
+      telefono?: string;
+      correo?: string;
+      tipo?: string;
+      titulo?: string;
+      tag?: string;
+      alt?: string;
+      localidad?: string;
+    } = {},
+  ): Promise<Respuesta> {
     await this.get("/panel/perfil.html");
-    return this.post("/panel/perfil.html", { form: "datos", nombre, "contacto[tipo]": tipo, "contacto[valor]": valor });
+    const png = await sharp({
+      create: { width: 8, height: 8, channels: 3, background: { r: 20, g: 40, b: 80 } },
+    })
+      .png()
+      .toBuffer();
+    const partes: { nombre: string; valor: string | Buffer; archivo?: string; tipo?: string }[] = [
+      { nombre: "_csrf", valor: this.csrf },
+      { nombre: "form", valor: "registro" },
+      { nombre: "accion", valor: "publicar" },
+      { nombre: "nombre", valor: nombre },
+      { nombre: "telefono", valor: opciones.telefono ?? "+56 9 1234 5678" },
+      { nombre: "correo_publico", valor: opciones.correo ?? "publico@ejemplo.cl" },
+      { nombre: "tipo", valor: opciones.tipo ?? "oficio" },
+      { nombre: "titulo", valor: opciones.titulo ?? "Trabajo de oficio" },
+      { nombre: "tag", valor: opciones.tag ?? "oficio" },
+      { nombre: "alt", valor: opciones.alt ?? "Foto de un trabajo realizado" },
+      { nombre: "imagen", valor: png, archivo: "obra.png", tipo: "image/png" },
+    ];
+    if (opciones.localidad) partes.push({ nombre: "localidad_texto", valor: opciones.localidad });
+    return this.postMultipart("/panel/perfil.html", partes);
   }
 }
 
