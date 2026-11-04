@@ -11,6 +11,7 @@ import {
   vistaInicio,
   vistaPerfil,
   vistaPerfilNoDisponible,
+  vistaPublicate,
 } from "../vistas/publico.js";
 import { type Contexto, campo, enviarHtml } from "./comun.js";
 
@@ -50,6 +51,8 @@ export function registrarPublicas(app: FastifyInstance, ctx: Contexto): void {
   };
   app.get("/", inicio);
   app.get("/index.html", inicio);
+
+  app.get("/publicate-ahora.html", async (_request, reply) => enviarHtml(reply, vistaPublicate()));
 
   app.post("/api/buscar", async (request, reply) => {
     const b = (request.body && typeof request.body === "object" ? request.body : {}) as Record<string, unknown>;
