@@ -1,14 +1,14 @@
 ---
 id: "BUILD-001"
-title: "[Plan de Construcción V1 y Hoja de Ruta Técnica]"
+title: "Plan de Construcción V1 — app-delivery"
 status: "BORRADOR"
 version: "1.0.0"
-owner: "[Lead Developer / Arquitecto]"
-created_at: "YYYY-MM-DD"
-updated_at: "YYYY-MM-DD"
-audit_1_passed: false
-audit_2_passed: false
-visual_approval_passed: false
+owner: "Negocio / Equipo WIKA"
+created_at: "2026-11-05"
+updated_at: "2026-11-05"
+audit_1_passed: true
+audit_2_passed: true
+visual_approval_passed: true
 audit_3_passed: false
 ready_for_construction: false
 ---
@@ -20,28 +20,26 @@ ready_for_construction: false
 
 ## 1. Verificación de Pre-requisitos
 
-- [ ] Auditoría de Documentación: `audit_1_passed == true` (`auditoria-documentacion.md`)
-- [ ] Auditoría de Módulos: `audit_2_passed == true` (`auditoria-modulos.md`)
-- [ ] Aprobación visual: `visual_approval_passed == true` (`04-application-design.md`)
+- [x] Auditoría de Documentación: `audit_1_passed == true` (`auditoria-documentacion.md`)
+- [x] Auditoría de Módulos: `audit_2_passed == true` (`auditoria-modulos.md`)
+- [x] Aprobación visual: `visual_approval_passed == true` (`04-application-design.md`)
 - [ ] Auditoría de Ensamblado: `audit_3_passed == true` (`auditoria-ensamblado.md`)
 
 ---
 
 ## 2. Alcance de la V1
 
-**Features incluidas:** `[FEAT-01, FEAT-02, ...]`  
-**Features excluidas:** `[FEAT-03+, deseables]`  
-**Módulos incluidos:** `[MOD-01, MOD-02, ...]`
+**Features incluidas:** `FEAT-01`, `FEAT-02`, `FEAT-03`, `FEAT-04`, `FEAT-05`  
+**Features excluidas:** `FEAT-06` (leer la orden desde un código), `FEAT-07` (destino distinto por agregador)  
+**Módulos incluidos:** `MOD-01` `mod-camera`, `MOD-02` `mod-order-name`, `MOD-03` `mod-aggregator`, `MOD-04` `mod-evidence-api`
+
+La carpeta de la iteración es `iterations/v1/`. El proyecto Supabase ya existe: `nfryurrhgaeepdwqtswo`. La migración `supabase/migrations/20261105190131_create_evidencia.sql` ya está aplicada. Esta construcción no crea otro proyecto ni otra tabla.
 
 ---
 
 ## 2b. Prototipo (modo `exploration`)
 
-Si `project_mode: exploration` en `01-problem.md`:
-
-- Código solo bajo `iterations/prototype/`.
-- Scripts según [`iteration-environment-spec.md`](../docs/iteration-environment-spec.md).
-- **Prohibido** `ready_for_construction: true` y `final/` hasta promoción a construcción.
+N/A. `project_mode` en `01-problem.md` es `construction`. No se escribe `iterations/prototype/` ni `final/` en este plan.
 
 ---
 
@@ -49,8 +47,10 @@ Si `project_mode: exploration` en `01-problem.md`:
 
 | Canal | Verify / artefacto | Estándar |
 | :--- | :--- | :--- |
-| `android` | APK vía `wika-build-artifact.mjs` | [`coding-standards.md`](../standards/coding-standards.md) |
-| `web` | `dist/` static | [`coding-standards-web.md`](../standards/coding-standards-web.md) |
+| `android` | APK release sin Metro, `com.wika.appdelivery` | `standards/coding-standards.md`, WIKA-ARCH-03 |
+| `web` | N/A | Fuera de V1 |
+
+Toolchain nativo (WIKA-ARCH-04): JDK 17, Kotlin 1.9.25, `minSdk` 24. El pin de Kotlin va en `scripts/post-prebuild.js`, como en `app/tower/iterations/v1/`.
 
 ---
 
@@ -58,22 +58,26 @@ Si `project_mode: exploration` en `01-problem.md`:
 
 | Paso | Módulo | ID Feature | Archivos a crear / modificar | Tokens / estándares | Estado |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `01` | `global` | N/A | `package.json`, `app.json`, `scripts/verify-build.sh` | WIKA-ARCH-02, 03 | `[PENDIENTE]` |
-| `02` | `MOD-01` | `FEAT-01` | `src/engine/[nombre].ts` | `coding-standards.md` | `[PENDIENTE]` |
-| `03` | `MOD-02` | `FEAT-01` | `app/index.tsx`, `src/components/` | `design-system.md`, `theme.ts` | `[PENDIENTE]` |
-| `04` | `MOD-01` | `FEAT-02` | `src/modules/[persistencia]/` | AsyncStorage | `[PENDIENTE]` |
-| `05` | `integración` | `FEAT-01/02` | `app/play.tsx`, hooks | BDD `02-features.md` | `[PENDIENTE]` |
+| `01` | `global` | N/A | `iterations/v1/package.json`, `app.json`, `tsconfig.json`, `scripts/verify-build.sh`, `scripts/build-apk.sh`, `scripts/post-prebuild.js` | WIKA-ARCH-02, 03, 04, 06. Base: `app/tower/iterations/v1/` | `[PENDIENTE]` |
+| `02` | `MOD-02`, `MOD-03`, `MOD-01` | `FEAT-02`, `FEAT-03`, `FEAT-01` | `src/engine/order-number.ts`, `src/engine/aggregator.ts`, `src/engine/camera.ts`, `scripts/smoke-v1.ts` | Sin React en `src/engine/` | `[PENDIENTE]` |
+| `03` | `global` | N/A | `src/constants/theme.ts` | Tokens de `04` y `standards/design-system.md`. 0% hex en componentes | `[PENDIENTE]` |
+| `04` | `MOD-04` | `FEAT-04`, `FEAT-05` | `supabase/functions/evidencia/index.ts` | `service_role` solo en secretos de la función. Tabla `public.evidencia`, bucket `evidencia` | `[PENDIENTE]` |
+| `05` | `MOD-04` | `FEAT-04`, `FEAT-05` | `src/modules/evidence-api/` | Cliente HTTP. Sin `service_role` y sin cliente Supabase en el APK | `[PENDIENTE]` |
+| `06` | `MOD-01`, `MOD-02`, `MOD-03` | `FEAT-01`, `FEAT-02`, `FEAT-03` | `src/modules/camera/`, `src/modules/order-name/`, `src/modules/aggregator/` | `theme.ts` | `[PENDIENTE]` |
+| `07` | `integración` | `FEAT-01`–`FEAT-04` | `app/index.tsx` (`VIEW-01`) | Wireframe de `04`. Estados idle, ready, loading, success, error | `[PENDIENTE]` |
+| `08` | `integración` | `FEAT-05` | `app/consulta.tsx` (`VIEW-02`) | Estados idle, loading, success, empty, error | `[PENDIENTE]` |
+| `09` | `global` | `FEAT-01`–`FEAT-05` | `npm run verify`, APK release | WIKA-ARCH-05 | `[PENDIENTE]` |
 
 ---
 
 ## 4. Orden de Implementación y Justificación
 
-1. **Setup y toolchain** — base reproducible (tower v1 como referencia).
-2. **Engine puro** — lógica testeable sin UI.
-3. **Theme y componentes** — según `04-application-design.md`.
-4. **Pantallas expo-router** — ensamblado con hooks/providers.
-5. **Persistencia e integración** — features secundarias.
-6. **Verify + APK** — cierre de iteración.
+1. **Setup y toolchain.** Copiar la base de scripts de `app/tower/iterations/v1/` (WIKA-ARCH-06) y sumar `expo-camera` en la versión ya usada por `app/bby app` con Expo 52.
+2. **Engine puro.** Recorte del número de orden, catálogo `uber` | `pedidosya` y rechazo de imagen vacía. Smoke tests sin UI.
+3. **Theme.** `theme.ts` con los tokens de `04-application-design.md` antes de cualquier pantalla.
+4. **API.** La Edge Function guarda y lee. El cliente solo hace HTTP. Así `VIEW-01` y `VIEW-02` no se acoplan a Supabase.
+5. **Pantallas.** Captura y luego Consulta, en el orden del wireframe.
+6. **Verify y APK.** Cierre de la iteración.
 
 ---
 
@@ -81,25 +85,28 @@ Si `project_mode: exploration` en `01-problem.md`:
 
 ### Fase 1: Setup y Design Tokens
 
-- **Objetivo:** Proyecto Expo con scripts WIKA y `theme.ts` desde tokens documentados.
+- **Objetivo:** Expo SDK 52 en `iterations/v1/` con `theme.ts`, scripts de verify y el pin de Kotlin.
 - **Referencia:** `proyectos/app/tower/iterations/v1/`
 - **Criterio de parada:** `npm run typecheck` sin errores.
 
-### Fase 2: Engine y Módulos de Lógica (`MOD-01`)
+### Fase 2: Engine y Módulos de Lógica
 
-- **Objetivo:** Implementar contratos de `03-module-discovery.md`.
+- **Objetivo:** Contratos de `MOD-01`, `MOD-02` y `MOD-03` en `src/engine/`.
 - **Regla:** Sin imports de React en `src/engine/`.
-- **Criterio:** Smoke tests en `scripts/smoke-*.ts` pasan.
+- **Criterio:** `npm run smoke` cubre orden vacía, orden con espacios, agregador fuera de catálogo (`pedya` no es un valor persistible; el valor guardado es `pedidosya`) e imagen ausente.
 
-### Fase 3: UI y Navegación (`MOD-02`)
+### Fase 3: API de evidencia
 
-- **Objetivo:** Pantallas según wireframe aprobado en `04-application-design.md`.
-- **Regla:** Estilos vía theme/tokens; 0% hex sueltos en componentes.
+- **Objetivo:** Edge Function `evidencia` en el proyecto `nfryurrhgaeepdwqtswo`.
+- **Enviar / guardar:** recibe `agregador`, `numero_orden` e imagen. Inserta una fila nueva y sube un objeto con `storage_path` nuevo. No borra fotos anteriores de la misma pareja. Responde confirmación solo si la fila y el objeto quedaron escritos.
+- **Pedir:** recibe `agregador` y `numero_orden`. Devuelve las imágenes de esa pareja ordenadas por `created_at`, o una respuesta vacía si no hay filas. No devuelve otras órdenes ni el otro agregador.
+- **Acceso:** la función usa `service_role` desde los secretos de Supabase. El APK manda una clave de prueba en un header y no incluye `service_role`. La clave de prueba no se commitea.
+- **Criterio:** un envío de prueba y un pedir de esa misma clave contra el proyecto `nfryurrhgaeepdwqtswo`. Las filas de prueba se borran al terminar el chequeo.
 
-### Fase 4: Integración, Verify y APK
+### Fase 4: UI, Verify y APK
 
-- **Objetivo:** Flujos BDD de `02-features.md` verificables manualmente.
-- **Regla:** `npm run verify` y APK release exitoso (WIKA-ARCH-05).
+- **Objetivo:** `VIEW-01` y `VIEW-02` según `04-application-design.md`, más los escenarios BDD de `02-features.md`.
+- **Regla:** estilos solo vía `theme.ts`. `npm run verify` y APK release sin Metro (WIKA-ARCH-05).
 
 ---
 
@@ -107,10 +114,15 @@ Si `project_mode: exploration` en `01-problem.md`:
 
 | Dependencia | Versión | Propósito |
 | :--- | :--- | :--- |
-| `expo` | `~52.x` | Framework |
-| `react-native` | `~0.76.x` | Runtime |
-| `expo-router` | `~4.x` | Navegación |
-| `[otras]` | `~x.x` | `[Propósito]` |
+| `expo` | `~52.0.0` | Framework |
+| `react-native` | `0.76.9` | Runtime. Pin exacto, igual que tower v1. Sin `^` |
+| `react` | `18.3.1` | UI |
+| `expo-router` | `~4.0.0` | Rutas `/` y `/consulta` |
+| `expo-camera` | `~16.0.0` | Captura. Misma línea que `app/bby app` en SDK 52 |
+| `expo-build-properties` | `~0.13.0` | `minSdk` 24 |
+| `typescript` | `~5.3.0` | Typecheck |
+
+No entra `@supabase/supabase-js` en el APK. La app habla HTTP con la Edge Function.
 
 ---
 
@@ -118,10 +130,12 @@ Si `project_mode: exploration` en `01-problem.md`:
 
 | Tipo | Alcance | Comando / método |
 | :--- | :--- | :--- |
-| Smoke engine | Lógica pura | `npm run smoke` |
+| Smoke engine | Orden, agregador, imagen vacía | `npm run smoke` |
 | Typecheck | Proyecto completo | `npm run typecheck` |
 | Build gate | Export + prebuild + APK | `npm run verify` |
-| BDD manual | Escenarios `02-features.md` | Checklist QA |
+| API | Enviar y pedir una pareja, y comprobar que otra pareja no aparece | Llamada a la Edge Function en `nfryurrhgaeepdwqtswo` |
+| BDD manual | Escenarios de `02-features.md` en dispositivo | Checklist QA |
+| Secreto | El APK no contiene `service_role` | Revisión del bundle |
 
 ---
 
@@ -129,17 +143,19 @@ Si `project_mode: exploration` en `01-problem.md`:
 
 | Riesgo | Probabilidad | Mitigación |
 | :--- | :--- | :--- |
-| `[Prebuild Android falla]` | `Media` | `post-prebuild.js` Kotlin pin |
-| `[Scope creep]` | `Alta` | Respetar out-of-scope de `01-problem.md` |
+| Prebuild Android falla por Kotlin | `Media` | `scripts/post-prebuild.js` deja Kotlin 1.9.25, como tower v1 |
+| La clave de prueba queda dentro del APK y se puede extraer | `Media` | Aceptada para esta prueba. `service_role` no entra al APK. Producción cambiará este acceso |
+| Un guardado deja fila sin objeto, u objeto sin fila | `Media` | La función confirma solo con ambas piezas. Si falla el objeto, no deja la fila confirmada |
+| Scope creep hacia la disputa dentro de Uber o PedidosYa | `Alta` | Fuera de alcance de `01-problem.md`. `FEAT-06` y `FEAT-07` no entran |
 
 ---
 
 ## 9. Criterios de Aprobación V1
 
-- [ ] Todas las features obligatorias implementadas.
+- [ ] `FEAT-01` a `FEAT-05` implementadas.
 - [ ] `npm run verify` exitoso.
 - [ ] APK release generado en `iterations/v1/`.
-- [ ] `review.md` completado por arquitecto.
+- [ ] `review.md` completado por el arquitecto.
 - [ ] Listo para `auditoria-release-v1.md`.
 
 ---
@@ -159,4 +175,4 @@ Antes de marcar un paso como `[COMPLETADO]`:
 
 - **Revisado por (Arquitecto):** `________________________`
 - **Fecha de finalización:** `YYYY-MM-DD`
-- **ready_for_construction:** activar solo al inicio; al cerrar V1 → `[LISTO_PARA_AUDITORIA_RELEASE]`
+- **ready_for_construction:** `false` hasta que `audit_3_passed` sea `true`. Al cerrar V1 → `[LISTO_PARA_AUDITORIA_RELEASE]`

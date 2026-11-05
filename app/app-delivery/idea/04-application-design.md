@@ -8,7 +8,7 @@ created_at: "2026-11-05"
 updated_at: "2026-11-05"
 audit_1_passed: true
 audit_2_passed: true
-visual_approval_passed: false
+visual_approval_passed: true
 audit_3_passed: false
 ---
 
@@ -22,7 +22,7 @@ audit_3_passed: false
 
 - **Nombre del Proyecto:** `app-delivery`
 - **Documentos base:** `01-problem.md` | `02-features.md` | `03-module-discovery.md`
-- **Estado de gatekeeping:** `PENDIENTE_APROBACION_VISUAL`
+- **Estado de gatekeeping:** `APROBACION_VISUAL_OK` / `PENDIENTE_AUDITORIA_ENSAMBLADO`
 - **Canal V1:** Android. La sección web no aplica.
 
 ---
@@ -237,20 +237,20 @@ Portrait. Una columna. La lista de la consulta hace scroll si hay varias fotos. 
 - [x] Navegación y flujo principal definidos.
 - [x] Todos los módulos V1 incorporados sin huérfanos.
 - [x] Tokens/theme documentados o N/A justificado.
-- [ ] Wireframe o preview revisado por arquitecto.
+- [x] Wireframe o preview revisado por arquitecto.
 - [x] Sin dependencias circulares.
 
 ### Checklist auditoría de ensamblado (Gate 3B)
 
-- [ ] `05-build-plan.md` coherente con este diseño.
-- [ ] Estrategia de build y riesgos alineados.
+- [x] `05-build-plan.md` coherente con este diseño.
+- [x] Estrategia de build y riesgos alineados.
 - [ ] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobación visual (Arquitecto / Stakeholder):** `________________________`
-- **Fecha visual:** `YYYY-MM-DD`
-- **visual_approval_passed:** `false` → `true` al aprobar preview
+- **Aprobación visual (Arquitecto / Stakeholder):** Negocio, «aprovado señor, sigue» del 2026-11-05
+- **Fecha visual:** `2026-11-05`
+- **visual_approval_passed:** `true`
 
 - **Aprobación ensamblado (Arquitecto):** `________________________`
 - **Fecha ensamblado:** `YYYY-MM-DD`
