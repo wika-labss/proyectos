@@ -50,7 +50,7 @@ export default function ConsultaScreen() {
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <View style={styles.header}>
-        <Text style={styles.title}>Consulta</Text>
+        <Text style={styles.title}>Traer imagen</Text>
         <Link href="/" style={styles.link}>
           Captura
         </Link>

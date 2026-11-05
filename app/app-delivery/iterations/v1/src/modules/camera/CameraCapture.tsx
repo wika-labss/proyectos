@@ -1,79 +1,140 @@
-import React, { useRef } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontFamily, fontSize, fontWeight, layout, radius, spacing } from '../../constants/theme';
 
 type Props = {
-  uri: string | null;
   onCapture: (uri: string) => void;
 };
 
-export function CameraCapture({ uri, onCapture }: Props) {
+export function CameraCapture({ onCapture }: Props) {
   const cameraRef = useRef<CameraView>(null);
+  const readyRef = useRef(false);
+  const insets = useSafeAreaInsets();
   const [permission, requestPermission] = useCameraPermissions();
+  const [ready, setReady] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
   async function take() {
     if (!permission?.granted) {
       const next = await requestPermission();
-      if (!next.granted) return;
+      if (!next.granted) {
+        setError('Sin permiso de cámara no se puede fotografiar el pedido.');
+        return;
+      }
     }
-    const photo = await cameraRef.current?.takePictureAsync({ quality: 0.7 });
-    if (photo?.uri) onCapture(photo.uri);
+    if (!readyRef.current || !cameraRef.current) {
+      setError('La cámara todavía no está lista.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
+      if (!photo?.uri) {
+        setError('No se pudo capturar la foto.');
+        return;
+      }
+      onCapture(photo.uri);
+    } catch {
+      setError('No se pudo capturar la foto.');
+    } finally {
+      setBusy(false);
+    }
   }
 
-  if (!permission) {
-    return <View style={styles.frame} />;
-  }
-
-  if (!permission.granted) {
+  if (!permission || !permission.granted) {
     return (
-      <View style={styles.frame}>
+      <View style={styles.permission}>
         <Text style={styles.error}>Sin permiso de cámara no se puede fotografiar el pedido.</Text>
-        <Pressable onPress={() => void requestPermission()} style={styles.button}>
-          <Text style={styles.buttonText}>Permitir cámara</Text>
+        <Pressable onPress={() => void requestPermission()} style={styles.allow}>
+          <Text style={styles.allowText}>Permitir cámara</Text>
         </Pressable>
       </View>
     );
   }
 
   return (
-    <View style={styles.wrap}>
-      {uri ? (
-        <Image source={{ uri }} style={styles.frame} />
-      ) : (
-        <CameraView ref={cameraRef} style={styles.frame} facing="back" />
-      )}
-      <Pressable onPress={() => void take()} style={styles.button}>
-        <Text style={styles.buttonText}>{uri ? 'Tomar otra' : 'Sacar foto'}</Text>
-      </Pressable>
+    <View style={styles.fill}>
+      <CameraView
+        ref={cameraRef}
+        style={styles.fill}
+        facing="back"
+        mode="picture"
+        active
+        onCameraReady={() => {
+          readyRef.current = true;
+          setReady(true);
+          setError('');
+        }}
+        onMountError={() => setError('No se pudo abrir la cámara.')}
+      />
+      <View style={[styles.controls, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>
+        {error ? <Text style={styles.errorOnCamera}>{error}</Text> : null}
+        <Pressable
+          disabled={!ready || busy}
+          onPress={() => void take()}
+          style={[styles.shutter, !ready || busy ? styles.shutterOff : null]}
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: spacing.sm },
-  frame: {
-    height: 280,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    overflow: 'hidden',
+  fill: { flex: 1, backgroundColor: colors.text },
+  permission: {
+    flex: 1,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    padding: spacing.lg,
+    gap: spacing.md,
   },
+  controls: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingTop: spacing.md,
+  },
+  shutter: {
+    width: layout.shutter,
+    height: layout.shutter,
+    borderRadius: layout.shutter,
+    backgroundColor: colors.surface,
+    borderWidth: spacing.xs,
+    borderColor: colors.accent,
+  },
+  shutterOff: { backgroundColor: colors.border },
   error: {
     color: colors.error,
     fontFamily: fontFamily.base,
-    fontSize: fontSize.sm,
-    padding: spacing.md,
+    fontSize: fontSize.md,
   },
-  button: {
+  errorOnCamera: {
+    color: colors.surface,
+    backgroundColor: colors.error,
+    fontFamily: fontFamily.base,
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.bold,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  allow: {
     minHeight: layout.touchMin,
     maxWidth: layout.ctaMaxWidth,
     backgroundColor: colors.accent,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.md,
   },
-  buttonText: {
+  allowText: {
     color: colors.surface,
     fontFamily: fontFamily.base,
     fontSize: fontSize.md,

@@ -34,6 +34,7 @@ export const radius = {
 export const layout = {
   touchMin: 44,
   ctaMaxWidth: 340,
+  shutter: 72,
 } as const;
 
 export const fontFamily = {
