@@ -1,12 +1,12 @@
 ---
 id: "PROB-001"
 title: "app-delivery"
-status: "BORRADOR"
+status: "APROBADO"
 version: "1.1.0"
 owner: "Negocio / Equipo WIKA"
 created_at: "2026-11-05"
 updated_at: "2026-11-05"
-audit_1_passed: false
+audit_1_passed: true
 solution_type: "mobile_app"
 delivery_channels:
   - android
@@ -22,8 +22,9 @@ project_mode: "construction"
 - **Nombre del Proyecto:** `app-delivery`
 - **Repositorio de aplicación:** `proyectos/app/app-delivery/`
 - **Stakeholders clave:** Negocio (operación que disputa devoluciones de pedidos delivery), personal del negocio (usuario de la app), Arquitecto WIKA (gates)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDIT_1_APROBADO`
 - **Cambio 1.1.0 (2026-11-05):** Negocio fijó el destino de la prueba en una base Supabase y una API para enviar, guardar y pedir la imagen por agregador y número de orden.
+- **Gate 1 (2026-11-05):** aprobado por instrucción explícita de Negocio. `DEC-04` queda cerrada con el proyecto Supabase `nfryurrhgaeepdwqtswo`.
 
 ---
 
@@ -51,7 +52,7 @@ project_mode: "construction"
 | `ERR-04` | No hay dónde guardar la imagen ni una API que la envíe a la base | `Alto` | `FEAT-04` | `mod-evidence-api` |
 | `ERR-05` | No se puede pedir la imagen ya guardada por agregador y número de orden | `Alto` | `FEAT-05` | `mod-evidence-api` |
 
-Los módulos de la columna destino son sugeridos para el descubrimiento posterior. `03-module-discovery.md` sigue en plantilla hasta que el Arquitecto apruebe el Gate 1.
+Los módulos de la columna destino están especificados en `03-module-discovery.md`. El Gate 2 (`audit_2_passed`) sigue en `false`.
 
 ---
 
@@ -105,7 +106,7 @@ Los módulos de la columna destino son sugeridos para el descubrimiento posterio
 | **Tecnología** | `Expo SDK 52, RN 0.76.x, TypeScript` | `Alto` | `standards/coding-standards.md` |
 | **Plataforma V1** | `Android APK release sin Metro` | `Alto` | WIKA-ARCH-03 |
 | **Diseño / UX** | Tokens base; mockup pendiente en `04-application-design.md` | `Alto` | `standards/design-system.md` |
-| **Destino de prueba** | Una base Supabase para Uber y PedidosYa. La clave de guardado y de consulta es agregador + número de orden | `Bloqueante` | WIKA-ARCH-01 |
+| **Destino de prueba** | Una base Supabase para Uber y PedidosYa. La clave de guardado y de consulta es agregador + número de orden. Proyecto `nfryurrhgaeepdwqtswo` (`sa-east-1`) | `Bloqueante` | WIKA-ARCH-01 |
 | **Seguridad** | La app no lleva la clave `service_role`. Enviar y pedir pasan por la API. RLS activo en las tablas expuestas | `Alto` | `standards/coding-standards.md` |
 | **Librerías prohibidas** | Versiones flotantes `^` en expo y react-native | `Bloqueante` | WIKA-ARCH-02 |
 | **Red** | Enviar y pedir requieren conexión con Supabase. La foto puede quedar en la sesión hasta que el envío se confirme | `Alto` | `standards/coding-standards.md` |
@@ -118,10 +119,10 @@ Los módulos de la columna destino son sugeridos para el descubrimiento posterio
   - «pedya» del pedido de Negocio se lee como **PedidosYa**.
   - El número de orden lo escribe el operador. No hay lectura de código ni consulta al agregador en V1.
   - Puede haber más de una foto para la misma clave. Un envío nuevo no borra las anteriores. Pedir devuelve las imágenes de ese agregador y ese número de orden.
-  - **Supuesto de arquitectura, pendiente de confirmar en el descubrimiento de módulos:** el registro (agregador, número de orden, fecha) vive en Postgres y el archivo en Storage del mismo proyecto Supabase. Negocio pidió base de datos; Storage es el lugar de Supabase para el binario.
-  - El proyecto Supabase de esta prueba todavía no existe. No se escribe en los proyectos de otros productos.
-- **Riesgos identificados:** Sin proyecto Supabase propio no hay dónde probar el envío. Un permiso de cámara denegado o una API caída deja la evidencia sin guardar.
-- **Plan de mitigación:** Mantener `audit_1_passed: false` hasta el visto bueno del Arquitecto. La app no declara éxito de envío si la API no confirmó el guardado. La clave `service_role` no entra en el cliente Android.
+  - **Supuesto de arquitectura, aceptado con el Gate 1:** el registro (agregador, número de orden, fecha, ruta del objeto) vive en Postgres y el archivo en Storage del mismo proyecto Supabase. Lo fija `03-module-discovery.md` (tabla `public.evidencia`, bucket `evidencia`).
+  - El proyecto Supabase de esta prueba es `nfryurrhgaeepdwqtswo`. No se escribe en los proyectos de otros productos.
+- **Riesgos identificados:** Un permiso de cámara denegado o una API caída deja la evidencia sin guardar.
+- **Plan de mitigación:** La app no declara éxito de envío si la API no confirmó el guardado. La clave `service_role` no entra en el cliente Android.
 
 ### Decisiones de Negocio
 
@@ -130,7 +131,7 @@ Los módulos de la columna destino son sugeridos para el descubrimiento posterio
 | `DEC-01` | Dónde se guarda la prueba, para Uber y para PedidosYa | `CERRADA` — una base Supabase, la misma para ambos |
 | `DEC-02` | Cómo se envía, se guarda y se pide | `CERRADA` — API con enviar, guardar y pedir |
 | `DEC-03` | Con qué clave se nombra y se recupera la imagen | `CERRADA` — agregador + número de orden |
-| `DEC-04` | Id del proyecto Supabase de app-delivery | `PENDIENTE` — se crea al construir; no se reutilizan los proyectos actuales |
+| `DEC-04` | Id del proyecto Supabase de app-delivery | `CERRADA` — `nfryurrhgaeepdwqtswo`, región `sa-east-1`, URL `https://nfryurrhgaeepdwqtswo.supabase.co` |
 
 ---
 
@@ -143,10 +144,10 @@ Los módulos de la columna destino son sugeridos para el descubrimiento posterio
 - [x] Criterios de éxito en formato BDD (Dado / Cuando / Entonces).
 - [x] Out-of-scope explícito documentado.
 - [x] Restricciones técnicas alineadas a `standards/coding-standards.md`.
-- [ ] Auditoría registrada en `audits/auditoria-documentacion.md` con resultado `[APROBADO]`.
+- [x] Auditoría registrada en `audits/auditoria-documentacion.md` con resultado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha de aprobación:** `YYYY-MM-DD`
-- **audit_1_passed:** `false` → cambiar a `true` al aprobar
+- **Aprobado por (Arquitecto):** `Negocio, instrucción explícita del 2026-11-05`
+- **Fecha de aprobación:** `2026-11-05`
+- **audit_1_passed:** `true`

@@ -7,7 +7,7 @@ app-delivery
 2026-11-05
 
 ## Objetivo
-Borrador de Gate 1, revisión tras la decisión de Supabase. Contrasta `idea/01-problem.md` y `idea/02-features.md` con `docs/auditoria-documentacion.md`. No aprueba.
+Gate 1 de `idea/01-problem.md` y `idea/02-features.md`, contrastados con `docs/auditoria-documentacion.md`.
 
 ## Entradas
 - `idea/01-problem.md` (v1.1.0)
@@ -16,8 +16,8 @@ Borrador de Gate 1, revisión tras la decisión de Supabase. Contrasta `idea/01-
 ## Referencia
 `wika-fundaments` @ `wika-fundaments-v2` → `docs/auditoria-documentacion.md`
 
-## Autor del borrador
-wika-auditor (IA). El veredicto **APROBADO** lo escribe solo el Arquitecto.
+## Aprobación
+El borrador lo preparó wika-auditor. El veredicto **APROBADO** de este registro lo pidió Negocio con instrucción explícita del 2026-11-05. No se inventa un nombre de persona.
 
 ---
 
@@ -26,7 +26,7 @@ wika-auditor (IA). El veredicto **APROBADO** lo escribe solo el Arquitecto.
 ### Problema
 - [x] Problema claramente definido: disputas de devolución que necesitan fotos del pedido, enviables y recuperables
 - [x] Necesidad real: cámara, clave agregador + número de orden, API y base Supabase de prueba
-- [x] Alcance documentado: `DEC-01`, `DEC-02` y `DEC-03` cerradas. `DEC-04` (id del proyecto Supabase) queda para la construcción
+- [x] Alcance documentado: `DEC-01`, `DEC-02`, `DEC-03` y `DEC-04` cerradas
 
 ### Usuarios
 - [x] Usuario identificado: personal del negocio que prepara y recupera la evidencia
@@ -47,8 +47,8 @@ wika-auditor (IA). El veredicto **APROBADO** lo escribe solo el Arquitecto.
 - [x] Seguridad: sin `service_role` en el cliente; RLS en tablas expuestas; la app habla con la API
 
 ### Metadatos y trazabilidad (v2.1)
-- [x] Frontmatter YAML en 01 y 02 (`id`, `status`, `owner`, fechas, `audit_1_passed: false`)
-- [x] RTM `ERR-01`–`ERR-05` → `FEAT-01`–`FEAT-05` → módulos sugeridos
+- [x] Frontmatter YAML en 01 y 02 (`id`, `status`, `owner`, fechas, `audit_1_passed: true`)
+- [x] RTM `ERR-01`–`ERR-05` → `FEAT-01`–`FEAT-05` → módulos
 - [x] BDD Dado / Cuando / Entonces en 01 y en cada feature obligatoria
 - [x] Out-of-scope explícito
 - [x] Alineación a `standards/coding-standards.md`
@@ -58,14 +58,18 @@ wika-auditor (IA). El veredicto **APROBADO** lo escribe solo el Arquitecto.
 ## Hallazgos
 
 1. `DEC-01`, `DEC-02` y `DEC-03` quedaron cerradas por Negocio el 2026-11-05: base Supabase única, API de enviar / guardar / pedir, clave agregador + número de orden.
-2. `DEC-04` sigue abierto: no existe un proyecto Supabase llamado app-delivery. Los proyectos visibles (`mercado-publico`, `geo-empresa`, `ramon-david`, `memin-clothes`, `vissiusscomp's Project`) son de otros productos y quedan fuera.
-3. Supuesto explícito, no pedido palabra por palabra: metadatos en Postgres y archivo en Storage del mismo proyecto. El Arquitecto puede aceptarlo al pasar el Gate 1.
-4. «pedya» sigue leído como PedidosYa.
+2. `DEC-04` cerrada el 2026-11-05. El proyecto de app-delivery es `nfryurrhgaeepdwqtswo` (región `sa-east-1`, URL `https://nfryurrhgaeepdwqtswo.supabase.co`). No se escribe en los proyectos de otros productos.
+3. El supuesto de metadatos en Postgres y archivo en Storage del mismo proyecto quedó aceptado con este Gate 1 y especificado en `03-module-discovery.md`.
+4. «pedya» se lee como PedidosYa.
 
-Flags YAML: se mantienen en `false`. Este borrador no los activa. No hay código en `iterations/`.
+`audit_2_passed`, `visual_approval_passed`, `audit_3_passed` y `ready_for_construction` siguen en `false`. No hay código de producto en `iterations/` ni en `final/`.
 
 ## Resultado
 
-PENDIENTE_ARQUITECTO
+APROBADO
 
-La documentación de la prueba ya alcanza para que el Arquitecto decida el Gate 1. Con `audit_1_passed: true`, el siguiente agente es `wika-scribe` para `03-module-discovery.md`.
+- **Aprobado por:** Negocio, instrucción explícita del 2026-11-05
+- **Fecha:** 2026-11-05
+- **audit_1_passed:** `true` en `idea/01-problem.md` y `idea/02-features.md`
+
+La documentación permite el descubrimiento de módulos. El siguiente agente es `wika-scribe` para `03-module-discovery.md`. El Gate 2 no está aprobado.

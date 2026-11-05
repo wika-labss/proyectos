@@ -1,12 +1,12 @@
 ---
 id: "FEAT-001"
 title: "Especificación de Requerimientos — app-delivery"
-status: "BORRADOR"
+status: "APROBADO"
 version: "1.1.0"
 owner: "Negocio / Equipo WIKA"
 created_at: "2026-11-05"
 updated_at: "2026-11-05"
-audit_1_passed: false
+audit_1_passed: true
 ---
 
 # [02] Especificación de Características y Requerimientos Funcionales
@@ -19,7 +19,7 @@ audit_1_passed: false
 
 - **Nombre del Proyecto:** `app-delivery`
 - **Documento base:** `idea/01-problem.md` (ID: `PROB-001`)
-- **Estado de gatekeeping:** `PENDIENTE_AUDITORIA_DOCUMENTACION`
+- **Estado de gatekeeping:** `AUDIT_1_APROBADO`
 
 ---
 
@@ -100,9 +100,9 @@ audit_1_passed: false
 
 **Descripción:** La app envía la foto a la API de prueba. La API la guarda en el proyecto Supabase de app-delivery, asociada al agregador y al número de orden.
 
-**Destino:** un proyecto Supabase propio de esta prueba (`DEC-04` todavía sin id). No se escribe en `mercado-publico` ni en los otros proyectos ya creados.
+**Destino:** proyecto Supabase `nfryurrhgaeepdwqtswo` (`DEC-04`). No se escribe en `mercado-publico` ni en los otros proyectos de otros productos.
 
-**Supuesto de almacenamiento:** fila en Postgres con agregador, número de orden y fecha; archivo en Storage del mismo proyecto. Lo confirma el descubrimiento de módulos.
+**Almacenamiento:** fila en Postgres (`public.evidencia`) con agregador, número de orden, ruta del objeto y fecha; archivo en el bucket Storage `evidencia` del mismo proyecto. Lo especifica `03-module-discovery.md`.
 
 #### Escenario 4.1: Flujo exitoso
 
@@ -183,7 +183,7 @@ La app y cualquier cliente de la prueba hablan solo con esta API. La clave `serv
 | `NFR-07` | **Fidelidad visual** | 100% tokens documentados en la UI de captura | Revisión en `04-application-design.md` |
 | `NFR-08` | **Secreto** | El cliente Android no contiene `service_role` | Revisión del build de la app |
 
-Enviar y pedir se validan con red hacia el proyecto Supabase de app-delivery.
+Enviar y pedir se validan con red hacia el proyecto Supabase `nfryurrhgaeepdwqtswo`.
 
 ---
 
@@ -208,10 +208,10 @@ Enviar y pedir se validan con red hacia el proyecto Supabase de app-delivery.
 - [x] Escenarios BDD por feature obligatoria.
 - [x] NFRs con métricas verificables.
 - [x] Deseables y fuera de alcance diferenciados.
-- [ ] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
+- [x] `audits/auditoria-documentacion.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobado por (Arquitecto):** `________________________`
-- **Fecha:** `YYYY-MM-DD`
-- **audit_1_passed:** `false` → `true` al aprobar
+- **Aprobado por (Arquitecto):** `Negocio, instrucción explícita del 2026-11-05`
+- **Fecha:** `2026-11-05`
+- **audit_1_passed:** `true`
