@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const target = path.join(
+const cameraDir = path.join(
   __dirname,
   '..',
   'node_modules',
@@ -20,20 +20,69 @@ const target = path.join(
   'expo',
   'modules',
   'camera',
-  'ExpoCameraView.kt',
 );
 
-const MARKER = 'wika: captura a archivo';
+const target = path.join(cameraDir, 'ExpoCameraView.kt');
+const moduleTarget = path.join(cameraDir, 'CameraViewModule.kt');
 
-if (!fs.existsSync(target)) {
-  console.error('[patch-expo-camera] No está ExpoCameraView.kt');
+const MARKER = 'wika: captura a archivo';
+const MODULE_MARKER = 'wika: el directorio de caché';
+
+if (!fs.existsSync(target) || !fs.existsSync(moduleTarget)) {
+  console.error('[patch-expo-camera] No está el fuente de expo-camera');
   process.exit(1);
 }
 
+patchModule();
+
 let source = fs.readFileSync(target, 'utf8');
 if (source.includes(MARKER)) {
-  console.log('[patch-expo-camera] ya aplicado');
+  console.log('[patch-expo-camera] vista ya aplicada');
   process.exit(0);
+}
+
+function patchModule() {
+  let moduleSource = fs.readFileSync(moduleTarget, 'utf8');
+  if (moduleSource.includes(MODULE_MARKER)) {
+    console.log('[patch-expo-camera] módulo ya aplicado');
+    return;
+  }
+  const from = `      AsyncFunction("takePicture") { view: ExpoCameraView, options: PictureOptions, promise: Promise ->
+        if (!EmulatorUtilities.isRunningOnEmulator()) {
+          view.takePicture(options, promise, cacheDirectory)
+        } else {
+          val image = CameraViewHelper.generateSimulatorPhoto(view.width, view.height)
+          moduleScope.launch {
+            ResolveTakenPicture(image, promise, options, false, cacheDirectory) { response ->
+              view.onPictureSaved(response)
+            }.resolve()
+          }
+        }
+      }.runOnQueue(Queues.MAIN)`;
+  const to = `      AsyncFunction("takePicture") { view: ExpoCameraView, options: PictureOptions, promise: Promise ->
+        // wika: el directorio de caché no depende del módulo de filesystem
+        val directory = try {
+          appContext.cacheDirectory
+        } catch (_: Exception) {
+          view.context.cacheDir
+        }
+        if (!EmulatorUtilities.isRunningOnEmulator()) {
+          view.takePicture(options, promise, directory)
+        } else {
+          val image = CameraViewHelper.generateSimulatorPhoto(view.width, view.height)
+          moduleScope.launch {
+            ResolveTakenPicture(image, promise, options, false, directory) { response ->
+              view.onPictureSaved(response)
+            }.resolve()
+          }
+        }
+      }.runOnQueue(Queues.MAIN)`;
+  if (!moduleSource.includes(from)) {
+    console.error('[patch-expo-camera] No encontré takePicture en CameraViewModule.kt');
+    process.exit(1);
+  }
+  fs.writeFileSync(moduleTarget, moduleSource.replace(from, to));
+  console.log('[patch-expo-camera] módulo aplicado');
 }
 
 const replacements = [
