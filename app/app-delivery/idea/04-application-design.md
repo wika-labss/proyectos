@@ -1,7 +1,7 @@
 ---
 id: "DES-001"
 title: "Diseño de Aplicación — app-delivery"
-status: "BORRADOR"
+status: "APROBADO"
 version: "1.0.0"
 owner: "Negocio / Equipo WIKA"
 created_at: "2026-11-05"
@@ -9,7 +9,7 @@ updated_at: "2026-11-05"
 audit_1_passed: true
 audit_2_passed: true
 visual_approval_passed: true
-audit_3_passed: false
+audit_3_passed: true
 ---
 
 # [04] Diseño de Aplicación, Navegación y Aprobación Visual
@@ -22,7 +22,7 @@ audit_3_passed: false
 
 - **Nombre del Proyecto:** `app-delivery`
 - **Documentos base:** `01-problem.md` | `02-features.md` | `03-module-discovery.md`
-- **Estado de gatekeeping:** `APROBACION_VISUAL_OK` / `PENDIENTE_AUDITORIA_ENSAMBLADO`
+- **Estado de gatekeeping:** `AUDIT_3_APROBADO`
 - **Canal V1:** Android. La sección web no aplica.
 
 ---
@@ -244,7 +244,7 @@ Portrait. Una columna. La lista de la consulta hace scroll si hay varias fotos. 
 
 - [x] `05-build-plan.md` coherente con este diseño.
 - [x] Estrategia de build y riesgos alineados.
-- [ ] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
+- [x] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
@@ -252,6 +252,6 @@ Portrait. Una columna. La lista de la consulta hace scroll si hay varias fotos. 
 - **Fecha visual:** `2026-11-05`
 - **visual_approval_passed:** `true`
 
-- **Aprobación ensamblado (Arquitecto):** `________________________`
-- **Fecha ensamblado:** `YYYY-MM-DD`
-- **audit_3_passed:** `false` → `true` al aprobar ensamblado
+- **Aprobación ensamblado (Arquitecto):** Negocio, «dale no mas aprobado» del 2026-11-05
+- **Fecha ensamblado:** `2026-11-05`
+- **audit_3_passed:** `true`

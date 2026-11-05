@@ -7,17 +7,18 @@ Producto de prueba (Negocio, 2026-11-05):
 - Cámara para fotografiar el pedido en una disputa de devolución
 - Clave de la evidencia: agregador (Uber o PedidosYa) + número de orden
 - API para enviar, guardar y pedir la imagen
-- Destino: una base Supabase propia de esta prueba
+- Destino: proyecto Supabase nfryurrhgaeepdwqtswo
 
 Estado:
-- Gate 1 APROBADO el 2026-11-05
-- Gate 2 APROBADO el 2026-11-05
-- Gate 3A APROBADO el 2026-11-05 («aprovado señor, sigue»). visual_approval_passed: true
-- idea/04-application-design.md: Captura / y Consulta /consulta
-- idea/05-build-plan.md v1.0.0. API = Edge Function evidencia. audit_3_passed: false. ready_for_construction: false
-- audits/auditoria-ensamblado.md → PENDIENTE_ARQUITECTO
-- Supabase nfryurrhgaeepdwqtswo, tabla public.evidencia, bucket evidencia
-- iterations/ vacío
+- Gate 1, Gate 2, Gate 3A y Gate 3B APROBADOS
+- ready_for_construction: true
+- iterations/v1/ construido: Captura /, Consulta /consulta, engine y cliente HTTP
+- Edge Function evidencia activa en https://nfryurrhgaeepdwqtswo.supabase.co/functions/v1/evidencia
+- Tabla public.evidencia, bucket evidencia, clave en public.evidencia_clave
+- npm run smoke y npm run typecheck OK
+- APK pendiente: hace falta JDK 17 y Android SDK
+- audits/auditoria-release-v1.md → REQUIERE_CORRECCIONES
+- review.md sin firma
 - final/ vacío
 
-Siguiente: el Arquitecto firma el Gate 3B. Después se construye iterations/v1/.
+Siguiente: npm run apk en una máquina con JDK 17 y SDK. Después el arquitecto firma review.md y la release.

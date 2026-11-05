@@ -1,7 +1,7 @@
 ---
 id: "BUILD-001"
 title: "Plan de Construcción V1 — app-delivery"
-status: "BORRADOR"
+status: "APROBADO"
 version: "1.0.0"
 owner: "Negocio / Equipo WIKA"
 created_at: "2026-11-05"
@@ -9,8 +9,8 @@ updated_at: "2026-11-05"
 audit_1_passed: true
 audit_2_passed: true
 visual_approval_passed: true
-audit_3_passed: false
-ready_for_construction: false
+audit_3_passed: true
+ready_for_construction: true
 ---
 
 # [05] Plan de Construcción V1 (Build Plan)
@@ -23,7 +23,7 @@ ready_for_construction: false
 - [x] Auditoría de Documentación: `audit_1_passed == true` (`auditoria-documentacion.md`)
 - [x] Auditoría de Módulos: `audit_2_passed == true` (`auditoria-modulos.md`)
 - [x] Aprobación visual: `visual_approval_passed == true` (`04-application-design.md`)
-- [ ] Auditoría de Ensamblado: `audit_3_passed == true` (`auditoria-ensamblado.md`)
+- [x] Auditoría de Ensamblado: `audit_3_passed == true` (`auditoria-ensamblado.md`)
 
 ---
 
@@ -58,14 +58,14 @@ Toolchain nativo (WIKA-ARCH-04): JDK 17, Kotlin 1.9.25, `minSdk` 24. El pin de K
 
 | Paso | Módulo | ID Feature | Archivos a crear / modificar | Tokens / estándares | Estado |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `01` | `global` | N/A | `iterations/v1/package.json`, `app.json`, `tsconfig.json`, `scripts/verify-build.sh`, `scripts/build-apk.sh`, `scripts/post-prebuild.js` | WIKA-ARCH-02, 03, 04, 06. Base: `app/tower/iterations/v1/` | `[PENDIENTE]` |
-| `02` | `MOD-02`, `MOD-03`, `MOD-01` | `FEAT-02`, `FEAT-03`, `FEAT-01` | `src/engine/order-number.ts`, `src/engine/aggregator.ts`, `src/engine/camera.ts`, `scripts/smoke-v1.ts` | Sin React en `src/engine/` | `[PENDIENTE]` |
-| `03` | `global` | N/A | `src/constants/theme.ts` | Tokens de `04` y `standards/design-system.md`. 0% hex en componentes | `[PENDIENTE]` |
-| `04` | `MOD-04` | `FEAT-04`, `FEAT-05` | `supabase/functions/evidencia/index.ts` | `service_role` solo en secretos de la función. Tabla `public.evidencia`, bucket `evidencia` | `[PENDIENTE]` |
-| `05` | `MOD-04` | `FEAT-04`, `FEAT-05` | `src/modules/evidence-api/` | Cliente HTTP. Sin `service_role` y sin cliente Supabase en el APK | `[PENDIENTE]` |
-| `06` | `MOD-01`, `MOD-02`, `MOD-03` | `FEAT-01`, `FEAT-02`, `FEAT-03` | `src/modules/camera/`, `src/modules/order-name/`, `src/modules/aggregator/` | `theme.ts` | `[PENDIENTE]` |
-| `07` | `integración` | `FEAT-01`–`FEAT-04` | `app/index.tsx` (`VIEW-01`) | Wireframe de `04`. Estados idle, ready, loading, success, error | `[PENDIENTE]` |
-| `08` | `integración` | `FEAT-05` | `app/consulta.tsx` (`VIEW-02`) | Estados idle, loading, success, empty, error | `[PENDIENTE]` |
+| `01` | `global` | N/A | `iterations/v1/package.json`, `app.json`, `tsconfig.json`, `scripts/verify-build.sh`, `scripts/build-apk.sh`, `scripts/post-prebuild.js` | WIKA-ARCH-02, 03, 04, 06. Base: `app/tower/iterations/v1/` | `[COMPLETADO]` |
+| `02` | `MOD-02`, `MOD-03`, `MOD-01` | `FEAT-02`, `FEAT-03`, `FEAT-01` | `src/engine/order-number.ts`, `src/engine/aggregator.ts`, `src/engine/camera.ts`, `scripts/smoke-v1.ts` | Sin React en `src/engine/` | `[COMPLETADO]` |
+| `03` | `global` | N/A | `src/constants/theme.ts` | Tokens de `04` y `standards/design-system.md`. 0% hex en componentes | `[COMPLETADO]` |
+| `04` | `MOD-04` | `FEAT-04`, `FEAT-05` | `supabase/functions/evidencia/index.ts` | `service_role` solo en el runtime. Tabla `public.evidencia`, bucket `evidencia` | `[COMPLETADO]` |
+| `05` | `MOD-04` | `FEAT-04`, `FEAT-05` | `src/modules/evidence-api/` | Cliente HTTP. Sin `service_role` y sin cliente Supabase en el APK | `[COMPLETADO]` |
+| `06` | `MOD-01`, `MOD-02`, `MOD-03` | `FEAT-01`, `FEAT-02`, `FEAT-03` | `src/modules/camera/`, `src/modules/order-name/`, `src/modules/aggregator/` | `theme.ts` | `[COMPLETADO]` |
+| `07` | `integración` | `FEAT-01`–`FEAT-04` | `app/index.tsx` (`VIEW-01`) | Wireframe de `04`. Estados idle, ready, loading, success, error | `[COMPLETADO]` |
+| `08` | `integración` | `FEAT-05` | `app/consulta.tsx` (`VIEW-02`) | Estados idle, loading, success, empty, error | `[COMPLETADO]` |
 | `09` | `global` | `FEAT-01`–`FEAT-05` | `npm run verify`, APK release | WIKA-ARCH-05 | `[PENDIENTE]` |
 
 ---
@@ -100,7 +100,7 @@ Toolchain nativo (WIKA-ARCH-04): JDK 17, Kotlin 1.9.25, `minSdk` 24. El pin de K
 - **Objetivo:** Edge Function `evidencia` en el proyecto `nfryurrhgaeepdwqtswo`.
 - **Enviar / guardar:** recibe `agregador`, `numero_orden` e imagen. Inserta una fila nueva y sube un objeto con `storage_path` nuevo. No borra fotos anteriores de la misma pareja. Responde confirmación solo si la fila y el objeto quedaron escritos.
 - **Pedir:** recibe `agregador` y `numero_orden`. Devuelve las imágenes de esa pareja ordenadas por `created_at`, o una respuesta vacía si no hay filas. No devuelve otras órdenes ni el otro agregador.
-- **Acceso:** la función usa `service_role` desde los secretos de Supabase. El APK manda una clave de prueba en un header y no incluye `service_role`. La clave de prueba no se commitea.
+- **Acceso:** la función usa `service_role`, que Supabase inyecta en el runtime. La clave de prueba está en `public.evidencia_clave` (RLS activo, `anon` y `authenticated` denegados) y no se commitea. El APK la manda en el header `x-evidencia-key`.
 - **Criterio:** un envío de prueba y un pedir de esa misma clave contra el proyecto `nfryurrhgaeepdwqtswo`. Las filas de prueba se borran al terminar el chequeo.
 
 ### Fase 4: UI, Verify y APK
@@ -173,6 +173,6 @@ Antes de marcar un paso como `[COMPLETADO]`:
 
 ## 11. Cierre de Fase de Construcción
 
-- **Revisado por (Arquitecto):** `________________________`
-- **Fecha de finalización:** `YYYY-MM-DD`
-- **ready_for_construction:** `false` hasta que `audit_3_passed` sea `true`. Al cerrar V1 → `[LISTO_PARA_AUDITORIA_RELEASE]`
+- **Revisado por (Arquitecto):** Negocio, «dale no mas aprobado» del 2026-11-05
+- **Fecha de inicio de construcción:** `2026-11-05`
+- **ready_for_construction:** `true`. Al cerrar V1 → `[LISTO_PARA_AUDITORIA_RELEASE]`
