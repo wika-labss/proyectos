@@ -1,15 +1,15 @@
 ---
 id: "DES-001"
 title: "Diseño de Aplicación — app-delivery"
-status: "BORRADOR"
+status: "APROBADO"
 version: "1.0.0"
 owner: "Negocio / Equipo WIKA"
 created_at: "2026-11-05"
 updated_at: "2026-11-05"
 audit_1_passed: true
 audit_2_passed: true
-visual_approval_passed: false
-audit_3_passed: false
+visual_approval_passed: true
+audit_3_passed: true
 ---
 
 # [04] Diseño de Aplicación, Navegación y Aprobación Visual
@@ -22,7 +22,7 @@ audit_3_passed: false
 
 - **Nombre del Proyecto:** `app-delivery`
 - **Documentos base:** `01-problem.md` | `02-features.md` | `03-module-discovery.md`
-- **Estado de gatekeeping:** `PENDIENTE_APROBACION_VISUAL`
+- **Estado de gatekeeping:** `AUDIT_3_APROBADO`
 - **Canal V1:** Android. La sección web no aplica.
 
 ---
@@ -78,20 +78,21 @@ La pantalla no escribe en Supabase. Las funciones de `src/engine/` no importan R
 ## 5. Flujo Principal de Usuario
 
 ```text
-Captura → foto + agregador + número de orden → Enviar → confirmación
-Captura → Consulta → misma clave → lista de fotos, o «no hay evidencia»
+Cámara a pantalla casi completa → disparo → formulario que sube para rotular → Enviar
+Traer (otra pantalla) → misma clave → lista de fotos, o «no hay evidencia»
 ```
+
+Ajuste de Negocio el 2026-11-05, después de probar el teléfono: la captura no comparte pantalla con el formulario. El rótulo aparece recién cuando ya hay foto.
 
 Estados de `VIEW-01`:
 
 | Estado | Qué ve el operador |
 | :--- | :--- |
-| `idle` | Cámara, campo de orden vacío, agregador sin elegir, enviar deshabilitado hasta que haya foto, orden y agregador |
-| `capturing` | La cámara está activa |
-| `ready` | Hay foto en la sesión. Enviar sigue deshabilitado si falta orden o agregador |
+| `idle` | Cámara a pantalla casi completa y el disparo. El disparo espera a que la cámara esté lista |
+| `label` | La foto queda de fondo y sube el formulario: número de orden, agregador y enviar |
 | `loading` | Envío en curso. El botón no se repite |
-| `success` | La API confirmó el guardado. La foto de la sesión puede limpiarse |
-| `error` | Permiso denegado, orden vacía, agregador inválido, o la base no recibió la imagen. La foto de la sesión se conserva si el fallo fue de red o de la API |
+| `success` | La API confirmó el guardado. Vuelve la cámara y un aviso breve |
+| `error` | Permiso denegado, cámara no lista, orden vacía, agregador inválido, o la base no recibió la imagen. Si el fallo es de red, la foto y el formulario siguen |
 
 Estados de `VIEW-02`:
 
@@ -149,7 +150,7 @@ Theme local V1 en `src/constants/theme.ts`. Los componentes usan estos nombres. 
 | `border` | Campo de orden y separadores de la lista | `theme.colors.border` |
 | `spacing.md` | Padding de pantalla | `16 dp` |
 | `spacing.sm` | Separación entre campo, selector y botones | `8 dp` |
-| `spacing.lg` | Separación entre la cámara y el formulario | `24 dp` |
+| `spacing.lg` | Separación dentro del formulario que sube tras la foto | `24 dp` |
 | `fontSize.md` | Campos y botones | `16` |
 | `fontSize.sm` | Estado vacío y mensajes de error | `12–14` |
 | `fontWeight.bold` | Enviar y Pedir | `700` |
@@ -176,33 +177,33 @@ No hay mockup PNG. El Gate 3A revisa este wireframe.
 
 ## 9. Layout Visual (wireframe / ASCII)
 
-`VIEW-01` Captura, ruta `/`:
+`VIEW-01` Captura, ruta `/`. Primero la cámara. Después de la foto sube el formulario:
 
 ```text
 ┌─────────────────────────────────────┐
-│ app-delivery              Consulta  │  text, accent
+│ aviso                      [ Traer ]│
+│                                     │
+│         cámara, casi toda           │
+│         la pantalla                 │
+│                                     │
+│              ( o )                  │  disparo, surface + accent
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│ foto recién tomada, de fondo        │
 ├─────────────────────────────────────┤
-│                                     │
-│         CameraCapture               │  surface
-│         foto del pedido             │
-│                                     │
-├─────────────────────────────────────┤
-│ Número de orden                     │  text
-│ [ OrderNumberField                ] │  surface, border
-│                                     │
-│ Agregador                           │
-│ [ Uber ]  [ PedidosYa ]             │  accent en el elegido
-│                                     │
-│ [ Enviar evidencia               ]  │  accent, máx. 340 dp
-│ mensaje de éxito o error            │  text / error
+│ Rotular                 Otra foto   │
+│ [ Número de orden                 ] │
+│ [ Uber ]  [ PedidosYa ]             │
+│ [ Enviar                          ] │
 └─────────────────────────────────────┘
 ```
 
-`VIEW-02` Consulta, ruta `/consulta`:
+`VIEW-02` Traer imagen, ruta `/consulta`. No hay cámara en esta pantalla:
 
 ```text
 ┌─────────────────────────────────────┐
-│ Consulta                    Captura │
+│ Traer imagen                Captura │
 ├─────────────────────────────────────┤
 │ Número de orden                     │
 │ [ OrderNumberField                ] │
@@ -237,21 +238,21 @@ Portrait. Una columna. La lista de la consulta hace scroll si hay varias fotos. 
 - [x] Navegación y flujo principal definidos.
 - [x] Todos los módulos V1 incorporados sin huérfanos.
 - [x] Tokens/theme documentados o N/A justificado.
-- [ ] Wireframe o preview revisado por arquitecto.
+- [x] Wireframe o preview revisado por arquitecto.
 - [x] Sin dependencias circulares.
 
 ### Checklist auditoría de ensamblado (Gate 3B)
 
-- [ ] `05-build-plan.md` coherente con este diseño.
-- [ ] Estrategia de build y riesgos alineados.
-- [ ] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
+- [x] `05-build-plan.md` coherente con este diseño.
+- [x] Estrategia de build y riesgos alineados.
+- [x] `audits/auditoria-ensamblado.md` en estado `[APROBADO]`.
 
 ### Registro de visto bueno
 
-- **Aprobación visual (Arquitecto / Stakeholder):** `________________________`
-- **Fecha visual:** `YYYY-MM-DD`
-- **visual_approval_passed:** `false` → `true` al aprobar preview
+- **Aprobación visual (Arquitecto / Stakeholder):** Negocio, «aprovado señor, sigue» del 2026-11-05
+- **Fecha visual:** `2026-11-05`
+- **visual_approval_passed:** `true`
 
-- **Aprobación ensamblado (Arquitecto):** `________________________`
-- **Fecha ensamblado:** `YYYY-MM-DD`
-- **audit_3_passed:** `false` → `true` al aprobar ensamblado
+- **Aprobación ensamblado (Arquitecto):** Negocio, «dale no mas aprobado» del 2026-11-05
+- **Fecha ensamblado:** `2026-11-05`
+- **audit_3_passed:** `true`
