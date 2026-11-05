@@ -2,11 +2,13 @@ import type { Perfil } from "../datos.js";
 import { Html, attrSi, html } from "../lib/html.js";
 import {
   ETIQUETA_OFERTA,
+  LARGO_DESCRIPCION,
   OFERTA_TIPOS,
   contactoDato,
   contactoDestino,
   type ContactoTipo,
 } from "../lib/reglas.js";
+import { CATEGORIAS_OFICIO } from "../oficios.js";
 import {
   type ErrorCampo,
   type EnlaceMenu,
@@ -88,6 +90,35 @@ function cabeceraAuth(lema: string): Html {
   });
 }
 
+function enlacesSalida(perfil: Perfil | null, csrf: string): Html {
+  return html`${
+    perfil
+      ? html`<p class="menu-accion"><a href="/perfil.html?slug=${encodeURIComponent(perfil.slug)}">Ver mi perfil público</a></p>`
+      : ""
+  }
+  <form method="post" action="/panel/salir" class="menu-salir">${campoOcultoCsrf(csrf)}<button type="submit">Salir</button></form>`;
+}
+
+function barraLateral(perfil: Perfil | null, actual: SeccionPanel, csrf: string): Html {
+  return html`<aside class="tw-side" aria-label="Opciones del panel">
+  <nav aria-label="Panel">
+    <ul>
+      ${enlacesPanel(perfil, actual).map(
+        (e) => html`<li><a href="${e.href}"${e.actual ? html` aria-current="page"` : ""}>${e.texto}${
+          e.meta ? html`<span class="tw-side__meta">${e.meta}</span>` : ""
+        }</a></li>`,
+      )}
+    </ul>
+  </nav>
+  ${
+    perfil
+      ? html`<p class="tw-side__publico"><a href="/perfil.html?slug=${encodeURIComponent(perfil.slug)}">Ver mi perfil público</a></p>`
+      : ""
+  }
+  <form method="post" action="/panel/salir" class="tw-side__salir">${campoOcultoCsrf(csrf)}<button type="submit">Salir</button></form>
+</aside>`;
+}
+
 function marco(opciones: {
   vista: string;
   conError: boolean;
@@ -99,23 +130,21 @@ function marco(opciones: {
   scripts?: string[];
 }): Html {
   const { perfil } = opciones;
-  const extra = html`${
-    perfil
-      ? html`<p class="menu-accion"><a href="/perfil.html?slug=${encodeURIComponent(perfil.slug)}">Ver mi perfil público</a></p>`
-      : ""
-  }
-  <form method="post" action="/panel/salir" class="menu-salir">${campoOcultoCsrf(opciones.csrf)}<button type="submit">Salir</button></form>`;
   const cabecera = html`${cabeceraBanner({
     lema: perfil ? `Panel de ${perfil.nombre}` : "Panel del emprendedor",
     meta: perfil ? `Slug · ${perfil.slug}` : "Sin perfil",
     enlaces: enlacesPanel(perfil, opciones.actual),
-    extra,
+    extra: enlacesSalida(perfil, opciones.csrf),
+    cajon: true,
   })}
   ${avisoLocalidad(perfil, opciones.actual)}`;
   return documento({
     titulo: tituloPanel(opciones.vista, opciones.conError),
     cabecera,
-    cuerpo: html`<main id="contenido">${opciones.main}</main>`,
+    cuerpo: html`<div class="tw-shell">
+    ${barraLateral(perfil, opciones.actual, opciones.csrf)}
+    <main id="contenido">${opciones.main}</main>
+  </div>`,
     pie: piePanel(),
     estilos: opciones.estilos,
     scripts: ["/assets/panel.js", ...(opciones.scripts ?? [])],
@@ -243,6 +272,7 @@ export interface FormDatos {
   nombre: string;
   tipo: ContactoTipo | "";
   valor: string;
+  descripcion: string;
 }
 
 export interface FilaRed {
@@ -260,10 +290,14 @@ export interface EstadoPerfilPanel {
   erroresDatos: ErrorCampo[];
   vigenteNombre: string | null;
   vigenteContacto: string | null;
+  vigenteDescripcion: string | null;
   estadoDatos: string;
   redes: FilaRed[];
   erroresRedes: ErrorCampo[];
   estadoRedes: string;
+  erroresFoto: ErrorCampo[];
+  estadoFoto: string;
+  urlImagen: (archivo: string) => string;
 }
 
 const AYUDA_CONTACTO: Record<ContactoTipo, string> = {
@@ -278,20 +312,39 @@ const ETIQUETA_CONTACTO: Record<ContactoTipo, string> = {
   url: "Enlace web",
 };
 
-function seccionPublicacion(perfil: Perfil): Html {
+function lineaOferta(o: Perfil["ofertas"][number]): string {
+  const categoria = o.categoria ? ` · ${o.categoria}` : "";
+  return `${o.titulo} · ${ETIQUETA_OFERTA[o.tipo]}${categoria} · ${o.tag}`;
+}
+
+function seccionPublicacion(perfil: Perfil, urlImagen: (archivo: string) => string): Html {
   const c = perfil.contacto;
   return html`<section id="publicacion" aria-labelledby="publicacion-titulo">
   <h2 id="publicacion-titulo">Tu perfil público</h2>
   <ul>
     <li>Nombre: ${perfil.nombre}</li>
+    <li>Descripción: ${perfil.descripcion ?? "sin descripción"}</li>
+    <li>Foto: ${
+      perfil.fotoArchivo
+        ? html`<img src="${urlImagen(perfil.fotoArchivo)}" alt="Foto de ${perfil.nombre}" width="48" height="48">`
+        : "sin foto"
+    }</li>
     <li>Contactar: abre ${contactoDestino(c.tipo, c.valor)}. En tu perfil se ve: ${contactoDato(c.tipo, c.valor)}</li>
-    <li>Redes: ${perfil.redes.length ? String(perfil.redes.length) : "ninguna"}</li>
+    <li>Redes: ${
+      perfil.redes.length
+        ? html`<ul>${perfil.redes.map((r) => html`<li>${r.nombre}</li>`)}</ul>`
+        : "ninguna"
+    }</li>
     <li>${
       perfil.ofertas.length
-        ? `Ofertas: ${perfil.ofertas.length}`
+        ? html`Ofertas: <ul>${perfil.ofertas.map((o) => html`<li>${lineaOferta(o)}</li>`)}</ul>`
         : html`Ofertas: ninguna. Sin ofertas, la barra de búsqueda no te encuentra. <a href="/panel/ofertas.html">Agregar oferta</a>`
     }</li>
-    <li>Portafolio: ${perfil.imagenes.length ? cuenta(perfil.imagenes.length, "imagen", "imágenes") : "sin imágenes"}</li>
+    <li>${
+      perfil.imagenes.length
+        ? html`Portafolio: <ul>${perfil.imagenes.map((i) => html`<li>Texto alternativo: ${i.alt}</li>`)}</ul>`
+        : "Portafolio: sin imágenes"
+    }</li>
     <li>${
       perfil.punto
         ? `Localidad: ${perfil.punto.etiqueta}`
@@ -345,9 +398,53 @@ function formularioDatos(e: EstadoPerfilPanel): Html {
       <p id="contacto-destino">${destino}</p>
     </fieldset>
 
+    <label for="descripcion">Descripción (opcional)</label>
+    <textarea id="descripcion" name="descripcion" rows="4" maxlength="${LARGO_DESCRIPCION}"
+              aria-describedby="${describedBy("descripcion-ayuda", err("descripcion") && "descripcion-error", e.vigenteDescripcion !== null && "descripcion-vigente")}"${attrSi(Boolean(err("descripcion")), 'aria-invalid="true"')}>${e.datos.descripcion}</textarea>
+    <p id="descripcion-ayuda">Se ve bajo tu nombre en el perfil público. Hasta ${LARGO_DESCRIPCION} caracteres. Si la dejas vacía, no se muestra el título de una oferta.</p>
+    ${textoError("descripcion", err("descripcion"))}
+    ${e.vigenteDescripcion !== null ? html`<p id="descripcion-vigente">Sigue publicada: ${e.vigenteDescripcion}</p>` : ""}
+
     <button type="submit">${e.perfil ? "Guardar perfil" : "Crear perfil"}</button>
     ${regionEstado("form-datos-estado", e.estadoDatos)}
-    ${e.perfil ? html`<p><a href="#redes">Siguiente: Redes sociales</a></p>` : ""}
+    ${e.perfil ? html`<p><a href="#foto">Siguiente: Foto de perfil</a></p>` : ""}
+  </form>
+</section>`;
+}
+
+function formularioFoto(e: EstadoPerfilPanel): Html {
+  if (!e.perfil) {
+    return html`<section id="foto" aria-labelledby="foto-titulo">
+  <h2 id="foto-titulo">Foto de perfil</h2>
+  <p>La foto se sube después de crear el perfil.</p>
+</section>`;
+  }
+  const err = errorDe(e.erroresFoto, "foto-archivo");
+  return html`<section id="foto" aria-labelledby="foto-titulo">
+  <h2 id="foto-titulo">Foto de perfil</h2>
+  <p>Es el recuadro de tu perfil público. Si no subes una foto, ese recuadro queda vacío.</p>
+  ${
+    e.perfil.fotoArchivo
+      ? html`<figure class="tw-profile__photo"><img src="${e.urlImagen(e.perfil.fotoArchivo)}" alt="Foto de ${e.perfil.nombre}" width="112" height="112"></figure>`
+      : html`<div class="tw-profile__photo" role="img" aria-label="Sin foto de perfil"></div>`
+  }
+  <form id="form-foto" method="post" action="/panel/perfil.html#foto" enctype="multipart/form-data" novalidate>
+    ${campoOcultoCsrf(e.csrf)}
+    <input type="hidden" name="form" value="foto">
+    ${resumenErrores("form-foto", e.erroresFoto)}
+    <label for="foto-archivo">Foto (JPEG, PNG o WebP)</label>
+    <input id="foto-archivo" name="foto" type="file" accept="image/jpeg,image/png,image/webp"
+           aria-describedby="${describedBy("foto-ayuda", err && "foto-archivo-error")}"${attrSi(Boolean(err), 'aria-invalid="true"')}>
+    <p id="foto-ayuda">Hasta 5 MB. Al guardarla quitamos los datos de ubicación de la foto.</p>
+    ${textoError("foto-archivo", err)}
+    <button type="submit">Guardar foto</button>
+    ${
+      e.perfil.fotoArchivo
+        ? html`<button type="submit" name="quitar" value="1">Quitar foto</button>`
+        : ""
+    }
+    ${regionEstado("form-foto-estado", e.estadoFoto)}
+    <p><a href="#redes">Siguiente: Redes sociales</a></p>
   </form>
 </section>`;
 }
@@ -414,8 +511,9 @@ export function vistaPerfilPanel(e: EstadoPerfilPanel): Html {
     actual: "perfil",
     csrf: e.csrf,
     main: html`<h1>${titulo}</h1>
-    ${e.perfil ? seccionPublicacion(e.perfil) : ""}
+    ${e.perfil ? seccionPublicacion(e.perfil, e.urlImagen) : ""}
     ${formularioDatos(e)}
+    ${formularioFoto(e)}
     ${formularioRedes(e)}`,
   });
 }
@@ -423,7 +521,7 @@ export function vistaPerfilPanel(e: EstadoPerfilPanel): Html {
 export interface EstadoOfertas {
   csrf: string;
   perfil: Perfil | null;
-  form: { tipo: string; titulo: string; tag: string };
+  form: { tipo: string; titulo: string; tag: string; categoria: string };
   vistaPrevia: string;
   errores: ErrorCampo[];
   estado: string;
@@ -444,6 +542,7 @@ export function vistaOfertas(e: EstadoOfertas): Html {
             (o) => html`<li><article aria-labelledby="oferta-${o.id}-titulo">
         <h3 id="oferta-${o.id}-titulo">${o.titulo}</h3>
         <p>Tipo: ${ETIQUETA_OFERTA[o.tipo]}</p>
+        ${o.categoria ? html`<p>Categoría: ${o.categoria}</p>` : ""}
         <p>Etiqueta: ${o.tag}</p>
         <form method="post" action="/panel/ofertas.html">${campoOcultoCsrf(e.csrf)}<button type="submit" name="quitar" value="${o.id}">Quitar<span class="oculto"> oferta: ${o.titulo}</span></button></form>
       </article></li>`,
@@ -469,6 +568,16 @@ export function vistaOfertas(e: EstadoOfertas): Html {
              aria-describedby="${describedBy("titulo-ayuda", err("titulo") && "titulo-error")}"${attrSi(Boolean(err("titulo")), 'aria-invalid="true"')}>
       <p id="titulo-ayuda">Por ejemplo: Reparación de cañerías</p>
       ${textoError("titulo", err("titulo"))}
+      <label for="categoria">Categoría de oficio</label>
+      <select id="categoria" name="categoria" data-lista="provisional"
+              aria-describedby="${describedBy("categoria-ayuda", err("categoria") && "categoria-error")}"${attrSi(Boolean(err("categoria")), 'aria-invalid="true"')}>
+        <option value="">Elige una categoría</option>
+        ${CATEGORIAS_OFICIO.map(
+          (nombre) => html`<option value="${nombre}"${e.form.categoria === nombre ? html` selected` : ""}>${nombre}</option>`,
+        )}
+      </select>
+      <p id="categoria-ayuda">Obligatoria si el tipo es Oficio. Lista provisional, pendiente de confirmación. El # sigue siendo libre.</p>
+      ${textoError("categoria", err("categoria"))}
       <label for="tag">Etiqueta de oficio, # (obligatorio)</label>
       <input id="tag" name="tag" type="text" required autocapitalize="none" spellcheck="false" maxlength="80" value="${e.form.tag}"
              aria-describedby="${describedBy("tag-ayuda", "tag-vista-previa", err("tag") && "tag-error")}"${attrSi(Boolean(err("tag")), 'aria-invalid="true"')}>
@@ -512,9 +621,9 @@ export function vistaPortafolio(e: EstadoPortafolio): Html {
     <h2 id="mis-imagenes">Mis imágenes</h2>
     ${
       e.perfil.imagenes.length
-        ? html`<ul>${e.perfil.imagenes.map(
+        ? html`<ul class="tw-folio">${e.perfil.imagenes.map(
             (i) => html`<li><figure>
-        <img src="${e.urlImagen(i.archivo)}" alt="${i.alt}" width="${i.ancho}" height="${i.alto}" loading="lazy">
+        <img src="${e.urlImagen(i.archivo)}" alt="${i.alt}" width="160" height="160" loading="lazy">
         <figcaption>Texto alternativo: ${i.alt}</figcaption>
       </figure>
       <form method="post" action="/panel/portafolio.html">${campoOcultoCsrf(e.csrf)}<button type="submit" name="quitar" value="${i.id}">Quitar<span class="oculto"> imagen: ${i.alt}</span></button></form></li>`,

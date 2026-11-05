@@ -72,6 +72,7 @@ export function registrarPublicas(app: FastifyInstance, ctx: Contexto): void {
   app.get("/perfil.html", async (request, reply) => {
     const slug = campo(request.query as Record<string, unknown>, "slug");
     const perfil = SLUG.test(slug) ? await perfilPorSlug(ctx.db, slug) : null;
+    reply.header("cache-control", "no-store");
     if (!perfil) return enviarHtml(reply, vistaPerfilNoDisponible(), 404);
     return enviarHtml(reply, vistaPerfil(perfil, urlImagen));
   });

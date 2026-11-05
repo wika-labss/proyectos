@@ -2,10 +2,10 @@
 id: "WEB-HTML-001"
 title: "trabajamos.com — Diseño HTML y Aprobación Visual"
 status: "APROBADO"
-version: "0.2.2"
+version: "0.2.3"
 owner: "Vissiuss"
 created_at: "2026-11-02"
-updated_at: "2026-11-02"
+updated_at: "2026-11-04"
 visual_approval_passed: true
 audit_3_passed: true
 construction_phase_complete: true
@@ -31,7 +31,13 @@ direction_skill: "high-end-visual-design"
 - **Estado de `05`:** `05-build-plan.md` APROBADO con `ready_for_construction: true`. Autenticación, datos, imágenes y mapa están definidos allí y construidos en `iterations/v1/`.
 - **Alcance Fase 1:** HTML semántico y SSR en `iterations/v1/` para el cliente (`VIEW-01` a `VIEW-09`) y el panel (`VIEW-10` a `VIEW-18`). El look lo pone la skill de MOD-DIR en Fase 2.
 - **Fase 1:** Vissiuss firmó el contrato el 2026-11-02 a las 23:37 (UTC-3). El agente transcribió la firma.
-- **Fase 2 dirección:** se probaron `minimalist-ui`, `industrial-brutalist-ui` y `high-end-visual-design` (Soft Structuralism). **Ningún look aprobado** al cierre del día (2026-11-03). Registro: `idea/pruebas-fase2.md`.
+- **Fase 2 dirección:** se probaron `minimalist-ui`, `industrial-brutalist-ui` y `high-end-visual-design` (Soft Structuralism). **Ningún look aprobado** al cierre del día (2026-11-03). Registro: `idea/pruebas-fase2.md`. `fase2_look_aprobado` no cambia con la v0.2.3.
+- **v0.2.3 (2026-11-04), delta sin firma:** interfaz del emprendedor. Se escribió junto con el código. No es una firma de Vissiuss y no reabre el look (cobalto `#2f5bff`, albaricoque `#ffb085`, tinta `#0e1320`, papel `#f4f6ff`, Plus Jakarta Sans; Syne solo en el logo).
+  - En escritorio, el panel muestra una barra lateral siempre visible: Editar perfil, Ofertas, Portafolio, Localidad, Ver mi perfil público y Salir, cada sección con su estado (publicado, conteo, sin ofertas, sin imágenes, sin confirmar). El cajón «Menú» queda bajo 760px. El home público sigue con «Buscar oficios», el selector de categorías y «Crear perfil», sin nav de secciones.
+  - Lo guardado en el panel (nombre, descripción, foto, contacto, redes, cada oferta con título, tipo y `#`, cada imagen y la localidad) es lo que muestra `/perfil.html?slug=…`. Un guardado válido no deja el valor anterior. La respuesta del perfil público lleva `cache-control: no-store`.
+  - El portafolio del panel y el del perfil público comparten un mosaico de miniaturas cuadradas (`object-fit: cover`), con el texto alternativo visible y, en el panel, el botón Quitar.
+  - Una oferta de tipo oficio elige una categoría de la lista provisional (la misma del selector `#oficio-ejemplo`). El `#` sigue libre. La lista no es un catálogo firmado.
+  - El recuadro `.tw-profile__photo` es la foto del emprendedor. Sin foto, queda vacío. El imperdible queda en la cabecera, el splash y la esquina del banner. La descripción, si existe, va bajo el nombre en `.tw-profile__headline`. Ya no se usa el título de la primera oferta como bajada.
 
 `direction_skill` debe coincidir con `MOD-DIR` en `03-module-discovery.md`.
 
@@ -248,7 +254,7 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 **`VIEW-05` Identidad del perfil**
 
 - **Loading:** "Cargando perfil…" con `main` en `aria-busy="true"`. **Supuesto:** aplica si el perfil se carga en el navegador; si se entrega armado desde el servidor, este estado no existe. Se decide en `05`.
-- **Éxito:** `h1` con `nombre`, navegación interna a Contacto, Ofertas, Portafolio y Localidad, y enlace `Buscar otro oficio`.
+- **Éxito:** `h1` con `nombre`, navegación interna a Contacto, Ofertas, Portafolio y Localidad, y enlace `Buscar otro oficio`. Bajo el nombre va la descripción del emprendedor si la escribió (delta v0.2.3); si no hay descripción, no se muestra el título de la primera oferta. El recuadro de la izquierda es la foto de perfil o un vacío neutro. El imperdible no va en ese recuadro.
 - **Error, perfil no disponible:** falta `slug` o el `slug` no existe. `h1` "Perfil no disponible" y enlace `Buscar otro oficio`. **Supuesto:** respuesta 404 y `noindex` si hay servidor.
 - **Error de carga:** "No pudimos cargar el perfil." + botón `Reintentar`.
 - **Vacío:** no aplica; un perfil guardado siempre tiene `nombre` (`FEAT-01` 1.1) y contacto (D-01).
@@ -269,7 +275,7 @@ La coincidencia es por igualdad exacta del `#` normalizado. **Supuesto:** no hay
 
 **`VIEW-08` Portafolio**
 
-- **Éxito:** lista de imágenes, cada una con su `alt` escrito por el emprendedor.
+- **Éxito:** mosaico de miniaturas cuadradas. Cada celda recorta la foto al cuadrado y muestra el `alt` escrito por el emprendedor. No se muestra el archivo a ancho de página.
 - **Vacío (perfil sin portafolio):** "Este perfil aún no tiene imágenes de su trabajo."
 - **Error de una imagen:** si el archivo no carga, queda visible el `alt`. **Supuesto:** sin botón de reintento por imagen.
 - **Loading:** **Supuesto:** las imágenes cargan en diferido (`loading="lazy"`); el resto del perfil no espera al portafolio.
@@ -532,7 +538,8 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
   - `<p>Panel de {nombre}</p>`, o "Panel" si aún no hay perfil.
   - `<a href="../perfil.html?slug={slug}">Ver mi perfil público</a>`. Solo aparece cuando el perfil ya está creado.
   - `<form method="post" action="{salir}"><button type="submit">Salir</button></form>`. **Supuesto:** cerrar sesión; `03` no lo nombra, pero la sesión de `MOD-06` lo implica.
-- `<nav aria-label="Panel">` con `<ol>` (el orden es el del onboarding). Cada ítem es un `<a>` con `aria-current="page"` en la vista actual y un texto de estado dentro del enlace:
+- En escritorio (desde 760px) esa navegación es una barra lateral siempre visible, con Ver mi perfil público y Salir. Bajo 760px las mismas opciones viven en el cajón «Menú», que parte cerrado. El home público no usa esta navegación.
+- `<nav aria-label="Panel">` con la lista de secciones. Cada ítem es un `<a>` con `aria-current="page"` en la vista actual y un texto de estado dentro del enlace:
   1. `Editar perfil` → `perfil.html` · estado "publicado" / "sin crear". Si no hay perfil, el texto del enlace es `Crear perfil`.
   2. `Ofertas` → `ofertas.html` · "{n} ofertas" / "sin ofertas".
   3. `Portafolio` → `portafolio.html` · "{n} imágenes" / "sin imágenes".
@@ -596,6 +603,8 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
   - `<form id="form-datos" method="post" novalidate>`:
     - Resumen de errores.
     - `<label for="nombre">Nombre visible (obligatorio)</label>` · `<input id="nombre" name="nombre" type="text" required autocomplete="name">` · ayuda: "Es el nombre que verán los clientes. Puede ser tu nombre o el de tu emprendimiento."
+    - `<label for="descripcion">Descripción (opcional)</label>` · `<textarea id="descripcion" name="descripcion" maxlength="500">`. Se publica bajo el nombre. Vacía: no se muestra bajada. Si supera 500 caracteres, no reemplaza la descripción ya publicada.
+    - Sección `#foto`, después de crear el perfil: archivo JPEG, PNG o WebP, hasta 5 MB, sin datos de ubicación. Botones `Guardar foto` y, si ya hay foto, `Quitar foto`. Sin foto, el recuadro público queda vacío.
     - `<fieldset aria-describedby="contacto-ayuda">` · `<legend>Contacto (obligatorio)</legend>` (D-01):
       - `<p id="contacto-ayuda">` "Es lo que abre el botón Contactar de tu perfil público y el dato que se ve a su lado. Elige un solo medio. Sin contacto no se puede crear el perfil."
       - `<fieldset aria-describedby="contacto-tipo-error">` · `<legend>Medio de contacto (obligatorio)</legend>` · radios `name="contacto[tipo]"` con `required`: `Teléfono` (`telefono`), `Correo` (`correo`), `Enlace web` (`url`).
@@ -661,7 +670,8 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
       - Resumen de errores.
       - `<fieldset aria-describedby="tipo-error">` · `<legend>Tipo de oferta (obligatorio)</legend>` · radios `name="tipo"` con `required`: `Proyecto` (`proyecto`), `Servicio` (`servicio`), `Oficio` (`oficio`).
       - `<label for="titulo">Título (obligatorio)</label>` · `<input id="titulo" name="titulo" type="text" required>` · ayuda "Por ejemplo: Reparación de cañerías". Obligatorio por D-07.
-      - `<label for="tag">Etiqueta de oficio, # (obligatorio)</label>` · `<input id="tag" name="tag" type="text" required autocapitalize="none" spellcheck="false" aria-describedby="tag-ayuda tag-vista-previa">`.
+      - `<label for="categoria">Categoría de oficio</label>` · `<select id="categoria" name="categoria" data-lista="provisional">` con la lista provisional (la misma de `#oficio-ejemplo`). Obligatoria solo si el tipo es Oficio. El texto de ayuda dice que la lista está pendiente de confirmación. No es un catálogo firmado.
+      - `<label for="tag">Etiqueta de oficio, # (obligatorio)</label>` · `<input id="tag" name="tag" type="text" required autocapitalize="none" spellcheck="false" aria-describedby="tag-ayuda tag-vista-previa">`. El `#` sigue libre.
       - `<p id="tag-ayuda">` "Escribe el oficio, con o sin #. Se guarda en minúsculas, con # al inicio y sin espacios sobrantes. Las tildes cuentan: #gásfiter y #gasfiter son oficios distintos."
       - `<p>Se guardará como: <output id="tag-vista-previa" for="tag" aria-live="polite">{tag normalizado}</output></p>`. Aplica la regla única de §3.3. Se actualiza al dejar de escribir y al salir del campo, no en cada tecla, para no saturar al lector de pantalla. Sin texto válido: "—".
       - `<button type="submit">Agregar oferta</button>`.
@@ -676,7 +686,7 @@ El teléfono llega en formato internacional (`+56…`) porque así lo valida `VI
 - `<main id="contenido">`:
   - `<h1>Portafolio</h1>` · `<p>` "Sube fotos de trabajos que hiciste. Cada imagen necesita una descripción para quien no puede verla."
   - `<section aria-labelledby="mis-imagenes">` · `<h2 id="mis-imagenes">Mis imágenes</h2>`:
-    - `<ul>`; cada `<li>` tiene `<figure>` con `<img src="{url}" alt="{alt}">` y `<figcaption>Texto alternativo: {alt}</figcaption>` (el emprendedor ve lo que escribió), más `<form method="post"><button type="submit" name="quitar" value="{id}">Quitar<span class="oculto"> imagen: {alt}</span></button></form>` (D-09).
+    - `<ul class="tw-folio">`; cada `<li>` es una miniatura cuadrada: `<figure>` con `<img src="{url}" alt="{alt}" width="160" height="160">` recortada con `object-fit: cover` y `<figcaption>Texto alternativo: {alt}</figcaption>` (el emprendedor ve lo que escribió), más `<form method="post"><button type="submit" name="quitar" value="{id}">Quitar<span class="oculto"> imagen: {alt}</span></button></form>` (D-09). No se muestra el archivo a ancho de página.
     - Vacío: `<p>Aún no hay imágenes en tu portafolio.</p>`.
   - `<section aria-labelledby="nueva-imagen">` · `<h2 id="nueva-imagen">Subir imagen</h2>`:
     - `<form id="form-imagen" method="post" enctype="multipart/form-data" novalidate>`:

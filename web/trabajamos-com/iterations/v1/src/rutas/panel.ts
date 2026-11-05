@@ -17,6 +17,7 @@ import {
   agregarImagen,
   agregarOferta,
   crearPerfil,
+  fijarFoto,
   guardarRedes,
   marcarPunto,
   perfilDeUsuario,
@@ -28,6 +29,7 @@ import { GeocoderNoDisponible, coordenadasValidas } from "../geo/geocoder.js";
 import { NoEsImagen, borrarArchivo, guardarImagen, urlImagen } from "../imagenes.js";
 import {
   type ContactoTipo,
+  LARGO_DESCRIPCION,
   compactar,
   contactoDato,
   contactoValido,
@@ -38,6 +40,7 @@ import {
   urlHttpsValida,
   volverSeguro,
 } from "../lib/reglas.js";
+import { esCategoriaOficio } from "../oficios.js";
 import type { ErrorCampo } from "../vistas/comun.js";
 import {
   type EstadoLocalidad,
@@ -239,15 +242,24 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
       csrf: csrf(request, reply),
       perfil,
       datos: perfil
-        ? { nombre: perfil.nombre, tipo: perfil.contacto.tipo, valor: perfil.contacto.valor }
-        : { nombre: "", tipo: "", valor: "" },
+        ? {
+            nombre: perfil.nombre,
+            tipo: perfil.contacto.tipo,
+            valor: perfil.contacto.valor,
+            descripcion: perfil.descripcion ?? "",
+          }
+        : { nombre: "", tipo: "", valor: "", descripcion: "" },
       erroresDatos: [],
       vigenteNombre: null,
       vigenteContacto: null,
+      vigenteDescripcion: null,
       estadoDatos: "",
       redes: filasDe(perfil),
       erroresRedes: [],
       estadoRedes: "",
+      erroresFoto: [],
+      estadoFoto: "",
+      urlImagen,
     };
   }
 
@@ -256,10 +268,12 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
     const e = estadoPerfil(request, reply, perfil);
     e.estadoDatos = leerAviso(request, reply, "datos");
     if (!e.estadoDatos) e.estadoRedes = leerAviso(request, reply, "redes");
+    if (!e.estadoDatos && !e.estadoRedes) e.estadoFoto = leerAviso(request, reply, "foto");
     return enviarHtml(reply, vistaPerfilPanel(e));
   });
 
   app.post("/panel/perfil.html", protegidaPost, async (request, reply) => {
+    if (request.isMultipart()) return guardarFormFoto(request, reply);
     const b = cuerpo(request);
     const perfil = await perfilDeUsuario(db, request.usuario!.id);
     if (campo(b, "form") === "redes") return guardarFormRedes(request, reply, b, perfil);
@@ -286,12 +300,19 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
     return [{ campo: "contacto-valor", texto }];
   }
 
+  function errorDescripcion(texto: string): string | null {
+    return texto.length > LARGO_DESCRIPCION
+      ? `La descripción puede tener hasta ${LARGO_DESCRIPCION} caracteres`
+      : null;
+  }
+
   async function guardarFormDatos(request: FastifyRequest, reply: FastifyReply, b: Cuerpo, perfil: Perfil | null) {
     const tipoCrudo = campo(b, "contacto[tipo]");
     const datos: FormDatos = {
       nombre: compactar(campo(b, "nombre")),
       tipo: esContactoTipo(tipoCrudo) ? tipoCrudo : "",
       valor: campo(b, "contacto[valor]").trim().slice(0, 500),
+      descripcion: compactar(campo(b, "descripcion")),
     };
     const e = estadoPerfil(request, reply, perfil);
     e.datos = datos;
@@ -303,36 +324,59 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
         ? "El nombre visible puede tener hasta 120 caracteres"
         : null;
     const errContacto = erroresContacto(datos.tipo, datos.valor);
+    const textoDesc = errorDescripcion(datos.descripcion);
+    const errorDesc = textoDesc ? [{ campo: "descripcion", texto: textoDesc }] : [];
+    const descripcionNueva = datos.descripcion || null;
 
     if (!perfil) {
-      e.erroresDatos = [...(errorNombre ? [{ campo: "nombre", texto: errorNombre }] : []), ...errContacto];
+      e.erroresDatos = [...(errorNombre ? [{ campo: "nombre", texto: errorNombre }] : []), ...errContacto, ...errorDesc];
       if (e.erroresDatos.length) {
         e.estadoDatos = "Tu perfil no se publicó.";
         return enviarHtml(reply, vistaPerfilPanel(e), 422);
       }
-      await crearPerfil(db, request.usuario!.id, datos.nombre, datos.tipo as ContactoTipo, datos.valor);
+      await crearPerfil(
+        db,
+        request.usuario!.id,
+        datos.nombre,
+        datos.tipo as ContactoTipo,
+        datos.valor,
+        descripcionNueva,
+      );
       avisar(reply, { form: "datos", texto: "Perfil publicado" });
       return reply.redirect("/panel/perfil.html", 303);
     }
 
     if (errorNombre) {
-      e.erroresDatos = [{ campo: "nombre", texto: errorNombre }];
+      e.erroresDatos = [{ campo: "nombre", texto: errorNombre }, ...errorDesc];
       e.vigenteNombre = perfil.nombre;
+      e.vigenteDescripcion = perfil.descripcion;
       e.estadoDatos = "No se guardó ningún cambio.";
       return enviarHtml(reply, vistaPerfilPanel(e), 422);
     }
-    if (errContacto.length) {
-      // 02 7.2: el nombre se guarda y el contacto anterior sigue publicado.
-      await actualizarPerfil(db, perfil.id, datos.nombre, null);
+
+    const descripcionGuardada = textoDesc ? perfil.descripcion : descripcionNueva;
+    const contactoNuevo = errContacto.length
+      ? null
+      : { tipo: datos.tipo as ContactoTipo, valor: datos.valor };
+
+    if (errContacto.length || textoDesc) {
+      await actualizarPerfil(db, perfil.id, datos.nombre, contactoNuevo, descripcionGuardada);
       const actualizado = await perfilDeUsuario(db, request.usuario!.id);
       const e2 = estadoPerfil(request, reply, actualizado);
       e2.datos = datos;
-      e2.erroresDatos = errContacto;
-      e2.vigenteContacto = contactoDato(perfil.contacto.tipo, perfil.contacto.valor);
-      e2.estadoDatos = "Perfil guardado. El contacto no se guardó.";
+      e2.erroresDatos = [...errContacto, ...errorDesc];
+      if (errContacto.length) e2.vigenteContacto = contactoDato(perfil.contacto.tipo, perfil.contacto.valor);
+      if (textoDesc) e2.vigenteDescripcion = perfil.descripcion;
+      e2.estadoDatos =
+        errContacto.length && textoDesc
+          ? "Perfil guardado. El contacto y la descripción no se guardaron."
+          : errContacto.length
+            ? "Perfil guardado. El contacto no se guardó."
+            : "Perfil guardado. La descripción no se guardó.";
       return enviarHtml(reply, vistaPerfilPanel(e2), 422);
     }
-    await actualizarPerfil(db, perfil.id, datos.nombre, { tipo: datos.tipo as ContactoTipo, valor: datos.valor });
+
+    await actualizarPerfil(db, perfil.id, datos.nombre, contactoNuevo, descripcionGuardada);
     avisar(reply, { form: "datos", texto: "Perfil guardado" });
     return reply.redirect("/panel/perfil.html", 303);
   }
@@ -418,12 +462,97 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
     return enviarHtml(reply, vistaPerfilPanel(e), 422);
   }
 
+  async function leerMultipart(
+    request: FastifyRequest,
+    campoArchivo: string,
+  ): Promise<{ campos: Record<string, string>; archivo: Buffer | null; demasiadoGrande: boolean }> {
+    const campos: Record<string, string> = {};
+    let archivo: Buffer | null = null;
+    let demasiadoGrande = false;
+    try {
+      for await (const parte of request.parts()) {
+        if (parte.type === "file") {
+          const f = parte as MultipartFile;
+          if (f.fieldname !== campoArchivo || archivo) {
+            await f.toBuffer();
+            continue;
+          }
+          const datos = await f.toBuffer();
+          if (f.file.truncated) demasiadoGrande = true;
+          else if (datos.length) archivo = datos;
+        } else if (typeof parte.value === "string") {
+          campos[parte.fieldname] = parte.value;
+        }
+      }
+    } catch (error) {
+      if ((error as { code?: string }).code === "FST_REQ_FILE_TOO_LARGE") demasiadoGrande = true;
+      else throw error;
+    }
+    return { campos, archivo, demasiadoGrande };
+  }
+
+  async function guardarFormFoto(request: FastifyRequest, reply: FastifyReply) {
+    const { campos, archivo, demasiadoGrande } = await leerMultipart(request, "foto");
+    if (!csrfValido(request, campos._csrf)) return enviarHtml(reply, vistaSolicitudInvalida(), 403);
+    const perfil = await perfilDeUsuario(db, request.usuario!.id);
+    if (!perfil) return enviarHtml(reply, vistaPerfilPanel(estadoPerfil(request, reply, null)), 409);
+
+    if (campos.quitar) {
+      const anterior = await fijarFoto(db, perfil.id, null);
+      if (anterior) await borrarArchivo(config.uploadsDir, anterior);
+      avisar(reply, { form: "foto", texto: anterior ? "Se quitó la foto de perfil." : "No había foto de perfil." });
+      return reply.redirect("/panel/perfil.html#foto", 303);
+    }
+
+    const errores: ErrorCampo[] = [];
+    if (demasiadoGrande) {
+      errores.push({
+        campo: "foto-archivo",
+        texto: "La imagen pesa más de 5 MB. La foto no se guardó y tu perfil no cambió.",
+      });
+    } else if (!archivo) {
+      errores.push({ campo: "foto-archivo", texto: "Elige una imagen" });
+    }
+
+    let guardada: Awaited<ReturnType<typeof guardarImagen>> | null = null;
+    if (!errores.length && archivo) {
+      try {
+        guardada = await guardarImagen(config.uploadsDir, perfil.id, archivo);
+        const anterior = await fijarFoto(db, perfil.id, guardada.archivo);
+        if (anterior && anterior !== guardada.archivo) await borrarArchivo(config.uploadsDir, anterior);
+      } catch (error) {
+        if (guardada) await borrarArchivo(config.uploadsDir, guardada.archivo);
+        if (error instanceof NoEsImagen) {
+          errores.push({
+            campo: "foto-archivo",
+            texto: "El archivo no es una imagen. La foto no se guardó y tu perfil no cambió.",
+          });
+        } else {
+          request.log.error({ err: error }, "carga de foto de perfil fallida");
+          errores.push({
+            campo: "foto-archivo",
+            texto: "La foto no se guardó y tu perfil no cambió. Intenta de nuevo.",
+          });
+        }
+      }
+    }
+    if (errores.length) {
+      const fresco = await perfilDeUsuario(db, request.usuario!.id);
+      const e = estadoPerfil(request, reply, fresco);
+      e.erroresFoto = errores;
+      e.estadoFoto = "La foto no se guardó.";
+      return enviarHtml(reply, vistaPerfilPanel(e), 422);
+    }
+    avisar(reply, { form: "foto", texto: "Foto de perfil guardada." });
+    return reply.redirect("/panel/perfil.html#foto", 303);
+  }
+
   // VIEW-14
   function estadoOfertas(request: FastifyRequest, reply: FastifyReply, perfil: Perfil | null): EstadoOfertas {
     return {
       csrf: csrf(request, reply),
       perfil,
-      form: { tipo: "", titulo: "", tag: "" },
+      form: { tipo: "", titulo: "", tag: "", categoria: "" },
       vistaPrevia: "—",
       errores: [],
       estado: "",
@@ -450,7 +579,12 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
       });
       return reply.redirect("/panel/ofertas.html", 303);
     }
-    const form = { tipo: campo(b, "tipo"), titulo: compactar(campo(b, "titulo")), tag: campo(b, "tag").slice(0, 200) };
+    const form = {
+      tipo: campo(b, "tipo"),
+      titulo: compactar(campo(b, "titulo")),
+      tag: campo(b, "tag").slice(0, 200),
+      categoria: campo(b, "categoria"),
+    };
     const tag = normalizarTag(form.tag);
     const errores: ErrorCampo[] = [];
     if (!esOfertaTipo(form.tipo)) errores.push({ campo: "tipo", texto: "Elige el tipo de oferta" });
@@ -458,6 +592,9 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
     else if (form.titulo.length > 120) errores.push({ campo: "titulo", texto: "El título puede tener hasta 120 caracteres" });
     if (!tag) errores.push({ campo: "tag", texto: "Escribe la etiqueta de oficio" });
     else if (tag.length > 61) errores.push({ campo: "tag", texto: "La etiqueta puede tener hasta 60 caracteres" });
+    if (form.tipo === "oficio" && !esCategoriaOficio(form.categoria)) {
+      errores.push({ campo: "categoria", texto: "Elige una categoría de oficio" });
+    }
     if (!errores.length && perfil.ofertas.length >= MAX_OFERTAS) {
       errores.push({ campo: "titulo", texto: `Puedes publicar hasta ${MAX_OFERTAS} ofertas` });
     }
@@ -469,7 +606,8 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
       e.estado = "La oferta no se guardó. Tus ofertas anteriores siguen publicadas.";
       return enviarHtml(reply, vistaOfertas(e), 422);
     }
-    await agregarOferta(db, perfil.id, form.tipo as Parameters<typeof agregarOferta>[2], form.titulo, tag!);
+    const categoria = form.tipo === "oficio" && esCategoriaOficio(form.categoria) ? form.categoria : null;
+    await agregarOferta(db, perfil.id, form.tipo as Parameters<typeof agregarOferta>[2], form.titulo, tag!, categoria);
     avisar(reply, { form: "oferta", texto: `Oferta agregada: ${form.titulo}, ${tag}` });
     return reply.redirect("/panel/ofertas.html", 303);
   });
@@ -500,28 +638,7 @@ export function registrarPanel(app: FastifyInstance, ctx: Contexto): void {
       return reply.redirect("/panel/portafolio.html", 303);
     }
 
-    const campos: Record<string, string> = {};
-    let archivo: Buffer | null = null;
-    let demasiadoGrande = false;
-    try {
-      for await (const parte of request.parts()) {
-        if (parte.type === "file") {
-          const f = parte as MultipartFile;
-          if (f.fieldname !== "imagen" || archivo) {
-            await f.toBuffer();
-            continue;
-          }
-          const datos = await f.toBuffer();
-          if (f.file.truncated) demasiadoGrande = true;
-          else if (datos.length) archivo = datos;
-        } else if (typeof parte.value === "string") {
-          campos[parte.fieldname] = parte.value;
-        }
-      }
-    } catch (error) {
-      if ((error as { code?: string }).code === "FST_REQ_FILE_TOO_LARGE") demasiadoGrande = true;
-      else throw error;
-    }
+    const { campos, archivo, demasiadoGrande } = await leerMultipart(request, "imagen");
     if (!csrfValido(request, campos._csrf)) return enviarHtml(reply, vistaSolicitudInvalida(), 403);
     if (!perfil) return enviarHtml(reply, vistaPortafolio(estadoPortafolio(request, reply, null)), 409);
 

@@ -2,17 +2,18 @@
 id: "WEB-DATA-001"
 title: "trabajamos.com — Modelo de datos"
 status: "APROBADO"
-version: "0.1.0"
+version: "0.1.1"
 owner: "Vissiuss"
 created_at: "2026-11-02"
-updated_at: "2026-11-02"
+updated_at: "2026-11-04"
 motor: "PostgreSQL 16 + PostGIS 3"
 ---
 
 # [06] Modelo de datos — trabajamos.com
 
-> Fuente de verdad del esquema. La migración ejecutable es `iterations/v1/migrations/001_inicial.sql` y debe coincidir con este documento.  
-> Contrato de vistas: `04-html-design.md` §6. Módulos: `03-module-discovery.md`.
+> Fuente de verdad del esquema. Las migraciones ejecutables son `iterations/v1/migrations/001_inicial.sql` y `002_perfil_oficio.sql`, y deben coincidir con este documento.  
+> Contrato de vistas: `04-html-design.md` §6. Módulos: `03-module-discovery.md`.  
+> **v0.1.1 (2026-11-04), delta sin firma:** `perfiles.descripcion`, `perfiles.foto_archivo` y `ofertas.categoria`. Se escribió junto con el código. No es una firma de Vissiuss. La lista de `categoria` es provisional y queda pendiente de confirmación.
 
 ## 1. Extensiones
 
@@ -46,6 +47,8 @@ erDiagram
     uuid usuario_id FK
     text slug UK
     text nombre
+    text descripcion
+    text foto_archivo
     contacto_tipo contacto_tipo
     text contacto_valor
     geography punto
@@ -63,6 +66,7 @@ erDiagram
     oferta_tipo tipo
     text titulo
     text tag
+    text categoria
   }
   imagenes {
     uuid id PK
@@ -116,6 +120,8 @@ erDiagram
 | `usuario_id` | `uuid` | `NOT NULL UNIQUE` FK `usuarios(id) ON DELETE CASCADE`. Un perfil por cuenta. |
 | `slug` | `text` | `NOT NULL UNIQUE`, `^[a-z0-9]+(-[a-z0-9]+)*$`. Se genera al crear y no cambia. |
 | `nombre` | `text` | `NOT NULL`, 1 a 120 caracteres sin espacios sobrantes |
+| `descripcion` | `text` | `NULL`. Si existe: 1 a 500 caracteres, sin espacios sobrantes. Texto del emprendedor, opcional (delta `FEAT-01`, sin firma). |
+| `foto_archivo` | `text` | `NULL UNIQUE`. Ruta `{perfil_id}/{id}.webp`. Misma recodificación que el portafolio: JPEG, PNG o WebP de entrada, máximo 5 MB, sin EXIF. `NULL` = recuadro vacío, no el logo. |
 | `contacto_tipo` | `contacto_tipo` | `NOT NULL` (D-01) |
 | `contacto_valor` | `text` | `NOT NULL`, no vacío (D-01) |
 | `punto` | `geography(Point, 4326)` | `NULL` = sin localidad confirmada |
@@ -146,6 +152,7 @@ erDiagram
 | `tipo` | `oferta_tipo` | `NOT NULL` |
 | `titulo` | `text` | `NOT NULL`, 1 a 120 caracteres (D-07) |
 | `tag` | `text` | `NOT NULL`. Check: empieza con un solo `#` seguido de un carácter que no es espacio, sin espacio al final ni espacios dobles, hasta 61 caracteres (`#` + 60). Las minúsculas las asegura la aplicación con la regla única de `04` §3.3 (`toLocaleLowerCase("es-CL")`); la base no lo repite porque `lower()` depende del locale del servidor. |
+| `categoria` | `text` | `NULL` si el tipo no es `oficio`. Si viene, tiene que ser uno de los diez nombres provisionales de `002_perfil_oficio.sql` (Gasfitería, Electricidad, Carpintería, Pintura, Albañilería, Jardinería, Cerrajería, Limpieza, Mudanzas, Maestro chasquilla). Lista pendiente de confirmación de Vissiuss, no un catálogo firmado. Las filas de oficio anteriores a esta columna pueden seguir en `NULL`; un oficio nuevo la exige en la aplicación. |
 | `creado_en` | `timestamptz` | `NOT NULL DEFAULT now()` |
 
 Índices: `ofertas(tag)`, `ofertas(perfil_id, creado_en)`.
@@ -188,12 +195,17 @@ SELECT o.id, o.tipo, o.titulo, o.tag, p.slug, p.nombre,
        ST_Distance(p.punto, ST_MakePoint($lng, $lat)::geography) / 1000.0 AS distancia_km
 FROM ofertas o
 JOIN perfiles p ON p.id = o.perfil_id
-WHERE o.tag = $tag AND p.punto IS NOT NULL
+WHERE (
+  o.tag = $tag
+  OR ($categoria IS NOT NULL AND o.tipo = 'oficio' AND o.categoria = $categoria)
+) AND p.punto IS NOT NULL
 ORDER BY p.punto <-> ST_MakePoint($lng, $lat)::geography, p.nombre
 LIMIT 100;
 ```
 
-**Distinguir los dos vacíos (D-04).** Si la consulta no trae filas, `SELECT EXISTS (SELECT 1 FROM ofertas WHERE tag = $tag)` separa "No encontramos #xyz" de "Ninguna oferta de #xyz tiene localidad marcada".
+**Distinguir los dos vacíos (D-04).** Si la consulta no trae filas, un `EXISTS` sobre el mismo `#` —o sobre la categoría provisional, cuando el texto de la barra coincide con ella— separa "No encontramos …" de "Ninguna oferta de … tiene localidad marcada".
+
+**Categoría provisional.** `$categoria` solo se informa cuando el texto buscado coincide con un nombre de la lista provisional (tildes distintas, mayúsculas no). Si no coincide, la búsqueda sigue siendo solo por `#`.
 
 ## 6. Reglas de integridad que vive en la aplicación
 

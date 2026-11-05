@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { CATEGORIAS_OFICIO } from "../src/oficios.js";
 import { Agente, type Entorno, crearEntorno, limpiar, texto } from "./ayuda.js";
 
 let e: Entorno;
@@ -33,9 +34,19 @@ async function emprendedor(correo: string, nombre: string, punto?: string): Prom
   return a;
 }
 
+function categoriaDePrueba(tag: string): string {
+  const plano = tag.toLocaleLowerCase("es-CL");
+  if (plano.includes("electric")) return "Electricidad";
+  if (plano.includes("carpint")) return "Carpintería";
+  if (plano.includes("chasquilla")) return "Maestro chasquilla";
+  return "Gasfitería";
+}
+
 async function oferta(a: Agente, titulo: string, tag: string, tipo = "oficio") {
   await a.get("/panel/ofertas.html");
-  return a.post("/panel/ofertas.html", { tipo, titulo, tag });
+  const campos: Record<string, string> = { tipo, titulo, tag };
+  if (tipo === "oficio") campos.categoria = categoriaDePrueba(tag);
+  return a.post("/panel/ofertas.html", campos);
 }
 
 describe("infraestructura", () => {
@@ -561,5 +572,228 @@ describe("localidad (VIEW-16)", () => {
     expect(bus.json().resultados[0].etiqueta).toBe("Maipú, Región Metropolitana");
     const pagina = await a.get("/panel/localidad.html");
     expect(pagina.body).not.toContain("Usar mi ubicación");
+  });
+});
+
+describe("interfaz del emprendedor", () => {
+  async function jpegConExif() {
+    return sharp({ create: { width: 640, height: 480, channels: 3, background: { r: 20, g: 80, b: 160 } } })
+      .jpeg()
+      .withExif({ IFD0: { Copyright: "secreto", Artist: "dueño" } })
+      .toBuffer();
+  }
+
+  it("en el panel la barra lateral trae las opciones y el home no recupera una nav de secciones", async () => {
+    const a = await emprendedor("lado@ejemplo.cl", "Lado Visible");
+    const panel = await a.get("/panel/perfil.html");
+    expect(panel.body).toContain('class="tw-side"');
+    expect(panel.body).toContain("Editar perfil");
+    expect(panel.body).toContain("publicado");
+    expect(panel.body).toContain("Ofertas");
+    expect(panel.body).toContain("sin ofertas");
+    expect(panel.body).toContain("Portafolio");
+    expect(panel.body).toContain("sin imágenes");
+    expect(panel.body).toContain("Localidad");
+    expect(panel.body).toContain("sin confirmar");
+    expect(panel.body).toContain("Ver mi perfil público");
+    expect(panel.body).toContain(">Salir<");
+    expect(panel.body).toContain('id="menu-cajon"');
+
+    const home = await e.app.inject({ method: "GET", url: "/index.html" });
+    expect(home.body).toContain("Buscar oficios");
+    expect(home.body).toContain("Crear perfil");
+    expect(home.body).toContain('id="oficio-ejemplo"');
+    expect(home.body).toContain('id="form-buscar"');
+    expect(home.body).not.toContain('class="tw-side"');
+    expect(home.body).not.toContain("Editar perfil");
+    expect(home.body).not.toContain('id="menu-cajon"');
+    for (const nombre of CATEGORIAS_OFICIO) expect(home.body).toContain(`>${nombre}</option>`);
+  });
+
+  it("lo guardado reemplaza el valor anterior en el resumen y en el perfil público", async () => {
+    const a = await emprendedor("guarda@ejemplo.cl", "Nombre Viejo");
+    await a.get("/panel/perfil.html");
+    const creado = await a.post("/panel/perfil.html", {
+      form: "datos",
+      nombre: "Nombre Viejo",
+      "contacto[tipo]": "telefono",
+      "contacto[valor]": "+56 9 1234 5678",
+      descripcion: "Texto viejo",
+    });
+    expect(creado.statusCode).toBe(303);
+    await a.post("/panel/perfil.html", {
+      form: "redes",
+      "redes[0][nombre]": "Instagram",
+      "redes[0][url]": "https://instagram.com/viejo",
+    });
+    const guardado = await a.seguir(
+      await a.post("/panel/perfil.html", {
+        form: "datos",
+        nombre: "Nombre Nuevo",
+        "contacto[tipo]": "correo",
+        "contacto[valor]": "nuevo@ejemplo.cl",
+        descripcion: "Texto nuevo del emprendedor",
+      }),
+    );
+    expect(guardado.body).toContain("Perfil guardado");
+    expect(guardado.body).toContain("Nombre: Nombre Nuevo");
+    expect(guardado.body).toContain("Descripción: Texto nuevo del emprendedor");
+    expect(guardado.body).toContain("Correo: nuevo@ejemplo.cl");
+    expect(guardado.body).not.toContain("Nombre Viejo");
+    expect(guardado.body).not.toContain("Texto viejo");
+
+    const { rows: redes } = await e.db.query<{ id: string }>("SELECT id FROM redes");
+    await a.get("/panel/perfil.html");
+    await a.post("/panel/perfil.html", {
+      form: "redes",
+      "redes[0][id]": redes[0]!.id,
+      "redes[0][nombre]": "Instagram",
+      "redes[0][url]": "https://instagram.com/nuevo",
+    });
+    const ofertaResp = await oferta(a, "Arreglo de llaves", "llaves");
+    expect(ofertaResp.statusCode).toBe(303);
+    await a.get("/panel/portafolio.html");
+    const img = await a.postMultipart("/panel/portafolio.html", [
+      { nombre: "_csrf", valor: a.csrf },
+      {
+        nombre: "imagen",
+        valor: await sharp({ create: { width: 300, height: 200, channels: 3, background: { r: 10, g: 20, b: 30 } } })
+          .png()
+          .toBuffer(),
+        archivo: "obra.png",
+        tipo: "image/png",
+      },
+      { nombre: "alt", valor: "Llave nueva en un lavaplatos" },
+    ]);
+    expect(img.statusCode).toBe(303);
+    await a.get("/panel/localidad.html");
+    const busqueda = await a.post("/panel/localidad.html", { accion: "buscar", localidad_texto: "nunoa" });
+    const valor = /name="resultado" value="([^"]+)"/u.exec(busqueda.body)![1]!;
+    await a.post("/panel/localidad.html", { accion: "marcar", resultado: valor.replace(/&#39;/gu, "'") });
+
+    const panel = await a.get("/panel/perfil.html");
+    const pub = await e.app.inject({ method: "GET", url: "/perfil.html?slug=nombre-viejo" });
+    expect(pub.headers["cache-control"]).toBe("no-store");
+    expect(pub.statusCode).toBe(200);
+    const comun = [
+      "Nombre Nuevo",
+      "Texto nuevo del emprendedor",
+      "Correo: nuevo@ejemplo.cl",
+      "Instagram",
+      "https://instagram.com/nuevo",
+      "Arreglo de llaves",
+      "Oficio",
+      "Gasfitería",
+      "#llaves",
+      "Llave nueva en un lavaplatos",
+      "Ñuñoa, Región Metropolitana",
+    ];
+    for (const dato of comun) {
+      expect(panel.body).toContain(dato);
+      expect(pub.body).toContain(dato);
+    }
+    expect(pub.body).toContain('class="tw-profile__headline"');
+    expect(pub.body).not.toContain("Nombre Viejo");
+    expect(pub.body).not.toContain("Texto viejo");
+    expect(pub.body).not.toContain("instagram.com/viejo");
+    const foto = /<div class="tw-profile__photo"[^>]*>([\s\S]*?)<\/div>/u.exec(pub.body);
+    expect(foto?.[0]).toContain("Sin foto de perfil");
+    expect(foto?.[1]).not.toContain("vissiuss-logo");
+    expect(pub.body).toContain('class="tw-mark tw-mark--banner"');
+    expect(pub.body).toContain('class="tw-folio"');
+    const folio = await a.get("/panel/portafolio.html");
+    expect(folio.body).toContain('class="tw-folio"');
+    expect(folio.body).toContain(">Quitar<span");
+    expect(folio.body).toContain("Texto alternativo: Llave nueva en un lavaplatos");
+    expect(folio.body).toContain('width="160"');
+  });
+
+  it("un oficio nuevo exige una categoría de la lista provisional y el # sigue libre", async () => {
+    const a = await emprendedor("oficio@ejemplo.cl", "Oficios", "Ñuñoa");
+    await a.get("/panel/ofertas.html");
+    const sin = await a.post("/panel/ofertas.html", { tipo: "oficio", titulo: "Cambio de flexible", tag: "flexible" });
+    expect(sin.statusCode).toBe(422);
+    expect(sin.body).toContain("Elige una categoría de oficio");
+    expect(sin.body).toContain("Lista provisional, pendiente de confirmación");
+    for (const nombre of CATEGORIAS_OFICIO) expect(sin.body).toContain(`>${nombre}</option>`);
+
+    const ajena = await a.post("/panel/ofertas.html", {
+      tipo: "oficio",
+      titulo: "Cambio de flexible",
+      tag: "flexible",
+      categoria: "Plomería",
+    });
+    expect(ajena.statusCode).toBe(422);
+    expect(ajena.body).toContain("Elige una categoría de oficio");
+
+    const ok = await a.post("/panel/ofertas.html", {
+      tipo: "oficio",
+      titulo: "Cambio de flexible",
+      tag: "flexible",
+      categoria: "Gasfitería",
+    });
+    expect(ok.statusCode).toBe(303);
+    const servicio = await a.post("/panel/ofertas.html", {
+      tipo: "servicio",
+      titulo: "Visita de diagnóstico",
+      tag: "flexible",
+      categoria: "Gasfitería",
+    });
+    expect(servicio.statusCode).toBe(303);
+    const { rows } = await e.db.query<{ titulo: string; categoria: string | null }>(
+      "SELECT titulo, categoria FROM ofertas ORDER BY creado_en",
+    );
+    expect(rows).toEqual([
+      { titulo: "Cambio de flexible", categoria: "Gasfitería" },
+      { titulo: "Visita de diagnóstico", categoria: null },
+    ]);
+
+    const porCategoria = await e.app.inject({
+      method: "GET",
+      url: "/index.html?q=Gasfiter%C3%ADa&localidad=%C3%91u%C3%B1oa",
+    });
+    expect(texto(porCategoria.body)).toContain("1 oferta de Gasfitería");
+    expect(porCategoria.body).toContain("Cambio de flexible");
+    expect(porCategoria.body).not.toContain("Visita de diagnóstico");
+    const porTag = await e.app.inject({ method: "GET", url: "/index.html?q=%23flexible&localidad=%C3%91u%C3%B1oa" });
+    expect(texto(porTag.body)).toContain("2 ofertas de #flexible");
+  });
+
+  it("la foto de perfil se recorta al cuadrado, no usa el logo y sale sin EXIF", async () => {
+    const a = await emprendedor("foto@ejemplo.cl", "Con Foto");
+    await a.get("/panel/perfil.html");
+    const subida = await a.postMultipart("/panel/perfil.html", [
+      { nombre: "_csrf", valor: a.csrf },
+      { nombre: "form", valor: "foto" },
+      { nombre: "foto", valor: await jpegConExif(), archivo: "yo.jpg", tipo: "image/jpeg" },
+    ]);
+    expect(subida.statusCode).toBe(303);
+    const destino = String(subida.headers.location).split("#")[0]!;
+    const panel = await a.get(destino);
+    expect(panel.body).toContain("Foto de perfil guardada.");
+    expect(panel.body).toContain('alt="Foto de Con Foto"');
+    const { rows } = await e.db.query<{ foto_archivo: string }>("SELECT foto_archivo FROM perfiles");
+    const archivo = rows[0]!.foto_archivo;
+    expect(archivo).toMatch(/\.webp$/u);
+    const servida = await e.app.inject({ method: "GET", url: `/uploads/${archivo}` });
+    const meta = await sharp(servida.rawPayload).metadata();
+    expect(meta.format).toBe("webp");
+    expect(meta.exif).toBeUndefined();
+
+    const pub = await e.app.inject({ method: "GET", url: "/perfil.html?slug=con-foto" });
+    const foto = /<div class="tw-profile__photo"[^>]*>([\s\S]*?)<\/div>/u.exec(pub.body);
+    expect(foto?.[1]).toContain(`/uploads/${archivo}`);
+    expect(foto?.[1]).toContain('alt="Foto de Con Foto"');
+    expect(foto?.[1]).not.toContain("vissiuss-logo");
+    expect(pub.body).toContain('class="tw-mark tw-mark--banner"');
+    expect(pub.body).not.toContain('class="tw-profile__headline"');
+
+    const grande = await a.postMultipart("/panel/perfil.html", [
+      { nombre: "_csrf", valor: a.csrf },
+      { nombre: "form", valor: "foto" },
+      { nombre: "foto", valor: Buffer.alloc(5 * 1024 * 1024 + 10, 1), archivo: "grande.jpg", tipo: "image/jpeg" },
+    ]);
+    expect(grande.body).toContain("La imagen pesa más de 5 MB.");
+    expect((await e.db.query("SELECT foto_archivo FROM perfiles")).rows[0].foto_archivo).toBe(archivo);
   });
 });

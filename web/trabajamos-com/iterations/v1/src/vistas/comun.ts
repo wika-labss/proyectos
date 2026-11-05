@@ -12,27 +12,29 @@ export interface EnlaceMenu {
   meta?: string;
 }
 
+function listaEnlaces(enlaces: EnlaceMenu[], claseMeta: string): Html {
+  return html`${enlaces.map(
+    (e, i) => html`<li style="--i:${String(i)}"><a href="${e.href}"${e.actual ? html` aria-current="page"` : ""}>${e.texto}${
+      e.meta ? html`<span class="${claseMeta}">${e.meta}</span>` : ""
+    }</a></li>`,
+  )}`;
+}
+
 /** Cabecera compartida: bloque cobalto plano + marca con acento albaricoque. */
 export function cabeceraBanner(opciones: {
   lema: string;
   meta?: string;
   enlaces: EnlaceMenu[];
   extra?: Html;
-  /** Sustituye la barra horizontal de enlaces. Sin `<nav>` vacío. */
+  /** Sustituye la barra horizontal de enlaces. Sin `<nav>` vacío. El home público usa esto. */
   acciones?: Html;
+  /**
+   * Panel: no pinta la barra horizontal de secciones.
+   * El cajón «Menú» queda para el ancho chico; en escritorio la barra lateral vive fuera de la cabecera.
+   */
+  cajon?: boolean;
 }): Html {
-  const navegacion = opciones.acciones
-    ? opciones.acciones
-    : html`<nav class="tw-nav" aria-label="Principal">
-      <ul>
-        ${opciones.enlaces.map(
-          (e) => html`<li><a href="${e.href}"${e.actual ? html` aria-current="page"` : ""}>${e.texto}${
-            e.meta ? html`<span class="tw-nav__meta">${e.meta}</span>` : ""
-          }</a></li>`,
-        )}
-      </ul>
-    </nav>
-    <input type="checkbox" id="menu-toggle" class="menu-toggle">
+  const cajon = html`<input type="checkbox" id="menu-toggle" class="menu-toggle">
     <label for="menu-toggle" class="menu-boton" aria-controls="menu-cajon">
       <span class="menu-boton-lineas" aria-hidden="true"></span>
       <span class="menu-boton-texto">Menú</span>
@@ -48,15 +50,23 @@ export function cabeceraBanner(opciones: {
       </div>
       <nav aria-label="Principal móvil">
         <ul>
-          ${opciones.enlaces.map(
-            (e, i) => html`<li style="--i:${String(i)}"><a href="${e.href}"${e.actual ? html` aria-current="page"` : ""}>${e.texto}${
-              e.meta ? html`<span class="menu-meta">${e.meta}</span>` : ""
-            }</a></li>`,
-          )}
+          ${listaEnlaces(opciones.enlaces, "menu-meta")}
         </ul>
       </nav>
       ${opciones.extra ?? ""}
     </aside>`;
+  const navegacion = opciones.acciones
+    ? opciones.acciones
+    : html`${
+        opciones.cajon
+          ? ""
+          : html`<nav class="tw-nav" aria-label="Principal">
+      <ul>
+        ${listaEnlaces(opciones.enlaces, "tw-nav__meta")}
+      </ul>
+    </nav>`
+      }
+    ${cajon}`;
   return html`<header class="tw-header">
   <div class="tw-header__bar">
     <a class="tw-logo" href="/index.html"><img class="tw-logo__mark" src="/assets/vissiuss-logo.png" alt="" width="36" height="36">trabajamos<span class="tw-logo__dot">.com</span></a>
