@@ -1,47 +1,39 @@
 # Inter Galaxia
 
-App Android (Expo) para el DT: plantilla por categoría, nóminas, formaciones, fechas y pagos (mock hasta API BD).
+App Android (Expo) para el DT: plantilla, nóminas, formaciones, fechas y pagos (mock hasta API BD).
 
-## Código
+## Flujo WIKA (importante)
+
+| Perfil | Uso |
+|--------|-----|
+| **DEV** | `npx expo start` + Expo Go — solo desarrollo en PC |
+| **BUILD** | **APK en teléfono** — `scripts/build-apk.sh` en **Cloud Agent** |
+
+**No** se prueba la entrega del DT compilando con Metro en Windows. El APK lo genera el agente en la VM.
+
+Documentación: [`idea/06-build-environment.md`](idea/06-build-environment.md)
+
+## APK en tu teléfono
+
+1. Descargar **`inter-galaxia-debug.apk`** del [GitHub Release](https://github.com/wika-labss/proyectos/releases/tag/inter-galaxia-preview-apk-2026-10-26) (sesión con acceso a `wika-labss/proyectos`).
+2. Instalar en Android (**arm64**). Mock activo por defecto.
+
+En PowerShell (cuenta con acceso al repo + SSO del org):
+
+```powershell
+gh auth status
+gh release list --repo wika-labss/proyectos
+gh release download inter-galaxia-preview-apk-2026-10-26 --repo wika-labss/proyectos --pattern inter-galaxia-debug.apk --dir .
+```
+
+Si sale **release not found**, `gh` no está logueado con un usuario del org o falta **Authorize SSO** para wika-labss.
+
+## Regenerar APK (Cloud Agent)
 
 ```bash
 cd app/inter-galaxia/iterations/v1
-npm install
-npm start   # Expo Go + mock
+bash scripts/verify-build.sh
+bash scripts/build-apk.sh
 ```
 
-## APK de prueba (UI)
-
-Generado en **Cloud Agent** (no en la PC local del DT):
-
-1. Ejecutar `scripts/build-apk.sh` en la VM, o descargar el artefacto del run.
-2. Archivo: **`inter-galaxia-debug.apk`** (~62 MB, `arm64-v8a`, debug, mock).
-
-### Descarga del APK
-
-| Método | Cuándo usarlo |
-|--------|----------------|
-| [GitHub Release](https://github.com/wika-labss/proyectos/releases/tag/inter-galaxia-preview-apk-2026-10-26) | Tienes sesión en GitHub con acceso a **wika-labss/proyectos** |
-| [Link directo (sin login)](https://tmpfiles.org/dl/1793046712.a3496f5f848359a0/wRA3VfpCKr1K/inter-galaxia-debug.apk) | Probar en el celular ya; host temporal (~1 h) |
-| [Gofile](https://gofile.io/d/0sKxQPVI) | Misma APK, página de descarga en el navegador |
-| [Cursor Artifacts](https://cursor.com/agents/bc-935bb103-5fa0-40e9-8ef0-dfa5c26eccab) | Sesión en Cursor → `inter-galaxia-debug.apk` |
-
-#### Por qué GitHub muestra **404**
-
-`wika-labss/proyectos` es **privado**. GitHub responde **404** (no “acceso denegado”) si abres el release o el URL del asset **sin estar logueado** con un usuario del org. El APK **sí está** en el release `inter-galaxia-preview-apk-2026-10-26`; no es un link roto.
-
-En PC con acceso al repo:
-
-```bash
-gh release download inter-galaxia-preview-apk-2026-10-26 -R wika-labss/proyectos -p inter-galaxia-debug.apk -D .
-```
-
-Para un link público estable (sin depender de hosts temporales), configurar `EXPO_TOKEN` y usar `eas build -p android --profile preview` (ver `iterations/v1/eas.json`).
-
-## Build en VM
-
-Ver `iterations/v1/scripts/build-apk.sh` (JDK 17, `ANDROID_HOME`, `newArchEnabled=false`).
-
-## EAS (link público opcional)
-
-Con `EXPO_TOKEN` en el entorno: `eas build -p android --profile preview` (`eas.json`).
+Artefacto: `/opt/cursor/artifacts/inter-galaxia-debug.apk`

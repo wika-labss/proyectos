@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-echo "=== Inter Galaxia — APK debug (Cloud Agent / Linux) ==="
+echo "=== Inter Galaxia — APK teléfono standalone (Cloud Agent / Linux) ==="
 
 JAVA17="${JAVA_HOME:-}"
 if [[ -d /usr/lib/jvm/java-17-openjdk-amd64 ]]; then
@@ -35,12 +35,13 @@ if grep -q '^reactNativeArchitectures=' android/gradle.properties; then
   sed -i 's/^reactNativeArchitectures=.*/reactNativeArchitectures=arm64-v8a/' android/gradle.properties
 fi
 
-echo "[3/4] gradle assembleDebug"
+# Release embebe el bundle JS; debug omite bundling y pide Metro en el teléfono.
+echo "[3/4] gradle assembleRelease (JS embebido, firma debug keystore)"
 cd android
-./gradlew assembleDebug
+./gradlew assembleRelease
 cd ..
 
-OUT="android/app/build/outputs/apk/debug/app-debug.apk"
+OUT="android/app/build/outputs/apk/release/app-release.apk"
 ART="/opt/cursor/artifacts/inter-galaxia-debug.apk"
 mkdir -p "$(dirname "$ART")"
 cp "$OUT" "$ART"
