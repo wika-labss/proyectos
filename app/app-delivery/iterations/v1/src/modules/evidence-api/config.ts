@@ -5,11 +5,9 @@ export type EvidenceConfig = {
   apiKey: string;
 };
 
-export function readEvidenceConfig(
-  env: Record<string, string | undefined> = process.env,
-): EvidenceConfig {
-  const url = (env.EXPO_PUBLIC_SUPABASE_URL ?? DEFAULT_URL).replace(/\/$/, '');
-  const apiKey = env.EXPO_PUBLIC_EVIDENCIA_API_KEY ?? '';
+export function readEvidenceConfig(): EvidenceConfig {
+  const url = (process.env.EXPO_PUBLIC_SUPABASE_URL ?? DEFAULT_URL).replace(/\/$/, '');
+  const apiKey = process.env.EXPO_PUBLIC_EVIDENCIA_API_KEY ?? '';
   return { url, apiKey };
 }
 

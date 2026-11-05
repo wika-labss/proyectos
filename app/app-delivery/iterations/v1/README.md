@@ -10,4 +10,4 @@ npm run typecheck
 npm run smoke
 ```
 
-El APK release pide JDK 17 y Android SDK: `npm run apk`.
+El APK ya armado para el teléfono está en `apk/app-delivery.apk`. Para generarlo de nuevo hace falta JDK 17 y Android SDK: `npm run apk`.

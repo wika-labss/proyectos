@@ -16,7 +16,8 @@ Estado:
 - Edge Function evidencia activa en https://nfryurrhgaeepdwqtswo.supabase.co/functions/v1/evidencia
 - Tabla public.evidencia, bucket evidencia, clave en public.evidencia_clave
 - npm run smoke y npm run typecheck OK
-- APK pendiente: hace falta JDK 17 y Android SDK
+- APK release para sideload: iterations/v1/apk/app-delivery.apk
+- Firmado con el certificado debug de esta máquina. El teléfono debe permitir orígenes desconocidos
 - audits/auditoria-release-v1.md → REQUIERE_CORRECCIONES
 - review.md sin firma
 - final/ vacío
