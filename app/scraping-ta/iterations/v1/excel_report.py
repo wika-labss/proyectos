@@ -114,55 +114,53 @@ def build_workbook(channels: Iterable[ChannelResult]) -> bytes:
             continue
         grouped[key][row.platform] = row
 
-    comparacion = wb.create_sheet("comparacion")
-    _header(
-        comparacion,
-        [
-            "nombre_normalizado",
-            "pedidosya_precio",
-            "ubereats_precio",
-            "rappi_precio",
-            "justo_precio",
-            "min",
-            "max",
-            "delta",
-            "nombres",
-            "locales",
-        ],
-    )
-    for key, by_platform in sorted(grouped.items()):
-        if len(by_platform) < 2:
-            continue
-        prices = {
-            platform: row.price_clp
-            for platform, row in by_platform.items()
-            if row.price_clp is not None
-        }
-        values = list(prices.values())
-        minimum = min(values) if values else None
-        maximum = max(values) if values else None
-        delta = (maximum - minimum) if minimum is not None and maximum is not None else None
+    comparable = {key: by_p for key, by_p in grouped.items() if len(by_p) >= 2}
+    if comparable:
+        comparacion = wb.create_sheet("comparacion")
+        _header(
+            comparacion,
+            [
+                "nombre_normalizado",
+                "pedidosya_precio",
+                "ubereats_precio",
+                "rappi_precio",
+                "min",
+                "max",
+                "delta",
+                "nombres",
+                "locales",
+            ],
+        )
+        for key, by_platform in sorted(comparable.items()):
+            prices = {
+                platform: row.price_clp
+                for platform, row in by_platform.items()
+                if row.price_clp is not None
+            }
+            values = list(prices.values())
+            minimum = min(values) if values else None
+            maximum = max(values) if values else None
+            delta = (maximum - minimum) if minimum is not None and maximum is not None else None
+            comparacion.append(
+                [
+                    key,
+                    prices.get("pedidosya"),
+                    prices.get("ubereats"),
+                    prices.get("rappi"),
+                    minimum,
+                    maximum,
+                    delta,
+                    " | ".join(sorted({row.name for row in by_platform.values()})),
+                    " | ".join(sorted({row.store for row in by_platform.values()})),
+                ]
+            )
+        comparacion.append([])
         comparacion.append(
             [
-                key,
-                prices.get("pedidosya"),
-                prices.get("ubereats"),
-                prices.get("rappi"),
-                prices.get("justo"),
-                minimum,
-                maximum,
-                delta,
-                " | ".join(sorted({row.name for row in by_platform.values()})),
-                " | ".join(sorted({row.store for row in by_platform.values()})),
+                "Nota: cruce por nombre normalizado. Cada agregador también se exporta en su propio Excel."
             ]
         )
-    comparacion.append([])
-    comparacion.append(
-        [
-            "Nota: cruce por nombre normalizado. Solo es auditoría 1:1 si las 4 URLs son del mismo local."
-        ]
-    )
-    _autosize(comparacion, max_width=56)
+        _autosize(comparacion, max_width=56)
 
     buf = BytesIO()
     wb.save(buf)

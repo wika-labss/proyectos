@@ -46,7 +46,7 @@ nano .env
 - `ACME_EMAIL` — correo para Let's Encrypt
 - `INGEST_KEY` — Bearer de la extensión. Generar: `openssl rand -hex 32`. **Nunca en git.** La misma clave se pega una vez en el popup.
 - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — consola
-- `SCRAPINGBEE_API_KEY` — opcional (fallback). Vacío = solo extensión + Justo CDN.
+- `SCRAPINGBEE_API_KEY` — opcional (fallback). Vacío = solo extensión.
 
 ## 4. Levantar
 

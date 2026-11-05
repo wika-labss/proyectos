@@ -11,7 +11,6 @@ DEFAULT_TARGETS = {
     "peya": "",
     "uber": "",
     "rappi": "",
-    "justo": "https://www.tarragona.cl/pedir",
 }
 
 

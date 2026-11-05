@@ -1,6 +1,6 @@
 # Scraping TA
 
-Proyecto WIKA **web** (no APK): auditoría de menú **vista cliente** en PedidosYa, Uber Eats, Rappi y Justo (tarragona.cl).
+Proyecto WIKA **web** (no APK): auditoría de menú **vista cliente** en PedidosYa, Uber Eats y Rappi.
 
 Fuente de verdad: [`idea/`](idea/). Código V1: [`iterations/v1/`](iterations/v1/).
 
@@ -8,8 +8,7 @@ Fuente de verdad: [`idea/`](idea/). Código V1: [`iterations/v1/`](iterations/v1
 
 Extrae productos, descripciones y precios (cliente + lista) desde JSON nativo — no Partner Catalog. Baja un Excel (`resumen` / `productos` / `comparacion`).
 
-- **Camino principal:** extensión Chrome (`extension/`) captura el XHR del menú y hace `POST /api/ingest`.
-- Justo `tarragona.cl`: CDN en el servidor, **0** créditos. Sin extensión.
+- **Camino principal:** extensión Chrome (`extension/`) captura el XHR del menú y hace `POST /api/ingest`. Cada agregador baja su propio Excel.
 - Bee (Peya / Uber / Rappi): fallback en Ajustes, ~75 créditos, **1 request** por URL.
 
 ## Levantar V1.1 (admin Vissiuss)

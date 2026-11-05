@@ -29,7 +29,6 @@ from auth import (
 )
 from bee import BeeError, credits_of, scrape_once
 from excel_report import build_workbook
-from parsers import justo as justo_parser
 from parsers import peya as peya_parser
 from parsers import rappi as rappi_parser
 from parsers import uber as uber_parser
@@ -124,7 +123,6 @@ class AuditBody(BaseModel):
     peya: str = ""
     uber: str = ""
     rappi: str = ""
-    justo: str = ""
 
 
 class RetryBody(BaseModel):
@@ -142,7 +140,6 @@ class TargetsBody(BaseModel):
     peya: str = ""
     uber: str = ""
     rappi: str = ""
-    justo: str = ""
 
 
 class IngestBody(BaseModel):
@@ -160,17 +157,15 @@ FIELD_BY_PLATFORM = {
     "uber": "ubereats",
     "ubereats": "ubereats",
     "rappi": "rappi",
-    "justo": "justo",
 }
 
 PLATFORM_FIELD = {
     "pedidosya": "peya",
     "ubereats": "uber",
     "rappi": "rappi",
-    "justo": "justo",
 }
 
-CHANNEL_ORDER = ("pedidosya", "ubereats", "rappi", "justo")
+CHANNEL_ORDER = ("pedidosya", "ubereats", "rappi")
 
 
 def _clean_url(value: str) -> str:
@@ -184,9 +179,6 @@ def _estimate_credits(body: AuditBody) -> int:
     if _clean_url(body.uber):
         n += 1
     if _clean_url(body.rappi):
-        n += 1
-    justo = _clean_url(body.justo)
-    if justo and not justo_parser.is_tarragona_justo(justo):
         n += 1
     return n * CREDITS_PER_BEE
 
@@ -255,33 +247,10 @@ def _audit_rappi(url: str) -> ChannelResult:
     return result
 
 
-def _audit_justo(url: str) -> ChannelResult:
-    if justo_parser.is_tarragona_justo(url):
-        return justo_parser.from_tarragona_cdn(url)
-    token = _require_token()
-    bee = scrape_once(url, token)
-    try:
-        website_id = justo_parser.website_id_from_bee(bee)
-        if not website_id:
-            raise justo_parser.ParseError("No se pudo leer websiteId Justo del HTML/XHR.")
-        website = justo_parser.fetch_website(website_id)
-        data = website.get("data") or website
-        menu_id = str(data.get("defaultMenuId") or "")
-        if not menu_id:
-            raise justo_parser.ParseError("El website Justo no tiene defaultMenuId.")
-        payload = justo_parser.fetch_menu(website_id, menu_id)
-        result = justo_parser.parse_menu_payload(payload, url)
-    except justo_parser.ParseError as exc:
-        return _failed("justo", url, credits_of(bee), str(exc))
-    result.credits_used = credits_of(bee)
-    return result
-
-
 AUDITORS = {
     "peya": ("pedidosya", _audit_peya),
     "uber": ("ubereats", _audit_uber),
     "rappi": ("rappi", _audit_rappi),
-    "justo": ("justo", _audit_justo),
 }
 
 
@@ -385,8 +354,10 @@ def list_reports() -> dict[str, Any]:
                 "error": channel.get("error"),
                 "skipped": bool(channel.get("skipped")),
                 "source_url": channel.get("source_url") or "",
+                "has_xlsx": _xlsx_path(run_id, str(channel.get("platform") or "")).exists(),
             })
         mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+        xlsx = _xlsx_flags(run_id)
         reports.append({
             "run_id": run_id,
             "status": data.get("status"),
@@ -395,7 +366,8 @@ def list_reports() -> dict[str, Any]:
             "credits_estimated": data.get("credits_estimated") or 0,
             "urls": data.get("urls") or {},
             "channels": channels,
-            "has_xlsx": (RUNS_DIR / f"{run_id}.xlsx").exists(),
+            "xlsx": xlsx,
+            "has_xlsx": any(xlsx.values()),
             "updated_at": mtime.replace(microsecond=0).isoformat(),
         })
     return {"reports": reports}
@@ -417,7 +389,6 @@ def estimate(body: AuditBody) -> dict[str, Any]:
     return {
         "credits_estimated": _estimate_credits(body),
         "bee_calls": _estimate_credits(body) // CREDITS_PER_BEE,
-        "justo_cdn": bool(_clean_url(body.justo) and justo_parser.is_tarragona_justo(_clean_url(body.justo))),
     }
 
 
@@ -435,13 +406,27 @@ def _channel_dict(result: ChannelResult) -> dict[str, Any]:
     }
 
 
+def _xlsx_path(run_id: str, platform: str) -> Path:
+    plat = FIELD_BY_PLATFORM.get((platform or "").strip().lower(), (platform or "").strip().lower())
+    return RUNS_DIR / f"{run_id}-{plat}.xlsx"
+
+
+def _xlsx_flags(run_id: str) -> dict[str, bool]:
+    return {name: _xlsx_path(run_id, name).exists() for name in CHANNEL_ORDER}
+
+
 def _public_job(job: dict[str, Any]) -> dict[str, Any]:
     payload = json.loads(json.dumps(job))
+    run_id = str(payload.get("run_id") or "")
+    xlsx = _xlsx_flags(run_id) if run_id else {name: False for name in CHANNEL_ORDER}
     for channel in payload.get("channels") or []:
         items = channel.get("items") or []
         channel["items"] = items[:8]
         if "item_count" not in channel or channel.get("item_count") is None:
             channel["item_count"] = 0 if channel.get("skipped") else len(items)
+        plat = str(channel.get("platform") or "")
+        channel["has_xlsx"] = bool(xlsx.get(plat))
+    payload["xlsx"] = xlsx
     return payload
 
 
@@ -480,7 +465,6 @@ def _urls_from_body(body: AuditBody) -> dict[str, str]:
         "peya": _clean_url(body.peya),
         "uber": _clean_url(body.uber),
         "rappi": _clean_url(body.rappi),
-        "justo": _clean_url(body.justo),
     }
 
 
@@ -489,7 +473,6 @@ def _body_from_urls(urls: dict[str, str]) -> AuditBody:
         peya=urls.get("peya") or "",
         uber=urls.get("uber") or "",
         rappi=urls.get("rappi") or "",
-        justo=urls.get("justo") or "",
     )
 
 
@@ -512,6 +495,8 @@ def _ordered_channel_dicts(channels: list[dict[str, Any]]) -> list[dict[str, Any
     extras: list[dict[str, Any]] = []
     for ch in channels:
         plat = str(ch.get("platform") or "")
+        if plat == "justo":
+            continue
         if plat in CHANNEL_ORDER:
             by_plat[plat] = ch
         else:
@@ -524,7 +509,14 @@ def _persist_job(run_id: str, payload: dict[str, Any]) -> dict[str, Any]:
     payload = dict(payload)
     payload["channels"] = _ordered_channel_dicts(list(payload.get("channels") or []))
     channels = [_result_from_channel(ch) for ch in payload["channels"]]
-    (RUNS_DIR / f"{run_id}.xlsx").write_bytes(build_workbook(channels))
+    for result in channels:
+        path = _xlsx_path(run_id, result.platform)
+        if result.skipped or result.error or not result.items:
+            continue
+        path.write_bytes(build_workbook([result]))
+    combined = RUNS_DIR / f"{run_id}.xlsx"
+    if combined.exists():
+        combined.unlink()
     (RUNS_DIR / f"{run_id}.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -547,7 +539,7 @@ def _new_collecting_job(urls: dict[str, str] | None = None) -> dict[str, Any]:
         "credits_estimated": 0,
         "credits_used": 0,
         "channels": _placeholder_channels(),
-        "urls": urls or {"peya": "", "uber": "", "rappi": "", "justo": ""},
+        "urls": urls or {"peya": "", "uber": "", "rappi": ""},
         "error": None,
     }
     return _persist_job(run_id, payload)
@@ -655,8 +647,8 @@ def _run_one_channel(platform: str, url: str) -> ChannelResult:
     except HTTPException as exc:
         detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
         return _failed(platform, url, 0, detail)
-    except (BeeError, peya_parser.ParseError, uber_parser.ParseError, rappi_parser.ParseError, justo_parser.ParseError) as exc:
-        return _failed(platform, url, CREDITS_PER_BEE if platform != "justo" else 0, str(exc))
+    except (BeeError, peya_parser.ParseError, uber_parser.ParseError, rappi_parser.ParseError) as exc:
+        return _failed(platform, url, CREDITS_PER_BEE, str(exc))
     except Exception as exc:
         traceback.print_exc()
         return _failed(platform, url, 0, f"Error inesperado: {exc}")
@@ -670,12 +662,7 @@ def _prepare_jobs(body: AuditBody) -> list[tuple[str, str, Any]]:
             jobs.append((platform, url, fn))
     if not jobs:
         raise HTTPException(status_code=400, detail="Pega al menos una URL.")
-    needs_bee = any(
-        platform != "justo" or not justo_parser.is_tarragona_justo(url)
-        for platform, url, _fn in jobs
-    )
-    if needs_bee:
-        _require_token()
+    _require_token()
     return jobs
 
 
@@ -759,7 +746,7 @@ def audit(body: AuditBody) -> dict[str, Any]:
 def retry_channel(body: RetryBody) -> dict[str, Any]:
     platform = FIELD_BY_PLATFORM.get((body.platform or "").strip().lower())
     if not platform:
-        raise HTTPException(status_code=400, detail="Canal inválido. Usa peya, uber, rappi o justo.")
+        raise HTTPException(status_code=400, detail="Canal inválido. Usa peya, uber o rappi.")
     url = _clean_url(body.url)
     run_id = (body.run_id or "").strip() or None
     if run_id:
@@ -776,8 +763,7 @@ def retry_channel(body: RetryBody) -> dict[str, Any]:
                         break
     if not url:
         raise HTTPException(status_code=400, detail="Pega la URL de ese canal para reintentar.")
-    if platform != "justo" or not justo_parser.is_tarragona_justo(url):
-        _require_token()
+    _require_token()
     if not run_id:
         only = AuditBody()
         setattr(only, PLATFORM_FIELD[platform], url)
@@ -813,31 +799,12 @@ def active_job() -> dict[str, Any]:
     return _public_job(job)
 
 
-@app.post("/api/jobs/{run_id}/justo")
-def fetch_justo_cdn(run_id: str, body: TargetsBody | None = None) -> dict[str, Any]:
-    job = _load_job(run_id)
-    url = _clean_url((body.justo if body else "") or (job.get("urls") or {}).get("justo") or "")
-    if not url:
-        url = "https://www.tarragona.cl/pedir"
-    try:
-        result = _audit_justo(url)
-    except HTTPException as exc:
-        detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
-        result = _failed("justo", url, 0, detail)
-    except Exception as exc:
-        traceback.print_exc()
-        result = _failed("justo", url, 0, f"Error inesperado: {exc}")
-    return _public_job(_merge_result(run_id, result, "justo", url))
-
-
 @app.post("/api/ingest")
 def ingest(body: IngestBody, request: Request) -> dict[str, Any]:
     require_ingest(request)
     platform = FIELD_BY_PLATFORM.get((body.platform or "").strip().lower())
     if not platform:
         raise HTTPException(status_code=400, detail="Canal inválido. Usa peya, uber o rappi.")
-    if platform == "justo":
-        raise HTTPException(status_code=400, detail="Justo no usa la extensión. Usá Traer CDN.")
     source_url = _clean_url(body.source_url)
     bee = {"body": body.body or "", "xhr": list(body.xhr or [])}
     result = _parse_ingest(platform, source_url, bee)
@@ -855,13 +822,16 @@ def ingest(body: IngestBody, request: Request) -> dict[str, Any]:
     return _public_job(_merge_result(run_id, result, field, source_url))
 
 
-@app.get("/api/report/{run_id}.xlsx")
-def download_report(run_id: str) -> FileResponse:
-    path = RUNS_DIR / f"{run_id}.xlsx"
+@app.get("/api/report/{run_id}/{platform}.xlsx")
+def download_report(run_id: str, platform: str) -> FileResponse:
+    plat = FIELD_BY_PLATFORM.get((platform or "").strip().lower())
+    if not plat:
+        raise HTTPException(status_code=404, detail="Canal inválido.")
+    path = _xlsx_path(run_id, plat)
     if not path.exists():
         raise HTTPException(status_code=404, detail="Informe no encontrado.")
     return FileResponse(
         path,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        filename=f"auditoria-menu-{run_id}.xlsx",
+        filename=f"auditoria-{plat}-{run_id}.xlsx",
     )

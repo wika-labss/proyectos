@@ -2,7 +2,7 @@
 
 Captura el XHR nativo del menú mientras navegás PedidosYa, Uber Eats o Rappi y lo manda a `POST /api/ingest`. **No** pide cookies, **no** inicia sesión en el marketplace y **no** se publica en Chrome Web Store.
 
-Justo / tarragona.cl no usa esta extensión: el servidor tira del CDN.
+Cada envío genera el Excel de ese agregador. Justo no forma parte del flujo.
 
 ## Cargar unpacked
 
@@ -10,11 +10,11 @@ Justo / tarragona.cl no usa esta extensión: el servidor tira del CDN.
 2. Activá **Modo de desarrollador**
 3. **Cargar extensión sin empaquetar** → esta carpeta (`app/scraping-ta/extension`)
 4. Abrí el popup, pegá `INGEST_KEY` (una vez; queda en `chrome.storage.local`)
-5. API por defecto: `https://ta.vissiuss.com`. Para uvicorn local: `http://127.0.0.1:8000`
+5. API por defecto: `https://ta.vissiuss.com`. Local: `http://127.0.0.1:8000`. Túnel de prueba: `https://….trycloudflare.com`
 
 ## Uso
 
-1. En el admin: **Nuevo informe** y copiá el `run_id` (o dejalo vacío: usa el informe en recolección).
+1. En el admin: **Generar informe** y copiá el `run_id` (o dejalo vacío: usa el informe en recolección).
 2. Abrí el menú del local en Chrome (hay que **ver el menú**, no un captcha).
 3. Esperá a que suba el contador de XHR.
 4. **Enviar a Scraping TA**.

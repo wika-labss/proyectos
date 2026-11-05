@@ -7,13 +7,10 @@ Demo: web en `http://127.0.0.1:8000`. Sin APK.
 ## Flujo
 
 ```
-URLs pegadas
-  ├─ PedidosYa  → ScrapingBee stealth CL → XHR GET /v2/niles/partners/{id}/menus
-  ├─ Uber Eats  → ScrapingBee stealth CL → JSON-LD hasMenu (SSR)
-  ├─ Rappi      → ScrapingBee stealth CL → XHR POST restaurants-bus/store/id/{id}
-  └─ Justo      → GET webdatacdn.getjusto.com (0 créditos Bee)
-        ↓
-  filas unificadas → Excel (resumen / productos / comparacion)
+Extensión (camino principal)
+  ├─ PedidosYa  → XHR GET /v2/niles/partners/{id}/menus → Excel pedidosya
+  ├─ Uber Eats  → __REACT_QUERY_STATE__ catalogItems     → Excel ubereats
+  └─ Rappi      → XHR POST restaurants-bus/store/id/{id} → Excel rappi
 ```
 
 ## Costos ScrapingBee
@@ -23,11 +20,10 @@ Cada llamada stealth Chile (`render_js` + `stealth_proxy` + `country_code=cl` + 
 | Canal | Créditos / URL | Fuente nativa |
 |---|---:|---|
 | PedidosYa | 75 | XHR menú |
-| Uber Eats | 75 | JSON-LD `hasMenu` |
+| Uber Eats | 75 | `__REACT_QUERY_STATE__` |
 | Rappi | 75 | XHR store bus |
-| Justo (tarragona.cl) | **0** | CDN webdata |
 
-Auditoría lun–vie, 1 local × 3 apps Bee: **225 créditos/día**, **1.125/semana**. Justo no suma si se usa el CDN.
+Auditoría lun–vie, 1 local × 3 apps Bee: **225 créditos/día**, **1.125/semana**. Cada agregador exporta su propio Excel. Justo no está en el flujo.
 
 ## Reglas operativas
 
@@ -55,15 +51,6 @@ Auditoría lun–vie, 1 local × 3 apps Bee: **225 créditos/día**, **1.125/sem
 - Bee sobre `rappi.cl/restaurantes/{id}-…`.
 - Parser: `POST https://services.rappi.cl/api/web-gateway/web/restaurants-bus/store/id/{id}/`.
 - Precio cliente = `discounts[].price` si `apply_to_user`, si no `price`. Lista = `real_price`.
-
-## Justo (tarragona.cl/pedir)
-
-- **No usa Bee.** `GET https://webdatacdn.getjusto.com/v1/websites/{websiteId}/menus/{menuId}`.
-- Tarragona Chile: `websiteId=hPy8jxhEz4yWPb8qr`, menú default delivery `PZKKxcPg44sL2gRxX`.
-- Precio cliente = `availabilityAt.finalPrice`. Lista = `availabilityAt.basePrice`.
-- Si la URL no es tarragona.cl, un GET Bee de fallback (75 créditos) para leer `websiteId` del GraphQL y después el CDN.
-
-El website publica más de un menú (delivery / local 🏪). El demo usa el menú default de `/pedir`.
 
 ## Schema unificado (fila Excel)
 

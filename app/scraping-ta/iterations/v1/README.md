@@ -19,12 +19,11 @@ Abrir [http://127.0.0.1:8000/login](http://127.0.0.1:8000/login) (`admin` / `cam
 
 ## Uso (extensión, camino principal)
 
-1. En admin: **Nuevo informe** — copiá el `run_id`.
+1. En admin: **Generar informe** — copiá el `run_id`.
 2. Cargá la extensión unpacked (`../../extension/`, ver su README).
 3. Popup: INGEST_KEY, API `http://127.0.0.1:8000` (local) o `https://ta.vissiuss.com`.
 4. Abrí el menú en Chrome (Peya / Uber / Rappi) → **Enviar a Scraping TA**.
-5. Justo: **Traer CDN** (servidor, 0 créditos).
-6. **Informes** → descargar `.xlsx`.
+5. **Historial** → un `.xlsx` por agregador.
 
 ## Fallback ScrapingBee
 
