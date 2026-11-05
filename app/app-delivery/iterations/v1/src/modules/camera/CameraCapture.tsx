@@ -8,6 +8,24 @@ type Props = {
   onCapture: (uri: string) => void;
 };
 
+function pickPictureSize(sizes: string[]): string | null {
+  const parsed = sizes
+    .map((label) => {
+      const match = /^(\d+)x(\d+)$/.exec(label);
+      if (!match) return null;
+      const width = Number(match[1]);
+      const height = Number(match[2]);
+      return { label, long: Math.max(width, height) };
+    })
+    .filter((item): item is { label: string; long: number } => item !== null);
+  const mid = parsed
+    .filter((item) => item.long >= 1280 && item.long <= 1920)
+    .sort((a, b) => b.long - a.long)[0];
+  if (mid) return mid.label;
+  const smaller = parsed.filter((item) => item.long < 1920).sort((a, b) => b.long - a.long)[0];
+  return smaller?.label ?? parsed[0]?.label ?? null;
+}
+
 export function CameraCapture({ onCapture }: Props) {
   const cameraRef = useRef<CameraView>(null);
   const readyRef = useRef(false);
@@ -16,6 +34,8 @@ export function CameraCapture({ onCapture }: Props) {
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [pictureSize, setPictureSize] = useState<string | undefined>(undefined);
+  const pickedSize = useRef(false);
 
   async function take() {
     if (!permission?.granted) {
@@ -32,14 +52,19 @@ export function CameraCapture({ onCapture }: Props) {
     setBusy(true);
     setError('');
     try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.7 });
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.85,
+        skipProcessing: true,
+        shutterSound: false,
+      });
       if (!photo?.uri) {
         setError('No se pudo capturar la foto.');
         return;
       }
       onCapture(photo.uri);
-    } catch {
-      setError('No se pudo capturar la foto.');
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : '';
+      setError(detail ? `No se pudo capturar la foto. ${detail}` : 'No se pudo capturar la foto.');
     } finally {
       setBusy(false);
     }
@@ -63,8 +88,30 @@ export function CameraCapture({ onCapture }: Props) {
         style={styles.fill}
         facing="back"
         mode="picture"
+        autofocus="on"
+        animateShutter={false}
+        pictureSize={pictureSize}
         active
         onCameraReady={() => {
+          if (!pickedSize.current) {
+            pickedSize.current = true;
+            void cameraRef.current
+              ?.getAvailablePictureSizesAsync()
+              .then((sizes) => {
+                const pick = pickPictureSize(sizes);
+                if (pick) {
+                  setPictureSize(pick);
+                  return;
+                }
+                readyRef.current = true;
+                setReady(true);
+              })
+              .catch(() => {
+                readyRef.current = true;
+                setReady(true);
+              });
+            return;
+          }
           readyRef.current = true;
           setReady(true);
           setError('');

@@ -20,6 +20,7 @@ fi
 
 echo ""
 echo "[1/4] prebuild android"
+node scripts/patch-expo-camera.js
 npx expo prebuild --platform android
 node scripts/post-prebuild.js
 
