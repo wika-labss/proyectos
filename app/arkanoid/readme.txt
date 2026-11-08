@@ -12,7 +12,8 @@ Producto V1:
 Estado:
 - idea/ documentado V1 (01–05)
 - audits/ documentación + módulos + ensamblado → APROBADO
-- iterations/ vacío (pendiente Generación IA)
-- final/ vacío
+- audits/ release-v1 → APROBADO (APK Release generado; sideload Demo pendiente)
+- iterations/v1/ construido (smoke + typecheck + export + assembleRelease OK)
+- final/release-notes.md iniciado
 
-Siguiente: construcción iterations/v1 → Auditoría Release → final/
+Siguiente: sideload en device (C:\Alvaro proyectos → BUILD-APK.md) → Demo → cierre final/
