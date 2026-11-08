@@ -43,8 +43,16 @@ adb install -r .\android\app\build\outputs\apk\release\app-release.apk
 npm run build:apk
 ```
 
-## Qué NO usar para Release
+## Si falla "SDK location not found"
+
+Gradle necesita el SDK. En PowerShell (ruta típica de Android Studio):
 
 ```powershell
-npx expo start   # Metro / DEV — no es el entregable
+$sdk = "$env:LOCALAPPDATA\Android\Sdk"
+$env:ANDROID_HOME = $sdk
+[Environment]::SetEnvironmentVariable("ANDROID_HOME", $sdk, "User")
+Set-Content -Path .\android\local.properties -Value ("sdk.dir=" + ($sdk -replace '\\','/'))
+Get-Content .\android\local.properties
+cd android
+.\gradlew.bat assembleRelease
 ```
